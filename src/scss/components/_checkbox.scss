@@ -1,0 +1,42 @@
+/* ------------------------------------------------------------ *\
+	Checkbox
+\* ------------------------------------------------------------ */
+
+.checkbox {
+	display: grid;
+	grid-template-columns: 2rem 1fr;
+	gap: 0.8rem;
+	line-height: 1.25;
+
+	input {
+		position: relative;
+		appearance: none;
+		width: 2rem;
+		height: 2rem;
+		border-radius: 0.3rem;
+		border: 0.2rem solid var(--c-base);
+
+		&:after {
+			content: '';
+			display: inline-block;
+			position: absolute;
+			top: 0.2rem;
+			left: 0.5rem;
+			transform: rotate(45deg);
+			height: 1rem;
+			width: 0.6rem;
+			border-bottom: 0.2rem solid var(--c-base);
+			border-right: 0.2rem solid var(--c-base);
+			opacity: 0;
+			visibility: hidden;
+			transition:
+				opacity 0.4s,
+				visibility 0.4s;
+		}
+	}
+
+	input:checked:after {
+		opacity: 1;
+		visibility: visible;
+	}
+}

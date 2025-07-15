@@ -1,0 +1,20 @@
+/* ------------------------------------------------------------ *\
+	Logo
+\* ------------------------------------------------------------ */
+
+.logo {
+	display: inline-block;
+	text-decoration: none;
+	text-indent: -1px;
+	position: relative;
+	z-index: 100;
+}
+
+/* Logo Footer */
+.logo--footer {
+	max-width: 3rem;
+
+	@include breakpoint-up(tablet) {
+		max-width: none;
+	}
+}

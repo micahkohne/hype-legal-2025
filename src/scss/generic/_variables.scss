@@ -1,0 +1,29 @@
+// ==========================================================================
+// Variables
+// ==========================================================================
+
+:root {
+	--fz-html: 62.5%;
+	--fz-base: 1.6rem;
+	--fz-base-desktop: 1.8rem;
+	--fw-base: 400;
+	--lh-base: 1.5;
+	--ff-base: 'Gestura Text', serif;
+	--ff-sans-serif: 'CircularXX', sans-serif;
+
+	--c-base: #25262b;
+	--c-white: #fff;
+	--c-error: #c06565;
+	--c-gray-100: #f8f8f8;
+	--c-gray-400: #7f838e;
+	--c-gray-500: #676b78;
+	--c-gray-700: #363c4c;
+}
+
+$breakpoints: (
+	mobile-small: 374px,
+	mobile-medium: 575px,
+	mobile: 767px,
+	tablet: 1023px,
+	small-desktop: 1199px,
+);

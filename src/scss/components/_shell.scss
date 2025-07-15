@@ -1,0 +1,18 @@
+// ==========================================================================
+// Shell
+// ==========================================================================
+
+.shell {
+	--shell-max-width: 150rem;
+	--shell-gutter: 2.4rem;
+
+	max-width: calc(var(--shell-max-width) + (var(--shell-gutter) * 2));
+	padding-inline: var(--shell-gutter);
+	margin-inline: auto;
+	width: 100%;
+}
+
+// Shell fluid
+.shell--fluid {
+	max-width: none;
+}

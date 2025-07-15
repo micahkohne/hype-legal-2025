@@ -1,0 +1,19 @@
+/* ------------------------------------------------------------ *\
+	Separator
+\* ------------------------------------------------------------ */
+
+.separator {
+	display: block;
+	width: 4rem;
+	height: 0.1rem;
+	background: var(--c-base);
+
+	@include breakpoint-up(tablet) {
+		width: 4.5rem;
+	}
+}
+
+/* Separator Fullwidth */
+.separator--fullwidth {
+	width: 100%;
+}

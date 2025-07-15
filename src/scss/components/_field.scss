@@ -1,0 +1,32 @@
+/* ------------------------------------------------------------ *\
+	Field
+\* ------------------------------------------------------------ */
+
+.field {
+	display: block;
+	width: 100%;
+	background: transparent;
+	border: none;
+	border-bottom: 0.1rem solid var(--c-base);
+	font-weight: 400;
+	height: 4rem;
+	line-height: 3.8rem;
+	letter-spacing: -0.01em;
+	border-radius: 0;
+}
+
+/* Field Textarea */
+.field--textarea {
+	height: 15rem;
+	line-height: 1.25;
+	padding: 1.2rem 0;
+	resize: none;
+
+	@include breakpoint-up(tablet) {
+		height: 17.5rem;
+	}
+
+	&::placeholder {
+		color: var(--c-gray-400);
+	}
+}

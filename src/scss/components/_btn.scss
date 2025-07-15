@@ -1,0 +1,37 @@
+/* ------------------------------------------------------------ *\
+	Btn
+\* ------------------------------------------------------------ */
+
+.btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.8rem;
+	text-decoration: none;
+	padding: 1.4rem 3rem;
+	background: var(--c-base);
+	color: var(--c-white);
+	border-radius: 0.5rem;
+	text-align: center;
+	border: none;
+	outline: none;
+	font-family: var(--ff-sans-serif);
+	font-weight: 500;
+	font-size: 1.6rem;
+	transition: opacity 0.4s;
+
+	@media (hover: hover) and (pointer: fine) {
+		&:hover {
+			opacity: 0.8;
+		}
+	}
+}
+
+//Btn Block
+.btn--block {
+	width: 100%;
+
+	@include breakpoint-up(tablet) {
+		max-width: 20.7rem;
+	}
+}

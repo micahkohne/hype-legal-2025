@@ -1,0 +1,53 @@
+/* ------------------------------------------------------------ *\
+	Subscribe
+\* ------------------------------------------------------------ */
+
+.subscribe {
+	border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+	position: relative;
+	margin-top: -1.1rem;
+	transition: border-color 0.4s;
+
+	&:has(input:focus) {
+		border-bottom-color: var(--c-white);
+	}
+
+	.subscribe__field {
+		background: transparent;
+		outline: none;
+		border: 0;
+		height: 4.2rem;
+		line-height: 4rem;
+		font-size: 1.6rem;
+		transition: opacity 0.4s ease-in-out;
+
+		&::placeholder {
+			opacity: 0.5;
+		}
+	}
+
+	.subscribe__btn {
+		position: absolute;
+		top: 0;
+		right: 0;
+		height: 100%;
+		background: transparent;
+		border: 0;
+		outline: none;
+		display: flex;
+		align-items: center;
+		opacity: 0.5;
+		height: 100%;
+		transition: opacity 0.4s ease-in-out;
+
+		@media (hover: hover) and (pointer: fine) {
+			&:hover {
+				opacity: 1;
+			}
+		}
+	}
+
+	&:has(input:focus) .subscribe__btn {
+		opacity: 1;
+	}
+}

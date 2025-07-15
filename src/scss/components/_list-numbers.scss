@@ -1,0 +1,64 @@
+/* ------------------------------------------------------------ *\
+	List Numbers
+\* ------------------------------------------------------------ */
+
+.list-numbers {
+	letter-spacing: -0.02em;
+	margin-top: 1.6rem;
+	margin-bottom: 0.5rem;
+
+	@include breakpoint-up(mobile) {
+		margin-bottom: 0;
+		margin-top: 0;
+	}
+
+	@include breakpoint-up(small-desktop) {
+		max-width: 60.1rem;
+		margin-left: auto;
+	}
+
+	ul {
+		list-style-type: none;
+		display: grid;
+		grid-template-columns: repeat(2, 1fr);
+		gap: 2.4rem;
+
+		@include breakpoint-up(tablet) {
+			gap: 6rem;
+		}
+
+		@include breakpoint-up(small-desktop) {
+			gap: 16.6rem;
+		}
+	}
+
+	li {
+		line-height: 1.49;
+		font-size: 1.4rem;
+
+		@include breakpoint-up(tablet) {
+			font-size: 1.6rem;
+		}
+
+		@include breakpoint-up(small-desktop) {
+			font-size: 1.8rem;
+		}
+	}
+
+	span {
+		display: block;
+		margin-bottom: 0.3rem;
+		font-size: 4rem;
+		line-height: 1;
+		font-weight: 500;
+		font-family: var(--ff-sans-serif);
+
+		@include breakpoint-up(tablet) {
+			font-size: 4.4rem;
+		}
+
+		@include breakpoint-up(small-desktop) {
+			font-size: 4.8rem;
+		}
+	}
+}

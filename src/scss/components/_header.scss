@@ -1,0 +1,46 @@
+/* ------------------------------------------------------------ *\
+	Header
+\* ------------------------------------------------------------ */
+
+.header {
+	padding: 3.6rem 0;
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	z-index: 100;
+	transform: translateY(0);
+	border-bottom: 1px solid transparent;
+	transition: transform 0.4s;
+
+	@include breakpoint-up(tablet) {
+		padding: 6.4rem 0;
+	}
+
+	@include breakpoint-up(small-desktop) {
+		padding: 9rem 0;
+	}
+
+	&.is-fixed {
+		position: fixed;
+		transform: translateY(-100%);
+		padding: 2.3rem 0;
+		background: var(--c-gray-100);
+		border-color: rgba(6, 13, 32, 0.1);
+	}
+
+	&.is-fixed.is-visible {
+		transform: translateY(0);
+	}
+
+	&.no-transition {
+		transition: none !important;
+	}
+
+	.header__shell {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 4rem;
+	}
+}

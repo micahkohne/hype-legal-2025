@@ -1,0 +1,17 @@
+/* ------------------------------------------------------------ *\
+	Section Related
+\* ------------------------------------------------------------ */
+
+.section-related {
+	padding: 5.6rem 0 10rem;
+
+	.section__head {
+		display: flex;
+		gap: 2rem;
+		align-items: center;
+		justify-content: space-between;
+		padding-top: 1rem;
+		border-top: 1px solid var(--c-base);
+		margin-bottom: 10rem;
+	}
+}

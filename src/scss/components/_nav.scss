@@ -1,0 +1,50 @@
+/* ------------------------------------------------------------ *\
+	Nav
+\* ------------------------------------------------------------ */
+
+.nav {
+	font-family: var(--ff-sans-serif);
+	line-height: 1.1;
+
+	ul {
+		display: flex;
+		align-items: center;
+		gap: 1.85rem;
+
+		@include breakpoint-up(tablet) {
+			gap: 2.4rem;
+		}
+
+		@include breakpoint-up(small-desktop) {
+			gap: 3.4rem;
+		}
+	}
+
+	a {
+		position: relative;
+		text-decoration: none;
+		display: block;
+		transition: opacity 0.4s;
+
+		&:after {
+			content: '';
+			display: block;
+			width: 64%;
+			height: 0.1rem;
+			background: var(--c-base);
+			position: absolute;
+			left: 50%;
+			transform: translateX(-50%);
+			opacity: 0;
+			bottom: -1.75rem;
+			transition: all 0.3s ease-in-out;
+		}
+
+		@media (hover: hover) and (pointer: fine) {
+			&:hover:after {
+				bottom: -1.25rem;
+				opacity: 1;
+			}
+		}
+	}
+}

@@ -1,0 +1,103 @@
+/* ------------------------------------------------------------ *\
+	Form Contact
+\* ------------------------------------------------------------ */
+
+.form-contact {
+	font-family: var(--ff-sans-serif);
+	font-size: 1.6rem;
+	line-height: 1.25;
+
+	.form__cols {
+		--grid-gutter-y: 0;
+	}
+
+	.form__col + .form__col {
+		margin-top: 3.7rem;
+
+		@include breakpoint-up(tablet) {
+			margin-top: 0;
+		}
+	}
+
+	.form__row {
+		position: relative;
+	}
+
+	.form__row + .form__row {
+		margin-top: 3.7rem;
+
+		@include breakpoint-up(mobile) {
+			margin-top: 5rem;
+		}
+
+		@include breakpoint-up(tablet) {
+			margin-top: 6.4rem;
+		}
+	}
+
+	.form__group + .form__group {
+		margin-top: 5rem;
+
+		@include breakpoint-up(tablet) {
+			margin-top: 6.4rem;
+		}
+	}
+
+	.form__hint {
+		display: none;
+		position: absolute;
+		top: 0;
+		right: 0;
+		font-size: 1.6rem;
+		line-height: 1.25;
+		letter-spacing: -0.01em;
+		color: var(--c-gray-500);
+
+		@include breakpoint-up(tablet) {
+			display: block;
+		}
+	}
+
+	.form__label {
+		display: block;
+		color: var(--c-gray-500);
+		line-height: 1.25;
+		margin-bottom: 3.2rem;
+	}
+
+	.form__label--offset {
+		margin-bottom: 0.8rem;
+	}
+
+	.form__label strong {
+		display: block;
+		font-weight: 500;
+		color: var(--c-base);
+
+		@include breakpoint-up(tablet) {
+			margin-bottom: 0.2rem;
+		}
+	}
+
+	.form__actions {
+		margin-top: 4.8rem;
+
+		@include breakpoint-up(tablet) {
+			margin-top: 6.4rem;
+		}
+	}
+
+	.form__actions p {
+		margin-top: 4rem;
+		font-size: 1.4rem;
+		line-height: 1.5;
+		color: var(--c-gray-700);
+		font-family: var(--ff-base);
+
+		@include breakpoint-up(tablet) {
+			font-size: 1.5rem;
+			line-height: 1.2;
+			margin-top: 4.5rem;
+		}
+	}
+}

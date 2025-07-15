@@ -1,0 +1,158 @@
+/* ------------------------------------------------------------ *\
+	Block Content
+\* ------------------------------------------------------------ */
+
+.block-content {
+	padding-bottom: 2rem;
+
+	@include breakpoint-up(tablet) {
+		padding-bottom: 0;
+	}
+
+	&--small-font {
+		font-size: 1.4rem;
+
+		@include breakpoint-up(tablet) {
+			font-size: 1.6rem;
+		}
+
+		@include breakpoint-up(small-desktop) {
+			font-size: 1.8rem;
+		}
+	}
+
+	.block__seaprator {
+		margin-bottom: 2.4rem;
+	}
+
+	.block__title {
+		margin-bottom: 2.4rem;
+
+		@include breakpoint-up(mobile) {
+			margin-bottom: 3rem;
+		}
+
+		@include breakpoint-up(tablet) {
+			margin-bottom: 4rem;
+		}
+	}
+
+	.block__title--no-offset {
+		margin-bottom: 0;
+	}
+
+	.block__title--offset-alt {
+		margin-bottom: 1rem;
+	}
+
+	.block__title span {
+		margin-bottom: 1rem;
+
+		@include breakpoint-up(tablet) {
+			margin-bottom: 2.4rem;
+		}
+	}
+
+	.block__cols {
+		--grid-gutter-y: 2.7rem;
+
+		@include breakpoint-up(tablet) {
+			--grid-gutter-y: 0;
+		}
+	}
+
+	.block__content h6 {
+		margin-bottom: 0.3rem;
+		font-weight: 500;
+		font-size: 1.6rem;
+		letter-spacing: 0;
+
+		@include breakpoint-up(tablet) {
+			font-size: 1.8rem;
+		}
+
+		@include breakpoint-up(small-desktop) {
+			font-size: 2.2rem;
+		}
+	}
+
+	.block__content ul {
+		list-style-type: none;
+		font-size: 1.6rem;
+		letter-spacing: -0.02em;
+		margin-bottom: -0.3rem;
+
+		@include breakpoint-up(mobile) {
+			margin-bottom: 0;
+		}
+
+		@include breakpoint-up(tablet) {
+			font-size: 1.8rem;
+		}
+	}
+
+	.block__content p a {
+		font-weight: 700;
+		text-underline-offset: 3px;
+		transition: text-decoration-color 0.4s ease-in-out;
+
+		@media (hover: hover) and (pointer: fine) {
+			&:hover {
+				text-decoration: underline;
+				text-underline-offset: 3px;
+				text-decoration-color: transparent;
+			}
+		}
+	}
+
+	.block__content p:not(:last-child) {
+		margin-bottom: 2.4rem;
+
+		@include breakpoint-up(mobile) {
+			margin-bottom: 3rem;
+		}
+
+		@include breakpoint-up(tablet) {
+			margin-bottom: 3.2rem;
+		}
+	}
+
+	.block__content--alt p:not(:last-child) {
+		margin-bottom: 2.4rem;
+
+		@include breakpoint-up(tablet) {
+			margin-bottom: 2.7rem;
+		}
+	}
+
+	.block__content p a {
+		text-underline-offset: 3px;
+	}
+
+	.block__link {
+		@include breakpoint-up(tablet) {
+			margin-top: 4rem;
+		}
+	}
+}
+
+/* Block Content Alt */
+.block-content--alt {
+	@include breakpoint-up(tablet) {
+		margin-bottom: 11.5rem;
+	}
+
+	p + a {
+		margin-top: 1.8rem;
+
+		@include breakpoint-up(tablet) {
+			margin-top: 2.6rem;
+		}
+	}
+
+	.block__title span {
+		@include breakpoint-up(tablet) {
+			margin-bottom: 1rem;
+		}
+	}
+}

@@ -1,0 +1,31 @@
+/* ------------------------------------------------------------ *\
+	Checkboxes
+\* ------------------------------------------------------------ */
+
+.checkboxes {
+	&--offset {
+		padding-block: 1rem;
+
+		@include breakpoint-up(tablet) {
+			padding-block: 0;
+		}
+	}
+
+	ul {
+		list-style-type: none;
+
+		@include breakpoint-up(tablet) {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 1.6rem 3.7rem;
+		}
+	}
+
+	li + li {
+		margin-top: 2.4rem;
+
+		@include breakpoint-up(tablet) {
+			margin-top: 0;
+		}
+	}
+}
