@@ -11,9 +11,14 @@
 	z-index: 50;
 	opacity: 0;
 	visibility: hidden;
+	display: none;
 	transition:
 		opacity 0.4s,
 		visibility 0.4s;
+
+	@include breakpoint-up(mobile) {
+		display: block;
+	}
 
 	@include breakpoint-up(tablet) {
 		padding: 2.6rem 3rem;
