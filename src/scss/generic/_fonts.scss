@@ -13,6 +13,16 @@
 }
 
 @font-face {
+	font-family: 'Gestura Text';
+	src:
+		url('../assets/fonts/GesturaText-Semibold.woff2') format('woff2'),
+		url('../assets/fonts/GesturaText-Semibold.woff') format('woff');
+	font-weight: 700;
+	font-style: normal;
+	font-display: swap;
+}
+
+@font-face {
 	font-family: 'CircularXX';
 	src:
 		url('../assets/fonts/CircularXXWeb-Book.woff2') format('woff2'),

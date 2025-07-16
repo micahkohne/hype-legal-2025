@@ -13,8 +13,8 @@
 	visibility: hidden;
 	display: none;
 	transition:
-		opacity 0.4s,
-		visibility 0.4s;
+		opacity 0.2s,
+		visibility 0.2s;
 
 	@include breakpoint-up(mobile) {
 		display: block;
