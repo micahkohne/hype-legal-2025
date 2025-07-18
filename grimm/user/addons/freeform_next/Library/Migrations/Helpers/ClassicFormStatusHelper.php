@@ -1,0 +1,25 @@
+<?php
+/**
+ * Freeform for ExpressionEngine
+ *
+ * @package       Solspace:Freeform
+ * @author        Solspace, Inc.
+ * @copyright     Copyright (c) 2008-2025, Solspace, Inc.
+ * @link          https://docs.solspace.com/expressionengine/freeform/v3/
+ * @license       https://docs.solspace.com/license-agreement/
+ */
+
+namespace Solspace\Addons\FreeformNext\Library\Migrations\Helpers;
+
+use Solspace\Addons\Freeform\Library\AddonBuilder;
+use Solspace\Addons\FreeformNext\Repositories\FormRepository;
+
+class ClassicFormStatusHelper extends AddonBuilder
+{
+    public function getClassicFormStatuses()
+    {
+        $available_statuses	= $this->model('preference')->get_form_statuses();
+
+        return $available_statuses;
+    }
+}

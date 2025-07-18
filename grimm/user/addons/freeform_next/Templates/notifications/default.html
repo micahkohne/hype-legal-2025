@@ -1,0 +1,13 @@
+{!-- subject: New submission from your {form:name} form --}
+{!-- fromEmail: {webmaster_email} --}
+{!-- fromName: {site_name} --}
+{!-- replyToEmail: {webmaster_email} --}
+{!-- includeAttachments: y --}
+{!-- description: New submission sample email template --}
+
+<p>Submitted on: {date_created format="%l, %F %j, %Y at %g:%i%a"}</p>
+<ul>
+{form:fields}
+    <li>{field:label}: {field:value}</li>
+{/form:fields}
+</ul>
