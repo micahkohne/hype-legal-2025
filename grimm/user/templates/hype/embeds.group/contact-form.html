@@ -1,0 +1,112 @@
+{exp:freeform_next:form form="composer_form"}
+<div class="form__group">
+	<div class="form__row">
+		<div class="form__cols grid-flex">
+			<div class="form__col grid__col grid__col-lg--1of2">
+				<div class="form__controls{if field:name:render_errors} form__error{/if}">
+					{field:name:render_input class="field"}
+				</div><!-- /.form__controls -->
+			</div><!-- /.form__col -->
+
+			<div class="form__col grid__col grid__col-lg--1of2">
+				<div class="form__controls{if field:firm_name:render_errors} form__error{/if}">
+					{field:firm_name:render_input class="field"}
+				</div><!-- /.form__controls -->
+			</div><!-- /.form__col -->
+		</div><!-- /.form__cols -->
+	</div><!-- /.form__row -->
+
+	<div class="form__row">
+		<div class="form__cols grid-flex">
+			<div class="form__col grid__col grid__col-lg--1of2">
+				<div class="form__controls{if field:email:render_errors} form__error{/if}">
+					{field:email:render_input class="field"}
+				</div><!-- /.form__controls -->
+			</div><!-- /.form__col -->
+
+			<div class="form__col grid__col grid__col-lg--1of2">
+				<div class="form__controls{if field:phone:render_errors} form__error{/if}">
+					{field:phone:render_input class="field"}
+				</div><!-- /.form__controls -->
+			</div><!-- /.form__col -->
+		</div><!-- /.form__cols -->
+	</div><!-- /.form__row -->
+</div><!-- /.form__group -->
+
+<div class="form__group">
+	<div class="form__row">
+		<label class="form__label">
+			<strong>What do you need?</strong>
+			Select at least one
+		</label><!-- /.form__label -->
+
+		<div class="form__controls">
+			<div class="checkboxes checkboxes--offset">
+				<ul>
+
+					{field:needs:options}
+					<li>
+						<div class="checkbox">
+							<input type="checkbox" name="{field:needs:handle}[]" id="checkbox-{option:index}" value="{option:value}">
+
+							<label for="checkbox-{option:index}">{option:value}</label>
+						</div><!-- /.checkbox -->
+					</li>
+					{/field:needs:options}
+
+				</ul>
+			</div><!-- /.checkboxes -->
+		</div><!-- /.form__controls -->
+	</div><!-- /.form__row -->
+</div><!-- /.form__group -->
+
+<div class="form__group">
+	<div class="form__row">
+		<label class="form__label form__label--offset">
+			<strong>Tell us more about your potential project</strong>
+		</label><!-- /.form__label -->
+
+		<div class="form__controls">
+			{field:message:render_input class="field field--textarea"}
+		</div><!-- /.form__controls -->
+
+		<span class="form__hint">Optional</span>
+	</div><!-- /.form__row -->
+</div><!-- /.form__group -->
+
+<div class="form__group">
+	<div class="form__row">
+		<label class="form__label">
+			<strong>How did you hear about us?</strong>
+		</label><!-- /.form__label -->
+
+		<div class="form__controls">
+			<div class="checkboxes">
+				<ul>
+					{field:referrer:options}
+					<li>
+						<div class="checkbox">
+							<input type="radio" name="referrer" id="radio-{option:index}" value="{option:value}" />
+
+							<label for="radio-{option:index}">{option:label}</label>
+						</div><!-- /.checkbox -->
+					</li>
+					{/field:referrer:options}
+				</ul>
+			</div><!-- /.checkboxes -->
+		</div><!-- /.form__controls -->
+	</div><!-- /.form__row -->
+</div><!-- /.form__group -->
+
+<div class="form__actions">
+<button type="submit" class="btn btn--block">
+	Let’s get started
+
+	<svg class="ico-arrow-right">
+		<use xlink:href="#ico-arrow-right"></use>
+	</svg><!-- /.ico-arrow-right -->
+</button>
+
+<p>*Hype Legal, LLC is not a law firm and does not offer legal advice.</p>
+</div><!-- /.form__actions -->
+{/exp:freeform_next:form}

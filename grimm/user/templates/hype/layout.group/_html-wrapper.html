@@ -6,6 +6,8 @@
 
 	{if segment_1 == ""}
 	{exp:seo_lite entry_id="1"}
+	{if:elseif last_segment == "work"}
+	{exp:seo_lite default_title="A Selection of our Recent Work | Hype Legal" default_description="Strategic solutions designed to enhance online presence and client engagement for law firms across the country."}
 	{if:else}
 	{exp:seo_lite use_last_segment="yes"}
 	{/if}
@@ -158,17 +160,7 @@
 
 							<div class="footer__form">
 								<div class="subscribe">
-									<form action="" method="post">
-										<label for="mail" class="hidden">Your email</label>
-
-										<input type="text" placeholder="Your email" class="subscribe__field" id="mail" />
-
-										<button type="submit" value="Subscribe" class="subscribe__btn">
-											<svg class="ico-arrow-right">
-												<use xlink:href="#ico-arrow-right"></use>
-											</svg><!-- /.ico-arrow-right -->
-										</button>
-									</form>
+									{embed="embeds/subscribe"}
 								</div><!-- /.subscribe -->
 							</div><!-- /.footer__form -->
 						</div><!-- /.footer__col -->

@@ -100,4 +100,12 @@
 			margin-top: 4.5rem;
 		}
 	}
+
+	.form__error {
+		color: var(--c-error);
+
+		.field {
+			border-color: var(--c-error);
+		}
+	}
 }

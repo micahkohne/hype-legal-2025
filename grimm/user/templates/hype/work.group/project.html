@@ -1,5 +1,6 @@
 {layout="layout/_html-wrapper"}
 {exp:channel:entries channel="work" disable="categories|category_fields|member_data|pagination" require_entry="yes" limit="1" status="open"}
+{if no_results}{redirect="404"}{/if}
 
 <section class="section-project">
 	<div class="shell">
@@ -11,7 +12,7 @@
 			</div><!-- /.section__head-subtitle -->
 
 			<div class="section__head-title">
-				<h1>This is a Project Description</h1>
+				<h1>{headline}</h1>
 			</div><!-- /.section__head-title -->
 		</div><!-- /.section__head -->
 
@@ -27,7 +28,7 @@
 					<picture>
 						<source media="(min-width:768px)" srcset="{exp:jcogs_img:image src='{url}' url_only='yes'}">
 
-						{exp:jcogs_img:image src='{url}' add_dims='yes' alt='{title}' {if section:first}{if:else}lazy='dominant_color'{/if}}
+						{exp:jcogs_img:image src='{url}' width='654' height='654' crop='yes' add_dims='yes' alt='{title}' {if section:first}{if:else}lazy='dominant_color'{/if}}
 					</picture>
 					{/content}
 
