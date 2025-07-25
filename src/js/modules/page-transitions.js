@@ -40,6 +40,12 @@
       const newMain = temp.querySelector(mainSelector);
       if (newMain) {
         main.innerHTML = newMain.innerHTML;
+        // Force images to reload
+        main.querySelectorAll('img').forEach(img => {
+          const src = img.src;
+          img.src = '';
+          img.src = src;
+        });
         if (addToHistory) {
           history.pushState(null, '', url);
         }

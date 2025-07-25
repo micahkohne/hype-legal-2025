@@ -1,6 +1,7 @@
 {layout="layout/_html-wrapper"}
 {if segment_2 != ""}{redirect="404"}{/if}
 
+{exp:channel:entries channel="about" disable="categories|category_fields|member_data|pagination" status="open"}
 <section class="section section--offset">
 	<div class="shell">
 		<div class="section__head">
@@ -13,9 +14,9 @@
 			<div class="section__entry">
 				<figure>
 					<picture>
-						<source media="(min-width:768px)" srcset="/build/assets/images/temp/about-img-desktop.jpg">
+						<source media="(min-width:768px)" srcset="{exp:jcogs_img:image src='{hero_image}' url_only='yes'}">
 
-						<img src="/build/assets/images/temp/about-img.jpg" alt="">
+						{exp:jcogs_img:image src='{hero_image_mobile}' add_dims='yes' alt='{hero_image_mobile}{title}{/hero_image_mobile}'}
 					</picture>
 				</figure>
 			</div><!-- /.section__entry -->
@@ -153,3 +154,4 @@
 		</div><!-- /.section__body -->
 	</div><!-- /.shell -->
 </section><!-- /.section -->
+{/exp:channel:entries}

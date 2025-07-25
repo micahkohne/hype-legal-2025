@@ -1,7 +1,12 @@
 {
   "identifier" : "EC82CB38-8462-416B-89AC-0A66956BC977",
   "ignoredFilePatterns" : [
-    "vite.config.js"
+    "vite.config.js",
+    "src",
+    "web\/build\/about.html",
+    "web\/build\/contact.html",
+    "web\/build\/home.html",
+    "web\/build\/project.html"
   ],
   "remotePath" : "\/applications\/ptkbrdnpdr\/public_html",
   "server" : "Cloudways - 2.0",

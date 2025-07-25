@@ -170,3 +170,8 @@ table:last-child,
 blockquote:last-child {
 	margin-bottom: 0;
 }
+
+body, main {
+  opacity: 1;
+  transition: opacity 0.2s;
+}

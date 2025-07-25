@@ -7,6 +7,10 @@
 	font-size: 1.6rem;
 	line-height: 1.25;
 
+	@include breakpoint-down(mobile) {
+		margin-top: 4rem;
+	}
+
 	.form__cols {
 		--grid-gutter-y: 0;
 	}
