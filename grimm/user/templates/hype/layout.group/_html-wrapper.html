@@ -28,9 +28,9 @@
 				<div class="header__logo">
 					<a href="{path='SITE_INDEX'}">
 						<picture>
-							<source media="(min-width:768px)" srcset="/build/assets/images/svg/logo.svg">
+							<source media="(min-width:768px)" srcset="{exp:jcogs_img:image src='/build/assets/images/svg/logo.sv' url_only='yes'}">
 
-							<img src="/build/assets/images/svg/logo-mobile.svg" alt="Hype Legal – Digital Marketing for Law Firms">
+							{exp:jcogs_img:image src='/build/assets/images/svg/logo-mobile.svg' add_dims='yes' alt='Hype Legal – Digital Marketing for Law Firms'}
 						</picture>
 					</a>
 				</div><!-- /.header__logo -->
@@ -81,7 +81,7 @@
 							grid__col-xl--1of3
 						">
 							<a href="{path='SITE_INDEX'}" class="logo logo--footer">
-								<img src="/build/assets/images/svg/logo-white.svg" alt="Hype Legal – Digital Marketing for Law Firms">
+								{exp:jcogs_img:image src='/build/assets/images/svg/logo-white.svg' add_dims='yes' alt='Hype Legal – Digital Marketing for Law Firms' lazy='html5'}
 							</a>
 						</div><!-- /.footer__col -->
 

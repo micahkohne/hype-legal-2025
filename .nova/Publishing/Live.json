@@ -5,7 +5,10 @@
     "web\/build\/about.html",
     "web\/build\/contact.html",
     "web\/build\/home.html",
-    "web\/build\/project.html"
+    "web\/build\/project.html",
+    "grimm\/user\/cache",
+    "node_modules",
+    "web\/images"
   ],
   "remotePath" : "\/applications\/pjeahgjaqw\/public_html",
   "server" : "Cloudways - 2.0",
