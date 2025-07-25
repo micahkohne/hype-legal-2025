@@ -41,7 +41,7 @@ export default defineConfig({
 			},
 		},
 		emptyOutDir: true,
-		minify: false,
+		minify: true,
 	},
 	css: {
 		preprocessorOptions: {

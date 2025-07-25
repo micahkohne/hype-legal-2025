@@ -11,7 +11,7 @@
 		<div class="section__body">
 			<div class="grid-flex">
 
-				{exp:channel:entries channel="work" disable="categories|category_fields|member_data|pagination" status="open"}
+				{exp:channel:entries channel="work" disable="categories|category_fields|member_data|pagination" status="open" sticky="no"}
 				<div class="grid__col grid__col-md--1of2 grid__col-lg--{switch='2|1|1|1|1|1|2'}of3">
 					<div class="card">
 						<a href="{url_title_path='work'}">
@@ -26,7 +26,7 @@
 							</div><!-- /.card__image -->
 
 							<div class="card__content">
-								<span>recently launched</span>
+								<span>{if coming_soon}coming soon{if:else}recently launched{/if}</span>
 
 								<h4>{title}</h4>
 							</div><!-- /.card__content -->

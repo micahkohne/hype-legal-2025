@@ -81,7 +81,7 @@
 		position: relative;
 		overflow: hidden;
 		border-radius: 0.3rem;
-		margin-bottom: -2.5rem;
+		/* margin-bottom: -2.5rem; */
 		height: 100%;
 
 		@include breakpoint-up(tablet) {
