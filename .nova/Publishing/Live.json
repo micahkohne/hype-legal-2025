@@ -8,7 +8,8 @@
     "web\/build\/project.html",
     "grimm\/user\/cache",
     "node_modules",
-    "web\/images"
+    "web\/images",
+    "web\/rocket_cache"
   ],
   "remotePath" : "\/applications\/pjeahgjaqw\/public_html",
   "server" : "Cloudways - 2.0",
