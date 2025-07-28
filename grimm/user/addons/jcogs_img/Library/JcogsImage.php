@@ -11,7 +11,7 @@
  * @author     JCOGS Design <contact@jcogs.net>
  * @copyright  Copyright (c) 2021 - 2025 JCOGS Design
  * @license    https://jcogs.net/add-ons/license/jcogs_img
- * @version    1.4.16.1
+ * @version    1.4.16.2
  * @link       https://JCOGS.net/
  * @since      File available since Release 1.0.0
  */
@@ -224,7 +224,7 @@ class JcogsImage
         // --- End Stage 2 ---
 
         // --- Stage 3: Handle Color Fill (if no src and bg_color is provided) - 'return' if we set this up ---
-        if (empty($this->params->src) && $this->params->bg_color) {
+        if (empty($this->params->src) && $this->settings["img_cp_enable_default_fallback_image"] == 'yc') {
             $this->flags->use_colour_fill = true;
             $this->flags->valid_image = true;
             // Dimensions for color fill will be determined in _get_new_image_dimensions
@@ -982,7 +982,7 @@ class JcogsImage
             }
 
             // Are we adding a decoding attribute?
-            $decoding_str = $this->settings['img_cp_enable_lazy_loading'] == 'y' &&  !str_contains($this->return, 'decoding=') ? '' : ' decoding="async" ';
+            $decoding_str = $this->settings['img_cp_html_decoding_enabled'] == 'y' &&  !str_contains($this->return, 'decoding=') ? '' : ' decoding="async" ';
             $this->return .= $decoding_str;
 
             // 2) Adding performance attributes (decoding, loading, etc)
@@ -1487,6 +1487,13 @@ class JcogsImage
                             $this->transformation->add(new Filters\Brightness((int) $brightness), $this->stats->transformation_count++);
                             break;
 
+                        case 'blur':
+                            // Add blur filter to transformation queue
+                            // Get blur amount (radius)
+                            $amount = isset($filter_settings[0]) && intval($filter_settings[0]) && $filter_settings[0] > 0 ? intval($filter_settings[0]) : 1;
+                            $this->transformation->add(new Filters\Blur($amount), $this->stats->transformation_count++);
+                            break;
+
                         case 'colorize':
                             // Add contrast filter to transformation queue
                             $this->transformation->add(new Filters\Colorize($filter_settings), $this->stats->transformation_count++);
@@ -1822,14 +1829,15 @@ class JcogsImage
             $working_image_copy->processed_image = clone $working_image->processed_image;
         }
         $working_image_copy->params = clone $working_image->params;
+        $working_image_copy->flags->using_cache_copy = false; // We are not using a cache copy for this image
         $working_image_copy->transformation = clone $working_image->transformation;
         $working_image_copy->placeholder = clone $working_image->placeholder;
         $working_image_copy->vars = $working_image->vars;
         $working_image_copy->ident = clone $working_image->ident;
-        $working_image_copy->params->filter = str_replace('js_', '', $this->params->lazy_type);
+        $working_image_copy->params->filter = str_replace('js_', '', $this->params->lazy);
         // $working_image_copy->transformation = new Filter\Transformation(null);
         $working_image_copy->_apply_filters();
-        // $working_image_copy->processed_image = $working_image_copy->transformation->apply($working_image_copy->processed_image);
+        $working_image_copy->processed_image = $working_image_copy->transformation->apply($working_image_copy->processed_image);
         $working_image_copy->params->quality = $this->_set_lqip_image_quality_options($working_image_copy->params->save_as);
         $working_image_copy->local_path = $this->placeholder->local_path;
         $this->image_utilities->save($working_image_copy);

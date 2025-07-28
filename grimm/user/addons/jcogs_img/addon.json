@@ -4,7 +4,7 @@
     "name": "JCOGS Image",
     "shortname": "jcogs_img",
     "class": "Jcogs_img",
-    "version": "1.4.16.1",
+    "version": "1.4.16.2",
     "description": "Advanced Image Manipulation",
     "license": "JCOGS Design",
     "namespace": "JCOGSDesign\\Jcogs_img",

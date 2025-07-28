@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset
+  xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+>
+  	<url>
+	  <loc>{site_url}</loc>
+	  <lastmod>{current_time format="%Y-%m-%d"}</lastmod>
+	  <changefreq>monthly</changefreq>
+	  <priority>1.0</priority>
+	</url>
+
+    {exp:channel:entries channel="about|contact" disable="categories|category_fields|member_data|pagination" dynamic="no" status="open" orderby="edit_date" sort="desc"}
+	<url>
+	  <loc>{site_url}{url_title}</loc>
+	  <lastmod>{edit_date format="%Y-%m-%d"}</lastmod>
+	  <changefreq>monthly</changefreq>
+	  <priority>0.8</priority>
+	</url>
+    {/exp:channel:entries}
+
+    {exp:channel:entries channel="work" disable="categories|category_fields|member_data|pagination" dynamic="no" status="open" orderby="edit_date" sort="desc"}
+	<url>
+		<loc>{site_url}work/{url_title}</loc>
+		<lastmod>{edit_date format="%Y-%m-%d"}</lastmod>
+		<changefreq>monthly</changefreq>
+		<priority>0.8</priority>
+	</url>
+	{/exp:channel:entries}
+</urlset>

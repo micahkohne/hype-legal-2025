@@ -8,7 +8,7 @@
  * @author     JCOGS Design <contact@jcogs.net>
  * @copyright  Copyright (c) 2021 - 2025 JCOGS Design
  * @license    https://jcogs.net/add-ons/license/jcogs_img
- * @version    1.4.16.1
+ * @version    1.4.16.2
  * @link       https://JCOGS.net/
  * @since      File available since Release 1.0.0
  */
@@ -266,6 +266,9 @@ $lang = [
     'jcogs_img_heic_error_2'                                   => '<span style="color:var(--ee-error);font-weight:bold">Error:</span> Boo! Still something wrong with HEIC conversion: sorry - baling out of this. Please report issue to JCOGS Design! The conversion error reported was: ',
     'jcogs_img_imagine_error'                                  => '<span style="color:var(--ee-error);font-weight:bold">Error:</span> Something went wrong with Imagine Library processing. The error reported was ',
     'jcogs_img_flysystem_adapter_setup_failed'                 => '<span style="color:var(--ee-error);font-weight:bold">Error:</span> Something went wrong setting up the %s Flysystem Cloud Adapter: falling back to local processing.',
+    'jcogs_img_flysystem_r2_config_missing'                    => '<span style="color:var(--ee-error);font-weight:bold">Error:</span> Cloudflare R2 configuration is missing or incomplete. Please check your R2 settings.',
+    'jcogs_img_flysystem_s3_config_missing'                    => '<span style="color:var(--ee-error);font-weight:bold">Error:</span> Amazon S3 configuration is missing or incomplete. Please check your S3 settings.',
+    'jcogs_img_flysystem_dospaces_config_missing'              => '<span style="color:var(--ee-error);font-weight:bold">Error:</span> DigitalOcean Spaces configuration is missing or incomplete. Please check your Spaces settings.',
     'jcogs_img_flysystem_adapter_setup_failed_open_basedir'    => '<span style="color:var(--ee-error);font-weight:bold">Error:</span> You are using Open_Basedir, but none of your permitted paths contains the specified base_path value - so Image cannot write to its cache folder. In hope of things working anyway will try setting up local adapter to use base_path value, but not holding my breath...',
     'jcogs_img_flysystem_write_error'                          => '<span style="color:var(--ee-error);font-weight:bold">Error:</span> Failed to write file after %d attempts: %s. Baling out ... ',
     'jcogs_img_flysystem_error'                                => '<span style="color:var(--ee-error);font-weight:bold">Error:</span> Something went wrong with Flysystem Library processing path %s$1. The error reported was %s$2',
@@ -385,6 +388,11 @@ $lang = [
     'jcogs_img_cp_auto_manage_would_have_fired_desc'           => '%1$d processed images based on this image are currently in the JCOGS Image cache.<br>Modifying this image may affect these processed images.<br>To have JCOGS Image automatically update its cache to reflect changes made to images in the Files system turn on JCOGS Image\'s <a href=\"ee(\'CP/URL\', \'addons/settings/jcogs_img\')\">Cache Auto-Manage feature.',
     'jcogs_img_using_cloud_adapter'                            => '<span style="font-weight:bold">Note:</span> use of cloud system file storage will slow down initial processing of images due to extra time required to save images to cloud, but might speed up subsequent retrieval of images from the JCOGS Image cache.',
     'jcogs_img_flysystem_adapter_setup_succeed'                => 'Flysystem: %s adapter established - will be used to access processed image cache.',
+    'jcogs_img_flysystem_write_read_test_success'              => 'Flysystem: %s adapter write/read test successful.',
+    'jcogs_img_flysystem_write_read_test_content_mismatch'     => 'Flysystem: %s adapter write/read test failed - content mismatch.',
+    'jcogs_img_flysystem_error_accessing_bucket'              => 'Flysystem: Error accessing %s bucket: %s',
+    'jcogs_img_flysystem_error_creating_filesystem'           => 'Flysystem: Error creating %s filesystem: %s',
+    'jcogs_img_flysystem_adapter_configured'                   => 'Flysystem: %s adapter configured and ready for use.',
     'jcogs_img_cache_index_setup_succeeded'                    => 'Cache Log established.',
     'jcogs_img_cache_log_updated'                              => 'Cache Log updated for file: ',
     'jcogs_img_cache_log_deleted'                              => 'Expired cache log entry deleted successfully for image: ',

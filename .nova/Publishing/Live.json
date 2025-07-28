@@ -9,7 +9,8 @@
     "grimm\/user\/cache",
     "node_modules",
     "web\/images",
-    "web\/rocket_cache"
+    "web\/rocket_cache",
+    "grimm\/user\/config\/config.php"
   ],
   "remotePath" : "\/applications\/pjeahgjaqw\/public_html",
   "server" : "Cloudways - 2.0",

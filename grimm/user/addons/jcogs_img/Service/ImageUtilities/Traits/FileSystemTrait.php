@@ -12,7 +12,7 @@
  * @author     JCOGS Design <contact@jcogs.net>
  * @copyright  Copyright (c) 2021 - 2025 JCOGS Design
  * @license    https://jcogs.net/add-ons/license/jcogs_img
- * @version    1.4.16.1
+ * @version    1.4.16.2
  * @link       https://JCOGS.net/
  * @since      File available since Release 1.4.14
  */
@@ -938,9 +938,9 @@ trait FileSystemTrait {
         }
 
         // If it looks like filename contains encoded characters, decode them
-        if (preg_match('/%[0-9A-Fa-f]{2}/', $cleaned_path)) {
-            $path = urldecode($cleaned_path);
-        }
+        // if (preg_match('/%[0-9A-Fa-f]{2}/', $cleaned_path)) {
+        //     $path = urldecode($cleaned_path);
+        // }
 
         // Just for fun, see if we have a copy of image in cache (LQIP, looking at you here!)
         if ($cache_check && $this->is_image_in_cache($path)) {

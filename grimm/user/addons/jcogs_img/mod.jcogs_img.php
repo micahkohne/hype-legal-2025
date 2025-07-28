@@ -13,7 +13,7 @@
  * @author     JCOGS Design <contact@jcogs.net>
  * @copyright  Copyright (c) 2021 - 2025 JCOGS Design
  * @license    https://jcogs.net/add-ons/license/jcogs_img
- * @version    1.4.16.1
+ * @version    1.4.16.2
  * @link       https://JCOGS.net/
  * @since      File available since Release 1.0.0
  */
@@ -40,6 +40,7 @@ class Jcogs_img
         $this->EE = get_instance();
         $this->settings = ee('jcogs_img:Settings')::$settings;
         $this->setup_is_valid = true;
+        ee('jcogs_img:ImageUtilities')->clear_params();
         ee('jcogs_img:ImageUtilities')::$instance_count = ee('jcogs_img:ImageUtilities')::$instance_count ?: 1;
         ee()->load->library('benchmark');
     
