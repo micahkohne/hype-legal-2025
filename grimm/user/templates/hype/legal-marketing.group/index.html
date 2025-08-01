@@ -1,0 +1,386 @@
+{layout="layout/_html-wrapper"}
+{exp:channel:entries channel="landing_page" disable="categories|category_fields|member_data|pagination"}
+{if no_results}{redirect="404"}{/if}
+
+<section class="section-project">
+	<div class="shell">
+		<div class="section__head">
+			<div class="section__head-subtitle">
+				<div class="separator"></div><!-- /.separator -->
+
+				<p>{title}</p>
+			</div><!-- /.section__head-subtitle -->
+
+			<div class="section__head-title">
+				<h1>{headline}</h1>
+			</div><!-- /.section__head-title -->
+		</div><!-- /.section__head -->
+
+		{/exp:channel:entries}
+
+		<div class="section__body">
+
+			<div class="grid-flex">
+				{exp:channel:entries channel="work" disable="categories|category_fields|member_data|pagination" limit="1" status="open" sticky="only"}
+				<div class="grid__col">
+					<div class="card card--primary">
+						<a href="{url_title_path='work'}">
+							<div class="card__image">
+
+								<picture>
+									<source media="(min-width:1024px)" srcset="{exp:jcogs_img:image src='{hero_image_featured}' url_only='yes'}">
+
+									{hero_image_mobile}
+										{exp:jcogs_img:image src='{url}' add_dims='yes' alt='{title}'}
+									{/hero_image_mobile}
+								</picture>
+
+							</div><!-- /.card__image -->
+
+							<div class="card__content">
+								<span class="separator separator--fullwidth"></span><!-- /.separator separator--fullwidth -->
+
+								<span>featured</span>
+
+								<h3>{title}</h3>
+
+								{text_block}
+							</div><!-- /.card__content -->
+						</a>
+					</div><!-- /.card -->
+				</div><!-- /.grid__col -->
+				{/exp:channel:entries}
+
+			{exp:channel:entries channel="landing_page" disable="categories|category_fields|member_data|pagination"}
+
+
+			</div><!-- /.grid-flex -->
+
+			{section_marketing}
+
+			{section_marketing:projects_small_large}
+			<div class="section__body section__body--marketing">
+				<div class="grid-flex">
+
+					{content limit="1"}
+					<div class="grid__col grid__col-md--1of2 grid__col-lg--1of3">
+						<div class="card">
+							<a href="{content:url_title_path='work'}">
+								<div class="card__image">
+									<picture>
+										<source media="(min-width:1024px)" srcset="{exp:jcogs_img:image src='{content:hero_image_small}' url_only='yes'}">
+
+										{content:hero_image_mobile}
+											{exp:jcogs_img:image src='{url}' add_dims='yes' alt='{title}' lazy='dominant_color' class='fade-in'}
+										{/content:hero_image_mobile}
+									</picture>
+								</div><!-- /.card__image -->
+
+								<div class="card__content">
+									<span>recently launched</span>
+
+									<h4>{content:title}</h4>
+								</div><!-- /.card__content -->
+							</a>
+						</div><!-- /.card -->
+					</div><!-- /.grid__col -->
+					{/content}
+
+					{content limit="1" offset="1"}
+					<div class="grid__col grid__col-md--1of2 grid__col-lg--2of3">
+						<div class="card">
+							<a href="{content:url_title_path='work'}">
+								<div class="card__image">
+									<picture>
+										<source media="(min-width:1024px)" srcset="{exp:jcogs_img:image src='{content:hero_image}' url_only='yes'}">
+
+										{content:hero_image_mobile}
+											{exp:jcogs_img:image src='{url}' add_dims='yes' alt='{title}' lazy='dominant_color' class='fade-in'}
+										{/content:hero_image_mobile}
+									</picture>
+								</div><!-- /.card__image -->
+
+								<div class="card__content">
+									<span>recently launched</span>
+
+									<h4>{content:title}</h4>
+								</div><!-- /.card__content -->
+							</a>
+						</div><!-- /.card -->
+					</div><!-- /.grid__col -->
+					{/content}
+
+				</div><!-- /.grid-flex -->
+			</div><!-- /.section__body -->
+			{/section_marketing:projects_small_large}
+
+			{section_marketing:projects_large_small}
+			<div class="section__body">
+				<div class="grid-flex">
+
+					{content limit="1"}
+					<div class="grid__col grid__col-md--1of2 grid__col-lg--2of3">
+						<div class="card">
+							<a href="{content:url_title_path='work'}">
+								<div class="card__image">
+									<picture>
+										<source media="(min-width:1024px)" srcset="{exp:jcogs_img:image src='{content:hero_image}' url_only='yes'}">
+
+										{content:hero_image_mobile}
+											{exp:jcogs_img:image src='{url}' add_dims='yes' alt='{title}' lazy='dominant_color' class='fade-in'}
+										{/content:hero_image_mobile}
+									</picture>
+								</div><!-- /.card__image -->
+
+								<div class="card__content">
+									<span>recently launched</span>
+
+									<h4>{content:title}</h4>
+								</div><!-- /.card__content -->
+							</a>
+						</div><!-- /.card -->
+					</div><!-- /.grid__col -->
+					{/content}
+
+					{content limit="1" offset="1"}
+					<div class="grid__col grid__col-md--1of2 grid__col-lg--1of3">
+						<div class="card">
+							<a href="{content:url_title_path='work'}">
+								<div class="card__image">
+									<picture>
+										<source media="(min-width:1024px)" srcset="{exp:jcogs_img:image src='{content:hero_image_small}' url_only='yes'}">
+
+										{content:hero_image_mobile}
+											{exp:jcogs_img:image src='{url}' add_dims='yes' alt='{title}' lazy='dominant_color' class='fade-in'}
+										{/content:hero_image_mobile}
+									</picture>
+								</div><!-- /.card__image -->
+
+								<div class="card__content">
+									<span>recently launched</span>
+
+									<h4>{content:title}</h4>
+								</div><!-- /.card__content -->
+							</a>
+						</div><!-- /.card -->
+					</div><!-- /.grid__col -->
+					{/content}
+
+				</div><!-- /.grid-flex -->
+			</div><!-- /.section__body -->
+			{/section_marketing:projects_large_small}
+
+			{section_marketing:projects_3_equal}
+			<div class="section__body">
+				<div class="grid-flex">
+
+					{content}
+					<div class="grid__col grid__col-md--1of2 grid__col-lg--1of3">
+						<div class="card">
+							<a href="{content:url_title_path='work'}">
+								<div class="card__image">
+									<picture>
+										<source media="(min-width:1024px)" srcset="{exp:jcogs_img:image src='{content:hero_image_small}' url_only='yes'}">
+
+										{content:hero_image_mobile}
+											{exp:jcogs_img:image src='{url}' add_dims='yes' alt='{title}' lazy='dominant_color' class='fade-in'}
+										{/content:hero_image_mobile}
+									</picture>
+								</div><!-- /.card__image -->
+
+								<div class="card__content">
+									<span>recently launched</span>
+
+									<h4>{content:title}</h4>
+								</div><!-- /.card__content -->
+							</a>
+						</div><!-- /.card -->
+					</div><!-- /.grid__col -->
+					{/content}
+
+				</div><!-- /.grid-flex -->
+			</div><!-- /.section__body -->
+			{/section_marketing:projects_3_equal}
+
+			{section_marketing:text_blocks}
+			<div class="section__entry section__entry--marketing">
+				<div class="block-content">
+					<div class="block__cols grid-flex grid-flex--no-gap-y">
+						<div class="grid__col grid__col-md--1of2">
+							<div class="block__content">
+								{text_blocks:text_block:excerpt}
+							</div><!-- /.block__content -->
+						</div><!-- /.block__cols grid__col -->
+
+						<div class="grid__col grid__col-md--1of2">
+							<div class="block__content">
+								{text_blocks:text_block:extended}
+							</div><!-- /.block__content -->
+						</div><!-- /.block__cols grid__col -->
+
+						<div class="grid__col">
+							<a href="{path='contact'}" class="block__link link" target="_blank">
+								Start a Project
+
+								<svg class="ico-arrow-right">
+									<use xlink:href="#ico-arrow-right"></use>
+								</svg><!-- /.ico-arrow-right -->
+							</a><!-- /.link -->
+						</div><!-- /.grid__col -->
+
+					</div><!-- /.block__cols -->
+				</div><!-- /.block-content -->
+			</div><!-- /.section__entry -->
+			{/section_marketing:text_blocks}
+
+			{section_marketing:testimonial}
+			{content}
+			<div class="section__entry">
+				<div class="quote grid-flex">
+					<div class="grid__col grid__col-md--2of3">
+						<div class="quote__content">
+							<span class="separator separator--fullwidth"></span><!-- /.separator -->
+
+							<blockquote>
+								{content:quote}”
+							</blockquote>
+						</div><!-- /.quote__content -->
+
+						<div class="quote__author">
+
+							{content:photo}
+							<div class="quote__author-image">
+								{exp:jcogs_img:image src='{url}' add_dims='yes' alt='{title}' lazy='dominant_color' class='fade-in'}
+							</div><!-- /.quote__author-image -->
+							{/content:photo}
+
+							<div class="quote__author-name">
+								<h6>{content:cite}</h6>
+
+								<p>{content:company_firm}</p>
+							</div><!-- /.quote__author-name -->
+						</div><!-- /.quote__author -->
+					</div><!-- /.grid__col grid__col-md--2of3 -->
+				</div><!-- /.quote -->
+			</div><!-- /.section__entry -->
+			{/content}
+			{/section_marketing:testimonial}
+
+			{section_marketing:text_block_with_image}
+			<div class="section__entry">
+				<div class="block-images grid-flex grid-flex--small-gap">
+					<div class="grid__col grid__col-md--1of3">
+						<div class="block__content">
+							<picture>
+								<span class="separator separator--fullwidth"></span><!-- /.separator separator--fullwidth -->
+
+								{text_block_with_image:text_block}
+							</picture>
+						</div><!-- /.block__content -->
+					</div><!-- /.grid__col grid__col -->
+
+					<div class="grid__col grid__col-md--2of3">
+						<div class="block__image">
+							{text_block_with_image:large_image}
+							<picture>
+								<source media="(min-width:768px)" srcset="{exp:jcogs_img:image src='{url}' url_only='yes'}">
+
+								{exp:jcogs_img:image src='{url}' add_dims='yes' alt='{title}' lazy='dominant_color' class='fade-in'}
+							</picture>
+							{/text_block_with_image:large_image}
+						</div><!-- /.block__image -->
+					</div><!-- /.grid__col grid__col -->
+				</div><!-- /.block-images grid-flex -->
+			</div><!-- /.section__entry -->
+			{/section_marketing:text_block_with_image}
+
+			{section_marketing:services}
+			<div class="section__entry">
+				<div class="block-content block-content--alt">
+					<div class="block__title">
+						<span class="separator separator--fullwidth"></span><!-- /.separator -->
+
+						<h2 class="level-1">Services</h2>
+					</div><!-- /.block__title -->
+
+					<div class="block__cols grid-flex grid-flex--no-gap-y">
+
+						{content}
+						<div class="grid__col grid__col-md--1of4">
+							<div class="block__content">
+								<h6>{content:service_heading}</h6>
+
+								{content:services}
+							</div><!-- /.block__content -->
+						</div><!-- /.grid__col grid__col--1of4 -->
+						{/content}
+
+					</div><!-- /.block__cols grid-flex -->
+				</div><!-- /.block-content -->
+			</div><!-- /.section__entry -->
+			{/section_marketing:services}
+
+			{section_marketing:results}
+			<div class="section__entry">
+				<div class="block-content block-content--alt block-content--small-font">
+					<div class="block__title">
+						<span class="separator separator--fullwidth"></span><!-- /.separator -->
+
+						<h2 class="level-1">Results</h2>
+					</div><!-- /.block__title -->
+
+					<div class="block__cols grid-flex grid-flex--no-gap-y">
+						<div class="grid__col grid__col-md--1of2">
+							{results:text_block}
+
+							{if results:website}
+							<a href="{results:website}" class="link" target="_blank">
+								view website
+
+								<svg class="ico-arrow-right">
+									<use xlink:href="#ico-arrow-right"></use>
+								</svg><!-- /.ico-arrow-right -->
+							</a><!-- /.link -->
+							{/if}
+						</div><!-- /.grid__col grid__col--1of4 -->
+
+						<div class="grid__col grid__col-md--1of2">
+							<div class="list-numbers">
+								<ul>
+									{results:stats}
+									<li>
+										<span>{stats:stat}</span>
+
+										<p>{stats:description}</p>
+									</li>
+									{/results:stats}
+								</ul>
+							</div><!-- /.list-numbers -->
+						</div><!-- /.grid__col grid__col--1of4 -->
+					</div><!-- /.block__cols grid-flex -->
+				</div><!-- /.block-content -->
+			</div><!-- /.section__entry -->
+			{/section_marketing:results}
+
+			{/section_marketing}
+
+		</div><!-- /.section__body -->
+
+	</div><!-- /.shell -->
+</section><!-- /.section-project -->
+
+<section class="section">
+	<div class="shell">
+		<div class="section__foot">
+			<a href="{path='contact'}" class="link link--alt">
+				Start a Project
+
+				<svg class="ico-arrow-right">
+					<use xlink:href="#ico-arrow-right"></use>
+				</svg><!-- /.ico-arrow-right -->
+			</a><!-- /.link link--alt -->
+		</div><!-- /.section__foot -->
+	</div><!-- /.shell -->
+</section><!-- /.section -->
+
+{/exp:channel:entries}

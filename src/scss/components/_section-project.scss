@@ -26,6 +26,14 @@
 		@include breakpoint-up(small-desktop) {
 			margin-bottom: 9.5rem;
 		}
+
+		&--marketing {
+			margin-block: 0;
+
+			@include breakpoint-up(mobile) {
+				margin-block: 5rem;
+			}
+		}
 	}
 
 	.section__head {
@@ -53,6 +61,18 @@
 			gap: 1.8rem;
 			font-size: 1.6rem;
 			margin-bottom: 3.8rem;
+		}
+	}
+
+	.section__entry--marketing {
+		margin-block: 6rem;
+
+		@include breakpoint-up(mobile) {
+			margin-block: 10rem;
+		}
+
+		@include breakpoint-up(small-desktop) {
+			margin-block: 12rem;
 		}
 	}
 
