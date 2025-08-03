@@ -192,13 +192,15 @@
 
 					<div class="grid__col grid__col-md--2of3">
 						<div class="block__image">
-							{text_block_with_image:large_image}
+							{text_block_with_image:large_img}
+							{large_img:file}
 							<picture>
 								<source media="(min-width:768px)" srcset="{exp:jcogs_img:image src='{url}' url_only='yes'}">
 
 								{exp:jcogs_img:image src='{url}' add_dims='yes' alt='{title}' lazy='dominant_color' class='fade-in'}
 							</picture>
-							{/text_block_with_image:large_image}
+							{/large_img:file}
+							{/text_block_with_image:large_img}
 						</div><!-- /.block__image -->
 					</div><!-- /.grid__col grid__col -->
 				</div><!-- /.block-images grid-flex -->
