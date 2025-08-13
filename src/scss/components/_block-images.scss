@@ -31,6 +31,10 @@
 		@include breakpoint-up(small-desktop) {
 			font-size: 1.8rem;
 		}
+
+		&--large {
+			font-size: 1.8rem;
+		}
 	}
 
 	.block__content span {
