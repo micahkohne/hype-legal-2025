@@ -34,7 +34,7 @@ trait Shared
         if(!array_key_exists('HOME', $_SERVER)) {
             $this->cache_path = $_SERVER['DOCUMENT_ROOT'] . DIRECTORY_SEPARATOR . 'rocket_cache';
         } else {
-            $this->cache_path = $_SERVER['HOME'] . 'public_html/web' . DIRECTORY_SEPARATOR . 'rocket_cache';
+            $this->cache_path = $_SERVER['HOME'] . DIRECTORY_SEPARATOR . 'rocket_cache';
         }
 
         if (!file_exists($this->cache_path)) {

@@ -1453,9 +1453,9 @@ trait FileSystemTrait {
             
             // Set adapter URL
             if ($adapter_name === 'local') {
-                static::$adapter_urls[$adapter_name] = ee()->config->item('site_url');
+                static::$adapter_urls[$adapter_name] = ee()->config->item('site_url') . '/';
             } else {
-                $adapter_url_key = 'img_cp_flysystem_adapter_' . $adapter_name . '_url';
+                $adapter_url_key = 'img_cp_flysystem_adapter_' . $adapter_name . '_url' . '/';
                 static::$adapter_urls[$adapter_name] = $this->settings[$adapter_url_key];
             }
             

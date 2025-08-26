@@ -64,6 +64,11 @@ class Mask implements FilterInterface
      */
     public function apply(ImageInterface $image): ImageInterface
     {
+        // Do we have any settings?
+        if(empty($this->filter_settings)) {
+            ee('jcogs_img:Utilities')->debug_message(lang('jcogs_img_mask_shape_param_invalid'));
+            return $image;
+        }
         // Define some colours
         $magic_pink = (new Palette\RGB())->color([255,0,255],100);
         $keep_colour = (new Palette\RGB())->color([0,255,255],100);

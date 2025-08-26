@@ -857,8 +857,8 @@ class Jcogs_img_mcp
                 // Now check the path element plus site_url is valid URL
                 // filter_var is flaky with non-standard domain names, so if it fails, do parse_url and see if we get at least three components when we do parse_url...
                 // scheme, host, path... 
-                if (!filter_var(base_url() . $parsed_url['path'], FILTER_VALIDATE_URL)) {
-                    if (count(parse_url(base_url() . $parsed_url['path'])) < 3) {
+                if (!filter_var(ee()->config->item('base_url') . $parsed_url['path'], FILTER_VALIDATE_URL)) {
+                    if (count(parse_url(ee()->config->item('base_url') . $parsed_url['path'])) < 3) {
                         return 'jcogs_img_cp_invalid_url_path';
                     }
                 }

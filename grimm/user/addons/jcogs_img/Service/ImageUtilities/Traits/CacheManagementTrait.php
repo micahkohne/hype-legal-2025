@@ -873,8 +873,8 @@ trait CacheManagementTrait {
         $return_info['cumulative_processing_time'] = $log_cumulative_processing_time;
 
         if ($return_info['number_of_cache_fragments'] > 0) {
-            $desc_key = $return_info['number_of_cache_fragments'] == 1 ? 'jcogs_img_cp_cache_performance_desc_cache_one_fragment' : 'jcogs_img_cp_cache_performance_desc_cache';
-            // Assuming 'jcogs_img_cp_cache_performance_desc_cache_one_fragment' is like '... {0} fragment in ...'
+            $desc_key = $return_info['number_of_cache_fragments'] == 1 ? 'jcogs_img_cp_cache_performance_desc_cache_one' : 'jcogs_img_cp_cache_performance_desc_cache';
+            // Assuming 'jcogs_img_cp_cache_performance_desc_cache_one' is like '... {0} fragment in ...'
             // And 'jcogs_img_cp_cache_performance_desc_cache' is like '... {0} fragments in ...'
             
             $locations_desc_key = $return_info['caches_found'] > 1 ? 'jcogs_img_cp_cache_performance_desc_cache_many' : 'jcogs_img_cp_cache_performance_desc_cache_single';

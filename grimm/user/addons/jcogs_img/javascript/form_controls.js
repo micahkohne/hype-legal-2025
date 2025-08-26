@@ -1,7 +1,7 @@
 /**
  * Image Module CP Controls Javascript
  * ===================================
- * Animage the display of quality slider
+ * Animate the display of quality slider
  * 
  * CHANGELOG
  * 

@@ -552,7 +552,7 @@ class JcogsImage
                 $var_prefix . 'height' => $this->new_height ?: $height_orig,
                 $var_prefix . 'height_orig' => $height_orig,
                 $var_prefix . 'made' => $this->image_utilities->get_image_path_prefix() . trim($this->local_path,'/'),
-                $var_prefix . 'made_url' => $this->settings['img_cp_flysystem_adapter'] == 'local' ? rtrim(base_url(), '/') . $this->image_utilities->get_image_path_prefix() . trim($this->local_path,'/') : $this->image_utilities->get_image_path_prefix() . trim($this->local_path,'/'),
+                $var_prefix . 'made_url' => ($this->settings['img_cp_flysystem_adapter'] == 'local' && strtolower(substr($this->settings['img_cp_class_always_output_full_urls'], 0, 1)) !== 'y') ? rtrim(ee()->config->item('base_url'), '/') . $this->image_utilities->get_image_path_prefix() . trim($this->local_path,'/') : $this->image_utilities->get_image_path_prefix() . trim($this->local_path,'/'),
                 $var_prefix . 'made_with_prefix' => $this->image_utilities->get_image_path_prefix() . trim($this->local_path,'/'),
                 $var_prefix . 'mime_type' => property_exists($this, 'mime_type') ? $this->ident->mime_type : '',
                 $var_prefix . 'name' => $this->ident->output,
@@ -2443,6 +2443,7 @@ class JcogsImage
         // Check to see if we have face_detect to consider
         if ($crop_params[1][0] == 'face_detect' || $crop_params[1][1] == 'face_detect' || $crop_params[0] == 'f') {
             // At least one, so get face detect data
+            /** @var \Imagine\Image\ImageInterface $processed_image */
             $this->faces = is_null($this->faces) ? $this->image_utilities->face_detection($this->processed_image->getGdResource(), intval($this->_unpack_param('face_detect_sensitivity'))) : $this->faces;
 
             // If it is a face_detect crop and we got faces then adjust crop dimensions

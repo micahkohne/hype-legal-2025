@@ -135,14 +135,14 @@ trait ValidationTrait  {
 
             // Check if user requested "Full URL" output
             if (strtolower(substr($this->settings['img_cp_class_always_output_full_urls'], 0, 1)) === 'y') {
-                $image_path_prefix = rtrim(base_url(), '/');
+                $image_path_prefix = rtrim(ee()->config->item('base_url'), '/') . '/';
             } elseif (
                 !empty(static::$current_params->image_path_prefix) &&
                 !empty(static::$current_params->use_image_path_prefix) &&
                 strtolower(substr(static::$current_params->use_image_path_prefix, 0, 1)) === 'y'
             ) {
                 // Use the specified prefix if requested
-                $image_path_prefix = rtrim(static::$current_params->image_path_prefix, '/');
+                $image_path_prefix = rtrim(static::$current_params->image_path_prefix, '/') . '/';
             }
         } else {
             $image_path_prefix = $this->get_adapter_url();
@@ -353,6 +353,36 @@ trait ValidationTrait  {
             // It is not set to a number, so adjust parameter to be default cache duration regardless of what actually entered ... 
             $temp->cache = static::$valid_params['cache'];
         }
+
+        // 7. src
+        // Check to see if the src parameter is set, and if it is a valid URL.
+        // If it is a valid URL compare the host to the current site URL to see if it actually is a local file.
+        // If it is a match (i.e. it is a local file on a URL) then we need to url_decode the path to make sure we can access the image via the filesystem.
+        if (!is_null($temp->src)) {
+            // Check if src is a valid URL
+            $parsed_url = parse_url($temp->src);
+            if ($parsed_url !== false && isset($parsed_url['scheme']) && isset($parsed_url['host'])) {
+                // This is a valid URL - check if it points to a local file
+                $current_site_url = parse_url(ee()->config->item('base_url'));
+                
+                // Compare hosts to see if this is a local file
+                if (isset($current_site_url['host']) && 
+                    strtolower($parsed_url['host']) === strtolower($current_site_url['host'])) {
+                    // This is a local file served via URL - check if path needs decoding
+                    if (isset($parsed_url['path']) && preg_match('/%[0-9A-Fa-f]{2}/', $parsed_url['path']) === 1) {
+                        $decoded_path = urldecode($parsed_url['path']);
+                        // Reconstruct the URL with decoded path
+                        $temp->src = $parsed_url['scheme'] . '://' . $parsed_url['host'] . 
+                                   (isset($parsed_url['port']) ? ':' . $parsed_url['port'] : '') . 
+                                   $decoded_path . 
+                                   (isset($parsed_url['query']) ? '?' . $parsed_url['query'] : '') . 
+                                   (isset($parsed_url['fragment']) ? '#' . $parsed_url['fragment'] : '');
+                    }
+                }
+            }
+            // For non-URL local file paths, do not decode - they are unlikely to be URL-encoded
+        }
+        
         
         // $test = ee()->TMPL->fetch_param('src','not_set');
         static::$current_params = $temp;
@@ -432,8 +462,10 @@ trait ValidationTrait  {
 
             // Create SVG Imagine object and handle dimensions
             try {
-                $svg_image = (new \Contao\ImagineSvg\Imagine())->load($sanitized_svg_content);
-                $svg_size = $svg_image->getSize(); // SvgBox object
+                $svg_image = new \Contao\ImagineSvg\Imagine();
+                /** @var \Contao\ImagineSvg\SvgBox $svg_box */
+                $svg_box = $svg_image->open($sanitized_svg_content); // This returns SvgBox object
+                $svg_size = $svg_box->getSize(); // This returns BoxInterface for width/height
             } catch (\Exception $e) {
                 $inspection_result->error_message = lang('jcogs_img_imagine_error') . ': ' . $e->getMessage();
                 return $inspection_result;
@@ -445,7 +477,7 @@ trait ValidationTrait  {
             $setting_default_w = $setting_default_w > 0 ? $setting_default_w : 1;
             $setting_default_h = $setting_default_h > 0 ? $setting_default_h : 1;
 
-            switch ($svg_size->getType()) {
+            switch ($svg_box->getType()) {
                 case \Contao\ImagineSvg\SvgBox::TYPE_NONE:
                     // SVG has no defined size - use parameters or defaults
                     $param_width = static::$current_params->width ?? null;
