@@ -11,13 +11,14 @@
 
 namespace Solspace\Addons\FreeformNext\Library\Logging;
 
+use Logger;
+
 class EELogger implements LoggerInterface
 {
-    /** @var \Logger[] */
-    private static $loggers = [];
+    /** @var Logger[] */
+    private static array $loggers = [];
 
-    /** @var bool */
-    private static $loggerInitiated;
+    private static ?bool $loggerInitiated = null;
 
 	public function __construct()
 	{
@@ -27,19 +28,19 @@ class EELogger implements LoggerInterface
 	/**
      * @param string $category
      *
-     * @return \Logger
+     * @return Logger
      */
     public static function get($category = self::DEFAULT_LOGGER_CATEGORY)
     {
         if (!isset(self::$loggers[$category])) {
             if (null === self::$loggerInitiated) {
                 $config = include __DIR__ . '/logger_config.php';
-                \Logger::configure($config);
+                Logger::configure($config);
 
                 self::$loggerInitiated = true;
             }
 
-            self::$loggers[$category] = \Logger::getLogger($category);
+            self::$loggers[$category] = Logger::getLogger($category);
         }
 
         return self::$loggers[$category];
@@ -50,7 +51,7 @@ class EELogger implements LoggerInterface
      * @param string $message
      * @param string $category
      */
-    public function log($level, $message, $category = self::DEFAULT_LOGGER_CATEGORY)
+    public function log($level, $message, $category = self::DEFAULT_LOGGER_CATEGORY): void
     {
 		ee()->logger->developer("[{$category}][{$this->getLevel($level)}]: " . $message);
     }
@@ -59,7 +60,7 @@ class EELogger implements LoggerInterface
      * @param string $message
      * @param string $category
      */
-    public function debug($message, $category = self::DEFAULT_LOGGER_CATEGORY)
+    public function debug($message, $category = self::DEFAULT_LOGGER_CATEGORY): void
     {
 		ee()->logger->developer("[{$category}][{$this->getLevel('debug')}]: " . $message);
     }
@@ -68,7 +69,7 @@ class EELogger implements LoggerInterface
      * @param string $message
      * @param string $category
      */
-    public function info($message, $category = self::DEFAULT_LOGGER_CATEGORY)
+    public function info($message, $category = self::DEFAULT_LOGGER_CATEGORY): void
     {
 		ee()->logger->developer("[{$category}][{$this->getLevel('info')}]: " . $message);
     }
@@ -77,7 +78,7 @@ class EELogger implements LoggerInterface
      * @param string $message
      * @param string $category
      */
-    public function warn($message, $category = self::DEFAULT_LOGGER_CATEGORY)
+    public function warn($message, $category = self::DEFAULT_LOGGER_CATEGORY): void
     {
 		ee()->logger->developer("[{$category}][{$this->getLevel('warn')}]: " . $message);
     }
@@ -86,7 +87,7 @@ class EELogger implements LoggerInterface
      * @param string $message
      * @param string $category
      */
-    public function error($message, $category = self::DEFAULT_LOGGER_CATEGORY)
+    public function error($message, $category = self::DEFAULT_LOGGER_CATEGORY): void
     {
 		ee()->logger->developer("[{$category}][{$this->getLevel('error')}]: " . $message);
     }
@@ -95,7 +96,7 @@ class EELogger implements LoggerInterface
      * @param string $message
      * @param string $category
      */
-    public function fatal($message, $category = self::DEFAULT_LOGGER_CATEGORY)
+    public function fatal($message, $category = self::DEFAULT_LOGGER_CATEGORY): void
     {
 		ee()->logger->developer("[{$category}][{$this->getLevel('fatal')}]: " . $message);
     }
@@ -105,23 +106,14 @@ class EELogger implements LoggerInterface
      *
      * @return string
 	 */
-    private function getLevel($level)
+    private function getLevel($level): string
     {
-        switch ($level) {
-            case self::LEVEL_DEBUG:
-                return self::LEVEL_DEBUG;
-
-            case self::LEVEL_FATAL:
-                return self::LEVEL_FATAL;
-
-            case self::LEVEL_INFO:
-                return self::LEVEL_INFO;
-
-            case self::LEVEL_WARNING:
-                return self::LEVEL_WARNING;
-
-            default:
-                return self::LEVEL_ERROR;
-        }
+        return match ($level) {
+            self::LEVEL_DEBUG => self::LEVEL_DEBUG,
+            self::LEVEL_FATAL => self::LEVEL_FATAL,
+            self::LEVEL_INFO => self::LEVEL_INFO,
+            self::LEVEL_WARNING => self::LEVEL_WARNING,
+            default => self::LEVEL_ERROR,
+        };
     }
 }

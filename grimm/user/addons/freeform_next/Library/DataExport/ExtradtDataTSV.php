@@ -31,6 +31,6 @@ class ExportDataTSV extends ExportData {
 
     function sendHttpHeaders() {
         header("Content-type: text/tab-separated-values");
-        header("Content-Disposition: attachment; filename=".basename($this->filename));
+        header("Content-Disposition: attachment; filename=".basename((string) $this->filename));
     }
 }

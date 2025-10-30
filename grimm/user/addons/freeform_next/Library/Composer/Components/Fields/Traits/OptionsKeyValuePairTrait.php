@@ -10,7 +10,7 @@ trait OptionsKeyValuePairTrait
     /**
      * @return array
      */
-    public function getOptionsAsKeyValuePairs()
+    public function getOptionsAsKeyValuePairs(): array
     {
         $pairs = [];
 

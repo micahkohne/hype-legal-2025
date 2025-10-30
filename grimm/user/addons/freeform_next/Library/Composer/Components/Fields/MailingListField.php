@@ -11,6 +11,7 @@
 
 namespace Solspace\Addons\FreeformNext\Library\Composer\Components\Fields;
 
+use Override;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\AbstractField;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\FieldInterface;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Fields\Interfaces\InputOnlyInterface;
@@ -36,7 +37,7 @@ class MailingListField extends AbstractField implements NoStorageInterface, Sing
      *
      * @return string
      */
-    public function getType()
+    public function getType(): string
     {
         return FieldInterface::TYPE_MAILING_LIST;
     }
@@ -46,6 +47,7 @@ class MailingListField extends AbstractField implements NoStorageInterface, Sing
      *
      * @return string
      */
+    #[Override]
     public function getHandle()
     {
         return $this->getHash();
@@ -62,7 +64,7 @@ class MailingListField extends AbstractField implements NoStorageInterface, Sing
     /**
      * @return bool
      */
-    public function isHidden()
+    public function isHidden(): bool
     {
         return (bool) $this->hidden;
     }
@@ -72,7 +74,7 @@ class MailingListField extends AbstractField implements NoStorageInterface, Sing
      *
      * @return string
      */
-    public function getInputHtml()
+    public function getInputHtml(): string
     {
         $attributes = $this->getCustomAttributes();
         $output     = '';

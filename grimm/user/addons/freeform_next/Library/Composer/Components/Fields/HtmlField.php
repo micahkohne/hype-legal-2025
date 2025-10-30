@@ -29,7 +29,7 @@ class HtmlField extends AbstractField implements SingleValueInterface, InputOnly
      *
      * @return string
      */
-    public function getType()
+    public function getType(): string
     {
         return self::TYPE_HTML;
     }

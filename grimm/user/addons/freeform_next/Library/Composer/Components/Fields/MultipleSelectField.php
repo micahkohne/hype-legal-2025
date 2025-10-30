@@ -11,6 +11,7 @@
 
 namespace Solspace\Addons\FreeformNext\Library\Composer\Components\Fields;
 
+use Override;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\AbstractField;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Fields\Interfaces\MultipleValueInterface;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Fields\Interfaces\OptionsInterface;
@@ -26,7 +27,7 @@ class MultipleSelectField extends AbstractExternalOptionsField implements Multip
      *
      * @return string
      */
-    public function getType()
+    public function getType(): string
     {
         return self::TYPE_MULTIPLE_SELECT;
     }
@@ -36,7 +37,7 @@ class MultipleSelectField extends AbstractExternalOptionsField implements Multip
      *
      * @return string
      */
-    public function getInputHtml()
+    public function getInputHtml(): string
     {
         $attributes = $this->getCustomAttributes();
 
@@ -65,7 +66,8 @@ class MultipleSelectField extends AbstractExternalOptionsField implements Multip
      *
      * @return string
      */
-    public function getValueAsString($optionsAsValues = true)
+    #[Override]
+    public function getValueAsString($optionsAsValues = true): string
     {
         if (!$optionsAsValues) {
             return implode(', ', $this->getValue());

@@ -15,7 +15,7 @@ class ExportService
      *
      * @return array
      */
-    public function getExportDialogueTemplateVariables($formId = null)
+    public function getExportDialogueTemplateVariables($formId = null): array
     {
         /** @var Form[] $forms */
         $forms = [];
@@ -53,7 +53,7 @@ class ExportService
                             $label = $field->getLabel();
 
                             $storedFieldIds[] = $field->getId();
-                        } catch (FreeformException $e) {
+                        } catch (FreeformException) {
                             continue;
                         }
                     }

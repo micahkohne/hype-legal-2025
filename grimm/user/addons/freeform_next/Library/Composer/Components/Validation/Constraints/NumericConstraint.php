@@ -6,41 +6,16 @@ use Solspace\Addons\FreeformNext\Library\Composer\Components\Validation\Errors\C
 
 class NumericConstraint implements ConstraintInterface
 {
-    /** @var int */
-    private $min;
+    private readonly ?int $min;
 
-    /** @var int */
-    private $max;
+    private readonly ?int $max;
 
-    /** @var int */
-    private $decimalCount;
+    private readonly ?int $decimalCount;
 
     /** @var string */
     private $decimalSeparator;
 
-    /** @var string */
-    private $thousandsSeparator;
-
-    /** @var bool */
-    private $allowNegativeNumbers;
-
-    /** @var string */
-    private $message;
-
-    /** @var string */
-    private $messageMax;
-
-    /** @var string */
-    private $messageMin;
-
-    /** @var string */
-    private $messageMinMax;
-
-    /** @var string */
-    private $messageDecimals;
-
-    /** @var string */
-    private $messageNegative;
+    private readonly bool $allowNegativeNumbers;
 
     /**
      * NumericConstraint constructor.
@@ -63,27 +38,20 @@ class NumericConstraint implements ConstraintInterface
         $max = null,
         $decimalCount = null,
         $decimalSeparator = null,
-        $thousandsSeparator = ',',
+        private $thousandsSeparator = ',',
         $allowNegativeNumbers = false,
-        $message = 'Value must be numeric',
-        $messageMax = 'The value must be no more than {{max}}',
-        $messageMin = 'The value must be no less than {{min}}',
-        $messageMinMax = 'The value must be between {{min}} and {{max}}',
-        $messageDecimals = '{{dec}} decimal places allowed',
-        $messageNegative = 'Only positive numbers allowed'
+        private $message = 'Value must be numeric',
+        private $messageMax = 'The value must be no more than {{max}}',
+        private $messageMin = 'The value must be no less than {{min}}',
+        private $messageMinMax = 'The value must be between {{min}} and {{max}}',
+        private $messageDecimals = '{{dec}} decimal places allowed',
+        private $messageNegative = 'Only positive numbers allowed'
     ) {
         $this->min                  = $min > 0 ? (int) $min : null;
         $this->max                  = $max > 0 ? (int) $max : null;
         $this->decimalCount         = $decimalCount > 0 ? (int) $decimalCount : null;
         $this->decimalSeparator     = $decimalSeparator ?: '.';
-        $this->thousandsSeparator   = $thousandsSeparator;
         $this->allowNegativeNumbers = (bool) $allowNegativeNumbers;
-        $this->message              = $message;
-        $this->messageMax           = $messageMax;
-        $this->messageMin           = $messageMin;
-        $this->messageMinMax        = $messageMinMax;
-        $this->messageDecimals      = $messageDecimals;
-        $this->messageNegative      = $messageNegative;
     }
 
     /**
@@ -98,7 +66,7 @@ class NumericConstraint implements ConstraintInterface
 
         $pattern = "/^-?\d*({$thousandsSeparator}\d{3})*({$decimalSeparator}\d+)?$/";
 
-        if (!preg_match($pattern, $value, $matches)) {
+        if (!preg_match($pattern, (string) $value, $matches)) {
             $violationList->addError($this->message);
 
             return $violationList;
@@ -119,8 +87,12 @@ class NumericConstraint implements ConstraintInterface
             }
         }
 
-        $numericValue = str_replace($this->thousandsSeparator, '', $value);
-        $numericValue = preg_replace("/[^0-9\-{$this->decimalSeparator}]/", '', $numericValue);
+        // Normalize null → '' to avoid PHP 8.3+ deprecation
+        $thousandsSeparatorValue = $this->thousandsSeparator ?? '';
+        $decimalSeparatorValue   = $this->decimalSeparator ?? '';
+
+        $numericValue = str_replace($thousandsSeparatorValue, '', $value);
+        $numericValue = preg_replace("/[^0-9\-{$decimalSeparatorValue}]/", '', $numericValue);
 
         if (!$this->allowNegativeNumbers && $numericValue < 0) {
             $violationList->addError($this->messageNegative);

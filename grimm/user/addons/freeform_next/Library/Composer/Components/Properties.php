@@ -11,6 +11,7 @@
 
 namespace Solspace\Addons\FreeformNext\Library\Composer\Components;
 
+use JsonSerializable;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Properties\AdminNotificationProperties;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Properties\FieldProperties;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Properties\FormProperties;
@@ -19,21 +20,16 @@ use Solspace\Addons\FreeformNext\Library\Composer\Components\Properties\PageProp
 use Solspace\Addons\FreeformNext\Library\Exceptions\Composer\ComposerException;
 use Solspace\Addons\FreeformNext\Library\Translations\TranslatorInterface;
 
-class Properties implements \JsonSerializable
+class Properties implements JsonSerializable
 {
     const PAGE_PREFIX              = "page";
     const FORM_HASH                = "form";
     const INTEGRATION_HASH         = "integration";
     const ADMIN_NOTIFICATIONS_HASH = "admin_notifications";
 
-    /** @var array */
-    private $propertyList;
+    private array $propertyList;
 
-    /** @var array */
-    private $builtProperties;
-
-    /** @var TranslatorInterface */
-    private $translator;
+    private ?array $builtProperties = null;
 
     /**
      * Properties constructor.
@@ -43,20 +39,18 @@ class Properties implements \JsonSerializable
      *
      * @throws ComposerException
      */
-    public function __construct(array $properties, TranslatorInterface $translator)
+    public function __construct(array $properties, private readonly TranslatorInterface $translator)
     {
-        $this->translator = $translator;
-
         foreach ($properties as $key => $value) {
             if (!is_array($value)) {
                 throw new ComposerException(
-                    $translator->translate("Properties for key '{key}' is not an array", ["key" => $key])
+                    $this->translator->translate("Properties for key '{key}' is not an array", ["key" => $key])
                 );
             }
 
             if (!isset($value['type'])) {
                 throw new ComposerException(
-                    $translator->translate("Properties for key '{key}' do not contain TYPE", ["key" => $key])
+                    $this->translator->translate("Properties for key '{key}' do not contain TYPE", ["key" => $key])
                 );
             }
         }
@@ -191,7 +185,7 @@ class Properties implements \JsonSerializable
     /**
      * @param string $hash
      */
-    public function removeHash($hash)
+    public function removeHash($hash): void
     {
         if (isset($this->propertyList[$hash])) {
             unset($this->propertyList[$hash]);
@@ -211,7 +205,7 @@ class Properties implements \JsonSerializable
         $properties = $this->propertyList;
         array_walk_recursive(
             $properties,
-            function (&$value, $key) {
+            function (&$value, $key): void {
                 if (null === $value) {
                     $value = null;
                 } else if (is_string($value) && !in_array($key, ['value', 'label', 'handle', 'description'], true) && preg_match('/^(true|false)$/i', $value)) {

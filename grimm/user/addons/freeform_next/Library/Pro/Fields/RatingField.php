@@ -2,6 +2,7 @@
 
 namespace Solspace\Addons\FreeformNext\Library\Pro\Fields;
 
+use Override;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\AbstractField;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Fields\Interfaces\SingleValueInterface;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Fields\Traits\SingleValueTrait;
@@ -30,7 +31,7 @@ class RatingField extends AbstractField implements SingleValueInterface
     /**
      * @inheritDoc
      */
-    public function getType()
+    public function getType(): string
     {
         return self::TYPE_RATING;
     }
@@ -38,7 +39,7 @@ class RatingField extends AbstractField implements SingleValueInterface
     /**
      * @return int
      */
-    public function getMaxValue()
+    public function getMaxValue(): int
     {
         $maxValue = (int) $this->maxValue;
 
@@ -80,7 +81,8 @@ class RatingField extends AbstractField implements SingleValueInterface
     /**
      * @inheritDoc
      */
-    public function getConstraints()
+    #[Override]
+    public function getConstraints(): array
     {
         return [
             new NumericConstraint(
@@ -101,7 +103,7 @@ class RatingField extends AbstractField implements SingleValueInterface
     /**
      * @inheritDoc
      */
-    protected function getInputHtml()
+    protected function getInputHtml(): string
     {
         $attributes = $this->getCustomAttributes();
 
@@ -145,7 +147,7 @@ class RatingField extends AbstractField implements SingleValueInterface
     /**
      * @return string
      */
-    private function getStyles()
+    private function getStyles(): string|array
     {
         $cssPath = PATH_THIRD_THEMES . 'freeform_next/css/fields/rating.css';
 
@@ -169,7 +171,7 @@ class RatingField extends AbstractField implements SingleValueInterface
     /**
      * @return string
      */
-    private function getFormSha()
+    private function getFormSha(): string
     {
         return 'f' . HashHelper::sha1($this->getForm()->getHash(), 6);
     }

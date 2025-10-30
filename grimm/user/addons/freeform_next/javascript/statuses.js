@@ -1,1 +1,6 @@
-"use strict";jsColorPicker("#color-picker",{size:3,noAlpha:!0});
+jsColorPicker('#color-picker', {
+  size: 3,
+  noAlpha: true,
+});
+
+

@@ -18,7 +18,7 @@ class ColorHelper
      *
      * @return string
      */
-    public static function randomColor()
+    public static function randomColor(): string
     {
         return sprintf('#%06X', mt_rand(0, 0xFFFFFF));
     }
@@ -30,7 +30,7 @@ class ColorHelper
      *
      * @return string
      */
-    public static function getContrastYIQ($hexColor)
+    public static function getContrastYIQ($hexColor): string
     {
         $hexColor = str_replace('#', '', $hexColor);
 

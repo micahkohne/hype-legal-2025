@@ -89,7 +89,7 @@ class NextFormStatusHelper
     /**
      * Sets the isDefault to TRUE for the first entry found if no isDefault is set
      */
-    private function updateDefaults()
+    private function updateDefaults(): void
     {
         $hasDefault = ee()
             ->db

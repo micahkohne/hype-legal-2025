@@ -32,20 +32,20 @@ class Manifest
     /** @var string */
     private $docsUrl;
 
-    private static $availableProperties = array(
+    private static $availableProperties = [
         'package_name',
         'package_desc',
         'package_version',
         'vendor',
         'vendor_url',
         'docs_url',
-    );
+    ];
 
-    private static $requiredProperties = array(
+    private static $requiredProperties = [
         'package_name',
         'package_version',
         'vendor',
-    );
+    ];
 
     /**
      * @param string $manifestPath
@@ -100,7 +100,7 @@ class Manifest
      *
      * @throws ManifestException
      */
-    private function parseManifestFile($manifestPath)
+    private function parseManifestFile($manifestPath): void
     {
         if (!file_exists($manifestPath)) {
             throw new ManifestNotPresentException(sprintf('Manifest file is not present in %s', $manifestPath));

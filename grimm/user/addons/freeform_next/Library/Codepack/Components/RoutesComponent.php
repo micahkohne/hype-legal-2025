@@ -20,7 +20,7 @@ class RoutesComponent extends AbstractJsonComponent
      *
      * @param string $prefix
      */
-    public function install($prefix = null)
+    public function install($prefix = null): void
     {
         $data       = $this->getData();
         $demoFolder = $prefix . "/";
@@ -29,7 +29,7 @@ class RoutesComponent extends AbstractJsonComponent
             if (isset($route->urlParts) && is_array($route->urlParts) && isset($route->template)) {
                 $urlParts = $route->urlParts;
 
-                array_walk_recursive($urlParts, function(&$value) {
+                array_walk_recursive($urlParts, function(&$value): void {
                     $value = stripslashes($value);
                 });
 

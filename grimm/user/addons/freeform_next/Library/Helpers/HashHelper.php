@@ -18,15 +18,14 @@ class HashHelper
     const SALT       = "composer";
     const MIN_LENGTH = 9;
 
-    /** @var Hashids */
-    private static $hashids;
+    private static ?Hashids $hashids = null;
 
     /**
      * @param int $id
      *
      * @return string
      */
-    public static function hash($id)
+    public static function hash($id): string
     {
         return self::getHashids()->encode($id);
     }
@@ -36,7 +35,7 @@ class HashHelper
      *
      * @return int
      */
-    public static function decode($hash)
+    public static function decode($hash): mixed
     {
         $idList = self::getHashids()->decode($hash);
 
@@ -48,7 +47,7 @@ class HashHelper
      *
      * @return array
      */
-    public static function decodeMultiple($hash)
+    public static function decodeMultiple($hash): array
     {
         return self::getHashids()->decode($hash);
     }
@@ -60,9 +59,9 @@ class HashHelper
      *
      * @return string
      */
-    public static function sha1($value, $length = null, $offset = 0)
+    public static function sha1($value, $length = null, $offset = 0): string
     {
-        $hash = sha1($value);
+        $hash = sha1((string) $value);
 
         if ($length) {
             return substr($hash, $offset, $length);
@@ -74,7 +73,7 @@ class HashHelper
     /**
      * @return Hashids
      */
-    private static function getHashids()
+    private static function getHashids(): Hashids
     {
         if (is_null(self::$hashids)) {
             self::$hashids = new Hashids(self::SALT, self::MIN_LENGTH);

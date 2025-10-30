@@ -11,7 +11,7 @@
 
 namespace Solspace\Addons\FreeformNext\Model;
 
-use EllisLab\ExpressionEngine\Service\Model\Model;
+use ExpressionEngine\Service\Model\Model;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\AbstractField;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Form;
 use Solspace\Addons\FreeformNext\Library\Exceptions\FreeformException;
@@ -33,6 +33,10 @@ use Solspace\Addons\FreeformNext\Repositories\SubmissionRepository;
  * @property string $statusColor
  * @property int    $formId
  * @property string $title
+ * @property int    $isSpam
+ * @property string $spamReasonType
+ * @property string $spamReasonMessage
+ * @property string $spamReasonValue
  */
 class SubmissionModel extends Model
 {
@@ -61,6 +65,10 @@ class SubmissionModel extends Model
     protected $statusColor;
     protected $formId;
     protected $title;
+    protected $isSpam;
+    protected $spamReasonType;
+    protected $spamReasonMessage;
+    protected $spamReasonValue;
 
     /** @var array */
     private $fieldValues = [];
@@ -72,7 +80,7 @@ class SubmissionModel extends Model
      *
      * @return string
      */
-    public static function getFieldColumnName($fieldId)
+    public static function getFieldColumnName($fieldId): string
     {
         return self::FIELD_COLUMN_PREFIX . $fieldId;
     }
@@ -101,6 +109,7 @@ class SubmissionModel extends Model
                 [
                     'siteId'   => ee()->config->item('site_id'),
                     'formId'   => $form->getId(),
+                    'isSpam'   => $form->isMarkedAsSpam(),
                     'statusId' => $form->getDefaultStatus(),
                     'token'    => CryptoHelper::getUniqueToken(100),
                 ]
@@ -108,7 +117,7 @@ class SubmissionModel extends Model
         }
 
         foreach ($fetchedValues as $key => $value) {
-            if (property_exists(__CLASS__, $key)) {
+            if (property_exists(self::class, $key)) {
                 $submission->{$key} = $value;
             } else if (preg_match('/^' . SubmissionModel::FIELD_COLUMN_PREFIX . '(\d+)$/', $key, $matches)) {
                 $fieldId = (int) $matches[1];
@@ -137,17 +146,21 @@ class SubmissionModel extends Model
         $submission = ee('Model')->make(
             self::MODEL,
             [
-                'id'           => $fetchedValues['id'],
-                'siteId'       => $fetchedValues['siteId'],
-                'token'        => $fetchedValues['token'],
-                'formId'       => $fetchedValues['formId'],
-                'statusId'     => $fetchedValues['statusId'],
-                'title'        => $fetchedValues['title'],
-                'dateCreated'  => $fetchedValues['dateCreated'],
-                'dateUpdated'  => $fetchedValues['dateUpdated'],
-                'statusName'   => $fetchedValues['statusName'],
-                'statusHandle' => $fetchedValues['statusHandle'],
-                'statusColor'  => $fetchedValues['statusColor'],
+                'id'                => $fetchedValues['id'],
+                'siteId'            => $fetchedValues['siteId'],
+                'token'             => $fetchedValues['token'],
+                'formId'            => $fetchedValues['formId'],
+                'isSpam'            => $fetchedValues['isSpam'],
+                'statusId'          => $fetchedValues['statusId'],
+                'title'             => $fetchedValues['title'],
+                'dateCreated'       => $fetchedValues['dateCreated'],
+                'dateUpdated'       => $fetchedValues['dateUpdated'],
+                'statusName'        => $fetchedValues['statusName'],
+                'statusHandle'      => $fetchedValues['statusHandle'],
+                'statusColor'       => $fetchedValues['statusColor'],
+                'spamReasonType'    => $fetchedValues['spamReasonType'] ?? null,
+                'spamReasonMessage' => $fetchedValues['spamReasonMessage'] ?? null,
+                'spamReasonValue'   => $fetchedValues['spamReasonValue'] ?? null,
             ]
         );
 
@@ -201,7 +214,7 @@ class SubmissionModel extends Model
     {
         $metadata = self::getFieldMetadataByFormId($formId);
 
-        return isset($metadata[$fieldId]) ? $metadata[$fieldId] : null;
+        return $metadata[$fieldId] ?? null;
     }
 
     /**
@@ -211,11 +224,7 @@ class SubmissionModel extends Model
      */
     public function __get($key)
     {
-        if (isset($this->fieldValues[$key])) {
-            return $this->fieldValues[$key];
-        }
-
-        return parent::__get($key);
+        return $this->fieldValues[$key] ?? parent::__get($key);
     }
 
     /**
@@ -229,7 +238,7 @@ class SubmissionModel extends Model
     /**
      * @return string
      */
-    public function getHash()
+    public function getHash(): string
     {
         return HashHelper::hash($this->id);
     }
@@ -276,7 +285,7 @@ class SubmissionModel extends Model
      *
      * @return $this
      */
-    public function setFieldValue($handle, $value)
+    public function setFieldValue($handle, $value): static
     {
         $this->fieldValues[$handle] = $value;
 
@@ -286,12 +295,13 @@ class SubmissionModel extends Model
     /**
      * Overriding the SAVE method
      */
-    public function save()
+    public function save(): void
     {
         $dateFormat = 'Y-m-d H:i:s';
         $insertData = [
             'siteId'      => $this->siteId,
             'formId'      => $this->formId,
+            'isSpam'      => $this->isSpam,
             'statusId'    => $this->statusId,
             'title'       => $this->title,
             'token'       => $this->token,
@@ -333,7 +343,7 @@ class SubmissionModel extends Model
     /**
      * @return bool
      */
-    public function isTitleBlank()
+    public function isTitleBlank(): bool
     {
         if (
             ctype_space($this->title) ||
@@ -351,7 +361,7 @@ class SubmissionModel extends Model
      *
      * @return $this
      */
-    public function setTitle(Form $form, $savableFields)
+    public function setTitle(Form $form, ?array $savableFields): static
     {
         $this->title = '';
 
@@ -373,7 +383,7 @@ class SubmissionModel extends Model
      *
      * @return $this
      */
-    private function setFieldColumnValue($fieldId, $value)
+    private function setFieldColumnValue(int $fieldId, $value): static
     {
         $field = self::getFieldMetadataById($this->formId, $fieldId);
 
@@ -394,7 +404,7 @@ class SubmissionModel extends Model
     /**
      * @return array
      */
-    private function assembleInsertData()
+    private function assembleInsertData(): array
     {
         if (!isset(self::$handleToFieldIdMap[$this->formId])) {
             self::getFieldMetadataByFormId($this->formId);

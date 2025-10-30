@@ -42,7 +42,7 @@ class PermissionsService
      *
      * @return bool
      */
-    public function canUserAccessSection($method, $groupId)
+    public function canUserAccessSection(string $method, $groupId)
     {
         if ((int) $groupId === 1) {
             return true;
@@ -192,7 +192,7 @@ class PermissionsService
     /**
      * @return array
      */
-    private function getMethodTransformation()
+    private function getMethodTransformation(): array
     {
         return [
             'export_profiles' => 'export',
@@ -202,9 +202,10 @@ class PermissionsService
     /**
      * @return array
      */
-    private function getRestrictedNavigationSections()
+    private function getRestrictedNavigationSections(): array
     {
         return [
+            self::PERMISSION__ACCESS_SUBMISSIONS,
             self::PERMISSION__ACCESS_FIELDS,
             self::PERMISSION__ACCESS_EXPORT,
             self::PERMISSION__ACCESS_NOTIFICATIONS,

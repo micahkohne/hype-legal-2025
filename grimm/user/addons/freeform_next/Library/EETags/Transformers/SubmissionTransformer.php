@@ -11,8 +11,7 @@ use Solspace\Addons\FreeformNext\Model\SubmissionModel;
 
 class SubmissionTransformer
 {
-    /** @var array */
-    private static $fieldsByFormId;
+    private static ?array $fieldsByFormId = null;
 
     /**
      * @param SubmissionModel           $model
@@ -28,8 +27,8 @@ class SubmissionTransformer
         $count = 1,
         $totalResults = 1,
         $absoluteTotal = 1,
-        SubmissionAttributes $attributes = null
-    ) {
+        ?SubmissionAttributes $attributes = null
+    ): array {
         $prefix        = 'submission:';
         $absoluteCount = $count;
 
@@ -80,7 +79,7 @@ class SubmissionTransformer
      *
      * @return array
      */
-    private function getFields(SubmissionModel $model, $prefix = 'field:')
+    private function getFields(SubmissionModel $model, string $prefix = 'field:'): array
     {
         $fieldTransformer = new FieldTransformer();
         $data             = [];
@@ -108,7 +107,7 @@ class SubmissionTransformer
      *
      * @return array
      */
-    private function getSeparateFieldInfo(SubmissionModel $model, $prefix = 'submission:')
+    private function getSeparateFieldInfo(SubmissionModel $model, string $prefix = 'submission:'): array
     {
         $fieldTransformer = new FieldTransformer();
 

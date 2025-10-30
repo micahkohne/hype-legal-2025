@@ -2,6 +2,8 @@
 
 namespace Solspace\Addons\FreeformNext\Controllers;
 
+use Exception;
+use ReflectionClass;
 use Solspace\Addons\FreeformNext\Library\DataObjects\SubmissionAttributes;
 use Solspace\Addons\FreeformNext\Library\DataObjects\SubmissionPreferenceSetting;
 use Solspace\Addons\FreeformNext\Library\Exceptions\FreeformException;
@@ -37,29 +39,17 @@ class ApiController extends Controller
      * @return View
      * @throws FreeformException
      */
-    public function handle($type, $args = [])
+    public function handle($type, array $args = [])
     {
-        switch ($type) {
-            case self::TYPE_FIELDS:
-                return $this->fields();
-
-            case self::TYPE_NOTIFICATIONS:
-                return $this->notifications($args);
-
-            case self::TYPE_RESET_SPAM:
-                return $this->resetSpam();
-
-            case self::TYPE_SUBMISSION_LAYOUT:
-                return $this->submissionLayout();
-
-            case self::TYPE_DUPLICATE:
-                return $this->duplicate();
-
-            case self::TYPE_SUBMISSION_EXPORT:
-                return $this->submissionExport($args);
-        }
-
-        throw new FreeformException(sprintf('"%s" action is not present in the API controller', $type));
+        return match ($type) {
+            self::TYPE_FIELDS => $this->fields(),
+            self::TYPE_NOTIFICATIONS => $this->notifications($args),
+            self::TYPE_RESET_SPAM => $this->resetSpam(),
+            self::TYPE_SUBMISSION_LAYOUT => $this->submissionLayout(),
+            self::TYPE_DUPLICATE => $this->duplicate(),
+            self::TYPE_SUBMISSION_EXPORT => $this->submissionExport($args),
+            default => throw new FreeformException(sprintf('"%s" action is not present in the API controller', $type)),
+        };
     }
 
     /**
@@ -75,7 +65,7 @@ class ApiController extends Controller
                 FreeformHelper::get('validate', $model);
 
                 $view->addVariable('success', true);
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $view->addError($e->getMessage());
             }
 
@@ -132,6 +122,7 @@ class ApiController extends Controller
                             "Template '{name}' already exists",
                             ['name' => $templateName . $extension]
                         );
+
                     } else {
                         try {
                             file_put_contents($templatePath, $settings->getEmailTemplateContent());
@@ -191,7 +182,7 @@ class ApiController extends Controller
             }
 
             $view->addVariable('success', true);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $view->addError($e->getMessage());
         }
 
@@ -201,7 +192,7 @@ class ApiController extends Controller
     /**
      * @return AjaxView
      */
-    public function resetSpam()
+    public function resetSpam(): AjaxView
     {
         $formId = ee()->input->post('formId');
 
@@ -223,7 +214,7 @@ class ApiController extends Controller
     /**
      * @return AjaxView
      */
-    public function submissionLayout()
+    public function submissionLayout(): AjaxView
     {
         $formId   = ee()->input->post('formId');
         $data     = ee()->input->post('data');
@@ -256,7 +247,7 @@ class ApiController extends Controller
      * @return View
      * @throws FreeformException
      */
-    public function submissionExport(array $args = [])
+    public function submissionExport(array $args = []): FileDownloadView
     {
         $formId = @$args[1];
 
@@ -288,7 +279,7 @@ class ApiController extends Controller
             $headers[] = $item->getLabel();
         }
 
-        fputcsv($output, $headers);
+        fputcsv($output, $headers, escape: '\\');
 
         $limit  = 20;
         $offset = 0;
@@ -316,13 +307,13 @@ class ApiController extends Controller
                     }
 
                     if ($isRemoveNewlines) {
-                        $value = trim(preg_replace('/\s+/', ' ', $value));
+                        $value = trim((string) preg_replace('/\s+/', ' ', (string) $value));
                     }
 
                     $row[] = $value;
                 }
 
-                fputcsv($output, $row);
+                fputcsv($output, $row, escape: '\\');
             }
 
             $attributes->setOffset($attributes->getOffset() + $limit);
@@ -354,15 +345,15 @@ class ApiController extends Controller
     {
         $newHandleBase = $newForm->handle;
 
-        if (strpos($newForm->handle, '_copy_') !== false) {
-            $newHandleBase = substr($newForm->handle, 0, strpos($newForm->handle, "_copy"));
+        if (str_contains((string) $newForm->handle, '_copy_')) {
+            $newHandleBase = substr((string) $newForm->handle, 0, strpos((string) $newForm->handle, "_copy"));
         }
 
         $newHandle = $newHandleBase . '_copy_' . time();
 
         $composer = $newForm->getComposer();
         $composerJson = $composer->getComposerStateJSON();
-        $composerState = json_decode($composerJson, true);
+        $composerState = json_decode((string) $composerJson, true);
         $composerState['composer']['properties']['form']['handle'] = $newHandle;
         $newForm->layoutJson = json_encode($composerState);
         $newForm->setProperty('handle', $newHandle);
@@ -372,7 +363,7 @@ class ApiController extends Controller
 
     private function createNewForm($form)
     {
-        $reflectionClass = new \ReflectionClass(FormModel::class);
+        $reflectionClass = new ReflectionClass(FormModel::class);
         $properties = $reflectionClass->getProperties();
         $newForm = FormModel::create();
 
@@ -400,9 +391,9 @@ class ApiController extends Controller
         return $newForm;
     }
 
-    private function getProtectedProperty($property, $object)
+    private function getProtectedProperty(string $property, $object): mixed
     {
-        $reflectionClass = new \ReflectionClass(get_class($object));
+        $reflectionClass = new ReflectionClass($object::class);
         $reflectionProperty = $reflectionClass->getProperty($property);
         $reflectionProperty->setAccessible(true);
 

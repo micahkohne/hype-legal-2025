@@ -2,6 +2,7 @@
 
 namespace Solspace\Addons\FreeformNext\Repositories;
 
+use Override;
 use Solspace\Addons\FreeformNext\Model\SettingsModel;
 
 class SettingsRepository extends Repository
@@ -12,6 +13,7 @@ class SettingsRepository extends Repository
     /**
      * @return SettingsRepository
      */
+    #[Override]
     public static function getInstance()
     {
         return parent::getInstance();

@@ -9,12 +9,12 @@
  */
 namespace SebastianBergmann\Type;
 
+/**
+ * @no-named-arguments Parameter names are not covered by the backward compatibility promise for this library
+ */
 final class GenericObjectType extends Type
 {
-    /**
-     * @var bool
-     */
-    private $allowsNull;
+    private bool $allowsNull;
 
     public function __construct(bool $nullable)
     {
@@ -34,6 +34,9 @@ final class GenericObjectType extends Type
         return true;
     }
 
+    /**
+     * @return 'object'
+     */
     public function name(): string
     {
         return 'object';

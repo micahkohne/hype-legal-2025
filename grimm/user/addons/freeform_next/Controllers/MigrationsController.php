@@ -19,11 +19,11 @@ use Solspace\Addons\FreeformNext\Utilities\ControlPanel\View;
 class MigrationsController extends Controller
 {
     /**
-     * @param int|null $id
+     * @param null|int|string $id
      *
      * @return View
      */
-    public function handle($id = null)
+    public function handle(null|int|string $id = null): RedirectView|CpView|AjaxView
     {
         if (null === $id) {
             return $this->index();
@@ -39,7 +39,7 @@ class MigrationsController extends Controller
     /**
      * @return View
      */
-    public function index()
+    public function index(): RedirectView|CpView
     {
         $canAccessSettings = $this->getPermissionsService()->canAccessSettings(ee()->session->userdata('group_id'));
 
@@ -94,7 +94,7 @@ class MigrationsController extends Controller
      *
      * @return View
      */
-    public function run($id)
+    public function run($id): RedirectView|AjaxView
     {
         $canAccessSettings = $this->getPermissionsService()->canAccessSettings(ee()->session->userdata('group_id'));
 
@@ -146,7 +146,7 @@ class MigrationsController extends Controller
         return $ajaxView;
     }
 
-    private function buildHomepage()
+    private function buildHomepage(): RedirectView|CpView
     {
         $canAccessSettings = $this->getPermissionsService()->canAccessSettings(ee()->session->userdata('group_id'));
 
@@ -198,7 +198,7 @@ class MigrationsController extends Controller
         $isNew = !$model->id;
 
         $class  = ee()->input->post('class');
-        $hash   = md5($class);
+        $hash   = md5((string) $class);
         $name   = ee()->input->post('name');
         $handle = ee()->input->post('handle');
 
@@ -210,7 +210,7 @@ class MigrationsController extends Controller
 
         $postedSettings = [];
         foreach ($_POST as $key => $value) {
-            if (strpos($key, $hash) === 0) {
+            if (str_starts_with($key, $hash)) {
                 $postedSettings[str_replace($hash . '-', '', $key)] = $value;
             }
         }
@@ -270,7 +270,7 @@ class MigrationsController extends Controller
     /**
      * @return AjaxView
      */
-    public function getIntegrationsAjax()
+    public function getIntegrationsAjax(): AjaxView
     {
         $integrations = MailingListRepository::getInstance()->getAllIntegrationObjects();
 
@@ -287,7 +287,7 @@ class MigrationsController extends Controller
     /**
      * @return RedirectView
      */
-    public function batchDelete()
+    public function batchDelete(): RedirectView
     {
         $canAccessSettings = $this->getPermissionsService()->canAccessSettings(ee()->session->userdata('group_id'));
 
@@ -320,7 +320,7 @@ class MigrationsController extends Controller
     /**
      * @return AjaxView
      */
-    private function ajaxSubmission()
+    private function ajaxSubmission(): AjaxView
     {
         $view = new AjaxView();
 

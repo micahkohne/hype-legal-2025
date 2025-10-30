@@ -20,7 +20,7 @@ class FormTransformer implements Transformer
      *
      * @return array
      */
-    public function transformForm(Form $form, $submissionCount = 0, $skipHelperFields = false)
+    public function transformForm(Form $form, $submissionCount = 0, $skipHelperFields = false): array
     {
         return [
             'form:id'                        => $form->getId(),
@@ -55,7 +55,7 @@ class FormTransformer implements Transformer
      *
      * @return array
      */
-    private function getErrors(Form $form)
+    private function getErrors(Form $form): array
     {
         $data = [];
         foreach ($form->getErrors() as $error) {
@@ -72,7 +72,7 @@ class FormTransformer implements Transformer
      *
      * @return array
      */
-    private function getFields(Form $form, $prefix = 'field:', $skipHelperFields = false)
+    private function getFields(Form $form, string $prefix = 'field:', $skipHelperFields = false): array
     {
         $fieldTransformer = new FieldTransformer();
 

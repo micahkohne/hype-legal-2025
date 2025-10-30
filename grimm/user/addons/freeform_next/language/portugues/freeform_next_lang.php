@@ -21,4 +21,11 @@ $lang = [
     'keywords' => 'Palavras chaves',
 	'{email} is not a valid email address' => '{email} não é um endereço válido',
 	'This field is required' => 'Este campo é requisito',
+
+    'spamReason' => 'Motivo do Spam',
+    'spamReasonType' => 'Tipo',
+    'spamReasonMessage' => 'Mensagem',
+    'spamReasonValue' => 'Valor',
+    'honeypot' => 'Honeypot',
+    'recaptcha' => 'reCAPTCHA',
 ];

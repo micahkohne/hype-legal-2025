@@ -27,7 +27,7 @@ if (!function_exists('array_column')) {
      *                        of the column, or it may be the string key name.
      * @return array
      */
-    function array_column($input = null, $columnKey = null, $indexKey = null)
+    function array_column(?array $input = null, null|int|string $columnKey = null, null|int|string $indexKey = null): null|false|array
     {
         // Using func_get_args() in order to check for proper number of
         // parameters and trigger errors exactly as the built-in array_column()
@@ -80,7 +80,7 @@ if (!function_exists('array_column')) {
             }
         }
 
-        $resultArray = array();
+        $resultArray = [];
 
         foreach ($paramsInput as $row) {
             $key = $value = null;

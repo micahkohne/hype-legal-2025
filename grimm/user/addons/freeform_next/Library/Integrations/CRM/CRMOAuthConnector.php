@@ -11,6 +11,8 @@
 
 namespace Solspace\Addons\FreeformNext\Library\Integrations\CRM;
 
+use Override;
+use stdClass;
 use GuzzleHttp\Client;
 use Solspace\Addons\FreeformNext\Library\Exceptions\Integrations\IntegrationException;
 use Solspace\Addons\FreeformNext\Library\Integrations\SettingBlueprint;
@@ -27,6 +29,7 @@ abstract class CRMOAuthConnector extends AbstractCRMIntegration
      *
      * @return SettingBlueprint[]
      */
+    #[Override]
     public static function getSettingBlueprints()
     {
         return [
@@ -57,7 +60,7 @@ abstract class CRMOAuthConnector extends AbstractCRMIntegration
     /**
      * A method that initiates the authentication
      */
-    public function initiateAuthentication()
+    public function initiateAuthentication(): void
     {
         $data = [
             "response_type" => "code",
@@ -80,7 +83,7 @@ abstract class CRMOAuthConnector extends AbstractCRMIntegration
     {
         $client = new Client();
 
-        $code = isset($_GET["code"]) ? $_GET["code"] : null;
+        $code = $_GET["code"] ?? null;
         $this->onBeforeFetchAccessToken($code);
 
         if (is_null($code)) {
@@ -139,9 +142,9 @@ abstract class CRMOAuthConnector extends AbstractCRMIntegration
     }
 
     /**
-     * @param \stdClass $responseData
+     * @param stdClass $responseData
      */
-    protected function onAfterFetchAccessToken(\stdClass $responseData)
+    protected function onAfterFetchAccessToken(stdClass $responseData)
     {
     }
 

@@ -2,6 +2,9 @@
 
 namespace Solspace\Addons\FreeformNext\Services;
 
+use Solspace\Addons\FreeformNext\Library\Composer\Components\Fields\Interfaces\NoStorageInterface;
+use ReflectionClass;
+use Exception;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\AbstractField;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\FieldInterface;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Fields\DataContainers\Option;
@@ -18,13 +21,12 @@ use Symfony\Component\Finder\SplFileInfo;
 
 class FieldsService implements FieldHandlerInterface
 {
-    /** @var array */
-    private static $optionsCache = array();
+    private static array $optionsCache = [];
 
     /**
      * @return array
      */
-    public function getFieldTypes()
+    public function getFieldTypes(): array
     {
         $fieldTypes = [
             FieldInterface::TYPE_TEXT               => 'Text',
@@ -42,8 +44,8 @@ class FieldsService implements FieldHandlerInterface
 
         $finder             = new Finder();
         $path               = __DIR__ . '/../Library/Pro/Fields';
-        $interface          = 'Solspace\Addons\FreeformNext\Library\Composer\Components\FieldInterface';
-        $noStorageInterface = 'Solspace\Addons\FreeformNext\Library\Composer\Components\Fields\Interfaces\NoStorageInterface';
+        $interface          = FieldInterface::class;
+        $noStorageInterface = NoStorageInterface::class;
         $baseNamespace      = 'Solspace\Addons\FreeformNext\Library\Pro\Fields';
 
         if (file_exists($path) && is_dir($path)) {
@@ -60,7 +62,7 @@ class FieldsService implements FieldHandlerInterface
                 /** @var AbstractField $className */
                 $className = $baseNamespace . "\\" . $baseName;
 
-                $reflectionClass = new \ReflectionClass($className);
+                $reflectionClass = new ReflectionClass($className);
                 if ($reflectionClass->implementsInterface($interface) && !$reflectionClass->implementsInterface($noStorageInterface)) {
                     $name = $className::getFieldTypeName();
                     $type = $className::getFieldType();
@@ -76,9 +78,9 @@ class FieldsService implements FieldHandlerInterface
     /**
      * @param FieldModel $model
      *
-     * @throws \Exception
+     * @throws Exception
      */
-    public function deleteFieldFromForms(FieldModel $model)
+    public function deleteFieldFromForms(FieldModel $model): void
     {
         $forms = FormRepository::getInstance()->getAllForms();
 
@@ -88,7 +90,7 @@ class FieldsService implements FieldHandlerInterface
                 $composer->removeFieldById($model->id);
                 $form->layoutJson = $composer->getComposerStateJSON();
                 $form->save();
-            } catch (\Exception $e) {
+            } catch (Exception) {
             }
         }
     }
@@ -97,7 +99,7 @@ class FieldsService implements FieldHandlerInterface
      * @param AbstractField $field
      * @param Form          $form
      */
-    public function beforeValidate(AbstractField $field, Form $form)
+    public function beforeValidate(AbstractField $field, Form $form): void
     {
         ExtensionHelper::call(ExtensionHelper::HOOK_FIELD_BEFORE_VALIDATE, $field, $form);
     }
@@ -106,7 +108,7 @@ class FieldsService implements FieldHandlerInterface
      * @param AbstractField $field
      * @param Form          $form
      */
-    public function afterValidate(AbstractField $field, Form $form)
+    public function afterValidate(AbstractField $field, Form $form): void
     {
         ExtensionHelper::call(ExtensionHelper::HOOK_FIELD_AFTER_VALIDATE, $field, $form);
     }

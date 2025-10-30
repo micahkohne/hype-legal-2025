@@ -6,27 +6,23 @@ use Solspace\Addons\FreeformNext\Library\Composer\Components\Form;
 
 class FormRenderObject
 {
-    /** @var Form */
-    private $form;
-
     /** @var string[] */
-    private $outputChunks;
+    private array $outputChunks;
 
     /**
      * FormRenderEvent constructor.
      *
      * @param Form $form
      */
-    public function __construct(Form $form)
+    public function __construct(private readonly Form $form)
     {
-        $this->form         = $form;
         $this->outputChunks = [];
     }
 
     /**
      * @return Form
      */
-    public function getForm()
+    public function getForm(): Form
     {
         return $this->form;
     }
@@ -34,7 +30,7 @@ class FormRenderObject
     /**
      * @return string
      */
-    public function getCompiledOutput()
+    public function getCompiledOutput(): string
     {
         return implode("\n", $this->outputChunks);
     }
@@ -44,7 +40,7 @@ class FormRenderObject
      *
      * @return FormRenderObject
      */
-    public function appendToOutput($value)
+    public function appendToOutput($value): static
     {
         $this->outputChunks[] = $value;
 
@@ -56,7 +52,7 @@ class FormRenderObject
      *
      * @return FormRenderObject
      */
-    public function appendJsToOutput($value)
+    public function appendJsToOutput($value): static
     {
         $this->outputChunks[] = "<script>$value</script>";
 
@@ -68,7 +64,7 @@ class FormRenderObject
      *
      * @return FormRenderObject
      */
-    public function appendCssToOutput($value)
+    public function appendCssToOutput($value): static
     {
         $this->outputChunks[] = "<style>$value</style>";
 

@@ -64,7 +64,7 @@ class ExtensionHelper
      *
      * @return bool
      */
-    public static function call($hookName, $arg1 = null)
+    public static function call($hookName, $arg1 = null): bool
     {
         $args     = func_get_args();
         $extClass = ee()->extensions;

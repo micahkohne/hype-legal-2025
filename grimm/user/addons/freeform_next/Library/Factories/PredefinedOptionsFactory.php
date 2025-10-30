@@ -14,12 +14,6 @@ class PredefinedOptionsFactory
     const TYPE_FULL             = 'full';
     const TYPE_ABBREVIATED      = 'abbreviated';
 
-    /** @var ExternalOptionsConfiguration */
-    private $configuration;
-
-    /** @var array */
-    private $selectedValues;
-
     /**
      * @param string                       $type
      * @param ExternalOptionsConfiguration $configuration
@@ -27,55 +21,23 @@ class PredefinedOptionsFactory
      *
      * @return Option[]
      */
-    public static function create($type, ExternalOptionsConfiguration $configuration, array $selectedValues = [])
+    public static function create($type, ExternalOptionsConfiguration $configuration, array $selectedValues = []): array
     {
         $instance = new self($configuration, $selectedValues);
 
-        switch ($type) {
-            case ExternalOptionsInterface::PREDEFINED_NUMBERS:
-                $options = $instance->getNumberOptions();
-                break;
-
-            case ExternalOptionsInterface::PREDEFINED_YEARS:
-                $options = $instance->getYearOptions();
-                break;
-
-            case ExternalOptionsInterface::PREDEFINED_MONTHS:
-                $options = $instance->getMonthOptions();
-                break;
-
-            case ExternalOptionsInterface::PREDEFINED_DAYS:
-                $options = $instance->getDayOptions();
-                break;
-
-            case ExternalOptionsInterface::PREDEFINED_DAYS_OF_WEEK:
-                $options = $instance->getDaysOfWeekOptions();
-                break;
-
-            case ExternalOptionsInterface::PREDEFINED_COUNTRIES:
-                $options = $instance->getCountryOptions();
-                break;
-
-            case ExternalOptionsInterface::PREDEFINED_LANGUAGES:
-                $options = $instance->getLanguageOptions();
-                break;
-
-            case ExternalOptionsInterface::PREDEFINED_PROVINCES:
-                $options = $instance->getProvinceOptions();
-                break;
-
-            case ExternalOptionsInterface::PREDEFINED_STATES:
-                $options = $instance->getStateOptions();
-                break;
-
-            case ExternalOptionsInterface::PREDEFINED_STATES_TERRITORIES:
-                $options = $instance->getStateTerritoryOptions();
-                break;
-
-            default:
-                $options = [];
-                break;
-        }
+        $options = match ($type) {
+            ExternalOptionsInterface::PREDEFINED_NUMBERS => $instance->getNumberOptions(),
+            ExternalOptionsInterface::PREDEFINED_YEARS => $instance->getYearOptions(),
+            ExternalOptionsInterface::PREDEFINED_MONTHS => $instance->getMonthOptions(),
+            ExternalOptionsInterface::PREDEFINED_DAYS => $instance->getDayOptions(),
+            ExternalOptionsInterface::PREDEFINED_DAYS_OF_WEEK => $instance->getDaysOfWeekOptions(),
+            ExternalOptionsInterface::PREDEFINED_COUNTRIES => $instance->getCountryOptions(),
+            ExternalOptionsInterface::PREDEFINED_LANGUAGES => $instance->getLanguageOptions(),
+            ExternalOptionsInterface::PREDEFINED_PROVINCES => $instance->getProvinceOptions(),
+            ExternalOptionsInterface::PREDEFINED_STATES => $instance->getStateOptions(),
+            ExternalOptionsInterface::PREDEFINED_STATES_TERRITORIES => $instance->getStateTerritoryOptions(),
+            default => [],
+        };
 
         if ($configuration->getEmptyOption()) {
             array_unshift($options, new Option(lang($configuration->getEmptyOption()), ''));
@@ -90,16 +52,14 @@ class PredefinedOptionsFactory
      * @param ExternalOptionsConfiguration $configuration
      * @param array                        $selectedValues
      */
-    private function __construct(ExternalOptionsConfiguration $configuration, array $selectedValues)
+    private function __construct(private readonly ExternalOptionsConfiguration $configuration, private readonly array $selectedValues)
     {
-        $this->configuration  = $configuration;
-        $this->selectedValues = $selectedValues;
     }
 
     /**
      * @return Option[]
      */
-    private function getNumberOptions()
+    private function getNumberOptions(): array
     {
         $options = [];
 
@@ -115,7 +75,7 @@ class PredefinedOptionsFactory
     /**
      * @return Option[]
      */
-    private function getYearOptions()
+    private function getYearOptions(): array
     {
         $options = [];
 
@@ -135,7 +95,7 @@ class PredefinedOptionsFactory
     /**
      * @return Option[]
      */
-    private function getMonthOptions()
+    private function getMonthOptions(): array
     {
         $options = [];
 
@@ -154,7 +114,7 @@ class PredefinedOptionsFactory
     /**
      * @return Option[]
      */
-    private function getDayOptions()
+    private function getDayOptions(): array
     {
         $options = [];
 
@@ -174,7 +134,7 @@ class PredefinedOptionsFactory
     /**
      * @return Option[]
      */
-    private function getDaysOfWeekOptions()
+    private function getDaysOfWeekOptions(): array
     {
         $options = [];
 
@@ -196,7 +156,7 @@ class PredefinedOptionsFactory
     /**
      * @return Option[]
      */
-    private function getCountryOptions()
+    private function getCountryOptions(): array
     {
         /** @var array $countries */
         static $countries;
@@ -220,7 +180,7 @@ class PredefinedOptionsFactory
     /**
      * @return Option[]
      */
-    private function getLanguageOptions()
+    private function getLanguageOptions(): array
     {
         /** @var array $languages */
         static $languages;
@@ -244,7 +204,7 @@ class PredefinedOptionsFactory
     /**
      * @return Option[]
      */
-    private function getProvinceOptions()
+    private function getProvinceOptions(): array
     {
         /** @var array $provinces */
         static $provinces;
@@ -268,7 +228,7 @@ class PredefinedOptionsFactory
     /**
      * @return Option[]
      */
-    private function getStateOptions()
+    private function getStateOptions(): array
     {
         /** @var array $states */
         static $states;
@@ -292,7 +252,7 @@ class PredefinedOptionsFactory
     /**
      * @return Option[]
      */
-    private function getStateTerritoryOptions()
+    private function getStateTerritoryOptions(): array
     {
         /** @var array $states */
         static $states;
@@ -319,7 +279,7 @@ class PredefinedOptionsFactory
      *
      * @return bool
      */
-    private function isChecked($value)
+    private function isChecked($value): bool
     {
         return \in_array((string) $value, $this->selectedValues, true);
     }
@@ -327,7 +287,7 @@ class PredefinedOptionsFactory
     /**
      * @return ExternalOptionsConfiguration
      */
-    private function getConfig()
+    private function getConfig(): ExternalOptionsConfiguration
     {
         return $this->configuration;
     }
@@ -337,22 +297,15 @@ class PredefinedOptionsFactory
      *
      * @return string
      */
-    private static function getMonthFormatFromType($type = null)
+    private static function getMonthFormatFromType($type = null): string
     {
         $format = 'F';
-        switch ($type) {
-            case self::TYPE_INT:
-                $format = 'n';
-                break;
-
-            case self::TYPE_INT_LEADING_ZERO:
-                $format = 'm';
-                break;
-
-            case self::TYPE_ABBREVIATED:
-                $format = 'M';
-                break;
-        }
+        $format = match ($type) {
+            self::TYPE_INT => 'n',
+            self::TYPE_INT_LEADING_ZERO => 'm',
+            self::TYPE_ABBREVIATED => 'M',
+            default => $format,
+        };
 
         return $format;
     }
@@ -362,15 +315,13 @@ class PredefinedOptionsFactory
      *
      * @return string
      */
-    private static function getDayFormatFromType($type = null)
+    private static function getDayFormatFromType($type = null): string
     {
         $format = 'd';
-        switch ($type) {
-            case self::TYPE_INT:
-            case self::TYPE_ABBREVIATED:
-                $format = 'j';
-                break;
-        }
+        $format = match ($type) {
+            self::TYPE_INT, self::TYPE_ABBREVIATED => 'j',
+            default => $format,
+        };
 
         return $format;
     }
@@ -380,18 +331,14 @@ class PredefinedOptionsFactory
      *
      * @return string
      */
-    private static function getDayOfTheWeekFormatFromType($type = null)
+    private static function getDayOfTheWeekFormatFromType($type = null): string
     {
         $format = 'l';
-        switch ($type) {
-            case self::TYPE_INT:
-                $format = 'N';
-                break;
-
-            case self::TYPE_ABBREVIATED:
-                $format = 'D';
-                break;
-        }
+        $format = match ($type) {
+            self::TYPE_INT => 'N',
+            self::TYPE_ABBREVIATED => 'D',
+            default => $format,
+        };
 
         return $format;
     }

@@ -18,8 +18,7 @@ abstract class FileObject
 {
     const HELP_LINK = 'https://solspace.com/';
 
-    /** @var Filesystem */
-    private static $filesystem;
+    private static ?Filesystem $filesystem = null;
 
     /** @var string */
     protected $name;

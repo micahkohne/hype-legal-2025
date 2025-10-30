@@ -2,7 +2,8 @@
 
 namespace Solspace\Addons\FreeformNext\Model;
 
-use EllisLab\ExpressionEngine\Service\Model\Model;
+use DateTime;
+use ExpressionEngine\Service\Model\Model;
 use Solspace\Addons\FreeformNext\Library\Integrations\DataObjects\FieldObject;
 
 /**
@@ -12,8 +13,8 @@ use Solspace\Addons\FreeformNext\Library\Integrations\DataObjects\FieldObject;
  * @property int       $resourceId
  * @property string    $name
  * @property int       $memberCount
- * @property \DateTime $dateCreated
- * @property \DateTime $dateUpdated
+ * @property DateTime $dateCreated
+ * @property DateTime $dateUpdated
  */
 class MailingListModel extends Model
 {
@@ -49,7 +50,7 @@ class MailingListModel extends Model
     /**
      * @return FieldObject[]
      */
-    public function getFieldObjects()
+    public function getFieldObjects(): array
     {
         /** @var MailingListFieldModel[] $fields */
         $fields = ee('Model')

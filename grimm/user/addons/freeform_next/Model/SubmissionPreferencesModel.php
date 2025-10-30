@@ -11,7 +11,7 @@
 
 namespace Solspace\Addons\FreeformNext\Model;
 
-use EllisLab\ExpressionEngine\Service\Model\Model;
+use ExpressionEngine\Service\Model\Model;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Fields\Interfaces\NoStorageInterface;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Form;
 use Solspace\Addons\FreeformNext\Library\DataObjects\SubmissionPreferenceSetting;
@@ -102,7 +102,7 @@ class SubmissionPreferencesModel extends Model
                     if (is_numeric($item['id'])) {
                         try {
                             $field = $formLayout->getFieldById($item['id']);
-                        } catch (FreeformException $e) {
+                        } catch (FreeformException) {
                             continue;
                         }
 

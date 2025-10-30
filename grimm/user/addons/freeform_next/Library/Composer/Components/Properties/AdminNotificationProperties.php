@@ -13,11 +13,18 @@ namespace Solspace\Addons\FreeformNext\Library\Composer\Components\Properties;
 
 class AdminNotificationProperties extends AbstractProperties
 {
+    protected string $format = 'html';
+
     /** @var string */
     protected $notificationId;
 
     /** @var string */
     protected $recipients;
+
+    public function getFormat(): string
+    {
+        return $this->format;
+    }
 
     /**
      * @return string
@@ -40,7 +47,7 @@ class AdminNotificationProperties extends AbstractProperties
      *
      * @return array
      */
-    public function getRecipientArray()
+    public function getRecipientArray(): array
     {
         $recipients = $this->getRecipients();
 
@@ -64,9 +71,10 @@ class AdminNotificationProperties extends AbstractProperties
      *
      * @return array
      */
-    protected function getPropertyManifest()
+    protected function getPropertyManifest(): array
     {
         return [
+            'format'         => self::TYPE_STRING,
             'notificationId' => self::TYPE_STRING,
             'recipients'     => self::TYPE_STRING,
         ];

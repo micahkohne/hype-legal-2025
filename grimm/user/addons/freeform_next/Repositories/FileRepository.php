@@ -2,6 +2,7 @@
 
 namespace Solspace\Addons\FreeformNext\Repositories;
 
+use Override;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Fields\FileUploadField;
 
 class FileRepository extends Repository
@@ -9,6 +10,7 @@ class FileRepository extends Repository
     /**
      * @return FileRepository
      */
+    #[Override]
     public static function getInstance()
     {
         return parent::getInstance();

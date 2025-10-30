@@ -11,6 +11,7 @@
 
 namespace Solspace\Addons\FreeformNext\Library\Composer\Components\Fields;
 
+use Override;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\AbstractField;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Fields\Interfaces\FileUploadInterface;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Fields\Interfaces\MultipleValueInterface;
@@ -38,24 +39,21 @@ class FileUploadField extends AbstractField implements MultipleValueInterface, F
     /**
      * Cache for handles meant for preventing duplicate file uploads when calling ::validate() and ::uploadFile()
      * Stores the assetID once as value for handle key
-     *
-     * @var array
      */
-    private static $filesUploaded = [];
+    private static array $filesUploaded = [];
 
     /**
      * Contains any errors for a given upload field
-     *
-     * @var array
      */
-    private static $filesUploadedErrors = [];
+    private static array $filesUploadedErrors = [];
 
     /**
      * @param bool $optionsAsValues
      *
      * @return string
      */
-    public function getValueAsString($optionsAsValues = true)
+    #[Override]
+    public function getValueAsString($optionsAsValues = true): string
     {
         return implode('|', $this->getValue());
     }
@@ -65,7 +63,7 @@ class FileUploadField extends AbstractField implements MultipleValueInterface, F
      *
      * @return string
      */
-    public function getType()
+    public function getType(): string
     {
         return self::TYPE_FILE;
     }
@@ -89,7 +87,7 @@ class FileUploadField extends AbstractField implements MultipleValueInterface, F
     /**
      * @return int
      */
-    public function getMaxFileSizeMB()
+    public function getMaxFileSizeMB(): int|float
     {
         return $this->getMaxFileSizeKB() / 1024;
     }
@@ -97,7 +95,7 @@ class FileUploadField extends AbstractField implements MultipleValueInterface, F
     /**
      * @return int
      */
-    public function getFileCount()
+    public function getFileCount(): int
     {
         $fileCount = (int) $this->fileCount;
 
@@ -107,7 +105,7 @@ class FileUploadField extends AbstractField implements MultipleValueInterface, F
     /**
      * @return string
      */
-    public function getInputHtml()
+    public function getInputHtml(): string
     {
         $attributes = $this->getCustomAttributes();
 
@@ -127,6 +125,7 @@ class FileUploadField extends AbstractField implements MultipleValueInterface, F
      *
      * @return array
      */
+    #[Override]
     protected function validate()
     {
         $uploadErrors = [];
@@ -144,7 +143,7 @@ class FileUploadField extends AbstractField implements MultipleValueInterface, F
                 }
 
                 foreach ($_FILES[$this->handle]['name'] as $index => $name) {
-                    $extension       = pathinfo($name, PATHINFO_EXTENSION);
+                    $extension       = pathinfo((string) $name, PATHINFO_EXTENSION);
                     $validExtensions = $this->getValidExtensions();
 
                     if (empty($_FILES[$this->handle]['tmp_name'][$index])) {
@@ -255,7 +254,7 @@ class FileUploadField extends AbstractField implements MultipleValueInterface, F
      *
      * @return array
      */
-    private function getValidExtensions()
+    private function getValidExtensions(): array
     {
         $allFileKinds = $this->getForm()->getFileUploadHandler()->getFileKinds();
 

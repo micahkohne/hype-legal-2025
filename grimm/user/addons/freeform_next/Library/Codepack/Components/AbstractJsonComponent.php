@@ -68,7 +68,7 @@ abstract class AbstractJsonComponent implements ComponentInterface
      * @return bool
      * @throws CodepackException
      */
-    private final function parseJson($location)
+    private function parseJson(string $location): bool
     {
         $jsonFile = $location . '/' . $this->fileName;
         if (!file_exists($jsonFile)) {

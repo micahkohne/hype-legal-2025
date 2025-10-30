@@ -11,6 +11,8 @@
 
 namespace Solspace\Addons\FreeformNext\Services;
 
+use Solspace\Addons\FreeformNext\Library\Integrations\MailingLists\MailingListIntegrationInterface;
+use ReflectionClass;
 use Solspace\Addons\FreeformNext\Library\Database\MailingListHandlerInterface;
 use Solspace\Addons\FreeformNext\Library\Exceptions\Integrations\IntegrationException;
 use Solspace\Addons\FreeformNext\Library\Exceptions\Integrations\ListNotFoundException;
@@ -31,8 +33,7 @@ use Psr\Http\Message\ResponseInterface;
 
 class MailingListsService  extends AbstractIntegrationService implements MailingListHandlerInterface
 {
-    /** @var array */
-    private static $integrations;
+    private static ?array $integrations = null;
 
     /**
      * @param AbstractMailingListIntegration $integration
@@ -40,7 +41,7 @@ class MailingListsService  extends AbstractIntegrationService implements Mailing
      *
      * @return bool
      */
-    public function updateLists(AbstractMailingListIntegration $integration, array $mailingLists)
+    public function updateLists(AbstractMailingListIntegration $integration, array $mailingLists): bool
     {
         $resourceIds = [];
         foreach ($mailingLists as $mailingList) {
@@ -123,7 +124,7 @@ class MailingListsService  extends AbstractIntegrationService implements Mailing
     /**
      * @param ListObject[] $mailingLists
      */
-    private function updateListFields(array $mailingLists)
+    private function updateListFields(array $mailingLists): void
     {
         /** @var array $metadata */
         $metadata = ee()
@@ -214,7 +215,7 @@ class MailingListsService  extends AbstractIntegrationService implements Mailing
     /**
      * @return IntegrationInterface[]
      */
-    public function getAllIntegrations()
+    public function getAllIntegrations(): array
     {
         return MailingListRepository::getInstance()->getAllIntegrationObjects();
     }
@@ -234,7 +235,7 @@ class MailingListsService  extends AbstractIntegrationService implements Mailing
      *
      * @return ListObject[]
      */
-    public function getLists(AbstractMailingListIntegration $integration)
+    public function getLists(AbstractMailingListIntegration $integration): array
     {
         /** @var array $data */
         $data = ee()
@@ -322,7 +323,7 @@ class MailingListsService  extends AbstractIntegrationService implements Mailing
      *
      * @param AbstractMailingListIntegration $integration
      */
-    public function flagMailingListIntegrationForUpdating(AbstractMailingListIntegration $integration)
+    public function flagMailingListIntegrationForUpdating(AbstractMailingListIntegration $integration): void
     {
         ee()
             ->db
@@ -336,10 +337,10 @@ class MailingListsService  extends AbstractIntegrationService implements Mailing
     /**
      * @return array
      */
-    public function getAllMailingListServiceProviders()
+    public function getAllMailingListServiceProviders(): array
     {
         if (null === self::$integrations) {
-            $interface = 'Solspace\Addons\FreeformNext\Library\Integrations\MailingLists\MailingListIntegrationInterface';
+            $interface = MailingListIntegrationInterface::class;
             $integrations = $validIntegrations = [];
 
             $addonIntegrations = [];
@@ -372,7 +373,7 @@ class MailingListsService  extends AbstractIntegrationService implements Mailing
 
 
             foreach ($integrations as $class => $name) {
-                $reflectionClass = new \ReflectionClass($class);
+                $reflectionClass = new ReflectionClass($class);
 
                 if ($reflectionClass->implementsInterface($interface)) {
                     $validIntegrations[$class] = $reflectionClass->getConstant('TITLE');
@@ -388,7 +389,7 @@ class MailingListsService  extends AbstractIntegrationService implements Mailing
     /**
      * @return array
      */
-    public function getAllMailingListSettingBlueprints()
+    public function getAllMailingListSettingBlueprints(): array
     {
         $serviceProviderTypes = $this->getAllMailingListServiceProviders();
 
@@ -444,7 +445,7 @@ class MailingListsService  extends AbstractIntegrationService implements Mailing
      *
      * @param AbstractMailingListIntegration $integration
      */
-    public function updateAccessToken(AbstractMailingListIntegration $integration)
+    public function updateAccessToken(AbstractMailingListIntegration $integration): void
     {
         $model              = MailingListRepository::getInstance()->getIntegrationById($integration->getId());
         $model->accessToken = $integration->getAccessToken();

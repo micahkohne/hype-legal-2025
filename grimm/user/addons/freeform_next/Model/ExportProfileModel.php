@@ -2,8 +2,10 @@
 
 namespace Solspace\Addons\FreeformNext\Model;
 
-use EllisLab\ExpressionEngine\Service\Database\Query;
-use EllisLab\ExpressionEngine\Service\Model\Model;
+use Exception;
+use DateTime;
+use ExpressionEngine\Service\Database\Query;
+use ExpressionEngine\Service\Model\Model;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Fields\Interfaces\NoStorageInterface;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Form;
 use Solspace\Addons\FreeformNext\Library\Exceptions\FreeformException;
@@ -51,7 +53,7 @@ class ExportProfileModel extends Model
     /**
      * @return array
      */
-    public static function createValidationRules()
+    public static function createValidationRules(): array
     {
         return [
             'name' => 'required',
@@ -85,7 +87,7 @@ class ExportProfileModel extends Model
     /**
      * @return int
      */
-    public function getSubmissionCount()
+    public function getSubmissionCount(): int|string
     {
         $command = $this->buildCommand();
 
@@ -100,7 +102,7 @@ class ExportProfileModel extends Model
             }
 
             return 0;
-        } catch (\Exception $e) {
+        } catch (Exception) {
             return 'Invalid Query';
         }
     }
@@ -114,13 +116,13 @@ class ExportProfileModel extends Model
 
         try {
             return $command->get()->result_array();
-        } catch (\Exception $e) {
+        } catch (Exception) {
             return [];
         }
     }
 
     /**
-     * @return \DateTime|null
+     * @return DateTime|null
      */
     public function getDateRangeEnd()
     {
@@ -129,22 +131,17 @@ class ExportProfileModel extends Model
         }
 
         if (is_numeric($this->dateRange)) {
-            $time = new \DateTime("-{$this->dateRange} days");
+            $time = new DateTime("-{$this->dateRange} days");
             $time->setTime(0, 0, 0);
 
             return $time;
         }
 
-        switch ($this->dateRange) {
-            case 'today':
-                return (new \DateTime('now'))->setTime(0, 0, 0);
-
-            case 'yesterday':
-                return (new \DateTime('-1 day'))->setTime(0, 0, 0);
-
-            default:
-                return new \DateTime('now');
-        }
+        return match ($this->dateRange) {
+            'today' => (new DateTime('now'))->setTime(0, 0, 0),
+            'yesterday' => (new DateTime('-1 day'))->setTime(0, 0, 0),
+            default => new DateTime('now'),
+        };
     }
 
     /**
@@ -166,7 +163,7 @@ class ExportProfileModel extends Model
                         $label = $field->getLabel();
 
                         $storedFieldIds[] = $field->getId();
-                    } catch (FreeformException $e) {
+                    } catch (FreeformException) {
                         continue;
                     }
                 }
@@ -231,17 +228,11 @@ class ExportProfileModel extends Model
             }
 
             $fieldName = is_numeric($fieldId) ? SubmissionModel::getFieldColumnName($fieldId) : $fieldId;
-            switch ($fieldName) {
-                case 'title':
-                    $fieldName = 's.' . $fieldName;
-                    break;
-                case 'status':
-                    $fieldName = 'stat.name AS status';
-                    break;
-                default:
-                    $fieldName = 's.' . $fieldName;
-                    break;
-            }
+            $fieldName = match ($fieldName) {
+                'title' => 's.' . $fieldName,
+                'status' => 'stat.name AS status',
+                default => 's.' . $fieldName,
+            };
 
             $searchableFields[] = $fieldName;
         }
@@ -292,15 +283,15 @@ class ExportProfileModel extends Model
                         break;
 
                     case 'like':
-                        if (preg_match('/^%.+%$/', $value)) {
+                        if (preg_match('/^%.+%$/', (string) $value)) {
                             $side  = 'both';
-                            $value = substr($value, 1, -1);
-                        } else if (preg_match('/^%/', $value)) {
+                            $value = substr((string) $value, 1, -1);
+                        } else if (preg_match('/^%/', (string) $value)) {
                             $side  = 'left';
-                            $value = substr($value, 1);
-                        } else if (preg_match('/%$/', $value)) {
+                            $value = substr((string) $value, 1);
+                        } else if (preg_match('/%$/', (string) $value)) {
                             $side  = 'right';
-                            $value = substr($value, 0, -1);
+                            $value = substr((string) $value, 0, -1);
                         } else {
                             $side = 'both';
                         }

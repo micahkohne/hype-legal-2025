@@ -11,6 +11,7 @@
 
 namespace Solspace\Addons\FreeformNext\Library\Composer\Components\Fields;
 
+use Override;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\AbstractField;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Fields\Interfaces\OptionsInterface;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Fields\Interfaces\SingleValueInterface;
@@ -26,7 +27,7 @@ class RadioGroupField extends AbstractExternalOptionsField implements SingleValu
      *
      * @return string
      */
-    public function getType()
+    public function getType(): string
     {
         return self::TYPE_RADIO_GROUP;
     }
@@ -36,7 +37,7 @@ class RadioGroupField extends AbstractExternalOptionsField implements SingleValu
      *
      * @return string
      */
-    public function getInputHtml()
+    public function getInputHtml(): string
     {
         $attributes = $this->getCustomAttributes();
         $output     = '';
@@ -67,6 +68,7 @@ class RadioGroupField extends AbstractExternalOptionsField implements SingleValu
      *
      * @return string
      */
+    #[Override]
     public function getValueAsString($optionsAsValues = true)
     {
         if (!$optionsAsValues) {

@@ -11,27 +11,13 @@
 
 namespace Solspace\Addons\FreeformNext\Library\Integrations\MailingLists\DataObjects;
 
+use JsonSerializable;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Layout;
 use Solspace\Addons\FreeformNext\Library\Integrations\DataObjects\FieldObject;
 use Solspace\Addons\FreeformNext\Library\Integrations\MailingLists\MailingListIntegrationInterface;
 
-class ListObject implements \JsonSerializable
+class ListObject implements JsonSerializable
 {
-    /** @var MailingListIntegrationInterface */
-    private $mailingList;
-
-    /** @var int */
-    private $id;
-
-    /** @var string */
-    private $name;
-
-    /** @var int */
-    private $memberCount;
-
-    /** @var FieldObject[] */
-    private $fields;
-
     /**
      * ListObject constructor.
      *
@@ -41,18 +27,8 @@ class ListObject implements \JsonSerializable
      * @param FieldObject[]                   $fields
      * @param int                             $memberCount
      */
-    public function __construct(
-        MailingListIntegrationInterface $mailingList,
-        $id,
-        $name,
-        array $fields = [],
-        $memberCount = 0
-    ) {
-        $this->id          = $id;
-        $this->name        = $name;
-        $this->fields      = $fields;
-        $this->memberCount = $memberCount;
-        $this->mailingList = $mailingList;
+    public function __construct(private readonly MailingListIntegrationInterface $mailingList, private $id, private $name, private readonly array $fields = [], private $memberCount = 0)
+    {
     }
 
     /**
@@ -74,7 +50,7 @@ class ListObject implements \JsonSerializable
     /**
      * @return FieldObject[]
      */
-    public function getFields()
+    public function getFields(): array
     {
         return $this->fields;
     }

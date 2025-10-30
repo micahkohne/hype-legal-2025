@@ -22,7 +22,7 @@ class File extends FileObject
      */
     protected function __construct($path)
     {
-        $filename = pathinfo($path, PATHINFO_FILENAME);
+        $filename = pathinfo((string) $path, PATHINFO_FILENAME);
 
         $this->folder = false;
         $this->path   = $path;
@@ -40,7 +40,7 @@ class File extends FileObject
      * @return void
      * @throws FileObjectException
      */
-    public function copy($target, $prefix = null, $callable = null, $filePrefix = null)
+    public function copy($target, $prefix = null, $callable = null, $filePrefix = null): void
     {
         $fs = $this->getFilesystem();
 

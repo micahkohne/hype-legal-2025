@@ -11,7 +11,9 @@
 
 namespace Solspace\Addons\FreeformNext\Model;
 
-use EllisLab\ExpressionEngine\Service\Model\Model;
+use JsonSerializable;
+use DateTime;
+use ExpressionEngine\Service\Model\Model;
 use Solspace\Addons\FreeformNext\Library\Helpers\FreeformHelper;
 
 /**
@@ -23,7 +25,7 @@ use Solspace\Addons\FreeformNext\Library\Helpers\FreeformHelper;
  * @property string $color
  * @property int    $sortOrder
  */
-class StatusModel extends Model implements \JsonSerializable
+class StatusModel extends Model implements JsonSerializable
 {
     const MODEL = 'freeform_next:StatusModel';
     const TABLE = 'freeform_next_statuses';
@@ -44,7 +46,7 @@ class StatusModel extends Model implements \JsonSerializable
     /**
      * @return array
      */
-    public static function createValidationRules()
+    public static function createValidationRules(): array
     {
         return [
             'name'      => 'required',
@@ -87,7 +89,7 @@ class StatusModel extends Model implements \JsonSerializable
     /**
      * Event beforeInsert sets the $dateCreated and $dateUpdated properties
      */
-    public function onBeforeInsert()
+    public function onBeforeInsert(): void
     {
         $this->set(
             [
@@ -100,15 +102,15 @@ class StatusModel extends Model implements \JsonSerializable
     /**
      * Event beforeUpdate sets the $dateUpdated property
      */
-    public function onBeforeUpdate()
+    public function onBeforeUpdate(): void
     {
         $this->set(['dateUpdated' => $this->getTimestampableDate()]);
     }
 
     /**
-     * @return \DateTime
+     * @return DateTime
      */
-    private function getTimestampableDate()
+    private function getTimestampableDate(): string
     {
         return date('Y-m-d H:i:s');
     }

@@ -21,7 +21,7 @@ class EESession implements SessionInterface
      */
     public function get($key, $defaultValue = null)
     {
-        return isset($_SESSION[$key]) ? $_SESSION[$key] : $defaultValue;
+        return $_SESSION[$key] ?? $defaultValue;
     }
 
     /**
@@ -30,7 +30,7 @@ class EESession implements SessionInterface
      *
      * @return $this
      */
-    public function set($key, $value)
+    public function set($key, $value): static
     {
         $_SESSION[$key] = $value;
 
@@ -42,7 +42,7 @@ class EESession implements SessionInterface
      *
      * @return bool
      */
-    public function remove($key)
+    public function remove($key): void
     {
         if (isset($_SESSION[$key])) {
             unset($_SESSION[$key]);

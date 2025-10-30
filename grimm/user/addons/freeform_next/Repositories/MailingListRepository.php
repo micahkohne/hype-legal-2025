@@ -2,6 +2,7 @@
 
 namespace Solspace\Addons\FreeformNext\Repositories;
 
+use Override;
 use Solspace\Addons\FreeformNext\Library\Integrations\IntegrationInterface;
 use Solspace\Addons\FreeformNext\Library\Integrations\MailingLists\AbstractMailingListIntegration;
 use Solspace\Addons\FreeformNext\Model\IntegrationModel;
@@ -11,6 +12,7 @@ class MailingListRepository extends Repository
     /**
      * @return MailingListRepository
      */
+    #[Override]
     public static function getInstance()
     {
         return parent::getInstance();
@@ -31,7 +33,7 @@ class MailingListRepository extends Repository
     /**
      * @return IntegrationInterface[]
      */
-    public function getAllIntegrationObjects()
+    public function getAllIntegrationObjects(): array
     {
         $models = $this->getAllIntegrations();
 

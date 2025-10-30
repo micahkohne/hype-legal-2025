@@ -18,10 +18,13 @@ use Solspace\Addons\FreeformNext\Library\EETags\Transformers\FormTransformer;
 use Solspace\Addons\FreeformNext\Library\Exceptions\FreeformException;
 use Solspace\Addons\FreeformNext\Library\Helpers\TemplateHelper;
 use Solspace\Addons\FreeformNext\Library\Session\FormValueContext;
+use Solspace\Addons\FreeformNext\Model\SpamReasonModel;
 use Solspace\Addons\FreeformNext\Model\SubmissionModel;
 use Solspace\Addons\FreeformNext\Repositories\FormRepository;
 use Solspace\Addons\FreeformNext\Repositories\SubmissionRepository;
+use Solspace\Addons\FreeformNext\Services\FilesService;
 use Solspace\Addons\FreeformNext\Services\HoneypotService;
+use Solspace\Addons\FreeformNext\Services\SettingsService;
 use Solspace\Addons\FreeformNext\Utilities\Plugin;
 
 require_once version_compare(PHP_VERSION, '8.0.0') < 0 ? __DIR__ . '/php7/vendor/autoload.php' : __DIR__ . '/vendor/autoload.php';
@@ -31,10 +34,10 @@ class Freeform_Next extends Plugin
     public function __construct()
     {
         // TODO: Prevent this from firing all the time
-        $fileService = new \Solspace\Addons\FreeformNext\Services\FilesService();
+        $fileService = new FilesService();
         $fileService->cleanUpUnfinalizedAssets();
 
-        $settingsService = new \Solspace\Addons\FreeformNext\Services\SettingsService();
+        $settingsService = new SettingsService();
         $settingsService->cleanUpDatabaseSessionData();
 
         $this->loadLanguageFiles();
@@ -42,7 +45,7 @@ class Freeform_Next extends Plugin
 
     /**
      * @return string
-     * @throws \Exception
+     * @throws Exception
      */
     public function render()
     {
@@ -101,7 +104,7 @@ class Freeform_Next extends Plugin
 
         $data = [];
         foreach ($forms as $formModel) {
-            $submissionCount = isset($submissionCounts[$formModel->id]) ? $submissionCounts[$formModel->id] : 0;
+            $submissionCount = $submissionCounts[$formModel->id] ?? 0;
             $data[]          = $transformer->transformForm($formModel->getForm(), $submissionCount);
         }
 
@@ -172,11 +175,11 @@ class Freeform_Next extends Plugin
     }
 
     /**
-     * @param Form $form
+     * @param ?Form $form
      *
      * @throws FreeformException
      */
-    public function submitForm(Form $form = null)
+    public function submitForm(?Form $form = null): void
     {
         if (null === $form) {
             $hash = $this->getPost(FormValueContext::FORM_HASH_KEY, null);
@@ -209,7 +212,7 @@ class Freeform_Next extends Plugin
                     $crypt = ee('Encrypt');
                     $postedReturnUrl = $crypt->decode($postedReturnUrl);
                     $postedReturnUrl = $crypt->decrypt($postedReturnUrl);
-                    $returnUrl = $postedReturnUrl ? $postedReturnUrl : $form->getReturnUrl();
+                    $returnUrl = $postedReturnUrl ?: $form->getReturnUrl();
                 } else {
                     $returnUrl = $form->getReturnUrl();
                 }
@@ -223,13 +226,15 @@ class Freeform_Next extends Plugin
                     );
                 }
 
+                $this->persistSpamReasons($form, $submissionModel);
+
                 if ($isAjaxRequest) {
                     $this->returnJson(
                         [
                             'success'      => true,
                             'finished'     => true,
                             'returnUrl'    => $returnUrl,
-                            'submissionId' => $submissionModel ? $submissionModel->id : null,
+                            'submissionId' => $submissionModel?->id,
                             'honeypot'     => [
                                 'name' => $honeypot->getName(),
                                 'hash' => $honeypot->getHash(),
@@ -277,6 +282,19 @@ class Freeform_Next extends Plugin
         }
     }
 
+    public function persistSpamReasons(Form $form, SubmissionModel $submissionModel): void
+    {
+        if (!$submissionModel->isSpam || !$form->isMarkedAsSpam()) {
+            return;
+        }
+
+        $spamReasons = $form->getSpamReasons();
+        foreach ($spamReasons as $reason) {
+            $model = SpamReasonModel::create($submissionModel->id, $reason['type'], $reason['message'], $reason['value']);
+            $model->save();
+        }
+    }
+
     /**
      * @return Form|null
      */
@@ -314,13 +332,13 @@ class Freeform_Next extends Plugin
      * @param Form                 $form
      * @param SubmissionAttributes $attributes
      */
-    private function findAndAttachSearchParams(Form $form, SubmissionAttributes $attributes)
+    private function findAndAttachSearchParams(Form $form, SubmissionAttributes $attributes): void
     {
         $table = ee()->db->dbprefix('freeform_next_submissions');
 
         foreach (ee()->TMPL->tagparams as $key => $value) {
-            if (preg_match("/^search:(\w+)$/", $key, $matches)) {
-                list ($_, $handle) = $matches;
+            if (preg_match("/^search:(\w+)$/", (string) $key, $matches)) {
+                [$_, $handle] = $matches;
 
                 $field = $form->get($handle);
                 if (!$field) {
@@ -344,17 +362,17 @@ class Freeform_Next extends Plugin
      *
      * @return    string    SQL to include in an existing query's WHERE clause
      */
-    public function field_search_sql($terms, $col_name, $site_id = false)
+    public function field_search_sql($terms, $col_name, $site_id = false): string
     {
         $search_method = '_field_search';
 
-        if (strncmp($terms, '=', 1) == 0) {
+        if (str_starts_with((string) $terms, '=')) {
             // Remove the '=' sign that specified exact match.
-            $terms = substr($terms, 1);
+            $terms = substr((string) $terms, 1);
 
             $search_method = '_exact_field_search';
-        } else if (strncmp($terms, '<', 1) == 0 ||
-            strncmp($terms, '>', 1) == 0) {
+        } else if (str_starts_with((string) $terms, '<') ||
+            str_starts_with((string) $terms, '>')) {
             $search_method = '_numeric_comparison_search';
         }
 
@@ -368,9 +386,9 @@ class Freeform_Next extends Plugin
      * search:field='>=20'
      * search:field='>3|<5'
      */
-    private function _numeric_comparison_search($terms, $col_name, $site_id)
+    private function _numeric_comparison_search($terms, $col_name, $site_id): string
     {
-        preg_match_all('/([<>]=?)(\d+)/', $terms, $matches, PREG_SET_ORDER);
+        preg_match_all('/([<>]=?)(\d+)/', (string) $terms, $matches, PREG_SET_ORDER);
 
         if (empty($matches)) {
             return $this->_field_search($terms, $col_name, $site_id);
@@ -393,7 +411,7 @@ class Freeform_Next extends Plugin
      *
      * search:field="=words|other words"
      */
-    private function _exact_field_search($terms, $col_name, $site_id = false)
+    private function _exact_field_search($terms, string $col_name, $site_id = false): string
     {
         // Did this because I don't like repeatedly checking
         // the beginning of the string with strncmp for that
@@ -402,14 +420,14 @@ class Freeform_Next extends Plugin
         $not     = false;
         $site_id = ($site_id !== false) ? 'wd.site_id=' . $site_id . ' AND ' : '';
 
-        if (strncasecmp($terms, 'not ', 4) == 0) {
+        if (strncasecmp((string) $terms, 'not ', 4) == 0) {
             $not   = true;
-            $terms = substr($terms, 4);
+            $terms = substr((string) $terms, 4);
         }
 
         // Trivial case, we don't have special IS_EMPTY handling.
-        if (strpos($terms, 'IS_EMPTY') === false) {
-            $no_is_empty = substr(ee()->functions->sql_andor_string(($not ? 'not ' . $terms : $terms), $col_name), 3) . ' ';
+        if (!str_contains((string) $terms, 'IS_EMPTY')) {
+            $no_is_empty = substr((string) ee()->functions->sql_andor_string(($not ? 'not ' . $terms : $terms), $col_name), 3) . ' ';
 
             if ($not) {
                 $no_is_empty = '(' . $no_is_empty . ' OR (' . $site_id . $col_name . ' IS NULL)) ';
@@ -418,7 +436,7 @@ class Freeform_Next extends Plugin
             return $no_is_empty;
         }
 
-        if (strpos($terms, '|') !== false) {
+        if (str_contains((string) $terms, '|')) {
             $terms = str_replace('IS_EMPTY|', '', $terms);
         } else {
             $terms = str_replace('IS_EMPTY', '', $terms);
@@ -433,7 +451,7 @@ class Freeform_Next extends Plugin
             // but may come back to it.
             $add_search = ee()->functions->sql_andor_string(($not ? 'not ' . $terms : $terms), $col_name);
             // remove the first AND output by ee()->functions->sql_andor_string() so we can parenthesize this clause
-            $add_search = '(' . $site_id . substr($add_search, 3) . ')';
+            $add_search = '(' . $site_id . substr((string) $add_search, 3) . ')';
 
             $conj = ($add_search != '' && !$not) ? 'OR' : 'AND';
         }
@@ -452,19 +470,19 @@ class Freeform_Next extends Plugin
      *
      *        search:field="words|other words|IS_EMPTY"
      */
-    private function _field_search($terms, $col_name, $site_id = false)
+    private function _field_search($terms, $col_name, $site_id = false): string
     {
         $not = '';
-        if (strncasecmp($terms, 'not ', 4) == 0) {
-            $terms = substr($terms, 4);
+        if (strncasecmp((string) $terms, 'not ', 4) == 0) {
+            $terms = substr((string) $terms, 4);
             $not   = 'NOT';
         }
 
-        if (strpos($terms, '&&') !== false) {
-            $terms = explode('&&', $terms);
+        if (str_contains((string) $terms, '&&')) {
+            $terms = explode('&&', (string) $terms);
             $andor = $not == 'NOT' ? 'OR' : 'AND';
         } else {
-            $terms = explode('|', $terms);
+            $terms = explode('|', (string) $terms);
             $andor = $not == 'NOT' ? 'AND' : 'OR';
         }
 
@@ -484,7 +502,7 @@ class Freeform_Next extends Plugin
                 // IS (NOT) NULL
                 $search_sql .= $not ? ' AND ' : ' OR ';
                 $search_sql .= $col_name . ' IS ' . ($not ?: '') . ' NULL) ';
-            } else if (strpos($term, '\W') !== false) // full word only, no partial matches
+            } else if (str_contains($term, '\W')) // full word only, no partial matches
             {
                 // Note: MySQL's nutty POSIX regex word boundary is [[:>:]]
                 $term = '([[:<:]]|^)' . preg_quote(str_replace('\W', '', $term)) . '([[:>:]]|$)';

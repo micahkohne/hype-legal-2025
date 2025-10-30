@@ -18,38 +18,27 @@ class EmailTemplate
 {
     const METADATA_PATTERN = "/{!--\s*__KEY__:\s*(.*)\s*--}/";
 
-    /** @var string */
-    private $name;
+    private readonly string $name;
 
-    /** @var string */
-    private $fileName;
+    private readonly string $fileName;
 
-    /** @var string */
-    private $handle;
+    private readonly string $handle;
 
-    /** @var string */
-    private $description;
+    private readonly ?string $description;
 
-    /** @var string */
-    private $templateData;
+    private readonly string|bool $templateData;
 
-    /** @var string */
-    private $fromEmail;
+    private readonly ?string $fromEmail;
 
-    /** @var string */
-    private $fromName;
+    private readonly ?string $fromName;
 
-    /** @var string */
-    private $replyToEmail;
+    private readonly ?string $replyToEmail;
 
-    /** @var bool */
-    private $includeAttachments;
+    private readonly bool $includeAttachments;
 
-    /** @var string */
-    private $subject;
+    private readonly ?string $subject;
 
-    /** @var string */
-    private $body;
+    private readonly ?string $body;
 
     /**
      * EmailTemplate constructor.
@@ -87,7 +76,7 @@ class EmailTemplate
     /**
      * @return string
      */
-    public function getName()
+    public function getName(): string
     {
         return $this->name;
     }
@@ -95,7 +84,7 @@ class EmailTemplate
     /**
      * @return string
      */
-    public function getHandle()
+    public function getHandle(): string|array
     {
         return $this->handle;
     }
@@ -103,7 +92,7 @@ class EmailTemplate
     /**
      * @return string
      */
-    public function getDescription()
+    public function getDescription(): ?string
     {
         return $this->description;
     }
@@ -111,7 +100,7 @@ class EmailTemplate
     /**
      * @return string
      */
-    public function getFromEmail()
+    public function getFromEmail(): ?string
     {
         return $this->fromEmail;
     }
@@ -119,7 +108,7 @@ class EmailTemplate
     /**
      * @return string
      */
-    public function getFromName()
+    public function getFromName(): ?string
     {
         return $this->fromName;
     }
@@ -127,7 +116,7 @@ class EmailTemplate
     /**
      * @return string
      */
-    public function getReplyToEmail()
+    public function getReplyToEmail(): ?string
     {
         return $this->replyToEmail;
     }
@@ -135,7 +124,7 @@ class EmailTemplate
     /**
      * @return bool
      */
-    public function isIncludeAttachments()
+    public function isIncludeAttachments(): bool
     {
         return $this->includeAttachments;
     }
@@ -143,7 +132,7 @@ class EmailTemplate
     /**
      * @return string
      */
-    public function getSubject()
+    public function getSubject(): ?string
     {
         return $this->subject;
     }
@@ -151,7 +140,7 @@ class EmailTemplate
     /**
      * @return string
      */
-    public function getBody()
+    public function getBody(): string|array|null
     {
         return $this->body;
     }
@@ -163,13 +152,13 @@ class EmailTemplate
      * @return null|string
      * @throws EmailTemplateException
      */
-    private function getMetadata($key, $required = false)
+    private function getMetadata(string $key, bool $required = false): ?string
     {
         $value   = null;
         $pattern = str_replace('__KEY__', $key, self::METADATA_PATTERN);
 
         if (preg_match($pattern, $this->templateData, $matches)) {
-            list ($_, $value) = $matches;
+            [$_, $value] = $matches;
             $value = trim($value);
         } else if ($required) {
             throw new EmailTemplateException(

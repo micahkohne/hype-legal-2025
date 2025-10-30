@@ -11,16 +11,18 @@
 
 namespace Solspace\Addons\FreeformNext\Repositories;
 
+use Override;
 use Solspace\Addons\FreeformNext\Model\ExportProfileModel;
 
 class ExportProfilesRepository extends Repository
 {
     /** @var ExportProfileModel[] */
-    private static $cache;
+    private static ?array $cache = null;
 
     /**
      * @return ExportProfilesRepository
      */
+    #[Override]
     public static function getInstance()
     {
         return parent::getInstance();

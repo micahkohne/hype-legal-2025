@@ -13,22 +13,14 @@ namespace Solspace\Addons\FreeformNext\Library\DataObjects;
 
 class FreeformStatistics
 {
-    /** @var int */
-    private $submissionCount;
-
-    /** @var int */
-    private $spamBlockCount;
-
     /**
      * FreeformStatistics constructor.
      *
      * @param int $submissionCount
      * @param int $spamBlockCount
      */
-    public function __construct($submissionCount, $spamBlockCount)
+    public function __construct(private $submissionCount, private $spamBlockCount)
     {
-        $this->submissionCount           = $submissionCount;
-        $this->spamBlockCount            = $spamBlockCount;
     }
 
     /**

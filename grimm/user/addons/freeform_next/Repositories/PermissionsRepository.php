@@ -2,6 +2,7 @@
 
 namespace Solspace\Addons\FreeformNext\Repositories;
 
+use Override;
 use Solspace\Addons\FreeformNext\Model\PermissionsModel;
 use Solspace\Addons\FreeformNext\Model\SettingsModel;
 
@@ -13,6 +14,7 @@ class PermissionsRepository extends Repository
     /**
      * @return PermissionsRepository
      */
+    #[Override]
     public static function getInstance()
     {
         return parent::getInstance();

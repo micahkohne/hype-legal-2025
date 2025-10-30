@@ -11,6 +11,9 @@
 
 namespace Solspace\Addons\FreeformNext\Library\Integrations\MailingLists;
 
+use JsonSerializable;
+use DateTime;
+use Exception;
 use Solspace\Addons\FreeformNext\Library\Configuration\ConfigurationInterface;
 use Solspace\Addons\FreeformNext\Library\Database\MailingListHandlerInterface;
 use Solspace\Addons\FreeformNext\Library\Exceptions\Integrations\IntegrationException;
@@ -22,19 +25,18 @@ use Solspace\Addons\FreeformNext\Library\Integrations\MailingLists\DataObjects\L
 use Solspace\Addons\FreeformNext\Library\Logging\LoggerInterface;
 use Solspace\Addons\FreeformNext\Library\Translations\TranslatorInterface;
 
-abstract class AbstractMailingListIntegration extends AbstractIntegration implements MailingListIntegrationInterface, IntegrationInterface, \JsonSerializable
+abstract class AbstractMailingListIntegration extends AbstractIntegration implements MailingListIntegrationInterface, IntegrationInterface, JsonSerializable
 {
     const TYPE = 'mailing_list';
 
-    /** @var MailingListHandlerInterface */
-    private $mailingListHandler;
+    private readonly MailingListHandlerInterface $mailingListHandler;
 
     /**
      * AbstractMailingList constructor.
      *
      * @param int                         $id
      * @param string                      $name
-     * @param \DateTime                   $lastUpdate
+     * @param DateTime $lastUpdate
      * @param string                      $accessToken
      * @param array|null                  $settings
      * @param LoggerInterface             $logger
@@ -45,7 +47,7 @@ abstract class AbstractMailingListIntegration extends AbstractIntegration implem
     public final function __construct(
         $id,
         $name,
-        \DateTime $lastUpdate,
+        DateTime $lastUpdate,
         $accessToken,
         $settings,
         LoggerInterface $logger,
@@ -120,7 +122,7 @@ abstract class AbstractMailingListIntegration extends AbstractIntegration implem
 	{
         try {
             $lists = $this->getLists();
-        } catch (\Exception $e) {
+        } catch (Exception) {
             $lists = [];
         }
 

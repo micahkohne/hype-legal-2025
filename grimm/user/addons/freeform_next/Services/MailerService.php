@@ -11,6 +11,7 @@
 
 namespace Solspace\Addons\FreeformNext\Services;
 
+use Exception;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Fields\Interfaces\FileUploadInterface;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Form;
 use Solspace\Addons\FreeformNext\Library\Exceptions\FreeformException;
@@ -28,6 +29,7 @@ class MailerService implements MailHandlerInterface
      * @param array                $recipients
      * @param int                  $notificationId
      * @param array                $fields
+     * @param string               $format
      * @param SubmissionModel|null $submission
      *
      * @return int
@@ -38,8 +40,9 @@ class MailerService implements MailHandlerInterface
         array $recipients,
         $notificationId,
         array $fields,
-        SubmissionModel $submission = null
-    ) {
+        string $format,
+        ?SubmissionModel $submission = null
+    ): int {
         $sentMailCount = 0;
         $notification  = $this->getNotificationById($notificationId);
 
@@ -49,25 +52,35 @@ class MailerService implements MailHandlerInterface
             );
         }
 
+        $fromEmail = TemplateHelper::renderStringWithForm($notification->fromEmail, $form, $submission);
+        $fromName  = TemplateHelper::renderStringWithForm($notification->fromName, $form, $submission);
+        $replyTo   = TemplateHelper::renderStringWithForm($notification->replyToEmail ?: $notification->fromEmail, $form, $submission);
+        $subject   = TemplateHelper::renderStringWithForm($notification->subject, $form, $submission);
+        $bodyHtml  = TemplateHelper::renderStringWithForm($notification->bodyHtml, $form, $submission, true);
+
+        if ($format === 'text') {
+            // Convert HTML entities
+            $plain = html_entity_decode($bodyHtml, ENT_QUOTES | ENT_HTML5, 'UTF-8');
+
+            // Strip tags
+            $plain = strip_tags($plain);
+
+            // Replace multiple whitespace (spaces, tabs, newlines) with a single newline
+            $plain = preg_replace('/[ \t]*\n[ \t]*/', "\n", $plain); // clean indentations
+            $plain = preg_replace('/\n{2,}/', "\n\n", $plain); // collapse excessive newlines
+
+            $bodyHtml = trim($plain);
+        }
+
         foreach ($recipients as $recipientName => $emailAddress) {
-
-            $fromEmail = TemplateHelper::renderStringWithForm($notification->fromEmail, $form, $submission);
-            $fromName  = TemplateHelper::renderStringWithForm($notification->fromName, $form, $submission);
-            $replyTo   = TemplateHelper::renderStringWithForm(
-                $notification->replyToEmail ?: $notification->fromEmail,
-                $form,
-                $submission
-            );
-            $subject   = TemplateHelper::renderStringWithForm($notification->subject, $form, $submission);
-            $bodyHtml  = TemplateHelper::renderStringWithForm($notification->bodyHtml, $form, $submission, true);
-
-
             ee()->load->library('email');
             ee()->load->helper('text');
 
             ee()->email->clear(true);
+            ee()->email->newline = "\r\n";
+            ee()->email->crlf = "\r\n";
             ee()->email->wordwrap = true;
-            ee()->email->mailtype = 'html';
+            ee()->email->mailtype = $format;
             ee()->email->from($fromEmail, $fromName);
             ee()->email->reply_to($replyTo, $fromName);
             ee()->email->to($emailAddress);
@@ -117,7 +130,7 @@ class MailerService implements MailHandlerInterface
                     $notification,
                     $submission
                 );
-            } catch (\Exception $e) {
+            } catch (Exception) {
             }
         }
 

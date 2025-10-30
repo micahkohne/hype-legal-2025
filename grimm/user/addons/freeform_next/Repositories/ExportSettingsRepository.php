@@ -2,6 +2,7 @@
 
 namespace Solspace\Addons\FreeformNext\Repositories;
 
+use Override;
 use Solspace\Addons\FreeformNext\Model\ExportSettingModel;
 
 class ExportSettingsRepository extends Repository
@@ -9,6 +10,7 @@ class ExportSettingsRepository extends Repository
     /**
      * @return ExportSettingsRepository
      */
+    #[Override]
     public static function getInstance()
     {
         return parent::getInstance();

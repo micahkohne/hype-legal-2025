@@ -11,7 +11,7 @@ class CryptoHelper
      *
      * @return string
      */
-    public static function getUniqueToken($length = 40)
+    public static function getUniqueToken($length = 40): string
     {
         $token        = '';
         $codeAlphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';

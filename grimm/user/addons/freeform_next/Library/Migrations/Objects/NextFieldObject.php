@@ -1,11 +1,16 @@
 <?php
-
 /**
- * Created by PhpStorm.
- * User: codeno
- * Date: 17.15.11
- * Time: 15:04
+ * Freeform for ExpressionEngine
+ *
+ * @package       Solspace:Freeform
+ * @author        Solspace, Inc.
+ * @copyright     Copyright (c) 2008-2025, Solspace, Inc.
+ * @link          https://docs.solspace.com/expressionengine/freeform/v3/
+ * @license       https://docs.solspace.com/license-agreement/
  */
+
+namespace Solspace\Addons\FreeformNext\Library\Migrations\Objects;
+
 class NextFieldObject
 {
 

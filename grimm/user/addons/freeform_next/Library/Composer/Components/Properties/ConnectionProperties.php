@@ -43,7 +43,7 @@ class ConnectionProperties extends AbstractProperties
     /**
      * @inheritDoc
      */
-    protected function getPropertyManifest()
+    protected function getPropertyManifest(): array
     {
         return [
             'list' => self::TYPE_ARRAY,

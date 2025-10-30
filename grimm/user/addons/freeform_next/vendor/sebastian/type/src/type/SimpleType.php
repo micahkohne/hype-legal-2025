@@ -11,24 +11,22 @@ namespace SebastianBergmann\Type;
 
 use function strtolower;
 
+/**
+ * @no-named-arguments Parameter names are not covered by the backward compatibility promise for this library
+ */
 final class SimpleType extends Type
 {
     /**
-     * @var string
+     * @var non-empty-string
      */
-    private $name;
+    private string $name;
+    private bool $allowsNull;
+    private mixed $value;
 
     /**
-     * @var bool
+     * @param non-empty-string $name
      */
-    private $allowsNull;
-
-    /**
-     * @var mixed
-     */
-    private $value;
-
-    public function __construct(string $name, bool $nullable, $value = null)
+    public function __construct(string $name, bool $nullable, mixed $value = null)
     {
         $this->name       = $this->normalize($name);
         $this->allowsNull = $nullable;
@@ -38,6 +36,10 @@ final class SimpleType extends Type
     public function isAssignable(Type $other): bool
     {
         if ($this->allowsNull && $other instanceof NullType) {
+            return true;
+        }
+
+        if ($this->name === 'bool' && $other->name() === 'true') {
             return true;
         }
 
@@ -52,6 +54,9 @@ final class SimpleType extends Type
         return false;
     }
 
+    /**
+     * @return non-empty-string
+     */
     public function name(): string
     {
         return $this->name;
@@ -62,7 +67,7 @@ final class SimpleType extends Type
         return $this->allowsNull;
     }
 
-    public function value()
+    public function value(): mixed
     {
         return $this->value;
     }
@@ -72,26 +77,21 @@ final class SimpleType extends Type
         return true;
     }
 
+    /**
+     * @param non-empty-string $name
+     *
+     * @return non-empty-string
+     */
     private function normalize(string $name): string
     {
         $name = strtolower($name);
 
-        switch ($name) {
-            case 'boolean':
-                return 'bool';
-
-            case 'real':
-            case 'double':
-                return 'float';
-
-            case 'integer':
-                return 'int';
-
-            case '[]':
-                return 'array';
-
-            default:
-                return $name;
-        }
+        return match ($name) {
+            'boolean' => 'bool',
+            'real', 'double' => 'float',
+            'integer' => 'int',
+            '[]'      => 'array',
+            default   => $name,
+        };
     }
 }

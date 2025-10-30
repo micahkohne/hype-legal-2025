@@ -12,7 +12,7 @@ class UpdateController extends Controller
     /**
      * @return View
      */
-    public function index()
+    public function index(): CpView
     {
         $updateService = new UpdateService();
 

@@ -41,4 +41,11 @@ $lang = [
 	// Tables
 	'add_row' => 'Add Row',
 	'remove_row' => 'Remove Row',
+
+    'spamReason' => 'Spam Reason',
+    'spamReasonType' => 'Type',
+    'spamReasonMessage' => 'Message',
+    'spamReasonValue' => 'Value',
+    'honeypot' => 'Honeypot',
+    'recaptcha' => 'reCAPTCHA',
 ];

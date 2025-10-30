@@ -1,0 +1,164 @@
+/**
+ * JCOGS Image Pro - Preset Analytics Styles
+ * ==========================================
+ * CSS styles for preset analytics and statistics interface
+ * 
+ * @category   ExpressionEngine Add-on
+ * @package    JCOGS Image Pro
+ * @author     JCOGS Design <contact@jcogs.net>
+ * @copyright  Copyright (c) 2021 - 2025 JCOGS Design
+ * @license    https://jcogs.net/add-ons/license/jcogs_img_pro
+ * @version    2.0.0-beta4
+ * @link       https://JCOGS.net/
+ * @since      Preset Analytics Interface Implementation
+ */
+
+/* Analytics Container */
+.preset-analytics-container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Analytics Summary Grid */
+.analytics-summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+/* Metric Cards */
+.metric-card {
+    background: #f8f9fa;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    padding: 20px;
+    text-align: center;
+    transition: transform 0.2s ease;
+}
+
+.metric-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.usage-metric { border-color: #28a745; }
+.error-metric { border-color: #dc3545; }
+.performance-metric { border-color: #007bff; }
+.activity-metric { border-color: #6f42c1; }
+
+.metric-value {
+    font-size: 2.5em;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.metric-label {
+    font-size: 1.1em;
+    font-weight: 600;
+    color: #495057;
+    margin-bottom: 5px;
+}
+
+.metric-detail {
+    font-size: 0.9em;
+    color: #6c757d;
+}
+
+/* Insight Lists */
+.insight-list {
+    list-style: none;
+    padding: 0;
+}
+
+.insight-list li {
+    padding: 10px 15px;
+    margin: 8px 0;
+    border-radius: 5px;
+    border-left: 4px solid;
+}
+
+.insight-positive {
+    background: #d4edda;
+    border-color: #28a745;
+    color: #155724;
+}
+
+.insight-neutral {
+    background: #d1ecf1;
+    border-color: #17a2b8;
+    color: #0c5460;
+}
+
+.insight-warning {
+    background: #fff3cd;
+    border-color: #ffc107;
+    color: #856404;
+}
+
+.insight-error {
+    background: #f8d7da;
+    border-color: #dc3545;
+    color: #721c24;
+}
+
+/* Popular Presets List */
+.popular-presets-list {
+    margin: 15px 0;
+}
+
+.popular-preset-item {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    margin: 5px 0;
+    background: #f8f9fa;
+    border-radius: 5px;
+}
+
+.popular-preset-item.current-preset {
+    background: #e3f2fd;
+    border: 2px solid #2196f3;
+}
+
+.rank {
+    font-weight: bold;
+    margin-right: 15px;
+    min-width: 30px;
+}
+
+.preset-name {
+    flex: 1;
+    font-weight: 500;
+}
+
+.current-badge {
+    background: #2196f3;
+    color: white;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.8em;
+    margin-left: 10px;
+}
+
+.usage-count {
+    font-weight: 600;
+    color: #495057;
+}
+
+/* Analytics Actions */
+.analytics-actions {
+    text-align: center;
+}
+
+.analytics-actions .btn {
+    margin: 0 5px;
+}
+
+/* Site Totals */
+.site-totals {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #dee2e6;
+    text-align: center;
+}

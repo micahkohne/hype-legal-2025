@@ -13,7 +13,7 @@ class Validator
      *
      * @return ConstraintViolationList
      */
-    public function validate(AbstractField $field, $value)
+    public function validate(AbstractField $field, $value): ConstraintViolationList
     {
         $violationList = new ConstraintViolationList();
 

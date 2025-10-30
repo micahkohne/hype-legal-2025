@@ -144,6 +144,7 @@ CREATE TABLE IF NOT EXISTS `exp_freeform_next_submissions` (
   `siteId`      INT(11)      NOT NULL  DEFAULT '1',
   `statusId`    INT(11)                DEFAULT NULL,
   `formId`      INT(11)      NOT NULL,
+  `isSpam`      INT(11)      NOT NULL  DEFAULT '0',
   `token`       VARCHAR(100) NOT NULL,
   `title`       VARCHAR(255) NULL      DEFAULT NULL,
   `dateCreated` DATETIME               DEFAULT NULL,
@@ -152,6 +153,23 @@ CREATE TABLE IF NOT EXISTS `exp_freeform_next_submissions` (
   KEY `ffn_submissions_statusId_fk` (`statusId`),
   KEY `ffn_submissions_formId_fk` (`formId`),
   UNIQUE KEY `ffn_submissions_token` (`token`)
+) CHARACTER SET utf8 COLLATE utf8_general_ci;
+
+CREATE TABLE IF NOT EXISTS `exp_freeform_next_spam_reasons` (
+    `id`            INT(11)      NOT NULL  AUTO_INCREMENT,
+    `siteId`        INT(11)      NOT NULL  DEFAULT '1',
+    `submissionId`  INT(11)      NOT NULL,
+    `reasonType`    VARCHAR(100) NOT NULL,
+    `reasonMessage` TEXT         NULL      DEFAULT NULL,
+    `reasonValue`   TEXT         NULL      DEFAULT NULL,
+    `dateCreated`   DATETIME               DEFAULT NULL,
+    `dateUpdated`   DATETIME               DEFAULT NULL,
+    PRIMARY KEY (`id`),
+    KEY `ffn_spam_reasons_submissionId` (`submissionId`),
+    CONSTRAINT `ffn_spam_reasons_submissionId_fk`
+        FOREIGN KEY (`submissionId`)
+        REFERENCES `{$submissionsTable}` (`id`)
+        ON DELETE CASCADE
 ) CHARACTER SET utf8 COLLATE utf8_general_ci;
 
 CREATE TABLE IF NOT EXISTS `exp_freeform_next_export_profiles` (

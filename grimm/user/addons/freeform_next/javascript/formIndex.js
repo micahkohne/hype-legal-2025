@@ -1,1 +1,66 @@
-"use strict";$(function(){$(".reset-spam-count").on({click:function(a){var r=$(a.target),t=r.data("confirm-message");if(!confirm(t))return!1;var o=r.data("form-id");$.ajax({url:r.data("url"),type:"post",data:{formId:o,csrf:r.data("csrf")},dataType:"json",success:function(a){a.error?alert(a.error):a.success&&window.location.reload(!1)}})}}),$(".duplicate").on({click:function(a){var r=$(a.target),t=r.data("form-id");$.ajax({url:r.data("url"),type:"post",data:{formId:t,csrf:r.data("csrf")},dataType:"json",success:function(a){a.error?alert(a.error):a.success&&window.location.reload(!1)}})}})});
+/*
+ * Freeform for ExpressionEngine
+ *
+ * @package       Solspace:Freeform
+ * @author        Solspace, Inc.
+ * @copyright     Copyright (c) 2008-2025, Solspace, Inc.
+ * @link          https://docs.solspace.com/expressionengine/freeform/v3/
+ * @license       https://docs.solspace.com/license-agreement/
+ */
+
+$(function () {
+  $(".reset-spam-count").on({
+    click: (e) => {
+      const self = $(e.target);
+      const msg  = self.data("confirm-message");
+
+      if (!confirm(msg)) {
+        return false;
+      }
+
+      const formId = self.data("form-id");
+
+      $.ajax({
+        url: self.data('url'),
+        type: "post",
+        data: {
+          formId: formId,
+          csrf: self.data("csrf"),
+        },
+        dataType: "json",
+        success: (response) => {
+          if (response.error) {
+            alert(response.error);
+          } else if (response.success) {
+            window.location.reload(false);
+          }
+        }
+      })
+    }
+  });
+
+  $(".duplicate").on({
+    click: (e) => {
+      const self = $(e.target);
+
+      const formId = self.data("form-id");
+
+      $.ajax({
+        url: self.data('url'),
+        type: "post",
+        data: {
+          formId: formId,
+          csrf: self.data("csrf"),
+        },
+        dataType: "json",
+        success: (response) => {
+          if (response.error) {
+            alert(response.error);
+          } else if (response.success) {
+            window.location.reload(false);
+          }
+        }
+      })
+    }
+  });
+});

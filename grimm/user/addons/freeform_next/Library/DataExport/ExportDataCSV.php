@@ -21,7 +21,7 @@ class ExportDataCSV extends ExportData
      *
      * @return string
      */
-    public function generateRow($row) {
+    public function generateRow($row): string {
         foreach ($row as $key => $value) {
             // Escape inner quotes by double-quoting and wrap non-empty contents in new quotes
             if (!empty($value)) {
@@ -31,8 +31,8 @@ class ExportDataCSV extends ExportData
         return implode(',', $row) . "\n";
     }
 
-    public function sendHttpHeaders() {
+    public function sendHttpHeaders(): void {
         header('Content-type: text/csv');
-        header('Content-Disposition: attachment; filename=' .basename($this->filename));
+        header('Content-Disposition: attachment; filename=' .basename((string) $this->filename));
     }
 }

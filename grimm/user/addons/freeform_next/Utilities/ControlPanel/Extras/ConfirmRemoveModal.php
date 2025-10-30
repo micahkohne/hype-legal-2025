@@ -5,9 +5,6 @@ namespace Solspace\Addons\FreeformNext\Utilities\ControlPanel\Extras;
 class ConfirmRemoveModal extends Modal
 {
     /** @var string */
-    private $url;
-
-    /** @var string */
     private $name;
 
     /** @var string */
@@ -19,17 +16,15 @@ class ConfirmRemoveModal extends Modal
     /** @var string */
     private $plural;
 
-    /** @var array */
-    private $variables;
+    private array $variables;
 
     /**
      * ConfirmRemoveModal constructor.
      *
      * @param string $url
      */
-    public function __construct($url)
+    public function __construct(private $url)
     {
-        $this->url       = $url;
         $this->variables = [];
     }
 
@@ -38,7 +33,7 @@ class ConfirmRemoveModal extends Modal
      *
      * @return $this
      */
-    public function setUrl($url)
+    public function setUrl($url): static
     {
         $this->url = $url;
 
@@ -50,7 +45,7 @@ class ConfirmRemoveModal extends Modal
      *
      * @return $this
      */
-    public function setName($name)
+    public function setName($name): static
     {
         $this->name = $name;
 
@@ -60,7 +55,7 @@ class ConfirmRemoveModal extends Modal
     /**
      * @param string $description
      */
-    public function setDescription($description)
+    public function setDescription($description): void
     {
         $this->description = $description;
     }
@@ -70,7 +65,7 @@ class ConfirmRemoveModal extends Modal
      *
      * @return $this
      */
-    public function setKind($kind)
+    public function setKind($kind): static
     {
         $this->kind = $kind;
 
@@ -82,7 +77,7 @@ class ConfirmRemoveModal extends Modal
      *
      * @return $this
      */
-    public function setPlural($plural)
+    public function setPlural($plural): static
     {
         $this->plural = $plural;
 
@@ -95,7 +90,7 @@ class ConfirmRemoveModal extends Modal
      *
      * @return $this
      */
-    public function addVariable($key, $value)
+    public function addVariable($key, $value): static
     {
         $this->variables[$key] = $value;
 
@@ -105,7 +100,7 @@ class ConfirmRemoveModal extends Modal
     /**
      * Combines all variables and adds the Modal to the CP
      */
-    public function compile()
+    public function compile(): void
     {
         $variables = [
             'name'      => 'modal-confirm-remove',

@@ -19,31 +19,12 @@ class SettingBlueprint
     const TYPE_PASSWORD = 'password';
     const TYPE_BOOL     = 'bool';
 
-    /** @var string */
-    private $type;
-
-    /** @var string */
-    private $handle;
-
-    /** @var string */
-    private $label;
-
-    /** @var string */
-    private $instructions;
-
-    /** @var bool */
-    private $required;
-
-    /** @var string */
-    private $attributes;
-
-    /** @var string */
-    private $value;
+    private readonly bool $required;
 
     /**
      * @return array
      */
-    public static function getEditableTypes()
+    public static function getEditableTypes(): array
     {
         return [
             self::TYPE_TEXT,
@@ -64,21 +45,15 @@ class SettingBlueprint
      * @param string $value
      */
     public function __construct(
-        $type,
-        $handle,
-        $label,
-        $instructions,
+        private $type,
+        private $handle,
+        private $label,
+        private $instructions,
         $required = false,
-        $attributes = "",
-        $value = ""
+        private $attributes = "",
+        private $value = ""
     ) {
-        $this->type         = $type;
-        $this->handle       = $handle;
-        $this->label        = $label;
-        $this->instructions = $instructions;
         $this->required     = (bool)$required;
-        $this->attributes   = $attributes;
-        $this->value        = $value;
     }
 
     /**
@@ -116,7 +91,7 @@ class SettingBlueprint
     /**
      * @return boolean
      */
-    public function isRequired()
+    public function isRequired(): bool
     {
         return $this->required;
     }
@@ -140,7 +115,7 @@ class SettingBlueprint
     /**
      * @return bool
      */
-    public function isEditable()
+    public function isEditable(): bool
     {
         return in_array($this->getType(), self::getEditableTypes(), true);
     }

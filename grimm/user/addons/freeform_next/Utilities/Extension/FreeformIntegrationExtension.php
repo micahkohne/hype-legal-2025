@@ -18,7 +18,7 @@ abstract class FreeformIntegrationExtension extends Extension
     {
         return [
             new Hook(
-                get_class($this),
+                static::class,
                 self::REGISTER_TYPES_METHOD,
                 self::HOOK_REGISTER_INTEGRATIONS,
                 $this->version

@@ -7,6 +7,7 @@ use Solspace\Addons\FreeformNext\Library\Composer\Components\Form;
 use Solspace\Addons\FreeformNext\Library\DataObjects\FormRenderObject;
 use Solspace\Addons\FreeformNext\Library\Helpers\FreeformHelper;
 use Solspace\Addons\FreeformNext\Library\Pro\Fields\RecaptchaField;
+use Solspace\Addons\FreeformNext\Repositories\FormRepository;
 use Solspace\Addons\FreeformNext\Repositories\SettingsRepository;
 use Solspace\Addons\FreeformNext\Services\HoneypotService;
 use Solspace\Addons\FreeformNext\Services\PermissionsService;
@@ -97,7 +98,7 @@ class Freeform_next_ext
     /**
      * @param Form $form
      */
-    public function validateRecaptcha(Form $form)
+    public function validateRecaptcha(Form $form): void
     {
         $this->getRecaptchaService()->validateFormRecaptcha($form);
     }
@@ -106,7 +107,7 @@ class Freeform_next_ext
      * @param Form             $form
      * @param FormRenderObject $renderObject
      */
-    public function addRecaptchaInputToForm(Form $form, FormRenderObject $renderObject)
+    public function addRecaptchaInputToForm(Form $form, FormRenderObject $renderObject): void
     {
         $this->getRecaptchaService()->addRecaptchaInputToForm($renderObject);
     }
@@ -115,7 +116,7 @@ class Freeform_next_ext
      * @param Form             $form
      * @param FormRenderObject $renderObject
      */
-    public function addRecaptchaJavascriptToForm(Form $form, FormRenderObject $renderObject)
+    public function addRecaptchaJavascriptToForm(Form $form, FormRenderObject $renderObject): void
     {
         $this->getRecaptchaService()->addRecaptchaJavascriptToForm($renderObject);
     }
@@ -123,7 +124,7 @@ class Freeform_next_ext
     /**
      * @param Form $form
      */
-    public function validateHoneypot(Form $form)
+    public function validateHoneypot(Form $form): void
     {
         $this->getHoneypotService()->validateFormHoneypot($form);
     }
@@ -132,7 +133,7 @@ class Freeform_next_ext
      * @param Form             $form
      * @param FormRenderObject $renderObject
      */
-    public function addHoneypotInputToForm(Form $form, FormRenderObject $renderObject)
+    public function addHoneypotInputToForm(Form $form, FormRenderObject $renderObject): void
     {
     	if($this->getSettingsService()->getSettingsModel()->isSpamProtectionEnabled())
 		{
@@ -144,7 +145,7 @@ class Freeform_next_ext
      * @param Form             $form
      * @param FormRenderObject $renderObject
      */
-    public function addHoneypotJavascriptToForm(Form $form, FormRenderObject $renderObject)
+    public function addHoneypotJavascriptToForm(Form $form, FormRenderObject $renderObject): void
     {
         $this->getHoneypotService()->addFormJavascript($renderObject);
     }
@@ -153,20 +154,21 @@ class Freeform_next_ext
      * @param Form             $form
      * @param FormRenderObject $renderObject
      */
-    public function addDateTimeJavascript(Form $form, FormRenderObject $renderObject)
+    public function addDateTimeJavascript(Form $form, FormRenderObject $renderObject): void
     {
         if ($form->getLayout()->hasDatepickerEnabledFields()) {
             static $datepickerLoaded;
 
             if (null === $datepickerLoaded) {
-                $flatpickrCss = file_get_contents(PATH_THIRD_THEMES . 'freeform_next/css/fields/datepicker.css');
-                $renderObject->appendCssToOutput($flatpickrCss);
+                // Construct URL to your Freeform theme assets
+                $themeUrl = rtrim(URL_THIRD_THEMES, '/') . '/freeform_next';
 
-                $flatpickrJs = file_get_contents(__DIR__ . '/javascript/fields/flatpickr.js');
-                $datepickerJs = file_get_contents(__DIR__ . '/javascript/fields/datepicker.js');
-
-                $renderObject->appendJsToOutput($flatpickrJs);
-                $renderObject->appendJsToOutput($datepickerJs);
+                // Inject external <link> and <script> tags directly into the form HTML
+                $renderObject->appendToOutput('
+                    <link rel="stylesheet" href="' . $themeUrl . '/css/fields/datepicker.css">
+                    <script src="' . $themeUrl . '/javascript/fields/flatpickr.js"></script>
+                    <script src="' . $themeUrl . '/javascript/fields/datepicker.js"></script>
+                ');
 
                 $datepickerLoaded = true;
             }
@@ -177,7 +179,7 @@ class Freeform_next_ext
      * @param Form             $form
      * @param FormRenderObject $renderObject
      */
-    public function addTableJavascript(Form $form, FormRenderObject $renderObject)
+    public function addTableJavascript(Form $form, FormRenderObject $renderObject): void
     {
         if ($form->getLayout()->hasTableFields()) {
             static $tableScriptLoaded;
@@ -195,7 +197,7 @@ class Freeform_next_ext
      * @param Form             $form
      * @param FormRenderObject $renderObject
      */
-    public function addFormDisabledJavascript(Form $form, FormRenderObject $renderObject)
+    public function addFormDisabledJavascript(Form $form, FormRenderObject $renderObject): void
     {
         if ($this->getSettingsService()->isFormSubmitDisable()) {
             // Add the form submit disable logic
@@ -214,7 +216,7 @@ class Freeform_next_ext
      * @param Form             $form
      * @param FormRenderObject $renderObject
      */
-    public function addFormAnchorJavascript(Form $form, FormRenderObject $renderObject)
+    public function addFormAnchorJavascript(Form $form, FormRenderObject $renderObject): void
     {
         $autoScroll = $this->getSettingsService()->getSettingsModel()->isAutoScrollToErrors();
 
@@ -231,52 +233,76 @@ class Freeform_next_ext
 	 *
 	 * @param object $menu ExpressionEngine\Service\CustomMenu\Menu
 	 */
-    public function addCpCustomMenu($menu)
+    public function addCpCustomMenu($menu): void
 	{
 		$permissionsService = new PermissionsService;
 
 		$sub = $menu->addSubmenu(FreeformHelper::get('name'));
 
-		if($permissionsService->canManageForms(ee()->session->userdata('group_id')))
-		{
-			$sub->addItem(
-				lang('Forms'),
-				ee('CP/URL', 'addons/settings/freeform_next/forms')
-			);
-		}
+        $canManageForms = $permissionsService->canManageForms(ee()->session->userdata('group_id'));
+        $canAccessSubmissions = $permissionsService->canAccessSubmissions(ee()->session->userdata('group_id'));
+        $canAccessFields = $permissionsService->canAccessFields(ee()->session->userdata('group_id'));
+        $canAccessNotifications = $permissionsService->canAccessNotifications(ee()->session->userdata('group_id'));
+        $canAccessExports = $permissionsService->canAccessExport(ee()->session->userdata('group_id'));
+        $canAccessSettings = $permissionsService->canAccessSettings(ee()->session->userdata('group_id'));
 
-		if($permissionsService->canAccessFields(ee()->session->userdata('group_id')))
-		{
-			$sub->addItem(
-				lang('Fields'),
-				ee('CP/URL', 'addons/settings/freeform_next/fields')
-			);
-		}
+        if($canManageForms)
+        {
+          $sub->addItem(
+            lang('Forms'),
+            ee('CP/URL', 'addons/settings/freeform_next/forms')
+          );
+        }
 
-		if($permissionsService->canAccessNotifications(ee()->session->userdata('group_id')))
-		{
-			$sub->addItem(
-				lang('Notifications'),
-				ee('CP/URL', 'addons/settings/freeform_next/notifications')
-			);
-		}
+        if($canAccessSubmissions)
+        {
+            $formModels = FormRepository::getInstance()->getAllForms();
+            $formModel = reset($formModels);
+            if ($formModel) {
+                $sub->addItem(
+                    lang('Submissions'),
+                    ee('CP/URL', "addons/settings/freeform_next/submissions/{$formModel->handle}")
+                );
 
-		if($permissionsService->canAccessExport(ee()->session->userdata('group_id')) && FreeformHelper::get('version') === 'pro')
-		{
-			$sub->addItem(
-				lang('Export'),
-				ee('CP/URL', 'addons/settings/freeform_next/export_profiles')
-			);
-		}
+                $sub->addItem(
+                    lang('Spam'),
+                    ee('CP/URL', "addons/settings/freeform_next/spam/{$formModel->handle}")
+                );
+            }
+        }
 
-		if($permissionsService->canAccessSettings(ee()->session->userdata('group_id')))
-		{
-			$sub->addItem(
-				lang('Settings'),
-				ee('CP/URL', 'addons/settings/freeform_next/settings/general')
-			);
-		}
-	}
+        if($canAccessFields)
+        {
+          $sub->addItem(
+            lang('Fields'),
+            ee('CP/URL', 'addons/settings/freeform_next/fields')
+          );
+        }
+
+        if($canAccessNotifications)
+        {
+          $sub->addItem(
+            lang('Notifications'),
+            ee('CP/URL', 'addons/settings/freeform_next/notifications')
+          );
+        }
+
+        if($canAccessExports && FreeformHelper::get('version') === 'pro')
+        {
+          $sub->addItem(
+            lang('Export'),
+            ee('CP/URL', 'addons/settings/freeform_next/export_profiles')
+          );
+        }
+
+        if($canAccessSettings)
+        {
+          $sub->addItem(
+            lang('Settings'),
+            ee('CP/URL', 'addons/settings/freeform_next/settings/general')
+          );
+        }
+      }
 
     /**
      * @return RecaptchaService

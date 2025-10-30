@@ -2,40 +2,26 @@
 
 namespace Solspace\Addons\FreeformNext\Library\DataObjects;
 
+use DateTime;
+
 class PluginUpdate
 {
-    /** @var string */
-    private $version;
+    private array $bugfixes;
 
-    /** @var string */
-    private $downloadUrl;
+    private array $features;
 
-    /** @var \DateTime */
-    private $date;
-
-    /** @var array */
-    private $bugfixes;
-
-    /** @var array */
-    private $features;
-
-    /** @var array */
-    private $notes;
+    private array $notes;
 
     /**
      * PluginUpdate constructor.
      *
      * @param string    $version
      * @param string    $downloadUrl
-     * @param \DateTime $date
+     * @param DateTime $date
      * @param array     $items
      */
-    public function __construct($version, $downloadUrl, \DateTime $date, array $items)
+    public function __construct(private $version, private $downloadUrl, private readonly DateTime $date, array $items)
     {
-        $this->version     = $version;
-        $this->downloadUrl = $downloadUrl;
-        $this->date        = $date;
-
         $this->bugfixes = [];
         $this->features = [];
         $this->notes    = [];
@@ -46,11 +32,11 @@ class PluginUpdate
     /**
      * @param array $items
      */
-    private function parseItems(array $items)
+    private function parseItems(array $items): void
     {
         foreach ($items as $item) {
-            if (preg_match('/\[(\w+)\]\s*(.*)/', $item, $matches)) {
-                list ($match, $type, $string) = $matches;
+            if (preg_match('/\[(\w+)\]\s*(.*)/', (string) $item, $matches)) {
+                [$match, $type, $string] = $matches;
 
                 switch (strtolower($type)) {
                     case 'fixed':
@@ -87,9 +73,9 @@ class PluginUpdate
     }
 
     /**
-     * @return \DateTime
+     * @return DateTime
      */
-    public function getDate()
+    public function getDate(): DateTime
     {
         return $this->date;
     }
@@ -97,7 +83,7 @@ class PluginUpdate
     /**
      * @return array
      */
-    public function getBugfixes()
+    public function getBugfixes(): array
     {
         return $this->bugfixes;
     }
@@ -105,7 +91,7 @@ class PluginUpdate
     /**
      * @return array
      */
-    public function getFeatures()
+    public function getFeatures(): array
     {
         return $this->features;
     }
@@ -113,7 +99,7 @@ class PluginUpdate
     /**
      * @return array
      */
-    public function getNotes()
+    public function getNotes(): array
     {
         return $this->notes;
     }

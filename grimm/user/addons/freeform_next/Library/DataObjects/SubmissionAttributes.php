@@ -2,6 +2,7 @@
 
 namespace Solspace\Addons\FreeformNext\Library\DataObjects;
 
+use DateTime;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Form;
 use Solspace\Addons\FreeformNext\Model\StatusModel;
 use Solspace\Addons\FreeformNext\Model\SubmissionModel;
@@ -10,9 +11,6 @@ class SubmissionAttributes
 {
     /** @var int */
     private $siteId;
-
-    /** @var Form */
-    private $form;
 
     /** @var int */
     private $submissionId;
@@ -29,56 +27,43 @@ class SubmissionAttributes
     /** @var string */
     private $orderBy;
 
-    /** @var string */
-    private $sort;
+    private ?string $sort = null;
 
     /** @var string */
     private $status;
 
-    /** @var \DateTime */
-    private $dateRangeStart;
+    private ?string $dateRangeStart = null;
 
-    /** @var \DateTime */
+    /** @var DateTime */
     private $dateRangeEnd;
 
-    /** @var array */
-    private $filters;
+    private array $filters;
 
-    /** @var array */
-    private $orFilters;
+    private array $orFilters;
 
-    /** @var array */
-    private $likeFilters;
+    private array $likeFilters;
 
-    /** @var array */
-    private $orLikeFilters;
+    private array $orLikeFilters;
 
-    /** @var array */
-    private $idFilters;
+    private array $idFilters;
 
-    /** @var array */
-    private $orIdFilters;
+    private array $orIdFilters;
 
-    /** @var array */
-    private $inFilters;
+    private array $inFilters;
 
-    /** @var array */
-    private $notInFilters;
+    private array $notInFilters;
 
-    /** @var array */
-    private $where;
+    private array $where;
 
     /**
      * SubmissionAttributes constructor.
      *
      * @param Form $form
      */
-    public function __construct(Form $form)
+    public function __construct(private readonly Form $form)
     {
-        $this->form = $form;
-
         $this->filters = [
-            SubmissionModel::TABLE . '.formId' => $form->getId(),
+            SubmissionModel::TABLE . '.formId' => $this->form->getId(),
         ];
 
         $this->orFilters     = [];
@@ -104,7 +89,7 @@ class SubmissionAttributes
      *
      * @return $this
      */
-    public function setSiteId($siteId = null)
+    public function setSiteId($siteId = null): static
     {
         $this->siteId = $siteId;
 
@@ -114,7 +99,7 @@ class SubmissionAttributes
     /**
      * @return Form
      */
-    public function getForm()
+    public function getForm(): Form
     {
         return $this->form;
     }
@@ -132,7 +117,7 @@ class SubmissionAttributes
      *
      * @return $this
      */
-    public function setSubmissionId($submissionId = null)
+    public function setSubmissionId($submissionId = null): static
     {
         $this->submissionId = $submissionId;
         $this->setFilter(SubmissionModel::TABLE . '.id', $submissionId);
@@ -153,7 +138,7 @@ class SubmissionAttributes
      *
      * @return SubmissionAttributes
      */
-    public function setToken($token = null)
+    public function setToken($token = null): static
     {
         $this->token = $token;
         $this->setFilter(SubmissionModel::TABLE . '.token', $token);
@@ -174,7 +159,7 @@ class SubmissionAttributes
      *
      * @return $this
      */
-    public function setLimit($limit = null)
+    public function setLimit($limit = null): static
     {
         $this->limit = $limit;
 
@@ -194,7 +179,7 @@ class SubmissionAttributes
      *
      * @return $this
      */
-    public function setOffset($offset = null)
+    public function setOffset($offset = null): static
     {
         $this->offset = $offset;
 
@@ -236,7 +221,7 @@ class SubmissionAttributes
      *
      * @return $this
      */
-    public function setOrderBy($orderBy = null)
+    public function setOrderBy($orderBy = null): static
     {
         $this->orderBy = $orderBy;
 
@@ -246,7 +231,7 @@ class SubmissionAttributes
     /**
      * @return string
      */
-    public function getSort()
+    public function getSort(): ?string
     {
         return $this->sort;
     }
@@ -256,7 +241,7 @@ class SubmissionAttributes
      *
      * @return $this
      */
-    public function setSort($sort = null)
+    public function setSort($sort = null): static
     {
         $this->sort = strtolower((string) $sort) === 'desc' ? 'DESC' : 'ASC';
 
@@ -276,7 +261,7 @@ class SubmissionAttributes
      *
      * @return $this
      */
-    public function setStatus($status = null)
+    public function setStatus($status = null): static
     {
         $this->status = $status;
         $this->setFilter(StatusModel::TABLE . '.name', $status);
@@ -285,19 +270,19 @@ class SubmissionAttributes
     }
 
     /**
-     * @return \DateTime
+     * @return DateTime
      */
-    public function getDateRangeStart()
+    public function getDateRangeStart(): ?string
     {
         return $this->dateRangeStart;
     }
 
     /**
-     * @param \DateTime $dateRangeStart
+     * @param DateTime $dateRangeStart
      *
      * @return $this
      */
-    public function setDateRangeStart($dateRangeStart)
+    public function setDateRangeStart($dateRangeStart): static
     {
         $dateRangeStart = $this->getDateValue($dateRangeStart);
 
@@ -310,7 +295,7 @@ class SubmissionAttributes
     }
 
     /**
-     * @return \DateTime
+     * @return DateTime
      */
     public function getDateRangeEnd()
     {
@@ -318,11 +303,11 @@ class SubmissionAttributes
     }
 
     /**
-     * @param \DateTime $dateRangeEnd
+     * @param DateTime $dateRangeEnd
      *
      * @return $this
      */
-    public function setDateRangeEnd($dateRangeEnd)
+    public function setDateRangeEnd($dateRangeEnd): static
     {
         if ($dateRangeEnd) {
             $dateRangeEnd = str_replace('00:00:00', '23:59:59', $this->getDateValue($dateRangeEnd));
@@ -339,7 +324,7 @@ class SubmissionAttributes
      *
      * @return $this
      */
-    public function setDateRange($string)
+    public function setDateRange($string): static
     {
         if (null === $string) {
             return $this;
@@ -347,7 +332,7 @@ class SubmissionAttributes
 
         switch (strtolower($string)) {
             case 'today':
-                $start = new \DateTime();
+                $start = new DateTime();
                 $start->setTime(0, 0, 0);
 
                 $end = clone $start;
@@ -401,7 +386,7 @@ class SubmissionAttributes
     /**
      * @return array
      */
-    public function getLikeFilters()
+    public function getLikeFilters(): array
     {
         return $this->likeFilters;
     }
@@ -409,7 +394,7 @@ class SubmissionAttributes
     /**
      * @return array
      */
-    public function getOrLikeFilters()
+    public function getOrLikeFilters(): array
     {
         return $this->orLikeFilters;
     }
@@ -417,7 +402,7 @@ class SubmissionAttributes
     /**
      * @return array
      */
-    public function getIdFilters()
+    public function getIdFilters(): array
     {
         return $this->idFilters;
     }
@@ -425,7 +410,7 @@ class SubmissionAttributes
     /**
      * @return array
      */
-    public function getOrIdFilters()
+    public function getOrIdFilters(): array
     {
         return $this->orIdFilters;
     }
@@ -433,7 +418,7 @@ class SubmissionAttributes
     /**
      * @return array
      */
-    public function getFilters()
+    public function getFilters(): array
     {
         return $this->filters;
     }
@@ -441,7 +426,7 @@ class SubmissionAttributes
     /**
      * @return array
      */
-    public function getOrFilters()
+    public function getOrFilters(): array
     {
         return $this->orFilters;
     }
@@ -449,7 +434,7 @@ class SubmissionAttributes
     /**
      * @return array
      */
-    public function getInFilters()
+    public function getInFilters(): array
     {
         return $this->inFilters;
     }
@@ -457,7 +442,7 @@ class SubmissionAttributes
     /**
      * @return array
      */
-    public function getNotInFilters()
+    public function getNotInFilters(): array
     {
         return $this->notInFilters;
     }
@@ -465,7 +450,7 @@ class SubmissionAttributes
     /**
      * @return array
      */
-    public function getWhere()
+    public function getWhere(): array
     {
         return $this->where;
     }
@@ -476,7 +461,7 @@ class SubmissionAttributes
      *
      * @return $this
      */
-    public function addFilter($key, $value)
+    public function addFilter($key, $value): static
     {
         if (false !== $this->getNotInArray($value)) {
             $this->notInFilters[$key] = $value;
@@ -495,7 +480,7 @@ class SubmissionAttributes
      *
      * @return $this
      */
-    public function addOrFilter($key, $value)
+    public function addOrFilter($key, $value): static
     {
         $this->orFilters[$key] = $value;
 
@@ -508,7 +493,7 @@ class SubmissionAttributes
      *
      * @return $this
      */
-    public function addLikeFilter($key, $value)
+    public function addLikeFilter($key, $value): static
     {
         $this->likeFilters[$key] = $value;
 
@@ -521,7 +506,7 @@ class SubmissionAttributes
      *
      * @return $this
      */
-    public function addOrLikeFilter($key, $value)
+    public function addOrLikeFilter($key, $value): static
     {
         $this->orLikeFilters[$key] = $value;
 
@@ -534,7 +519,7 @@ class SubmissionAttributes
      *
      * @return $this
      */
-    public function addIdFilter($key, $value)
+    public function addIdFilter($key, $value): static
     {
         $this->idFilters[$key] = $value;
 
@@ -547,7 +532,7 @@ class SubmissionAttributes
      *
      * @return $this
      */
-    public function addOrIdFilter($key, $value)
+    public function addOrIdFilter($key, $value): static
     {
         $this->orIdFilters[$key] = $value;
 
@@ -559,7 +544,7 @@ class SubmissionAttributes
      *
      * @return $this
      */
-    public function addWhere($value)
+    public function addWhere($value): static
     {
         $this->where[] = $value;
 
@@ -577,7 +562,7 @@ class SubmissionAttributes
             return false;
         }
 
-        if (strpos($string, '|') === false) {
+        if (!str_contains($string, '|')) {
             return false;
         }
 
@@ -591,7 +576,7 @@ class SubmissionAttributes
      */
     private function getNotInArray($string)
     {
-        if (strpos($string, 'not ') !== 0) {
+        if (!str_starts_with($string, 'not ')) {
             return false;
         }
 
@@ -604,7 +589,7 @@ class SubmissionAttributes
      * @param string $key
      * @param mixed  $value
      */
-    private function setFilter($key, $value)
+    private function setFilter(string $key, $value): void
     {
         unset($this->filters[$key], $this->inFilters[$key], $this->notInFilters[$key]);
 
@@ -625,17 +610,17 @@ class SubmissionAttributes
      * Takes a string or DateTime intsance and returns a
      * 'Y-m-d H:i:s' string of that date
      *
-     * @param \DateTime|string $date
+     * @param DateTime|string $date
      *
      * @return string|null
      */
-    private function getDateValue($date)
+    private function getDateValue($date): ?string
     {
         if (null === $date) {
             return null;
         }
 
-        if ($date instanceof \DateTime) {
+        if ($date instanceof DateTime) {
             return $date->format('Y-m-d H:i:s');
         }
 

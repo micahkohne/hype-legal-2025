@@ -11,6 +11,7 @@
 
 namespace Solspace\Addons\FreeformNext\Repositories;
 
+use Override;
 use Solspace\Addons\FreeformNext\Library\Exceptions\DataObjects\EmailTemplateException;
 use Solspace\Addons\FreeformNext\Library\Logging\EELogger;
 use Solspace\Addons\FreeformNext\Model\NotificationModel;
@@ -19,11 +20,12 @@ class NotificationRepository extends Repository
 {
     /** @var NotificationModel[] */
     private static $notificationCache;
-    private static $allNotificationsLoaded;
+    private static ?bool $allNotificationsLoaded = null;
 
     /**
      * @return NotificationRepository
      */
+    #[Override]
     public static function getInstance()
     {
         return parent::getInstance();

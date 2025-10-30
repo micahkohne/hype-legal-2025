@@ -1,7 +1,7 @@
 <?php
 
 if (!function_exists('getFileRotationLoggerSettings')) {
-    function getFileRotationLoggerSettings($name = 'freeform_next')
+    function getFileRotationLoggerSettings($name = 'freeform_next'): array
     {
         return [
             'class'  => 'LoggerAppenderRollingFile',
@@ -9,7 +9,7 @@ if (!function_exists('getFileRotationLoggerSettings')) {
                 'class' => 'LoggerLayoutPattern',
             ],
             'params' => [
-                'file'           => __DIR__ . '/../../logs/' . strtolower($name) . '.log',
+                'file'           => __DIR__ . '/../../logs/' . strtolower((string) $name) . '.log',
                 'append'         => true,
                 'maxFileSize'    => '1MB',
                 'maxBackupIndex' => 5,

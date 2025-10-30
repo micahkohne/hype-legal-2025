@@ -160,7 +160,7 @@ class Freeform_next_jump extends AbstractJumpMenu
 
 		foreach($forms as $form)
 		{
-			$items['form_' . $form->id] = array(
+			$items['form_' . $form->id] = [
 				'icon' => 'fa-pencil-alt',
 				'command' => $form->name,
 				'command_title' => $form->name,
@@ -168,7 +168,7 @@ class Freeform_next_jump extends AbstractJumpMenu
 				'dynamic' => false,
 				'requires_keyword' => false,
 				'target' => 'forms/'.$form->id
-			);
+			];
 		}
 
 		return $items;
@@ -196,7 +196,7 @@ class Freeform_next_jump extends AbstractJumpMenu
 
 		foreach($fields as $field)
 		{
-			$items['form_' . $field->id] = array(
+			$items['form_' . $field->id] = [
 				'icon' => 'fa-eye',
 				'command' => $field->label,
 				'command_title' => $field->label,
@@ -204,7 +204,7 @@ class Freeform_next_jump extends AbstractJumpMenu
 				'dynamic' => false,
 				'requires_keyword' => false,
 				'target' => 'fields/'.$field->id
-			);
+			];
 		}
 
 		return $items;
@@ -230,7 +230,7 @@ class Freeform_next_jump extends AbstractJumpMenu
 
 		foreach($forms as $form)
 		{
-			$items['form_' . $form->id] = array(
+			$items['form_' . $form->id] = [
 				'icon' => 'fa-pencil-alt',
 				'command' => $form->name,
 				'command_title' => $form->name,
@@ -238,7 +238,7 @@ class Freeform_next_jump extends AbstractJumpMenu
 				'dynamic' => false,
 				'requires_keyword' => false,
 				'target' => 'submissions/'.$form->handle
-			);
+			];
 		}
 
 		return $items;

@@ -9,6 +9,9 @@
  */
 namespace SebastianBergmann\Type;
 
+/**
+ * @no-named-arguments Parameter names are not covered by the backward compatibility promise for this library
+ */
 final class MixedType extends Type
 {
     public function isAssignable(Type $other): bool
@@ -16,11 +19,17 @@ final class MixedType extends Type
         return !$other instanceof VoidType;
     }
 
+    /**
+     * @return 'mixed'
+     */
     public function asString(): string
     {
         return 'mixed';
     }
 
+    /**
+     * @return 'mixed'
+     */
     public function name(): string
     {
         return 'mixed';

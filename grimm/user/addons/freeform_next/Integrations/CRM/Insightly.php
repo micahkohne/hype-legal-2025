@@ -11,6 +11,7 @@
 
 namespace Solspace\Addons\FreeformNext\Integrations\CRM;
 
+use Override;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\BadResponseException;
 use Solspace\Addons\FreeformNext\Library\Exceptions\Integrations\IntegrationException;
@@ -33,7 +34,8 @@ class Insightly extends AbstractCRMIntegration
      *
      * @return SettingBlueprint[]
      */
-    public static function getSettingBlueprints()
+    #[Override]
+    public static function getSettingBlueprints(): array
     {
         return [
             new SettingBlueprint(
@@ -53,7 +55,7 @@ class Insightly extends AbstractCRMIntegration
      *
      * @return bool
      */
-    public function pushObject(array $keyValueList, $formFields = NULL)
+    public function pushObject(array $keyValueList, $formFields = NULL): bool
     {
         $client = new Client();
 		$response = $client->get($this->getEndpoint('/Leads'), [
@@ -74,7 +76,7 @@ class Insightly extends AbstractCRMIntegration
      *
      * @return bool
      */
-    public function checkConnection()
+    public function checkConnection(): bool
     {
         $client = new Client();
 
@@ -98,7 +100,7 @@ class Insightly extends AbstractCRMIntegration
      *
      * @return FieldObject[]
      */
-    public function fetchFields()
+    public function fetchFields(): array
     {
         $fieldList = [
             new FieldObject('SALUTATION', 'Salutation', FieldObject::TYPE_STRING),
@@ -131,7 +133,7 @@ class Insightly extends AbstractCRMIntegration
 
         $response = $request->send();
 
-        $data = json_decode($response->getBody(true), false);
+        $data = json_decode((string) $response->getBody(true), false);
         foreach ($data as $field) {
             if (!$field->EDITABLE) {
                 continue;
@@ -198,7 +200,7 @@ class Insightly extends AbstractCRMIntegration
      *
      * @param IntegrationStorageInterface $model
      */
-    public function onBeforeSave(IntegrationStorageInterface $model)
+    public function onBeforeSave(IntegrationStorageInterface $model): void
     {
         $model->updateAccessToken($this->getSetting(self::SETTING_API_KEY));
     }
@@ -206,7 +208,7 @@ class Insightly extends AbstractCRMIntegration
     /**
      * @return string
      */
-    protected function getApiRootUrl()
+    protected function getApiRootUrl(): string
     {
         return 'https://api.insightly.com/v3.0/';
     }

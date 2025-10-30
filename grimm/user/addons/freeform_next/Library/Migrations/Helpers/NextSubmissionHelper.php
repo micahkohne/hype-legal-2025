@@ -11,6 +11,7 @@
 
 namespace Solspace\Addons\FreeformNext\Library\Migrations\Helpers;
 
+use Exception;
 use Solspace\Addons\FreeformNext\Library\Composer\Attributes\FormAttributes;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\AbstractField;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\FieldInterface;
@@ -52,7 +53,7 @@ class NextSubmissionHelper
     /** @var array */
     public $errors;
 
-    public function saveSubmission($legacySubmissions, $newFormId)
+    public function saveSubmission($legacySubmissions, $newFormId): bool
     {
         $submissionId = null;
 
@@ -79,7 +80,7 @@ class NextSubmissionHelper
                 }
 
                  if (!array_key_exists($fieldName, $legacySubmission)) {
-                    throw new \Exception('Cannot find field "' . $fieldName . '"" in legacy submission ' . print_r($legacySubmission, true));
+                    throw new Exception('Cannot find field "' . $fieldName . '"" in legacy submission ' . print_r($legacySubmission, true));
                 }
 
                 $value = $this->formatValue($field, $legacySubmission[$fieldName]);
@@ -98,8 +99,8 @@ class NextSubmissionHelper
         $formattedValue = $value;
 
         if ($field instanceof SelectField || $field instanceof RadioGroupField) {
-            if (strpos($value, '|~|') !== false) {
-                $formattedValue = substr($value, 0, strpos($value, '|~|'));
+            if (str_contains((string) $value, '|~|')) {
+                $formattedValue = substr((string) $value, 0, strpos((string) $value, '|~|'));
             }
         }
 
@@ -114,7 +115,7 @@ class NextSubmissionHelper
         if ($field instanceof CheckboxGroupField) {
 
             $formattedValue = [];
-            $valueArray = explode("\n", $value);
+            $valueArray = explode("\n", (string) $value);
 
             foreach ($valueArray as $arrayValue) {
                 $formattedValue[] = substr($arrayValue, 0, strpos($arrayValue, '|~|'));

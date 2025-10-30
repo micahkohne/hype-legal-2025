@@ -11,6 +11,7 @@
 
 namespace Solspace\Addons\FreeformNext\Integrations\MailingLists;
 
+use Override;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\BadResponseException;
 use Solspace\Addons\FreeformNext\Library\Exceptions\Integrations\IntegrationException;
@@ -36,7 +37,8 @@ class Dotmailer extends AbstractMailingListIntegration
      *
      * @return SettingBlueprint[]
      */
-    public static function getSettingBlueprints()
+    #[Override]
+    public static function getSettingBlueprints(): array
     {
         return [
             new SettingBlueprint(
@@ -107,7 +109,7 @@ class Dotmailer extends AbstractMailingListIntegration
      * @return bool
      * @throws IntegrationException
      */
-    public function pushEmails(ListObject $mailingList, array $emails, array $mappedValues)
+    public function pushEmails(ListObject $mailingList, array $emails, array $mappedValues): bool
     {
         $client   = new Client();
         $endpoint = $this->getEndpoint('/address-books/' . $mailingList->getId() . '/contacts');
@@ -177,7 +179,7 @@ class Dotmailer extends AbstractMailingListIntegration
      *
      * @throws IntegrationException
      */
-    public function onBeforeSave(IntegrationStorageInterface $model)
+    public function onBeforeSave(IntegrationStorageInterface $model): void
     {
         $client = new Client();
 
@@ -197,7 +199,7 @@ class Dotmailer extends AbstractMailingListIntegration
                     }
                 }
             }
-        } catch (BadResponseException $e) {
+        } catch (BadResponseException) {
         }
 
         throw new IntegrationException('Could not get an API endpoint');
@@ -208,10 +210,10 @@ class Dotmailer extends AbstractMailingListIntegration
      * Builds ListObject objects based on the results
      * And returns them
      *
-     * @return \Solspace\Addons\FreeformNext\Library\Integrations\MailingLists\DataObjects\ListObject[]
+     * @return ListObject[]
      * @throws IntegrationException
      */
-    protected function fetchLists()
+    protected function fetchLists(): array
     {
         $client = new Client();
         $endpoint = $this->getEndpoint('/address-books');
@@ -267,7 +269,7 @@ class Dotmailer extends AbstractMailingListIntegration
      *
      * @return FieldObject[]
      */
-    protected function fetchFields($listId)
+    protected function fetchFields($listId): array
     {
         $client = new Client();
 
@@ -293,24 +295,12 @@ class Dotmailer extends AbstractMailingListIntegration
         if ($json) {
             $fieldList = [];
             foreach ($json as $field) {
-                switch ($field->type) {
-                    case 'String':
-                    case 'Date':
-                        $type = FieldObject::TYPE_STRING;
-                        break;
-
-                    case 'Boolean':
-                        $type = FieldObject::TYPE_BOOLEAN;
-                        break;
-
-                    case 'Numeric':
-                        $type = FieldObject::TYPE_NUMERIC;
-                        break;
-
-                    default:
-                        $type = null;
-                        break;
-                }
+                $type = match ($field->type) {
+                    'String', 'Date' => FieldObject::TYPE_STRING,
+                    'Boolean' => FieldObject::TYPE_BOOLEAN,
+                    'Numeric' => FieldObject::TYPE_NUMERIC,
+                    default => null,
+                };
 
                 if (null === $type) {
                     continue;
@@ -335,9 +325,9 @@ class Dotmailer extends AbstractMailingListIntegration
      *
      * @return string
      */
-    protected function getApiRootUrl()
+    protected function getApiRootUrl(): string
     {
-        return rtrim($this->getSetting(self::SETTING_ENDPOINT) ?: '', '/') . '/v2/';
+        return rtrim((string) $this->getSetting(self::SETTING_ENDPOINT) ?: '', '/') . '/v2/';
     }
 
     /**

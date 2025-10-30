@@ -2,7 +2,8 @@
 
 namespace Solspace\Addons\FreeformNext\Controllers;
 
-use EllisLab\ExpressionEngine\Library\CP\Table;
+use Exception;
+use ExpressionEngine\Library\CP\Table;
 use GuzzleHttp\Exception\BadResponseException;
 use Solspace\Addons\FreeformNext\Library\Exceptions\Integrations\IntegrationException;
 use Solspace\Addons\FreeformNext\Library\Helpers\ExtensionHelper;
@@ -27,7 +28,7 @@ class MailingListsController extends Controller
      *
      * @return View
      */
-    public function handle($id = null)
+    public function handle($id = null): CpView|AjaxView|RedirectView
     {
         if (null === $id) {
             return $this->index();
@@ -55,7 +56,7 @@ class MailingListsController extends Controller
     /**
      * @return CpView
      */
-    public function index()
+    public function index(): CpView
     {
         /** @var Table $table */
         $table = ee("CP/Table", ["sortable" => false, "searchable" => false]);
@@ -96,7 +97,7 @@ class MailingListsController extends Controller
                     "value" => $integration->id,
                     "data"  => [
                         "confirm" => lang("Integration") . ": <b>" . htmlentities(
-                                $integration->name,
+                                (string) $integration->name,
                                 ENT_QUOTES
                             ) . "</b>",
                     ],
@@ -147,7 +148,7 @@ class MailingListsController extends Controller
      * @return View
      * @throws IntegrationException
      */
-    public function edit($id)
+    public function edit($id): RedirectView|CpView
     {
         $serviceProviderTypes = $this->getMailingListService()->getAllMailingListServiceProviders();
 
@@ -210,7 +211,7 @@ class MailingListsController extends Controller
                         $hash . "-" . $item->getHandle() => [
                             "type"     => $item->getType() === SettingBlueprint::TYPE_BOOL ? "yes_no" : "text",
                             "required" => $item->isRequired(),
-                            "value"    => isset($settings[$item->getHandle()]) ? $settings[$item->getHandle()] : $item->getValue(),
+                            "value"    => $settings[$item->getHandle()] ?? $item->getValue(),
                             "attrs"    => $item->getAttributes(),
                         ],
                     ],
@@ -335,7 +336,7 @@ class MailingListsController extends Controller
         $isNew = !$model->id;
 
         $class  = ee()->input->post("class");
-        $hash   = md5($class);
+        $hash   = md5((string) $class);
         $name   = ee()->input->post("name");
         $handle = ee()->input->post("handle");
 
@@ -347,7 +348,7 @@ class MailingListsController extends Controller
 
         $postedSettings = [];
         foreach ($_POST as $key => $value) {
-            if (strpos($key, $hash) === 0) {
+            if (str_starts_with($key, $hash)) {
                 $postedSettings[str_replace($hash . "-", "", $key)] = $value;
             }
         }
@@ -407,7 +408,7 @@ class MailingListsController extends Controller
     /**
      * @return AjaxView
      */
-    public function getIntegrationsAjax()
+    public function getIntegrationsAjax(): AjaxView
     {
         $integrations = MailingListRepository::getInstance()->getAllIntegrationObjects();
 
@@ -424,7 +425,7 @@ class MailingListsController extends Controller
     /**
      * @return RedirectView
      */
-    public function batchDelete()
+    public function batchDelete(): RedirectView
     {
         if (isset($_POST["id_list"])) {
             $ids = [];
@@ -454,7 +455,7 @@ class MailingListsController extends Controller
      * @return void|RedirectView
      * @throws IntegrationException
      */
-    public function authorize()
+    public function authorize(): RedirectView
     {
         $code = ee()->input->get("code");
         if (empty($code)) {
@@ -481,7 +482,7 @@ class MailingListsController extends Controller
      *
      * @param IntegrationModel $model
      */
-    private function handleAuthorization(IntegrationModel $model)
+    private function handleAuthorization(IntegrationModel $model): void
     {
         $integration = $model->getIntegrationObject();
         $code        = ee()->input->get("code");
@@ -521,7 +522,7 @@ class MailingListsController extends Controller
     /**
      * @return AjaxView
      */
-    private function check()
+    private function check(): AjaxView
     {
         $view = new AjaxView();
 
@@ -553,7 +554,7 @@ class MailingListsController extends Controller
                         $view->addVariable("success", false);
                         $view->addError($e->getResponse()->getBody(true));
                     }
-                } catch (\Exception $e) {
+                } catch (Exception $e) {
                     $view->addVariable("success", false);
                     $view->addError($e->getMessage());
                 }

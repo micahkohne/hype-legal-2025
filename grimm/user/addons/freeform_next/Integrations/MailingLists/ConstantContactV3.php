@@ -11,6 +11,7 @@
 
 namespace Solspace\Addons\FreeformNext\Integrations\MailingLists;
 
+use Override;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\BadResponseException;
 use GuzzleHttp\Exception\GuzzleException;
@@ -28,7 +29,8 @@ class ConstantContactV3 extends MailingListOAuthConnector implements TokenRefres
     /**
      * @return string
      */
-    public function getServiceProvider()
+    #[Override]
+    public function getServiceProvider(): string
     {
         return "Constant Contact";
     }
@@ -77,7 +79,8 @@ class ConstantContactV3 extends MailingListOAuthConnector implements TokenRefres
     /**
      * @return void
      */
-    public function initiateAuthentication()
+    #[Override]
+    public function initiateAuthentication(): never
     {
         $data = [
             "response_type" => "code",
@@ -95,7 +98,7 @@ class ConstantContactV3 extends MailingListOAuthConnector implements TokenRefres
      * @return bool
      * @throws IntegrationException|GuzzleException
      */
-    public function refreshToken()
+    public function refreshToken(): bool
     {
         return (bool) $this->fetchAccessToken();
     }
@@ -107,7 +110,7 @@ class ConstantContactV3 extends MailingListOAuthConnector implements TokenRefres
      * @return bool
      * @throws IntegrationException|GuzzleException
      */
-    public function pushEmails(ListObject $mailingList, array $emails, array $mappedValues)
+    public function pushEmails(ListObject $mailingList, array $emails, array $mappedValues): bool
     {
         try {
             $data = [];
@@ -138,7 +141,7 @@ class ConstantContactV3 extends MailingListOAuthConnector implements TokenRefres
             }
 
             $email = reset($emails);
-            $email = strtolower($email);
+            $email = strtolower((string) $email);
 
             $data = array_merge(
                 [
@@ -186,7 +189,7 @@ class ConstantContactV3 extends MailingListOAuthConnector implements TokenRefres
      * @return ListObject[]
      * @throws IntegrationException|GuzzleException
      */
-    public function fetchLists()
+    public function fetchLists(): array
     {
         try {
             $client = new Client();
@@ -243,7 +246,7 @@ class ConstantContactV3 extends MailingListOAuthConnector implements TokenRefres
      * @return FieldObject[]
      * @throws IntegrationException|GuzzleException
      */
-    public function fetchFields($listId)
+    public function fetchFields($listId): array
     {
         try {
             $client = new Client();
@@ -313,7 +316,7 @@ class ConstantContactV3 extends MailingListOAuthConnector implements TokenRefres
     /**
      * @return string
      */
-    public function getAuthorizeUrl()
+    public function getAuthorizeUrl(): string
     {
         return "https://authz.constantcontact.com/oauth2/default/v1/authorize";
     }
@@ -321,7 +324,7 @@ class ConstantContactV3 extends MailingListOAuthConnector implements TokenRefres
     /**
      * @return string
      */
-    public function getAccessTokenUrl()
+    public function getAccessTokenUrl(): string
     {
         return "https://authz.constantcontact.com/oauth2/default/v1/token";
     }
@@ -329,7 +332,7 @@ class ConstantContactV3 extends MailingListOAuthConnector implements TokenRefres
     /**
      * @return string
      */
-    public function getApiRootUrl()
+    public function getApiRootUrl(): string
     {
         return "https://api.cc.email/v3";
     }

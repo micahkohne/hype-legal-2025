@@ -11,6 +11,8 @@
 
 namespace Solspace\Addons\FreeformNext\Integrations\CRM;
 
+use Override;
+use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\BadResponseException;
 use Solspace\Addons\FreeformNext\Library\Exceptions\Integrations\IntegrationException;
@@ -32,7 +34,8 @@ class HubSpot extends AbstractCRMIntegration
      *
      * @return SettingBlueprint[]
      */
-    public static function getSettingBlueprints()
+    #[Override]
+    public static function getSettingBlueprints(): array
     {
         return [
             new SettingBlueprint(
@@ -52,7 +55,7 @@ class HubSpot extends AbstractCRMIntegration
      *
      * @return bool
      */
-    public function pushObject(array $keyValueList, $formFields = NULL)
+    public function pushObject(array $keyValueList, $formFields = NULL): bool
     {
         $client = new Client();
 
@@ -65,7 +68,7 @@ class HubSpot extends AbstractCRMIntegration
         foreach ($keyValueList as $key => $value) {
             preg_match('/^(\w+)___(.+)$/', $key, $matches);
 
-            list ($all, $target, $propName) = $matches;
+            [$all, $target, $propName] = $matches;
 
             switch ($target) {
                 case 'contact':
@@ -108,7 +111,7 @@ class HubSpot extends AbstractCRMIntegration
                         $this->getLogger()->error($e->getMessage(), self::LOG_CATEGORY);
                     }
                 }
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 $this->getLogger()->error($e->getMessage(), self::LOG_CATEGORY);
             }
         }
@@ -130,9 +133,7 @@ class HubSpot extends AbstractCRMIntegration
                 if (isset($json->companyId)) {
                     $companyId = $json->companyId;
                 }
-            } catch (BadResponseException $e) {
-                $this->getLogger()->error($e->getMessage(), self::LOG_CATEGORY);
-            } catch (\Exception $e) {
+            } catch (BadResponseException|Exception $e) {
                 $this->getLogger()->error($e->getMessage(), self::LOG_CATEGORY);
             }
         }
@@ -166,7 +167,7 @@ class HubSpot extends AbstractCRMIntegration
      *
      * @return bool
      */
-    public function checkConnection()
+    public function checkConnection(): bool
     {
         $client = new Client();
 
@@ -188,7 +189,7 @@ class HubSpot extends AbstractCRMIntegration
      *
      * @return FieldObject[]
      */
-    public function fetchFields()
+    public function fetchFields(): array
     {
         $fieldList = [];
         $this->extractCustomFields(
@@ -236,7 +237,7 @@ class HubSpot extends AbstractCRMIntegration
      *
      * @param IntegrationStorageInterface $model
      */
-    public function onBeforeSave(IntegrationStorageInterface $model)
+    public function onBeforeSave(IntegrationStorageInterface $model): void
     {
         $model->updateAccessToken($this->getSetting(self::SETTING_API_KEY));
     }
@@ -244,7 +245,7 @@ class HubSpot extends AbstractCRMIntegration
     /**
      * @return string
      */
-    protected function getApiRootUrl()
+    protected function getApiRootUrl(): string
     {
         return 'https://api.hubapi.com/';
     }
@@ -254,7 +255,7 @@ class HubSpot extends AbstractCRMIntegration
      * @param string $dataType
      * @param array  $fieldList
      */
-    private function extractCustomFields($endpoint, $dataType, &$fieldList)
+    private function extractCustomFields(string $endpoint, string $dataType, array &$fieldList): void
     {
         $client = new Client();
 

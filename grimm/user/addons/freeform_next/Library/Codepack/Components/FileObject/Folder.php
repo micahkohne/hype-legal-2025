@@ -11,10 +11,12 @@
 
 namespace Solspace\Addons\FreeformNext\Library\Codepack\Components\FileObject;
 
+use Iterator;
+use ReturnTypeWillChange;
 use Solspace\Addons\FreeformNext\Library\Codepack\Exceptions\FileObject\FileObjectException;
 use Symfony\Component\Finder\Finder;
 
-class Folder extends FileObject implements \Iterator
+class Folder extends FileObject implements Iterator
 {
     /** @var FileObject[]|null */
     protected $files;
@@ -55,7 +57,7 @@ class Folder extends FileObject implements \Iterator
      * @return void
      * @throws FileObjectException
      */
-    public function copy($target, $prefix = null, $callable = null, $filePrefix = null)
+    public function copy($target, $prefix = null, $callable = null, $filePrefix = null): void
     {
         $fs = $this->getFilesystem();
 
@@ -118,7 +120,7 @@ class Folder extends FileObject implements \Iterator
      * @return mixed Can return any type.
      * @since 5.0.0
      */
-	#[\ReturnTypeWillChange]
+	#[ReturnTypeWillChange]
 	public function current()
     {
         return current($this->files);
@@ -131,8 +133,8 @@ class Folder extends FileObject implements \Iterator
      * @return void Any returned value is ignored.
      * @since 5.0.0
      */
-	#[\ReturnTypeWillChange]
-    public function next()
+	#[ReturnTypeWillChange]
+    public function next(): void
     {
         next($this->files);
     }
@@ -144,7 +146,7 @@ class Folder extends FileObject implements \Iterator
      * @return mixed scalar on success, or null on failure.
      * @since 5.0.0
      */
-	#[\ReturnTypeWillChange]
+	#[ReturnTypeWillChange]
     public function key()
     {
         return key($this->files);
@@ -170,8 +172,8 @@ class Folder extends FileObject implements \Iterator
      * @return void Any returned value is ignored.
      * @since 5.0.0
      */
-	#[\ReturnTypeWillChange]
-    public function rewind()
+	#[ReturnTypeWillChange]
+    public function rewind(): void
     {
         reset($this->files);
     }

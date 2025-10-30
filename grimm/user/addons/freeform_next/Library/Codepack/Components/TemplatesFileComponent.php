@@ -15,15 +15,15 @@ use Solspace\Addons\FreeformNext\Library\Codepack\Exceptions\FileObject\FileNotF
 
 class TemplatesFileComponent extends AbstractFileComponent
 {
-    private $modifiableFileExtensions = array(
+    private array $modifiableFileExtensions = [
         'html',
         'twig',
-    );
+    ];
 
     /**
      * @return string
      */
-    protected function getInstallDirectory()
+    protected function getInstallDirectory(): string
     {
         return '';
     }
@@ -31,7 +31,7 @@ class TemplatesFileComponent extends AbstractFileComponent
     /**
      * @return string
      */
-    protected function getTargetFilesDirectory()
+    protected function getTargetFilesDirectory(): string
     {
         return 'templates';
     }
@@ -45,7 +45,7 @@ class TemplatesFileComponent extends AbstractFileComponent
      *
      * @return string
      */
-    public function fileContentModification($content, $prefix = null)
+    public function fileContentModification($content, $prefix = null): string|array
     {
         $content = $this->updateSrcAndHref($content, $prefix);
         $content = $this->updateLinks($content, $prefix);
@@ -66,7 +66,7 @@ class TemplatesFileComponent extends AbstractFileComponent
      *
      * @return string
      */
-    private function updateSrcAndHref($content, $prefix)
+    private function updateSrcAndHref($content, string $prefix): array|string|null
     {
         $pattern = '/(src|href)=([\'"](?:\{{2}\s*siteUrl\s*}{2})?(?:\/?assets\/))demo\//';
         $replace = '$1=$2' . $prefix . '/';
@@ -83,7 +83,7 @@ class TemplatesFileComponent extends AbstractFileComponent
      *
      * @return string
      */
-    private function updateLinks($content, $prefix)
+    private function updateLinks(string|array|null $content, string $prefix): array|string|null
     {
         $pattern = '/([\'"](?:\{{2}\s*siteUrl\s*}{2})?\/?)demo\//';
         $replace = '$1' . $prefix . '/';
@@ -100,7 +100,7 @@ class TemplatesFileComponent extends AbstractFileComponent
      *
      * @return string
      */
-    private function updateTemplateCalls($content, $prefix)
+    private function updateTemplateCalls(string|array|null $content, string $prefix): array|string|null
     {
         $pattern = '/(\{\%\s*(?:extends|include)) ([\'"])(\/?)demo\//';
         $replace = '$1 $2$3' . $prefix . '/';
@@ -118,7 +118,7 @@ class TemplatesFileComponent extends AbstractFileComponent
      *
      * @return string
      */
-    private function offsetSegments($content, $prefix)
+    private function offsetSegments(string|array|null $content, $prefix): string|array
     {
         $segmentCount = count(explode("/", $prefix));
 
@@ -137,7 +137,7 @@ class TemplatesFileComponent extends AbstractFileComponent
      *
      * @return mixed
      */
-    private function replaceCustomPrefixCalls($content, $prefix)
+    private function replaceCustomPrefixCalls(string|array|null $content, $prefix): array|string|null
     {
         $pattern = '#(%prefix%)#';
         $content = preg_replace($pattern, $prefix, $content);

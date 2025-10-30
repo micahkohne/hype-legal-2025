@@ -6,20 +6,9 @@ use Solspace\Addons\FreeformNext\Library\Composer\Components\Validation\Errors\C
 
 class LengthConstraint implements ConstraintInterface
 {
-    /** @var int */
-    private $min;
+    private readonly ?int $min;
 
-    /** @var int */
-    private $max;
-
-    /** @var string */
-    private $messageMax;
-
-    /** @var string */
-    private $messageMin;
-
-    /** @var string */
-    private $messageMinMax;
+    private readonly ?int $max;
 
     /**
      * NumericConstraint constructor.
@@ -33,25 +22,22 @@ class LengthConstraint implements ConstraintInterface
     public function __construct(
         $min = null,
         $max = null,
-        $messageMax = 'The value must be no more than {{max}} characters',
-        $messageMin = 'The value must be no less than {{min}} characters',
-        $messageMinMax = 'The value must be between {{min}} and {{max}} characters'
+        private $messageMax = 'The value must be no more than {{max}} characters',
+        private $messageMin = 'The value must be no less than {{min}} characters',
+        private $messageMinMax = 'The value must be between {{min}} and {{max}} characters'
     ) {
         $this->min                  = $min > 0 ? (int) $min : null;
         $this->max                  = $max > 0 ? (int) $max : null;
-        $this->messageMax           = $messageMax;
-        $this->messageMin           = $messageMin;
-        $this->messageMinMax        = $messageMinMax;
     }
 
     /**
      * @inheritDoc
      */
-    public function validate($value)
+    public function validate($value): ConstraintViolationList
     {
         $violationList = new ConstraintViolationList();
 
-        $length     = strlen($value);
+        $length     = strlen((string) $value);
         $minEnabled = $this->min !== null;
         $maxEnabled = $this->max !== null;
 

@@ -39,7 +39,7 @@ abstract class Controller
      *
      * @return mixed
      */
-    protected function getLink($target)
+    protected function getLink(string $target)
     {
         return UrlHelper::getLink($target);
     }

@@ -2,6 +2,9 @@
 
 namespace Solspace\Addons\FreeformNext\Library\Pro\Fields;
 
+use Override;
+use DateTime;
+use Exception;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Fields\Interfaces\InitialValueInterface;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Fields\TextField;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Fields\Traits\InitialValueTrait;
@@ -51,7 +54,8 @@ class DatetimeField extends TextField implements InitialValueInterface
     /**
      * @return string
      */
-    public static function getFieldTypeName()
+    #[Override]
+    public static function getFieldTypeName(): string
     {
         return 'Date & Time';
     }
@@ -61,7 +65,8 @@ class DatetimeField extends TextField implements InitialValueInterface
      *
      * @return string
      */
-    public function getType()
+    #[Override]
+    public function getType(): string
     {
         return self::TYPE_DATETIME;
     }
@@ -183,13 +188,13 @@ class DatetimeField extends TextField implements InitialValueInterface
             if ($value) {
                 try {
                     if (stripos(strtolower($value), 'today') !== false) {
-                        $date = new \DateTime($value);
+                        $date = new DateTime($value);
                     } else {
-                        $date = new \DateTime($value);
+                        $date = new DateTime($value);
                     }
 
                     return $date->format($this->getFormat());
-                } catch (\Exception $e) {
+                } catch (Exception) {
                 }
             }
         }
@@ -200,7 +205,8 @@ class DatetimeField extends TextField implements InitialValueInterface
     /**
      * @inheritDoc
      */
-    public function getConstraints()
+    #[Override]
+    public function getConstraints(): array
     {
         return [
             new DateTimeConstraint(
@@ -219,7 +225,8 @@ class DatetimeField extends TextField implements InitialValueInterface
     /**
      * @return string
      */
-    public function getInputHtml()
+    #[Override]
+    public function getInputHtml(): string
     {
         $attributes = $this->getCustomAttributes();
         $this->addInputClass('form-date-time-field');
@@ -255,7 +262,7 @@ class DatetimeField extends TextField implements InitialValueInterface
     /**
      * @return string
      */
-    private function getDatepickerFormat()
+    private function getDatepickerFormat(): string|array
     {
         $format = $this->getFormat();
 
@@ -273,7 +280,7 @@ class DatetimeField extends TextField implements InitialValueInterface
      *
      * @return string
      */
-    private function getHumanReadableFormat()
+    private function getHumanReadableFormat(): string|array
     {
         $format = $this->getFormat();
 
@@ -291,7 +298,7 @@ class DatetimeField extends TextField implements InitialValueInterface
      *
      * @return string
      */
-    private function getFormat()
+    private function getFormat(): string
     {
         $showDate = in_array($this->getDateTimeType(), [self::DATETIME_TYPE_BOTH, self::DATETIME_TYPE_DATE], true);
         $showTime = in_array($this->getDateTimeType(), [self::DATETIME_TYPE_BOTH, self::DATETIME_TYPE_TIME], true);

@@ -11,6 +11,11 @@
 
 namespace Solspace\Addons\FreeformNext\Services;
 
+use Solspace\Addons\FreeformNext\Model\FieldModel;
+use Solspace\Addons\FreeformNext\Model\StatusModel;
+use Solspace\Addons\FreeformNext\Model\NotificationModel;
+use Exception;
+use Solspace\Addons\FreeformNext\Library\Exceptions\FreeformException;
 use Solspace\Addons\Freeform\Library\AddonBuilder;
 use Solspace\Addons\FreeformNext\Library\Helpers\FreeformHelper;
 use Solspace\Addons\FreeformNext\Library\Migrations\Helpers\ClassicFieldHelper;
@@ -45,7 +50,7 @@ class MigrationsService
     /**
      * @return bool
      */
-    public function isFreeformClassicMigrateable()
+    public function isFreeformClassicMigrateable(): bool
     {
         return $this->isClassicFreeformInstalled()
             && $this->isFreeformNextFreshlyInstalled()
@@ -92,7 +97,7 @@ class MigrationsService
     /**
      * @return bool
      */
-    public function migrateFreeformClassicFields()
+    public function migrateFreeformClassicFields(): bool
     {
         $nextFieldHelper = $this->getNextFieldHelper();
         $nextFieldHelper->deleteAllFields();
@@ -117,7 +122,7 @@ class MigrationsService
     /**
      * @return bool
      */
-    public function migrateFreeformClassicFormStatuses()
+    public function migrateFreeformClassicFormStatuses(): bool
     {
         $classicStatuses = $this->getClassicFormStatuses();
 
@@ -135,7 +140,7 @@ class MigrationsService
     /**
      * @return bool
      */
-    public function migrateFreeformClassicFormNotifications()
+    public function migrateFreeformClassicFormNotifications(): bool
     {
         $classicNotifications = $this->getClassicFormNotifications();
 
@@ -153,7 +158,7 @@ class MigrationsService
     /**
      * @return bool
      */
-    public function migrateFreeformClassicForms()
+    public function migrateFreeformClassicForms(): bool
     {
         $classicForms = $this->getClassicForms();
 
@@ -179,7 +184,7 @@ class MigrationsService
      *
      * @return bool
      */
-    public function migrateFreeformClassicSubmissions($formId, $page)
+    public function migrateFreeformClassicSubmissions($formId, $page): bool
     {
         $classicSubmissions = $this->getClassicSubmissions($formId, $page);
 
@@ -207,7 +212,7 @@ class MigrationsService
     /**
      * @param $classicField
      *
-     * @return bool|\Solspace\Addons\FreeformNext\Model\FieldModel
+     * @return bool|FieldModel
      */
     public function saveNextField($classicField)
     {
@@ -240,7 +245,7 @@ class MigrationsService
      * @param string $handle
      * @param string $name
      *
-     * @return bool|\Solspace\Addons\FreeformNext\Model\StatusModel
+     * @return bool|StatusModel
      */
     public function saveNextFormStatus($handle, $name)
     {
@@ -252,7 +257,7 @@ class MigrationsService
     /**
      * @param $notification
      *
-     * @return bool|\Solspace\Addons\FreeformNext\Model\NotificationModel
+     * @return bool|NotificationModel
      */
     public function saveNextFormNotification($notification)
     {
@@ -275,10 +280,10 @@ class MigrationsService
      * @param $classicForm
      *
      * @return bool
-     * @throws \Exception
-     * @throws \Solspace\Addons\FreeformNext\Library\Exceptions\FreeformException
+     * @throws Exception
+     * @throws FreeformException
      */
-    public function saveNextForms($classicForm)
+    public function saveNextForms(array $classicForm): bool
     {
         $nextFormHelper = $this->getNextFormHelper();
 
@@ -303,9 +308,9 @@ class MigrationsService
      * @param int $formId
      *
      * @return bool
-     * @throws \Exception
+     * @throws Exception
      */
-    public function saveNextSubmission($classicSubmission, $formId)
+    public function saveNextSubmission($classicSubmission, $formId): bool
     {
         $nextFormHelper = $this->getNextSubmissionHelper();
 
@@ -315,7 +320,7 @@ class MigrationsService
     /**
      * @return array
      */
-    public function getStages()
+    public function getStages(): array
     {
         return [
             self::STATUS__FIELDS,
@@ -329,7 +334,7 @@ class MigrationsService
     /**
      * @return array
      */
-    public function getStagesInfo()
+    public function getStagesInfo(): array
     {
         return [
             self::STATUS__FIELDS => [
@@ -388,7 +393,7 @@ class MigrationsService
      *
      * @return bool
      */
-    public function stageExists($stage)
+    public function stageExists($stage): bool
     {
         if (!in_array($stage, $this->getStages(), false)) {
             return false;
@@ -448,7 +453,7 @@ class MigrationsService
     /**
      * @return array
      */
-    private function getSubmissionInfo()
+    private function getSubmissionInfo(): array
     {
         if (!$this->classicSubmissionHelper) {
             return [];

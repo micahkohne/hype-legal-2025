@@ -91,7 +91,7 @@ class FormProperties extends AbstractProperties
     /**
      * @return boolean
      */
-    public function isStoreData()
+    public function isStoreData(): bool
     {
         return null !== $this->storeData ? (bool)$this->storeData : true;
     }
@@ -120,7 +120,7 @@ class FormProperties extends AbstractProperties
      *
      * @return array
      */
-    protected function getPropertyManifest()
+    protected function getPropertyManifest(): array
     {
         return [
             'name'                  => self::TYPE_STRING,

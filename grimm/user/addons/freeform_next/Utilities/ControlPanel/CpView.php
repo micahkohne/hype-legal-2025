@@ -18,42 +18,32 @@ use Solspace\Addons\FreeformNext\Utilities\ControlPanel\Navigation\NavigationLin
 class CpView extends View
 {
     /** @var string */
-    private $template;
-
-    /** @var array */
-    private $templateVariables;
-
-    /** @var string */
     private $heading;
 
-    /** @var array */
-    private $cssList;
+    private array $cssList;
 
-    /** @var array */
-    private $javascriptList;
+    private array $javascriptList;
 
-    /** @var bool */
-    private $sidebarDisabled;
+    private ?bool $sidebarDisabled = null;
 
     /** @var array */
     private $sections;
 
     /** @var Modal[] */
-    private $modals;
+    private array $modals;
 
     /** @var NavigationLink[] */
-    private $breadcrumbs;
+    private array $breadcrumbs;
 
     /**
      * CpView constructor.
      *
      * @param       $template
      * @param array $templateVariables
+     * @param string $template
      */
-    public function __construct($template, array $templateVariables = [])
+    public function __construct(private $template, private array $templateVariables = [])
     {
-        $this->template          = $template;
-        $this->templateVariables = $templateVariables;
         $this->cssList           = [];
         $this->javascriptList    = [];
         $this->modals            = [];
@@ -66,11 +56,11 @@ class CpView extends View
     public function compile()
     {
         foreach ($this->javascriptList as $path) {
-            ee()->cp->load_package_js(preg_replace('/\.js$/is', '', $path));
+            ee()->cp->load_package_js(preg_replace('/\.js$/is', '', (string) $path));
         }
 
         foreach ($this->cssList as $path) {
-            ee()->cp->load_package_css(preg_replace('/\.css$/is', '', $path));
+            ee()->cp->load_package_css(preg_replace('/\.css$/is', '', (string) $path));
         }
 
         foreach ($this->modals as $modal) {
@@ -95,7 +85,7 @@ class CpView extends View
      *
      * @return $this
      */
-    public function setTemplate($template)
+    public function setTemplate($template): static
     {
         $this->template = $template;
 
@@ -105,7 +95,7 @@ class CpView extends View
     /**
      * @return array
      */
-    public function getTemplateVariables()
+    public function getTemplateVariables(): array
     {
         return $this->templateVariables ?: [];
     }
@@ -115,7 +105,7 @@ class CpView extends View
      *
      * @return $this
      */
-    public function setTemplateVariables($templateVariables)
+    public function setTemplateVariables(array $templateVariables): static
     {
         $this->templateVariables = $templateVariables;
 
@@ -127,7 +117,7 @@ class CpView extends View
      *
      * @return $this
      */
-    public function addTemplateVariables(array $templateVariables)
+    public function addTemplateVariables(array $templateVariables): static
     {
         if (null === $this->templateVariables) {
             $this->templateVariables = $templateVariables;
@@ -153,7 +143,7 @@ class CpView extends View
      *
      * @return $this
      */
-    public function setHeading($heading)
+    public function setHeading($heading): static
     {
         $this->heading = $heading;
 
@@ -163,7 +153,7 @@ class CpView extends View
     /**
      * @return bool
      */
-    public function isSidebarDisabled()
+    public function isSidebarDisabled(): bool
     {
         return (bool) $this->sidebarDisabled;
     }
@@ -173,7 +163,7 @@ class CpView extends View
      *
      * @return $this
      */
-    public function setSidebarDisabled($sidebarDisabled)
+    public function setSidebarDisabled($sidebarDisabled): static
     {
         $this->sidebarDisabled = (bool) $sidebarDisabled;
 
@@ -185,7 +175,7 @@ class CpView extends View
      *
      * @return $this
      */
-    public function addJavascript($scriptPath)
+    public function addJavascript($scriptPath): static
     {
         $this->javascriptList[] = $scriptPath;
 
@@ -197,7 +187,7 @@ class CpView extends View
      *
      * @return $this
      */
-    public function addCss($cssPath)
+    public function addCss($cssPath): static
     {
         $this->cssList[] = $cssPath;
 
@@ -215,7 +205,7 @@ class CpView extends View
     /**
      * @param array $sections
      */
-    public function setSections($sections)
+    public function setSections($sections): void
     {
         $this->sections = $sections;
     }
@@ -225,7 +215,7 @@ class CpView extends View
      *
      * @return $this
      */
-    public function addModal(Modal $modal)
+    public function addModal(Modal $modal): static
     {
         $this->modals[] = $modal;
 
@@ -237,7 +227,7 @@ class CpView extends View
      *
      * @return $this
      */
-    public function addBreadcrumb(NavigationLink $link)
+    public function addBreadcrumb(NavigationLink $link): static
     {
         $this->breadcrumbs[] = $link;
 
@@ -247,7 +237,7 @@ class CpView extends View
     /**
      * @return NavigationLink[]
      */
-    public function getBreadcrumbs()
+    public function getBreadcrumbs(): array
     {
         return $this->breadcrumbs;
     }

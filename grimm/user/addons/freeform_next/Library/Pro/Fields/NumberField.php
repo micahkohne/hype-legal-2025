@@ -2,6 +2,7 @@
 
 namespace Solspace\Addons\FreeformNext\Library\Pro\Fields;
 
+use Override;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Fields\TextField;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Validation\Constraints\LengthConstraint;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Validation\Constraints\NumericConstraint;
@@ -37,7 +38,8 @@ class NumberField extends TextField
      *
      * @return string
      */
-    public function getType()
+    #[Override]
+    public function getType(): string
     {
         return self::TYPE_NUMBER;
     }
@@ -53,6 +55,7 @@ class NumberField extends TextField
     /**
      * @return int
      */
+    #[Override]
     public function getMaxLength()
     {
         return $this->maxLength;
@@ -109,7 +112,8 @@ class NumberField extends TextField
     /**
      * @inheritDoc
      */
-    public function getConstraints()
+    #[Override]
+    public function getConstraints(): array
     {
         return [
             new NumericConstraint(
@@ -139,7 +143,8 @@ class NumberField extends TextField
     /**
      * @inheritDoc
      */
-    protected function getInputHtml()
+    #[Override]
+    protected function getInputHtml(): string
     {
         $output = parent::getInputHtml();
         $output = str_replace('/>', '', $output);

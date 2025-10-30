@@ -2,7 +2,8 @@
 
 namespace Solspace\Addons\FreeformNext\Model;
 
-use EllisLab\ExpressionEngine\Service\Model\Model;
+use DateTime;
+use ExpressionEngine\Service\Model\Model;
 use Solspace\Addons\FreeformNext\Library\Configuration\EEPluginConfiguration;
 use Solspace\Addons\FreeformNext\Library\Exceptions\Integrations\IntegrationException;
 use Solspace\Addons\FreeformNext\Library\Integrations\AbstractIntegration;
@@ -24,9 +25,9 @@ use Solspace\Addons\FreeformNext\Services\MailingListsService;
  * @property string    $accessToken
  * @property array     $settings
  * @property bool      $forceUpdate
- * @property \DateTime $lastUpdate
- * @property \DateTime $dateCreated
- * @property \DateTime $dateUpdated
+ * @property DateTime $lastUpdate
+ * @property DateTime $dateCreated
+ * @property DateTime $dateUpdated
  */
 class IntegrationModel extends Model implements IntegrationStorageInterface
 {
@@ -79,7 +80,7 @@ class IntegrationModel extends Model implements IntegrationStorageInterface
      *
      * @param string $accessToken
      */
-    public function updateAccessToken($accessToken)
+    public function updateAccessToken($accessToken): void
     {
         $this->set(['accessToken' => $accessToken]);
     }
@@ -89,7 +90,7 @@ class IntegrationModel extends Model implements IntegrationStorageInterface
      *
      * @param array $settings
      */
-    public function updateSettings(array $settings = [])
+    public function updateSettings(array $settings = []): void
     {
         $this->set(['settings' => json_encode($settings)]);
     }
@@ -100,18 +101,11 @@ class IntegrationModel extends Model implements IntegrationStorageInterface
      */
     public function getIntegrationObject()
     {
-        switch ($this->type) {
-            case self::TYPE_MAILING_LIST:
-                $handler = new MailingListsService();
-                break;
-
-            case self::TYPE_CRM:
-                $handler = new CrmService();
-                break;
-
-            default:
-                throw new IntegrationException(lang('Unknown integration type specified'));
-        }
+        $handler = match ($this->type) {
+            self::TYPE_MAILING_LIST => new MailingListsService(),
+            self::TYPE_CRM => new CrmService(),
+            default => throw new IntegrationException(lang('Unknown integration type specified')),
+        };
 
         $className = $this->class;
 
@@ -119,7 +113,7 @@ class IntegrationModel extends Model implements IntegrationStorageInterface
         $integration = new $className(
             $this->id,
             $this->name,
-            new \DateTime($this->lastUpdate ?: ''),
+            new DateTime($this->lastUpdate ?: ''),
             $this->accessToken,
             json_decode($this->settings ?: '', true),
             new EELogger(),

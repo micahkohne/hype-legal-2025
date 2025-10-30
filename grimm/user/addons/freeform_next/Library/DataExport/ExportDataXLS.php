@@ -11,6 +11,8 @@
 
 namespace Solspace\Addons\FreeformNext\Library\DataExport;
 
+use Override;
+
 /**
  * ExportDataExcel exports data into an XML format  (spreadsheetML) that can be
  * read by MS Excel 2003 and newer as well as OpenOffice
@@ -25,7 +27,7 @@ namespace Solspace\Addons\FreeformNext\Library\DataExport;
  * Based on Excel XML code from Excel_XML (http://github.com/oliverschwarz/php-excel)
  *  by Oliver Schwarz
  */
-class ExportDataExcel extends ExportData {
+class ExportDataXLS extends ExportData {
 
     const XmlHeader = "<?xml version=\"1.0\" encoding=\"%s\"?\>\n<Workbook xmlns=\"urn:schemas-microsoft-com:office:spreadsheet\" xmlns:x=\"urn:schemas-microsoft-com:office:excel\" xmlns:ss=\"urn:schemas-microsoft-com:office:spreadsheet\" xmlns:html=\"http://www.w3.org/TR/REC-html40\">";
     const XmlFooter = "</Workbook>";
@@ -35,7 +37,8 @@ class ExportDataExcel extends ExportData {
 
     public $title = 'Sheet1'; // title for Worksheet
 
-    function generateHeader() {
+    #[Override]
+    function generateHeader(): string {
 
         // workbook header
         $output = stripslashes(sprintf(self::XmlHeader, $this->encoding)) . "\n";
@@ -46,12 +49,13 @@ class ExportDataExcel extends ExportData {
         $output .= "</Styles>\n";
 
         // worksheet header
-        $output .= sprintf("<Worksheet ss:Name=\"%s\">\n    <Table>\n", htmlentities($this->title));
+        $output .= sprintf("<Worksheet ss:Name=\"%s\">\n    <Table>\n", htmlentities((string) $this->title));
 
         return $output;
     }
 
-    function generateFooter() {
+    #[Override]
+    function generateFooter(): string {
         $output = '';
 
         // worksheet footer
@@ -63,7 +67,7 @@ class ExportDataExcel extends ExportData {
         return $output;
     }
 
-    function generateRow($row) {
+    function generateRow($row): string {
         $output = '';
         $output .= "        <Row>\n";
         foreach ($row as $k => $v) {
@@ -73,13 +77,13 @@ class ExportDataExcel extends ExportData {
         return $output;
     }
 
-    private function generateCell($item) {
+    private function generateCell($item): string {
         $output = '';
         $style = '';
 
         // Tell Excel to treat as a number. Note that Excel only stores roughly 15 digits, so keep
         // as text if number is longer than that.
-        if(preg_match("/^-?\d+(?:[.,]\d+)?$/",$item) && (strlen($item) < 15)) {
+        if(preg_match("/^-?\d+(?:[.,]\d+)?$/",(string) $item) && (strlen((string) $item) < 15)) {
             $type = 'Number';
         }
         // Sniff for valid dates; should look something like 2010-07-14 or 7/14/2010 etc. Can
@@ -88,19 +92,19 @@ class ExportDataExcel extends ExportData {
         // Note we want to be very strict in what we consider a date. There is the possibility
         // of really screwing up the data if we try to reformat a string that was not actually
         // intended to represent a date.
-        elseif(preg_match("/^(\d{1,2}|\d{4})[\/\-]\d{1,2}[\/\-](\d{1,2}|\d{4})([^\d].+)?$/",$item) &&
-            ($timestamp = strtotime($item)) &&
+        elseif(preg_match("/^(\d{1,2}|\d{4})[\/\-]\d{1,2}[\/\-](\d{1,2}|\d{4})([^\d].+)?$/",(string) $item) &&
+            ($timestamp = strtotime((string) $item)) &&
             ($timestamp > 0) &&
             ($timestamp < strtotime('+500 years'))) {
             $type = 'DateTime';
-            $item = strftime("%Y-%m-%dT%H:%M:%S",$timestamp);
+            $item = date("Y-m-d\TH:i:s", $timestamp);
             $style = 'sDT'; // defined in header; tells excel to format date for display
         }
         else {
             $type = 'String';
         }
 
-        $item = str_replace('&#039;', '&apos;', htmlspecialchars($item, ENT_QUOTES));
+        $item = str_replace('&#039;', '&apos;', htmlspecialchars((string) $item, ENT_QUOTES));
         $output .= "            ";
         $output .= $style ? "<Cell ss:StyleID=\"$style\">" : "<Cell>";
         $output .= sprintf("<Data ss:Type=\"%s\">%s</Data>", $type, $item);
@@ -109,9 +113,9 @@ class ExportDataExcel extends ExportData {
         return $output;
     }
 
-    function sendHttpHeaders() {
+    function sendHttpHeaders(): void {
         header("Content-Type: application/vnd.ms-excel; charset=" . $this->encoding);
-        header("Content-Disposition: inline; filename=\"" . basename($this->filename) . "\"");
+        header("Content-Disposition: inline; filename=\"" . basename((string) $this->filename) . "\"");
     }
 
 }

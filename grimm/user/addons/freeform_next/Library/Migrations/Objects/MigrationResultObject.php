@@ -9,7 +9,7 @@ class MigrationResultObject
     public $errors = [];
     public $submissionsInfo = [];
 
-    public function addError($message)
+    public function addError($message): void
     {
         $this->errors[] = $message;
     }
@@ -19,7 +19,7 @@ class MigrationResultObject
         return $this->errors;
     }
 
-    public function hasErrors()
+    public function hasErrors(): bool
     {
         if ($this->errors) {
             return true;

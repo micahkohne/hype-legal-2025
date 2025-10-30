@@ -1,1 +1,64 @@
-"use strict";$(function(){function t(){o.show(),r.hide(),s.hide();var t={id:c,csrf:a};$.ajax({url:e.data("url-stub"),data:t,type:"post",dataType:"json",success:function(t){o.hide(),t.success?r.show():(s.show(),t.errors&&$(".errors",s).empty().text(t.errors.join(". ")))}})}var a=$("*[data-csrf-token]").data("csrf-token"),e=$("#auth-checker"),r=$(".authorized",e),s=$(".not-authorized",e),o=$(".pending-status-check",e),c=o.data("id");o.data("type");c&&(t(),$("a",s).on({click:function(a){return t(),!1}}))});
+/*
+ * Freeform for ExpressionEngine
+ *
+ * @package       Solspace:Freeform
+ * @author        Solspace, Inc.
+ * @copyright     Copyright (c) 2008-2025, Solspace, Inc.
+ * @link          https://docs.solspace.com/expressionengine/freeform/v3/
+ * @license       https://docs.solspace.com/license-agreement/
+ */
+
+$(() => {
+  const csrfToken          = $("*[data-csrf-token]").data("csrf-token");
+  const authChecker        = $("#auth-checker");
+
+  const authorized = $(".authorized", authChecker);
+  const notAuthorized = $(".not-authorized", authChecker);
+  const pendingStatusCheck = $(".pending-status-check", authChecker);
+
+  const integrationId      = pendingStatusCheck.data("id");
+  const type               = pendingStatusCheck.data("type");
+
+  if (integrationId) {
+    checkAuth();
+
+    $('a', notAuthorized).on({
+      click: (e) => {
+        checkAuth();
+
+        return false;
+      }
+    })
+  }
+
+  function checkAuth() {
+    pendingStatusCheck.show();
+    authorized.hide();
+    notAuthorized.hide();
+
+    let data = {
+      id: integrationId,
+      csrf: csrfToken,
+    };
+
+    $.ajax({
+      url: authChecker.data('url-stub'),
+      data: data,
+      type: "post",
+      dataType: "json",
+      success: function (json) {
+        pendingStatusCheck.hide();
+
+        if (json.success) {
+          authorized.show();
+        } else {
+          notAuthorized.show();
+
+          if (json.errors) {
+            $(".errors", notAuthorized).empty().text(json.errors.join(". "));
+          }
+        }
+      },
+    });
+  }
+});

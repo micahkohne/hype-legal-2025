@@ -1,0 +1,20 @@
+{
+    "author": "JCOGS Design",
+    "author_url": "https://jcogs.net/",
+    "name": "JCOGS Image Pro",
+    "shortname": "jcogs_img_pro",
+    "class": "Jcogs_img_pro",
+    "version": "2.0.0b7",
+    "description": "Advanced Image Manipulation for EE6/7",
+    "license": "JCOGS Design",
+    "namespace": "JCOGSDesign\\JCOGSImagePro",
+    "settings_exist": true,
+    "constant_version": "JCOGS_IMG_PRO_VERSION",
+    "constant_name": "JCOGS_IMG_PRO_NAME",
+    "constant_class": "JCOGS_IMG_PRO_CLASS",
+    "docs_url": "https://jcogs.net/documentation/jcogs_img",
+    "require": {
+        "php": ">=8.2.*",
+        "expressionengine": ">=6.*"
+    }
+}

@@ -13,14 +13,11 @@ namespace Solspace\Addons\FreeformNext\Utilities\ControlPanel;
 
 class AjaxView extends View
 {
-    /** @var array */
-    private $variables;
+    private array $variables;
 
-    /** @var array */
-    private $errors;
+    private array $errors;
 
-    /** @var bool */
-    private $showErrorsIfEmpty;
+    private bool $showErrorsIfEmpty;
 
     /**
      * AjaxView constructor.
@@ -35,7 +32,7 @@ class AjaxView extends View
     /**
      * @return array
      */
-    public function compile()
+    public function compile(): array
     {
         $returnData = $this->variables;
 
@@ -49,7 +46,7 @@ class AjaxView extends View
     /**
      * @return bool
      */
-    public function hasErrors()
+    public function hasErrors(): bool
     {
         return !empty($this->errors);
     }
@@ -57,7 +54,7 @@ class AjaxView extends View
     /**
      * @param array $variables
      */
-    public function setVariables(array $variables)
+    public function setVariables(array $variables): void
     {
         $this->variables = $variables;
     }
@@ -68,7 +65,7 @@ class AjaxView extends View
      *
      * @return $this
      */
-    public function addVariable($key, $value)
+    public function addVariable($key, $value): static
     {
         $this->variables[$key] = $value;
 
@@ -80,7 +77,7 @@ class AjaxView extends View
      *
      * @return $this
      */
-    public function addVariables(array $variables)
+    public function addVariables(array $variables): static
     {
         $this->variables = array_merge($this->variables, $variables);
 
@@ -92,7 +89,7 @@ class AjaxView extends View
      *
      * @return $this
      */
-    public function addError($message)
+    public function addError($message): static
     {
         if ($message === null) {
             return $this;
@@ -112,7 +109,7 @@ class AjaxView extends View
      *
      * @return $this
      */
-    public function addErrors(array $messages)
+    public function addErrors(array $messages): static
     {
         foreach ($messages as $message) {
             $this->addError($message);
@@ -124,7 +121,7 @@ class AjaxView extends View
     /**
      * @param bool $showErrorsIfEmpty
      */
-    public function setShowErrorsIfEmpty($showErrorsIfEmpty)
+    public function setShowErrorsIfEmpty($showErrorsIfEmpty): void
     {
         $this->showErrorsIfEmpty = (bool) $showErrorsIfEmpty;
     }

@@ -4,21 +4,6 @@ namespace Solspace\Addons\FreeformNext\Utilities\AddonUpdater;
 
 class PluginExtension
 {
-    /** @var string */
-    private $methodName;
-
-    /** @var string */
-    private $hookName;
-
-    /** @var array */
-    private $settings;
-
-    /** @var int */
-    private $priority;
-
-    /** @var bool */
-    private $enabled;
-
     /**
      * PluginExtension constructor.
      *
@@ -29,13 +14,8 @@ class PluginExtension
      * @param int    $priority
      * @param bool   $enabled
      */
-    public function __construct($methodName, $hookName, array $settings = [], $priority = 5, $enabled = true)
+    public function __construct(private $methodName, private $hookName, private readonly array $settings = [], private $priority = 5, private $enabled = true)
     {
-        $this->methodName = $methodName;
-        $this->hookName   = $hookName;
-        $this->settings   = $settings;
-        $this->priority   = $priority;
-        $this->enabled    = $enabled;
     }
 
     /**
@@ -57,7 +37,7 @@ class PluginExtension
     /**
      * @return array
      */
-    public function getSettings()
+    public function getSettings(): array
     {
         return $this->settings ?: [];
     }

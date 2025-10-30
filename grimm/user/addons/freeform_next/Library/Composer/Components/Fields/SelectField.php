@@ -11,6 +11,7 @@
 
 namespace Solspace\Addons\FreeformNext\Library\Composer\Components\Fields;
 
+use Override;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Fields\Interfaces\SingleValueInterface;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Fields\Traits\SingleValueTrait;
 
@@ -23,7 +24,7 @@ class SelectField extends AbstractExternalOptionsField implements SingleValueInt
      *
      * @return string
      */
-    public function getType()
+    public function getType(): string
     {
         return self::TYPE_SELECT;
     }
@@ -33,7 +34,7 @@ class SelectField extends AbstractExternalOptionsField implements SingleValueInt
      *
      * @return string
      */
-    public function getInputHtml()
+    public function getInputHtml(): string
     {
         $attributes = $this->getCustomAttributes();
 
@@ -62,6 +63,7 @@ class SelectField extends AbstractExternalOptionsField implements SingleValueInt
      *
      * @return string
      */
+    #[Override]
     public function getValueAsString($optionsAsValues = true)
     {
         if (!$optionsAsValues) {

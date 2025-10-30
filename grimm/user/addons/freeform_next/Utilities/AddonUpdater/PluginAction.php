@@ -4,27 +4,15 @@ namespace Solspace\Addons\FreeformNext\Utilities\AddonUpdater;
 
 class PluginAction
 {
-    /** @var string */
-    private $methodName;
-
-    /** @var string */
-    private $className;
-
-    /** @var bool */
-    private $csrfExempt;
-
     /**
      * PluginAction constructor.
      *
      * @param string $methodName
      * @param string $className
-     * @param bool   $isCsrfExempt
+     * @param bool $csrfExempt
      */
-    public function __construct($methodName, $className, $isCsrfExempt = false)
+    public function __construct(private $methodName, private $className, private $csrfExempt = false)
     {
-        $this->methodName = $methodName;
-        $this->className  = $className;
-        $this->csrfExempt = $isCsrfExempt;
     }
 
     /**

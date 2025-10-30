@@ -11,7 +11,11 @@
 
 namespace Solspace\Addons\FreeformNext\Model;
 
-use EllisLab\ExpressionEngine\Service\Model\Model;
+use JsonSerializable;
+use stdClass;
+use Exception;
+use DateTime;
+use ExpressionEngine\Service\Model\Model;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\FieldInterface;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Fields\FileUploadField;
 use Solspace\Addons\FreeformNext\Library\Helpers\FreeformHelper;
@@ -37,11 +41,11 @@ use Solspace\Addons\FreeformNext\Services\FieldsService;
  * @property int       $rows
  * @property array     $fileKinds
  * @property int       $maxFileSizeKB
- * @property \DateTime $dateCreated
- * @property \DateTime $dateUpdated
+ * @property DateTime $dateCreated
+ * @property DateTime $dateUpdated
  * @property array     $additionalProperties
  */
-class FieldModel extends Model implements \JsonSerializable
+class FieldModel extends Model implements JsonSerializable
 {
     const MODEL = 'freeform_next:FieldModel';
     const TABLE = 'freeform_next_fields';
@@ -82,7 +86,7 @@ class FieldModel extends Model implements \JsonSerializable
     /**
      * @return array
      */
-    public static function createValidationRules()
+    public static function createValidationRules(): array
     {
         return [
             'label'  => 'required',
@@ -112,7 +116,7 @@ class FieldModel extends Model implements \JsonSerializable
     /**
      * @return string
      */
-    public function getHash()
+    public function getHash(): string
     {
         return HashHelper::hash($this->id);
     }
@@ -280,7 +284,7 @@ class FieldModel extends Model implements \JsonSerializable
      * @param array $postValues
      * @param bool  $forceLabelToValue
      */
-    public function setPostValues(array $postValues, $forceLabelToValue = false)
+    public function setPostValues(array $postValues, $forceLabelToValue = false): void
     {
         $labels           = $postValues['labels'];
         $values           = $postValues['values'];
@@ -324,7 +328,7 @@ class FieldModel extends Model implements \JsonSerializable
                 }
             }
 
-            $item        = new \stdClass();
+            $item        = new stdClass();
             $item->value = $fieldValue;
             $item->label = $fieldLabel;
 
@@ -343,7 +347,7 @@ class FieldModel extends Model implements \JsonSerializable
     /**
      * @return bool
      */
-    public function hasCustomOptionValues()
+    public function hasCustomOptionValues(): bool
     {
         $options = $this->options;
         if (empty($options)) {
@@ -368,7 +372,7 @@ class FieldModel extends Model implements \JsonSerializable
      *
      * @return bool
      */
-    public function canStoreValues()
+    public function canStoreValues(): bool
     {
         return $this->type !== FieldInterface::TYPE_CONFIRMATION;
     }
@@ -378,20 +382,14 @@ class FieldModel extends Model implements \JsonSerializable
      *
      * @return string
      */
-    public function getColumnType()
+    public function getColumnType(): string
     {
         $columnType = 'TEXT';
 
-        switch ($this->type) {
-            case FieldInterface::TYPE_FILE:
-            case FieldInterface::TYPE_CHECKBOX_GROUP:
-            case FieldInterface::TYPE_EMAIL:
-            case FieldInterface::TYPE_TEXTAREA:
-            case FieldInterface::TYPE_TABLE:
-                $columnType = 'TEXT';
-
-                break;
-        }
+        $columnType = match ($this->type) {
+            FieldInterface::TYPE_FILE, FieldInterface::TYPE_CHECKBOX_GROUP, FieldInterface::TYPE_EMAIL, FieldInterface::TYPE_TEXTAREA, FieldInterface::TYPE_TABLE => 'TEXT',
+            default => $columnType,
+        };
 
         return $columnType;
     }
@@ -401,16 +399,10 @@ class FieldModel extends Model implements \JsonSerializable
      */
     public function isSerializable()
     {
-        switch ($this->type) {
-            case FieldInterface::TYPE_FILE:
-            case FieldInterface::TYPE_CHECKBOX_GROUP:
-            case FieldInterface::TYPE_DYNAMIC_RECIPIENTS:
-            case FieldInterface::TYPE_EMAIL:
-            case FieldInterface::TYPE_TABLE:
-                return true;
-        }
-
-        return false;
+        return match ($this->type) {
+            FieldInterface::TYPE_FILE, FieldInterface::TYPE_CHECKBOX_GROUP, FieldInterface::TYPE_DYNAMIC_RECIPIENTS, FieldInterface::TYPE_EMAIL, FieldInterface::TYPE_TABLE => true,
+            default => false,
+        };
     }
 
     /**
@@ -440,7 +432,7 @@ class FieldModel extends Model implements \JsonSerializable
      *
      * @return $this
      */
-    public function setAdditionalProperty($name, $value)
+    public function setAdditionalProperty($name, $value): static
     {
         $props = $this->additionalProperties ?: [];
 
@@ -454,7 +446,7 @@ class FieldModel extends Model implements \JsonSerializable
     /**
      * Add a new column in the submissions table for this field
      */
-    public function onAfterSave()
+    public function onAfterSave(): void
     {
         if (!$this->canStoreValues()) {
             return;
@@ -465,20 +457,20 @@ class FieldModel extends Model implements \JsonSerializable
 
         try {
             ee()->db->query("ALTER TABLE exp_freeform_next_submissions ADD COLUMN $columnName $type NULL DEFAULT NULL");
-        } catch (\Exception $e) {
+        } catch (Exception) {
         }
     }
 
     /**
      * Drop the associated field column in submissions
      */
-    public function onAfterDelete()
+    public function onAfterDelete(): void
     {
         $columnName = SubmissionModel::getFieldColumnName($this->id);
 
         try {
             ee()->db->query("ALTER TABLE exp_freeform_next_submissions DROP COLUMN $columnName");
-        } catch (\Exception $e) {
+        } catch (Exception) {
         }
 
         static $fieldsService;
@@ -493,7 +485,7 @@ class FieldModel extends Model implements \JsonSerializable
     /**
      * Event beforeInsert sets the $dateCreated and $dateUpdated properties
      */
-    public function onBeforeInsert()
+    public function onBeforeInsert(): void
     {
         $this->set(
             [
@@ -506,15 +498,15 @@ class FieldModel extends Model implements \JsonSerializable
     /**
      * Event beforeUpdate sets the $dateUpdated property
      */
-    public function onBeforeUpdate()
+    public function onBeforeUpdate(): void
     {
         $this->set(['dateUpdated' => $this->getTimestampableDate()]);
     }
 
     /**
-     * @return \DateTime
+     * @return DateTime
      */
-    private function getTimestampableDate()
+    private function getTimestampableDate(): string
     {
         return date('Y-m-d H:i:s');
     }
@@ -522,7 +514,7 @@ class FieldModel extends Model implements \JsonSerializable
     /**
      * Event beforeSave validates the form
      */
-    public function onBeforeSave()
+    public function onBeforeSave(): void
     {
         FreeformHelper::get('validate', $this);
     }

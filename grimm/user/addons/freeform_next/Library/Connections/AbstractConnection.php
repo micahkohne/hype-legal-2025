@@ -2,6 +2,10 @@
 
 namespace Solspace\Addons\FreeformNext\Library\Connections;
 
+use Craft;
+use ReflectionClass;
+use ReflectionException;
+use Throwable;
 use Solspace\Addons\FreeformNext\Library\DataObjects\ConnectionResult;
 use Solspace\Addons\FreeformNext\Library\Exceptions\Connections\ConnectionException;
 
@@ -18,7 +22,7 @@ abstract class AbstractConnection extends BaseConfiguration implements Connectio
      *
      * @return ConnectionInterface
      * @throws ConnectionException
-     * @throws \ReflectionException
+     * @throws ReflectionException
      * @throws \Solspace\Commons\Exceptions\Configurations\ConfigurationException
      */
     public static function create(array $configuration)
@@ -27,16 +31,11 @@ abstract class AbstractConnection extends BaseConfiguration implements Connectio
             throw new ConnectionException(lang('Connection type not found'));
         }
 
-        switch ($configuration['type']) {
-            case 'entries':
-                return new Entries($configuration);
-
-            case 'users':
-                return new Users($configuration);
-
-            default:
-                throw new ConnectionException(lang('Invalid type "{{type}}" supplied.', ['type' => $configuration['type']]));
-        }
+        return match ($configuration['type']) {
+            'entries' => new Entries($configuration),
+            'users' => new Users($configuration),
+            default => throw new ConnectionException(lang('Invalid type "{{type}}" supplied.', ['type' => $configuration['type']])),
+        };
     }
 
     /**
@@ -90,7 +89,7 @@ abstract class AbstractConnection extends BaseConfiguration implements Connectio
      * @param array $keyValuePairs
      *
      * @return ConnectionResult
-     * @throws \Throwable
+     * @throws Throwable
      * @throws \yii\base\Exception
      */
     public function connect(array $keyValuePairs)
@@ -99,7 +98,7 @@ abstract class AbstractConnection extends BaseConfiguration implements Connectio
         if ($result->isSuccessful()) {
             $element = $this->buildElement($keyValuePairs);
             $this->beforeConnect($element, $result, $keyValuePairs);
-            if (!\Craft::$app->elements->saveElement($element)) {
+            if (!Craft::$app->elements->saveElement($element)) {
                 $this->attachErrors($result, $element);
             } else {
                 $this->afterConnect($element, $result, $keyValuePairs);
@@ -141,7 +140,7 @@ abstract class AbstractConnection extends BaseConfiguration implements Connectio
      */
     protected function attachErrors(ConnectionResult $result, Element $element)
     {
-        $reflectionClass = new \ReflectionClass($this);
+        $reflectionClass = new ReflectionClass($this);
         $logCategory     = 'freeform_' . $reflectionClass->getShortName() . '_connection';
 
         $errors = $element->getErrors();

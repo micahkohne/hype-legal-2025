@@ -22,7 +22,7 @@ class IntegrationProperties extends AbstractProperties
     /**
      * @return int
      */
-    public function getIntegrationId()
+    public function getIntegrationId(): ?int
     {
         return (int)$this->integrationId ?: null;
     }
@@ -43,7 +43,7 @@ class IntegrationProperties extends AbstractProperties
      *
      * @return array
      */
-    protected function getPropertyManifest()
+    protected function getPropertyManifest(): array
     {
         return [
             'integrationId' => self::TYPE_INTEGER,

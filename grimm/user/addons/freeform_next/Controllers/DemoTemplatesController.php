@@ -2,7 +2,7 @@
 
 namespace Solspace\Addons\FreeformNext\Controllers;
 
-use EllisLab\ExpressionEngine\Library\CP\Table;
+use ExpressionEngine\Library\CP\Table;
 use Solspace\Addons\FreeformNext\Library\Codepack\Codepack;
 use Solspace\Addons\FreeformNext\Library\Codepack\Exceptions\CodepackException;
 use Solspace\Addons\FreeformNext\Library\Codepack\Exceptions\FileObject\FileObjectException;
@@ -20,7 +20,7 @@ class DemoTemplatesController extends Controller
      * Show CodePack contents
      * Provide means to prefix the CodePack
      */
-    public function index()
+    public function index(): RedirectView|CpView
     {
         $codepack = $this->getCodepack();
 
@@ -103,12 +103,12 @@ class DemoTemplatesController extends Controller
      * @return View
      * @throws CodepackException
      */
-    private function install()
+    private function install(): RedirectView|CpView
     {
         $codepack = $this->getCodepack();
         $prefix   = ee()->input->post('prefix');
 
-        $prefix = trim(preg_replace('/[^a-zA-Z_0-9\/]/', '', $prefix));
+        $prefix = trim((string) preg_replace('/[^a-zA-Z_0-9\/]/', '', (string) $prefix));
 
         if (empty($prefix)) {
             return new RedirectView($this->getLink('settings/demo_templates/'));
@@ -142,7 +142,7 @@ class DemoTemplatesController extends Controller
      * @return CodePack
      * @throws ManifestNotPresentException
      */
-    private function getCodepack()
+    private function getCodepack(): Codepack
     {
         return new Codepack(__DIR__ . '/../codepack');
     }

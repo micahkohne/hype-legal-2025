@@ -11,8 +11,10 @@
 
 namespace Solspace\Addons\FreeformNext\Controllers;
 
-use EllisLab\ExpressionEngine\Library\CP\Table;
-use EllisLab\ExpressionEngine\Model\File\File;
+use Solspace\Addons\FreeformNext\Repositories\FormRepository;
+use Solspace\Addons\FreeformNext\Services\ExportService;
+use ExpressionEngine\Library\CP\Table;
+use ExpressionEngine\Model\File\File;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\AbstractField;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Fields\CheckboxField;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Fields\CheckboxGroupField;
@@ -51,7 +53,522 @@ class SubmissionController extends Controller
      *
      * @return CpView
      */
-    public function index(Form $form)
+    public function index(Form $form): RedirectView|CpView
+    {
+        return $this->submissionsIndex($form);
+    }
+
+    public function submissionsIndex(Form $form)
+    {
+        $canAccessSubmissions = $this->getPermissionsService()->canAccessSubmissions(ee()->session->userdata('group_id'));
+
+        if (!$canAccessSubmissions) {
+            return new RedirectView($this->getLink('denied'));
+        }
+
+        $baseUrl = ee('CP/URL')->getCurrentUrl();//ee('CP/URL', 'addons/settings/freeform_next/submissions/' . $form->getHandle());
+        $filters = ee('CP/Filter')->add('Date');
+
+        $canManageSubmissions = $this->getPermissionsService()->canManageSubmissions(ee()->session->userdata('group_id'));
+
+        $columnLabels   = [];
+        $visibleColumns = [];
+
+        $preferences = SubmissionPreferencesRepository::getInstance()->getOrCreate(
+            $form,
+            ee()->session->userdata('member_id')
+        );
+
+        $layout = $preferences->getLayout();
+
+        $columns = [];
+        $index   = 0;
+
+        foreach ($layout as $setting) {
+
+            $fieldType = null;
+
+            if (!$setting->isChecked()) {
+                continue;
+            }
+
+            $type   = Table::COL_TEXT;
+            $encode = true;
+            if ($setting->getId() === 'id') {
+                $type = Table::COL_ID;
+            } else if (in_array($setting->getId(), ['title', 'statusName'], true)) {
+                $encode = false;
+            }
+
+            $handle = $setting->getHandle();
+            $label  = $setting->getLabel();
+            if (is_numeric($setting->getId())) {
+                try {
+                    $field     = $form->getLayout()->getFieldById($setting->getId());
+                    $handle    = $field->getHandle();
+                    $label     = $field->getLabel();
+                    $fieldType = $field->getType();
+
+                    if ($field->getType() === AbstractField::TYPE_FILE) {
+                        $type   = Table::COL_TEXT;
+                        $encode = false;
+                    }
+                } catch (FreeformException) {
+                    continue;
+                }
+            }
+
+            // Make sure the labels are "translatable"
+            ee()->lang->language[$handle] = $label;
+
+            $columns[] = [
+                'label'  => $handle,
+                'type'   => $type,
+                'encode' => $encode,
+                'sort'   => true,
+            ];
+
+            $fieldId = $setting->getId();
+
+            if (is_int($fieldId)) {
+
+                if (!in_array($fieldType, $this->getFilterableFieldTypes())) {
+                    continue;
+                }
+
+                $fieldId = 'field_' . $fieldId;
+            }
+
+            if (!in_array($fieldId, ['statusName', 'dateCreated', 'dateUpdated'])) {
+                $visibleColumns[]       = $fieldId;
+                $columnLabels[$fieldId] = $label;
+            }
+        }
+
+        if ($canManageSubmissions) {
+            $columns = array_merge(
+                $columns,
+                [
+                    'manage' => ['type' => Table::COL_TOOLBAR],
+                    ['type' => Table::COL_CHECKBOX, 'name' => 'selection'],
+                ]
+            );
+        }
+
+        $attributes = new SubmissionAttributes($form);
+
+        $currentKeyword        = '';
+        $currentSearchStatus   = '';
+        $currentSearchStatusId = '';
+        $currentDateRangeStart = '';
+        $currentDateRangeEnd   = '';
+        $currentDateRange      = '';
+        $currentSearchOnField  = '';
+
+        $formSwitches = [];
+        $allFormModels = FormRepository::getInstance()->getAllForms();
+
+        foreach ($allFormModels as $formModel) {
+            $switchForm = $formModel->getForm();
+
+            $formSwitches[$switchForm->getHandle()] = [
+                'label' => $switchForm->getName(),
+                'url'   => ee('CP/URL')->make('addons/settings/freeform_next/submissions/' . $switchForm->getHandle())->compile(),
+            ];
+        }
+
+        $statuses     = StatusRepository::getInstance()->getAllStatuses();
+        $formStatuses = [];
+
+        foreach ($statuses as $status) {
+            $formStatuses[$status->id] = [
+            	'label' => $status->name,
+            	'url' => ee('CP/URL')->getCurrentUrl()->addQueryStringVariables(['status' => $status->id])->compile()
+				];
+        }
+
+        $search_vars = [
+            'keywords',
+            'status',
+            'date_range',
+            'date_range_start',
+            'date_range_end',
+            'search_on_field',
+        ];
+
+        $searchVars = [];
+
+        foreach ($search_vars as $searchVarible) {
+            $searchValue                = ee()->input->get_post($searchVarible, true);
+            $searchVars[$searchVarible] = trim((string) $searchValue);
+        }
+
+        $searchOnField  = $searchVars['search_on_field'];
+		$searchKeywords = $searchVars['keywords'];
+
+        if (($searchOnField == '' OR in_array($searchOnField, $visibleColumns)) AND $searchKeywords AND trim($searchKeywords) !== '') {
+
+            $currentSearchOnField = $searchOnField;
+
+            if ($searchOnField === '') {
+                foreach ($visibleColumns as $column) {
+                    $attributes->addOrLikeFilter($column, $searchKeywords);
+                }
+
+            } else if ($searchOnField == 'id') {
+                $attributes->addIdFilter($searchOnField, $searchKeywords);
+            } else {
+                $attributes->addLikeFilter($searchOnField, $searchKeywords);
+            }
+
+            $currentKeyword = $searchKeywords;
+        }
+
+        $searchStatus = $searchVars['status'];
+
+        if ($searchStatus AND in_array($searchStatus, array_keys($formStatuses))) {
+            $currentSearchStatus = $formStatuses[$searchStatus]['label'];
+            $currentSearchStatusId = $searchStatus;
+            $attributes->addFilter('statusId', $searchStatus);
+        }
+
+        $dateRangesKeys = [
+			'today',
+			'this_week',
+			'this_month',
+			'last_month',
+			'this_year',
+		];
+
+		$formDateRanges = [];
+
+		foreach ($dateRangesKeys as $dateRangeKey) {
+			$formDateRanges[] = [
+				'label' => lang($dateRangeKey),
+				'url' => ee('CP/URL')->getCurrentUrl()->addQueryStringVariables(['date_range' => $dateRangeKey])->compile()
+			];
+		}
+
+        $dateRange = str_replace('_', ' ', $searchVars['date_range']);
+        $currentDateRange = $searchVars['date_range'];
+
+        if ($dateRange !== 'date range') {
+            $attributes->setDateRange($dateRange);
+        } else {
+            $dateRangeStart = $searchVars['date_range_start'];
+
+            if ($dateRangeStart) {
+                $currentDateRangeStart = $dateRangeStart;
+                $dateRangeStart        = date($dateRangeStart);
+                $attributes->setDateRangeStart($dateRangeStart);
+            }
+
+            $dateRangeEnd = $searchVars['date_range_end'];
+
+            if ($dateRangeEnd) {
+                $currentDateRangeEnd = $dateRangeEnd;
+                $dateRangeEnd        = date($dateRangeEnd);
+                $attributes->setDateRangeEnd($dateRangeEnd);
+            }
+        }
+
+        $page = (int) ee()->input->get('page') ?: 1;
+		$perpage = (int) ee()->input->get('perpage') ?: self::MAX_PER_PAGE;
+
+        $sortDirection = ee()->input->get('sort_dir');
+        $sortDirection = !$sortDirection || $sortDirection === '0' ? 'desc' : $sortDirection;
+        $sortColumn    = ee()->input->get('sort_col');
+        $sortColumn    = !$sortColumn || $sortColumn === '0' ? 'dateCreated' : $sortColumn;
+
+        $sortVars = [
+            'sort_col' => $sortColumn,
+            'sort_dir' => $sortDirection,
+        ];
+
+        $attributes->addFilter('isSpam', false);
+
+        $totalSubmissionCount = SubmissionRepository::getInstance()->getAllSubmissionCountFor($attributes);
+
+        $attributes
+            ->setOrderBy($sortColumn)
+            ->setSort($sortDirection)
+            ->setLimit($perpage)
+            ->setOffset($perpage * ($page - 1));
+
+        $submissions = SubmissionRepository::getInstance()->getAllSubmissionsFor($attributes);
+
+		$pagination = ee('CP/Pagination', $totalSubmissionCount)
+            ->perPage($perpage)
+            ->currentPage($page)
+            ->render(
+                $this->getLink('submissions/' . $form->getHandle() . '&' . http_build_query($sortVars) . '&' . http_build_query($searchVars))
+            );
+
+		if(! $pagination)
+		{
+			$pagination = '<ul class="pagination"><li class="pagination__item">'.
+				ee('CP/Filter')
+				->add('Perpage', $totalSubmissionCount, 'all_items', false, true)
+				->render($this->getLink('submissions/' . $form->getHandle() . '&' . http_build_query($sortVars) . '&' . http_build_query($searchVars)), '__') .
+				'</li></ul>';
+		}
+
+        /** @var Table $table */
+        $table = ee(
+            'CP/Table',
+            [
+                'autosearch' => true,
+                'sortable'   => true,
+                'limit'      => 5,
+            ]
+        );
+
+        $table->setColumns($columns);
+
+        ee()->javascript->set_global('file_view_url', ee('CP/URL')->make('files/file/view/###')->compile());
+        $dateFormat = ee()->localize->get_date_format();
+
+        $tableData = [];
+        foreach ($submissions as $submission) {
+            $link = $this->getLink('submissions/' . $form->getHandle() . '/' . $submission->id);
+            $data = [];
+
+            $titleElement = '<p style="margin: 0">' . $submission->title . '</p>';
+
+            if ($canManageSubmissions) {
+                $titleElement = '<a href="' . $link . '">' . $submission->title . '</a>';
+            }
+
+            foreach ($layout as $setting) {
+                if (!$setting->isChecked()) {
+                    continue;
+                }
+
+                if ($setting->getId() === 'id') {
+                    $data[] = $submission->id;
+                } else if ($setting->getId() === 'title') {
+                    $data[] = [
+                        'content' => $titleElement,
+                    ];
+                } else if ($setting->getId() === 'statusName') {
+                    $data[] = [
+                        'content' => '<span class="color-indicator" style="background: ' . $submission->statusColor . ';"></span>' . $submission->statusName,
+                    ];
+                } else if ($setting->getId() === 'dateCreated') {
+                    $data[] = ee()->localize->format_date($dateFormat, strtotime((string) $submission->dateCreated));
+                } else if (is_numeric($setting->getId())) {
+                    try {
+                        $field = $form->getLayout()->getFieldById((int) $setting->getId());
+
+                        try {
+                            $value = $submission->getFieldValueAsString($field->getHandle());
+                        } catch (FreeformException) {
+                            $value = '';
+                        }
+
+                        if ($field instanceof FileUploadField) {
+                            $assetIds = $submission->getFieldValue($field->getHandle());
+                            if ($assetIds) {
+                                if (!is_array($assetIds)) {
+                                    $assetIds = [$assetIds];
+                                }
+
+                                $content = '<div class="file-previews">';
+
+                                foreach ($assetIds as $assetId) {
+                                    /** @var File $asset */
+                                    $asset = ee('Model')
+                                        ->get('File')
+                                        ->filter('file_id', $assetId)
+                                        ->first();
+
+                                    if (!$asset) {
+                                        continue;
+                                    }
+
+                                    $content .= '    <div>';
+                                    $content .= '        <style>';
+                                    $content .= '        .asset_' . $assetId . '_modal {';
+                                    $content .= '           display: flex';
+                                    $content .= '           align-items: center;';
+                                    $content .= '           justify-content: center;';
+                                    $content .= '           max-width: 80vw !important;';
+                                    $content .= '           width: fit-content;';
+                                    $content .= '        }';
+                                    $content .= '        .asset_' . $assetId . '_modal .modal {';
+                                    $content .= '            width: fit-content;';
+                                    $content .= '        }';
+                                    $content .= '        </style>';
+
+                                    if ($asset->isImage()) {
+                                        $modal_vars = [
+                                            'name' => 'asset_' . $assetId . '_modal',
+                                            'contents' => '<img src="' . $asset->getAbsoluteURL() . '" />'
+                                        ];
+
+                                        $modal_html = ee('View')->make('ee:_shared/modal')->render($modal_vars);
+
+                                        ee('CP/Modal')->addModal('asset_' . $assetId . '_modal', $modal_html);
+
+                                        $content .= '        <a href="' . ee('CP/URL', 'files/file/view/' . $assetId)->compile() . '">' . $asset->file_name . '</a> (<a href="javascript:void(0);" class="m-link" rel="asset_' . $assetId . '_modal">Preview File</a>)';
+                                    } else {
+                                        $content .= '        <a href="' . ee('CP/URL', 'files/file/view/' . $assetId)->compile() . '">' . $asset->file_name . '</a>';
+                                    }
+
+                                    $content .= '    </div>';
+                                }
+
+                                $content .= '</div>'; // END file-previews
+
+                                $data[] = [
+                                    'content' => $content,
+                                ];
+                            } else {
+                                $data[] = ['toolbar_items' => []];
+                            }
+                        } else if ($field instanceof RatingField) {
+                            $data[] = (int) $value . '/' . $field->getMaxValue();
+                        } else {
+                            $data[] = $value;
+                        }
+                    } catch (FreeformException) {
+                        continue;
+                    }
+                }
+            }
+
+            $toolbarItems = [];
+
+            if ($canManageSubmissions) {
+                $toolbarItems = [
+                    'edit' => [
+                        'href'  => $this->getLink('submissions/' . $form->getHandle() . '/' . $submission->id),
+                        'title' => lang('edit'),
+                    ],
+                ];
+            }
+
+            if ($canManageSubmissions) {
+                $data[] = [
+                    'toolbar_items' => $toolbarItems,
+                ];
+
+                $data[] = [
+                    'name'  => 'id_list[]',
+                    'value' => $submission->id,
+                    'data'  => [
+                        'confirm' => lang('Submission') . ': <b>' . htmlentities((string) $submission->title, ENT_QUOTES) . '</b>',
+                    ],
+                ];
+            }
+
+            $tableData[] = $data;
+        }
+
+        if (empty($tableData) || count($tableData[0]) === count($columns)) {
+            $table->setData($tableData);
+            $table->setNoResultsText('No results');
+        } else {
+            $table->setData([]);
+            $table->setNoResultsText('Please re-save the column layout');
+        }
+
+        $modal = new ConfirmRemoveModal($this->getLink('submissions/' . $form->getHandle() . '/delete'));
+        $modal->setKind('Submissions');
+
+        $formRightLinks = [
+            [
+                'title' => lang('Edit Layout'),
+                'link'  => '#',
+                'attrs' => 'id="change-layout-trigger" class="btn action button--small"',
+            ],
+        ];
+
+        if (class_exists(ExportController::class)) {
+            array_unshift($formRightLinks, [
+                'title' => lang('Quick Export'),
+                'link'  => '#',
+                'attrs' => 'id="quick-export-trigger" style="margin-right: 5px;"  class="btn action button--small"',
+            ]);
+        } else {
+            array_unshift($formRightLinks, [
+                'title' => lang('Export CSV'),
+                'link'  => $this->getLink('api/submission_export/' . $form->getId()),
+                'attrs' => 'id="export-trigger" style="margin-right: 5px;"',
+            ]);
+        }
+
+        $sessionType  = ee()->config->item('cp_session_type');
+        $sessionToken = null;
+        if ($sessionType === 'cs') {
+            $sessionToken = ee()->session->userdata('fingerprint');
+        } else if ($sessionType === 's') {
+            $sessionToken = ee()->session->userdata('session_id');
+        }
+
+        $template = [
+			'table'            => $table->viewData($this->getLink('submissions/' . $form->getHandle())),
+			'cp_page_title'    => 'Submissions for ' . $form->getName(),
+			'layout'           => $layout,
+			'form'             => $form,
+			'form_right_links' => $formRightLinks,
+			'pagination'       => $pagination,
+			'exportLink'       => $this->getLink('export'),
+            'formSwitches'     => $formSwitches,
+			'formStatuses'     => $formStatuses,
+			'formDateRanges'   => $formDateRanges,
+			'mainUrl'          => $this->getLink('submissions/' . $form->getHandle()),
+			'columnLabels'     => $columnLabels,
+			'visibleColumns'   => $visibleColumns,
+			'form_url' => ee('CP/URL')->getCurrentUrl(),
+			'form_attributes' => [
+				'id' => 'entry-filters',
+				'data-action' => $entries_filter_uri ?? ""
+			],
+			'currentSearchOnField'  => $currentSearchOnField,
+			'currentKeyword'        => $currentKeyword,
+			'currentSearchStatus'   => $currentSearchStatus,
+			'currentSearchStatusId' => $currentSearchStatusId,
+			'currentDateRangeStart' => $currentDateRangeStart,
+			'currentDateRangeEnd'   => $currentDateRangeEnd,
+			'currentDateRange'      => $currentDateRange,
+            'currentFormId'         => $form->getId(),
+            'currentFormLabel'      => $form->getName(),
+            'currentFormHandle'     => $form->getHandle(),
+
+			'baseUrl' => $baseUrl,
+			'filters' => $filters,
+
+			'sessionToken' => $sessionToken,
+			'footer' => [
+				'submit_lang' => lang('submit'),
+				'type'        => 'bulk_action_form',
+			]
+		];
+
+        $view = new CpView('submissions/listing', $template);
+
+        $exportServiceClassName = ExportService::class;
+        if (class_exists($exportServiceClassName)) {
+            $exportService = new $exportServiceClassName();
+            $view->addTemplateVariables($exportService->getExportDialogueTemplateVariables($form->getId()));
+        }
+
+        $view
+            ->setHeading(lang('Submissions'))
+            ->addJavascript('lib/featherlight.min.js')
+            ->addJavascript('submissions')
+            ->addJavascript('export')
+            ->addBreadcrumb(new NavigationLink('Submissions', 'submissions/' . $form->getHandle()))
+            ->addBreadcrumb(new NavigationLink($form->getName(), 'forms/'. $form->getId()))
+            ->addModal($modal);
+
+        ee()->cp->add_js_script(['ui' => ['sortable']]);
+
+        return $view;
+    }
+
+    public function spamIndex(Form $form)
     {
         $canAccessSubmissions = $this->getPermissionsService()->canAccessSubmissions(ee()->session->userdata('group_id'));
 
@@ -138,6 +655,15 @@ class SubmissionController extends Controller
             }
         }
 
+        $visibleColumns[] = 'spamReasonMessage';
+        $columnLabels['spamReasonMessage'] = 'spamReasonMessage';
+        $columns[] = [
+            'label'  => 'spamReason',
+            'type'   => Table::COL_TEXT,
+            'encode' => false,
+            'sort'   => true,
+        ];
+
         if ($canManageSubmissions) {
             $columns = array_merge(
                 $columns,
@@ -158,14 +684,26 @@ class SubmissionController extends Controller
         $currentDateRange      = '';
         $currentSearchOnField  = '';
 
+        $formSwitches = [];
+        $allFormModels = FormRepository::getInstance()->getAllForms();
+
+        foreach ($allFormModels as $formModel) {
+            $switchForm = $formModel->getForm();
+
+            $formSwitches[$switchForm->getHandle()] = [
+                'label' => $switchForm->getName(),
+                'url'   => ee('CP/URL')->make('addons/settings/freeform_next/spam/' . $switchForm->getHandle())->compile(),
+            ];
+        }
+
         $statuses     = StatusRepository::getInstance()->getAllStatuses();
         $formStatuses = [];
 
         foreach ($statuses as $status) {
             $formStatuses[$status->id] = [
-            	'label' => $status->name,
-            	'url' => ee('CP/URL')->getCurrentUrl()->addQueryStringVariables(['status' => $status->id])->compile()
-				];
+                'label' => $status->name,
+                'url' => ee('CP/URL')->getCurrentUrl()->addQueryStringVariables(['status' => $status->id])->compile()
+            ];
         }
 
         $search_vars = [
@@ -185,7 +723,7 @@ class SubmissionController extends Controller
         }
 
         $searchOnField  = $searchVars['search_on_field'];
-		$searchKeywords = $searchVars['keywords'];
+        $searchKeywords = $searchVars['keywords'];
 
         if (($searchOnField == '' OR in_array($searchOnField, $visibleColumns)) AND $searchKeywords AND trim($searchKeywords) !== '') {
 
@@ -214,21 +752,21 @@ class SubmissionController extends Controller
         }
 
         $dateRangesKeys = [
-			'today',
-			'this_week',
-			'this_month',
-			'last_month',
-			'this_year',
-		];
+            'today',
+            'this_week',
+            'this_month',
+            'last_month',
+            'this_year',
+        ];
 
-		$formDateRanges = [];
+        $formDateRanges = [];
 
-		foreach ($dateRangesKeys as $dateRangeKey) {
-			$formDateRanges[] = [
-				'label' => lang($dateRangeKey),
-				'url' => ee('CP/URL')->getCurrentUrl()->addQueryStringVariables(['date_range' => $dateRangeKey])->compile()
-			];
-		}
+        foreach ($dateRangesKeys as $dateRangeKey) {
+            $formDateRanges[] = [
+                'label' => lang($dateRangeKey),
+                'url' => ee('CP/URL')->getCurrentUrl()->addQueryStringVariables(['date_range' => $dateRangeKey])->compile()
+            ];
+        }
 
         $dateRange = str_replace('_', ' ', $searchVars['date_range']);
         $currentDateRange = $searchVars['date_range'];
@@ -254,7 +792,7 @@ class SubmissionController extends Controller
         }
 
         $page = (int) ee()->input->get('page') ?: 1;
-		$perpage = (int) ee()->input->get('perpage') ?: self::MAX_PER_PAGE;
+        $perpage = (int) ee()->input->get('perpage') ?: self::MAX_PER_PAGE;
 
         $sortDirection = ee()->input->get('sort_dir');
         $sortDirection = !$sortDirection || $sortDirection === '0' ? 'desc' : $sortDirection;
@@ -266,6 +804,8 @@ class SubmissionController extends Controller
             'sort_dir' => $sortDirection,
         ];
 
+        $attributes->addFilter('isSpam', 1);
+
         $totalSubmissionCount = SubmissionRepository::getInstance()->getAllSubmissionCountFor($attributes);
 
         $attributes
@@ -276,21 +816,21 @@ class SubmissionController extends Controller
 
         $submissions = SubmissionRepository::getInstance()->getAllSubmissionsFor($attributes);
 
-		$pagination = ee('CP/Pagination', $totalSubmissionCount)
+        $pagination = ee('CP/Pagination', $totalSubmissionCount)
             ->perPage($perpage)
             ->currentPage($page)
             ->render(
-                $this->getLink('submissions/' . $form->getHandle() . '&' . http_build_query($sortVars) . '&' . http_build_query($searchVars))
+                $this->getLink('spam/' . $form->getHandle() . '&' . http_build_query($sortVars) . '&' . http_build_query($searchVars))
             );
 
-		if(! $pagination)
-		{
-			$pagination = '<ul class="pagination"><li class="pagination__item">'.
-				ee('CP/Filter')
-				->add('Perpage', $totalSubmissionCount, 'all_items', false, true)
-				->render($this->getLink('submissions/' . $form->getHandle() . '&' . http_build_query($sortVars) . '&' . http_build_query($searchVars)), '__') .
-				'</li></ul>';
-		}
+        if(! $pagination)
+        {
+            $pagination = '<ul class="pagination"><li class="pagination__item">'.
+                ee('CP/Filter')
+                    ->add('Perpage', $totalSubmissionCount, 'all_items', false, true)
+                    ->render($this->getLink('spam/' . $form->getHandle() . '&' . http_build_query($sortVars) . '&' . http_build_query($searchVars)), '__') .
+                '</li></ul>';
+        }
 
         /** @var Table $table */
         $table = ee(
@@ -416,6 +956,8 @@ class SubmissionController extends Controller
                 }
             }
 
+            $data[] = $submission->spamReasonMessage;
+
             $toolbarItems = [];
 
             if ($canManageSubmissions) {
@@ -486,42 +1028,46 @@ class SubmissionController extends Controller
         }
 
         $template = [
-			'table'            => $table->viewData($this->getLink('submissions/' . $form->getHandle())),
-			'cp_page_title'    => 'Submissions for ' . $form->getName(),
-			'layout'           => $layout,
-			'form'             => $form,
-			'form_right_links' => $formRightLinks,
-			'pagination'       => $pagination,
-			'exportLink'       => $this->getLink('export'),
-			'formStatuses'     => $formStatuses,
-			'formDateRanges'   => $formDateRanges,
-			'mainUrl'          => $this->getLink('submissions/' . $form->getHandle()),
-			'columnLabels'     => $columnLabels,
-			'visibleColumns'   => $visibleColumns,
-			'form_url' => ee('CP/URL')->getCurrentUrl(),
-			'form_attributes' => [
-				'id' => 'entry-filters',
-				'data-action' => isset($entries_filter_uri) ? $entries_filter_uri : ""
-			],
-			'currentSearchOnField'  => $currentSearchOnField,
-			'currentKeyword'        => $currentKeyword,
-			'currentSearchStatus'   => $currentSearchStatus,
-			'currentSearchStatusId' => $currentSearchStatusId,
-			'currentDateRangeStart' => $currentDateRangeStart,
-			'currentDateRangeEnd'   => $currentDateRangeEnd,
-			'currentDateRange'      => $currentDateRange,
+            'table'            => $table->viewData($this->getLink('spam/' . $form->getHandle())),
+            'cp_page_title'    => 'Spam for ' . $form->getName(),
+            'layout'           => $layout,
+            'form'             => $form,
+            'form_right_links' => $formRightLinks,
+            'pagination'       => $pagination,
+            'exportLink'       => $this->getLink('export'),
+            'formSwitches'     => $formSwitches,
+            'formStatuses'     => $formStatuses,
+            'formDateRanges'   => $formDateRanges,
+            'mainUrl'          => $this->getLink('spam/' . $form->getHandle()),
+            'columnLabels'     => $columnLabels,
+            'visibleColumns'   => $visibleColumns,
+            'form_url' => ee('CP/URL')->getCurrentUrl(),
+            'form_attributes' => [
+                'id' => 'entry-filters',
+                'data-action' => isset($entries_filter_uri) ? $entries_filter_uri : ""
+            ],
+            'currentSearchOnField'  => $currentSearchOnField,
+            'currentKeyword'        => $currentKeyword,
+            'currentSearchStatus'   => $currentSearchStatus,
+            'currentSearchStatusId' => $currentSearchStatusId,
+            'currentDateRangeStart' => $currentDateRangeStart,
+            'currentDateRangeEnd'   => $currentDateRangeEnd,
+            'currentDateRange'      => $currentDateRange,
+            'currentFormId'         => $form->getId(),
+            'currentFormLabel'      => $form->getName(),
+            'currentFormHandle'     => $form->getHandle(),
 
-			'baseUrl' => $baseUrl,
-			'filters' => $filters,
+            'baseUrl' => $baseUrl,
+            'filters' => $filters,
 
-			'sessionToken' => $sessionToken,
-			'footer' => [
-				'submit_lang' => lang('submit'),
-				'type'        => 'bulk_action_form',
-			]
-		];
+            'sessionToken' => $sessionToken,
+            'footer' => [
+                'submit_lang' => lang('submit'),
+                'type'        => 'bulk_action_form',
+            ]
+        ];
 
-        $view = new CpView('submissions/listing', $template);
+        $view = new CpView('spam/listing', $template);
 
         $exportServiceClassName = 'Solspace\Addons\FreeformNext\Services\ExportService';
         if (class_exists($exportServiceClassName)) {
@@ -530,13 +1076,15 @@ class SubmissionController extends Controller
         }
 
         $view
-            ->setHeading(lang('Submissions'))
+            ->setHeading(lang('Spam'))
+            ->addJavascript('lib/featherlight.min.js')
             ->addJavascript('submissions')
             ->addJavascript('export')
-            ->addJavascript('lib/featherlight.min.js')
-            ->addBreadcrumb(new NavigationLink('Forms', 'forms'))
-            ->addBreadcrumb(new NavigationLink($form->getName(), 'forms/' . $form->getId()))
+            ->addBreadcrumb(new NavigationLink('Spam', 'spam/' . $form->getHandle()))
+            ->addBreadcrumb(new NavigationLink($form->getName(), 'forms/'. $form->getId()))
             ->addModal($modal);
+
+        ee()->cp->add_js_script(['ui' => ['sortable']]);
 
         return $view;
     }
@@ -547,7 +1095,7 @@ class SubmissionController extends Controller
      *
      * @return CpView
      */
-    public function edit(Form $form, SubmissionModel $submission)
+    public function edit(Form $form, SubmissionModel $submission): RedirectView|CpView
     {
         $canManageSubmissions = $this->getPermissionsService()->canManageSubmissions(ee()->session->userdata('group_id'));
 
@@ -721,10 +1269,10 @@ class SubmissionController extends Controller
                                     $content .= '        }';
                                     $content .= '        </style>';
 
-                                    $modal_vars = array(
+                                    $modal_vars = [
                                         'name' => 'asset_' . $assetId . '_modal',
                                         'contents' => '<img src="' . $asset->getAbsoluteURL() . '" />'
-                                    );
+                                    ];
 
                                     $modal_html = ee('View')->make('ee:_shared/modal')->render($modal_vars);
 
@@ -800,6 +1348,40 @@ class SubmissionController extends Controller
             $sectionData[$page->getLabel()] = $data;
         }
 
+        if ($submission->isSpam && !empty($submission->spamReasonType)) {
+            $sectionData['Spam Reasons'] = [
+                [
+                    'title' => lang('spamReasonType'),
+                    'fields' => [
+                        'spamReasonType' => [
+                            'type' => 'html',
+                            'content' => lang($submission->spamReasonType),
+                        ],
+                    ],
+                ],
+                [
+                    'title' => lang('spamReasonMessage'),
+                    'fields' => [
+                        'spamReasonMessage' => [
+                            'type' => 'html',
+                            'content' => $submission->spamReasonMessage,
+                        ],
+                    ],
+                ],
+                [
+                    'title' => lang('spamReasonValue'),
+                    'fields' => [
+                        'spamReasonValue' => [
+                            'type' => 'html',
+                            'content' => $submission->spamReasonValue,
+                        ],
+                    ],
+                ],
+            ];
+        }
+
+        $baseUrl = $submission->isSpam ? $this->getLink('spam/' . $form->getHandle() . '/' . $submission->id) : $this->getLink('submissions/' . $form->getHandle() . '/' . $submission->id);
+
         $view
             ->setHeading($submission->title)
             ->addBreadcrumb(new NavigationLink('Forms', 'forms'))
@@ -808,9 +1390,7 @@ class SubmissionController extends Controller
             ->addJavascript('fields/table.js')
             ->setTemplateVariables(
                 [
-                    'base_url'              => $this->getLink(
-                        'submissions/' . $form->getHandle() . '/' . $submission->id
-                    ),
+                    'base_url'              => $baseUrl,
                     'cp_page_title'         => $submission->title,
                     'save_btn_text'         => 'Save',
                     'save_btn_text_working' => 'Saving...',
@@ -828,7 +1408,7 @@ class SubmissionController extends Controller
      *
      * @return bool
      */
-    public function save(Form $form, SubmissionModel $submission)
+    public function save(Form $form, SubmissionModel $submission): bool
     {
         $canManageSubmissions = $this->getPermissionsService()->canManageSubmissions(ee()->session->userdata('group_id'));
 
@@ -897,7 +1477,7 @@ class SubmissionController extends Controller
      *
      * @return RedirectView
      */
-    public function batchDelete(Form $form)
+    public function batchDelete(Form $form): RedirectView
     {
         $canManageSubmissions = $this->getPermissionsService()->canManageSubmissions(ee()->session->userdata('group_id'));
 
@@ -928,7 +1508,7 @@ class SubmissionController extends Controller
         return new RedirectView($this->getLink('submissions/' . $form->getHandle()));
     }
 
-    private function getFilterableFieldTypes()
+    private function getFilterableFieldTypes(): array
     {
         return [
             AbstractField::TYPE_EMAIL,

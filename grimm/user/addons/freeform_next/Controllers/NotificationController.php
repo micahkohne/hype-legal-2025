@@ -11,8 +11,8 @@
 
 namespace Solspace\Addons\FreeformNext\Controllers;
 
-use EllisLab\ExpressionEngine\Library\CP\Table;
-use EllisLab\ExpressionEngine\Service\Validation\Result;
+use ExpressionEngine\Library\CP\Table;
+use ExpressionEngine\Service\Validation\Result;
 use Solspace\Addons\FreeformNext\Library\Exceptions\FreeformException;
 use Solspace\Addons\FreeformNext\Library\Helpers\ExtensionHelper;
 use Solspace\Addons\FreeformNext\Model\NotificationModel;
@@ -27,7 +27,7 @@ class NotificationController extends Controller
     /**
      * @return CpView
      */
-    public function index()
+    public function index(): RedirectView|CpView
     {
         $canAccessNotifications = $this->getPermissionsService()->canAccessNotifications(ee()->session->userdata('group_id'));
 
@@ -70,7 +70,7 @@ class NotificationController extends Controller
                 'value' => $notification->id,
                 'data'  => [
                     'confirm' => lang('Notification') . ': <b>' . htmlentities(
-                            $notification->name,
+                            (string) $notification->name,
                             ENT_QUOTES
                         ) . '</b>',
                 ],
@@ -143,13 +143,13 @@ class NotificationController extends Controller
     }
 
     /**
-     * @param string      $notificationId
-     * @param Result|null $validation
+     * @param null|int|string   $notificationId
+     * @param ?Result           $validation
      *
      * @return CpView
      * @throws FreeformException
      */
-    public function edit($notificationId, Result $validation = null)
+    public function edit(null|int|string $notificationId, ?Result $validation = null): RedirectView|CpView
     {
         $canAccessNotifications = $this->getPermissionsService()->canAccessNotifications(ee()->session->userdata('group_id'));
 
@@ -274,9 +274,18 @@ class NotificationController extends Controller
                                 'desc'   => 'The content of the email notification. See documentation for availability of variables.',
                                 'wide'   => true,
                                 'fields' => [
-                                    'includeAttachments' => [
+                                    'bodyHtml' => [
                                         'type'    => 'html',
                                         'content' => $this->getFieldHtml($notification, 'html_field'),
+                                    ],
+                                ],
+                            ],
+                            [
+                                'title'  => '', // no title or desc for hidden fields
+                                'fields' => [
+                                    'bodyText' => [
+                                        'type'  => 'hidden',
+                                        'value' => strip_tags($notification->bodyText) ?? '',
                                     ],
                                 ],
                             ],
@@ -339,7 +348,7 @@ class NotificationController extends Controller
     /**
      * @return RedirectView
      */
-    public function batchDelete()
+    public function batchDelete(): RedirectView
     {
         $canAccessNotifications = $this->getPermissionsService()->canAccessNotifications(ee()->session->userdata('group_id'));
 
@@ -375,7 +384,7 @@ class NotificationController extends Controller
      *
      * @return string
      */
-    private function getFieldHtml(NotificationModel $model, $template)
+    private function getFieldHtml(NotificationModel $model, string $template): string|false
     {
         ob_start();
         include PATH_THIRD . "freeform_next/Templates/notifications/{$template}.php";

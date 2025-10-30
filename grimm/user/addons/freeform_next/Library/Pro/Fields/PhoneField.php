@@ -2,6 +2,7 @@
 
 namespace Solspace\Addons\FreeformNext\Library\Pro\Fields;
 
+use Override;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Fields\TextField;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Validation\Constraints\PhoneConstraint;
 
@@ -15,7 +16,8 @@ class PhoneField extends TextField
      *
      * @return string
      */
-    public function getType()
+    #[Override]
+    public function getType(): string
     {
         return self::TYPE_PHONE;
     }
@@ -31,7 +33,8 @@ class PhoneField extends TextField
     /**
      * @inheritDoc
      */
-    public function getConstraints()
+    #[Override]
+    public function getConstraints(): array
     {
         return [
             new PhoneConstraint(

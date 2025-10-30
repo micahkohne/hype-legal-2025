@@ -17,10 +17,10 @@
 							<div class="card__image">
 
 								<picture>
-									<source media="(min-width:1024px)" srcset="{exp:jcogs_img:image src='{hero_image_featured}' url_only='yes'}">
+									<source media="(min-width:1024px)" srcset="{exp:jcogs_img_pro:image src='{hero_image_featured}' url_only='yes'}">
 
 									{hero_image_mobile}
-										{exp:jcogs_img:image src='{url}' add_dims='yes' alt='{title}'}
+										{exp:jcogs_img_pro:image src='{url}' add_dims='yes' alt='{title}'}
 									{/hero_image_mobile}
 								</picture>
 
@@ -49,10 +49,10 @@
 							<div class="card__image">
 
 								<picture>
-									<source media="(min-width:1024px)" srcset="{exp:jcogs_img:image src='{projects:switch='{projects:hero_image_small}|{projects:hero_image}|{projects:hero_image}|{projects:hero_image_small}'}' url_only='yes'}">
+									<source media="(min-width:1024px)" srcset="{exp:jcogs_img_pro:image src='{projects:switch='{projects:hero_image_small}|{projects:hero_image}|{projects:hero_image}|{projects:hero_image_small}'}' url_only='yes'}">
 
 									{projects:hero_image_mobile}
-										{exp:jcogs_img:image src='{url}' add_dims='yes' alt='{title}' lazy='dominant_color' class='fade-in'}
+										{exp:jcogs_img_pro:image src='{url}' add_dims='yes' alt='{title}' lazy='dominant_color' class='fade-in'}
 									{/projects:hero_image_mobile}
 								</picture>
 

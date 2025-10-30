@@ -2,6 +2,7 @@
 
 namespace Solspace\Addons\FreeformNext\Library\Pro\Fields;
 
+use Override;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Fields\TextField;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Validation\Constraints\RegexConstraint;
 
@@ -18,7 +19,8 @@ class RegexField extends TextField
      *
      * @return string
      */
-    public function getType()
+    #[Override]
+    public function getType(): string
     {
         return self::TYPE_REGEX;
     }
@@ -42,7 +44,8 @@ class RegexField extends TextField
     /**
      * @inheritDoc
      */
-    public function getConstraints()
+    #[Override]
+    public function getConstraints(): array
     {
         return [
             new RegexConstraint(

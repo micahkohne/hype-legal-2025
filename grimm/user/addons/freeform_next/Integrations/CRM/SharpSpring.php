@@ -11,6 +11,8 @@
 
 namespace Solspace\Addons\FreeformNext\Integrations\CRM;
 
+use Override;
+use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\BadResponseException;
 use GuzzleHttp\Exception\ClientException;
@@ -35,7 +37,8 @@ class SharpSpring extends AbstractCRMIntegration {
 	 *
 	 * @return SettingBlueprint[]
 	 */
-	public static function getSettingBlueprints()
+	#[Override]
+    public static function getSettingBlueprints(): array
 	{
 		return [
 			new SettingBlueprint(
@@ -73,7 +76,7 @@ class SharpSpring extends AbstractCRMIntegration {
 		{
 			preg_match('/^(\w+)___(.+)$/', $key, $matches);
 
-			list ($all, $target, $propName) = $matches;
+			[$all, $target, $propName] = $matches;
 
 			switch ($target)
 			{
@@ -90,10 +93,10 @@ class SharpSpring extends AbstractCRMIntegration {
 			try
 			{
 				$payload  = $this->generatePayload('createLeads', ['objects' => [$contactProps]]);
-				$request  = $client->post(null, null, $payload);
+				$request  = $client->post(null, null);
 				$response = $request->send();
 
-				$data = json_decode($response->getBody(true), true);
+				$data = json_decode((string) $response->getBody(true), true);
 
 				$this->getLogger()->log(LoggerInterface::LEVEL_INFO, $response->getBody(true), self::LOG_CATEGORY);
 
@@ -106,7 +109,7 @@ class SharpSpring extends AbstractCRMIntegration {
 					$this->getLogger()->log(LoggerInterface::LEVEL_ERROR, $json, self::LOG_CATEGORY);
 					$this->getLogger()->log(LoggerInterface::LEVEL_ERROR, $e->getMessage(), self::LOG_CATEGORY);
 				}
-			} catch (\Exception $e)
+			} catch (Exception $e)
 			{
 				$this->getLogger()->log(LoggerInterface::LEVEL_WARNING, $e->getMessage(), self::LOG_CATEGORY);
 			}
@@ -121,7 +124,7 @@ class SharpSpring extends AbstractCRMIntegration {
 	 * @return bool
 	 * @throws IntegrationException
 	 */
-	public function checkConnection()
+	public function checkConnection(): bool
 	{
 		$client = new Client();
 		$auth   = $this->getAuthorizedClient();
@@ -139,7 +142,7 @@ class SharpSpring extends AbstractCRMIntegration {
 	 * @return FieldObject[]
 	 * @throws IntegrationException
 	 */
-	public function fetchFields()
+	public function fetchFields(): array
 	{
 		$client = new Client();
 		$auth   = $this->getAuthorizedClient();
@@ -246,7 +249,7 @@ class SharpSpring extends AbstractCRMIntegration {
 	 *
 	 * @throws IntegrationException
 	 */
-	public function onBeforeSave(IntegrationStorageInterface $model)
+	public function onBeforeSave(IntegrationStorageInterface $model): void
 	{
 		$accountId = $this->getAccountID();
 		$secretKey = $this->getSecretKey();
@@ -287,7 +290,7 @@ class SharpSpring extends AbstractCRMIntegration {
 	 *
 	 * @return string
 	 */
-	protected function getApiRootUrl()
+	protected function getApiRootUrl(): string
 	{
 		return 'https://api.sharpspring.com/pubapi/v1.2/';
 	}
@@ -301,7 +304,7 @@ class SharpSpring extends AbstractCRMIntegration {
 	 *
 	 * @return string
 	 */
-	private function generatePayload($method, array $params = ['where' => []], $id = 'freeform')
+	private function generatePayload(string $method, array $params = ['where' => []], $id = 'freeform')
 	{
 		return json_encode(
 			[
@@ -328,7 +331,7 @@ class SharpSpring extends AbstractCRMIntegration {
 	 * @return Client
 	 * @throws IntegrationException
 	 */
-	private function getAuthorizedClient()
+	private function getAuthorizedClient(): array
 	{
 		return [
 			'query' => [

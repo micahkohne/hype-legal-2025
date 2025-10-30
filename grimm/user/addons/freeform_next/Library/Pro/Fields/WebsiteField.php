@@ -2,6 +2,7 @@
 
 namespace Solspace\Addons\FreeformNext\Library\Pro\Fields;
 
+use Override;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Fields\TextField;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Validation\Constraints\WebsiteConstraint;
 
@@ -12,7 +13,8 @@ class WebsiteField extends TextField
      *
      * @return string
      */
-    public function getType()
+    #[Override]
+    public function getType(): string
     {
         return self::TYPE_WEBSITE;
     }
@@ -20,7 +22,8 @@ class WebsiteField extends TextField
     /**
      * @inheritDoc
      */
-    public function getConstraints()
+    #[Override]
+    public function getConstraints(): array
     {
         return [
             new WebsiteConstraint($this->translate('Website not valid')),

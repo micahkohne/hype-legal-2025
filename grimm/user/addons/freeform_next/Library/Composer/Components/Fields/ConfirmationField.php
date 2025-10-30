@@ -2,6 +2,7 @@
 
 namespace Solspace\Addons\FreeformNext\Library\Composer\Components\Fields;
 
+use Override;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Fields\Interfaces\NoStorageInterface;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Fields\Interfaces\RememberPostedValueInterface;
 use Solspace\Addons\FreeformNext\Library\Exceptions\FreeformException;
@@ -16,7 +17,8 @@ class ConfirmationField extends TextField implements NoStorageInterface, Remembe
      *
      * @return string
      */
-    public function getType()
+    #[Override]
+    public function getType(): string
     {
         return self::TYPE_CONFIRMATION;
     }
@@ -32,6 +34,7 @@ class ConfirmationField extends TextField implements NoStorageInterface, Remembe
     /**
      * @return array
      */
+    #[Override]
     protected function validate()
     {
         $errors = parent::validate();
@@ -54,7 +57,7 @@ class ConfirmationField extends TextField implements NoStorageInterface, Remembe
                     ['targetFieldLabel' => $field->getLabel()]
                 );
             }
-        } catch (FreeformException $exception) {
+        } catch (FreeformException) {
         }
 
         return $errors;
@@ -63,7 +66,8 @@ class ConfirmationField extends TextField implements NoStorageInterface, Remembe
     /**
      * @inheritDoc
      */
-    protected function getInputHtml()
+    #[Override]
+    protected function getInputHtml(): string
     {
         $attributes = $this->getCustomAttributes();
 
@@ -92,7 +96,7 @@ class ConfirmationField extends TextField implements NoStorageInterface, Remembe
             $output .= ' />';
 
             return $output;
-        } catch (FreeformException $exception) {
+        } catch (FreeformException) {
             return parent::getInputHtml();
         }
     }
@@ -105,7 +109,7 @@ class ConfirmationField extends TextField implements NoStorageInterface, Remembe
      *
      * @return string
      */
-    private function injectAttribute($string, $name, $value, $escapeValue = true)
+    private function injectAttribute(string|array|null $string, string $name, $value, bool $escapeValue = true): string|array|null
     {
         if (preg_match('/' . $name . '=[\'"][^\'"]*[\'"]/', $string)) {
             $string = preg_replace(

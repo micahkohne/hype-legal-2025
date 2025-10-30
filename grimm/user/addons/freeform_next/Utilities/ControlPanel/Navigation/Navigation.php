@@ -11,22 +11,22 @@
 
 namespace Solspace\Addons\FreeformNext\Utilities\ControlPanel\Navigation;
 
-use EllisLab\ExpressionEngine\Library\CP\URL;
-use EllisLab\ExpressionEngine\Service\Sidebar\Header;
-use EllisLab\ExpressionEngine\Service\Sidebar\Sidebar;
+use ExpressionEngine\Library\CP\URL;
+use ExpressionEngine\Service\Sidebar\Header;
+use ExpressionEngine\Service\Sidebar\Sidebar;
 use Solspace\Addons\FreeformNext\Services\PermissionsService;
 
 class Navigation
 {
     /** @var NavigationLink[] */
-    private $stack;
+    private ?array $stack = null;
 
     /**
      * @param NavigationLink $link
      *
      * @return $this
      */
-    public function addLink(NavigationLink $link = null)
+    public function addLink(?NavigationLink $link = null): static
     {
         if (null === $link) {
             return $this;
@@ -94,8 +94,14 @@ class Navigation
                 $header->isActive();
             }
 
-            if (strpos($this->getCurrentUrl(), 'addons/settings/freeform_next/submissions') === 0) {
-                if ($item->getMethod() && strpos($item->getMethod(), 'form') === 0) {
+            if (str_starts_with($this->getCurrentUrl(), 'addons/settings/freeform_next/submissions')) {
+                if ($item->getMethod() && str_starts_with($item->getMethod(), 'submissions')) {
+                    $header->isActive();
+                }
+            }
+
+            if (str_starts_with($this->getCurrentUrl(), 'addons/settings/freeform_next/spam')) {
+                if ($item->getMethod() && str_starts_with($item->getMethod(), 'spam')) {
                     $header->isActive();
                 }
             }
@@ -135,9 +141,9 @@ class Navigation
      *
      * @return bool
      */
-    private function isUrlActive($url)
+    private function isUrlActive($url): bool
     {
-        return strpos($this->getCurrentUrl(), $this->getTrimLink($url)) === 0;
+        return str_starts_with($this->getCurrentUrl(), $this->getTrimLink($url));
     }
 
     /**
@@ -145,7 +151,7 @@ class Navigation
      *
      * @return bool|string
      */
-    private function getTrimLink($url)
+    private function getTrimLink($url): string
     {
         if ($url instanceof URL) {
             $url = $url->compile();
@@ -165,7 +171,7 @@ class Navigation
         static $currentUrl;
 
         if (null === $currentUrl) {
-            $currentUrl = $this->getTrimLink(ltrim($_SERVER['REQUEST_URI'], '/'));
+            $currentUrl = $this->getTrimLink(ltrim((string) $_SERVER['REQUEST_URI'], '/'));
         }
 
         return $currentUrl;

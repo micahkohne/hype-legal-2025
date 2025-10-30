@@ -191,7 +191,7 @@ abstract class AddonUpdater
     /**
      * Installs the module
      */
-    private function installModule()
+    private function installModule(): void
     {
         $addonInfo = $this->getAddonInfo();
 
@@ -208,7 +208,7 @@ abstract class AddonUpdater
     /**
      * Check all actions if they should be updated or installed
      */
-    private function checkAndInstallActions()
+    private function checkAndInstallActions(): void
     {
         foreach ($this->getInstallableActions() as $action) {
             $data = [
@@ -239,7 +239,7 @@ abstract class AddonUpdater
     /**
      * Check all extensions if they should be updated or installed
      */
-    private function checkAndInstallExtensions()
+    private function checkAndInstallExtensions(): void
     {
         $className = $this->getAddonInfo()->getModuleName() . '_ext';
         $version   = $this->getAddonInfo()->getVersion();
@@ -277,7 +277,7 @@ abstract class AddonUpdater
         }
     }
 
-    private function deleteExtensions()
+    private function deleteExtensions(): void
     {
         $className = $this->getAddonInfo()->getModuleName() . '_ext';
 
@@ -302,7 +302,7 @@ abstract class AddonUpdater
      * Iterates through all statements found in db.__module__.sql file
      * And executes them
      */
-    private function insertSqlTables()
+    private function insertSqlTables(): void
     {
         $addonInfo = $this->getAddonInfo();
 
@@ -323,7 +323,7 @@ abstract class AddonUpdater
      * Iterates through all table names found in db.__module__.sql file
      * And drops them
      */
-    private function deleteSqlTables()
+    private function deleteSqlTables(): void
     {
         $addonInfo = $this->getAddonInfo();
 
@@ -341,7 +341,7 @@ abstract class AddonUpdater
     /**
      * Uninstall any actions that were installed with this plugin
      */
-    private function deleteActions()
+    private function deleteActions(): void
     {
         foreach ($this->getInstallableActions() as $action) {
             ee()->db->delete(

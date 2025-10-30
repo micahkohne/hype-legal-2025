@@ -2,17 +2,12 @@
 
 namespace Solspace\Addons\FreeformNext\Library\Composer\Components\Validation\Constraints;
 
+use DateTime;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Validation\Errors\ConstraintViolationList;
 
 class DateTimeConstraint implements ConstraintInterface
 {
     const PATTERN_MATCH_FORMAT = '/^((?:[Yy])|(?:[mn])|(?:[dj]))(.*?)((?:[Yy])|(?:[mn])|(?:[dj]))(.*?)((?:[Yy])|(?:[mn])|(?:[dj]))$/';
-
-    /** @var string */
-    private $message;
-
-    /** @var string */
-    private $format;
 
     /**
      * DateConstraint constructor.
@@ -20,23 +15,21 @@ class DateTimeConstraint implements ConstraintInterface
      * @param string $message
      * @param string $format
      */
-    public function __construct($message, $format)
+    public function __construct(private $message, private $format)
     {
-        $this->message = $message;
-        $this->format  = $format;
     }
 
     /**
      * @inheritDoc
      */
-    public function validate($value)
+    public function validate($value): ConstraintViolationList
     {
         $violationList = new ConstraintViolationList();
 
         $format = $this->parseFormat($this->format);
         $value  = $this->parseValue($value);
 
-        $date = \DateTime::createFromFormat($format, $value);
+        $date = DateTime::createFromFormat($format, $value);
         if (!$date || $date->format($format) !== $value) {
             $violationList->addError($this->message);
         }
@@ -51,7 +44,7 @@ class DateTimeConstraint implements ConstraintInterface
      *
      * @return string
      */
-    private function parseFormat($format)
+    private function parseFormat($format): string|array|null
     {
         $format = preg_replace('/\s?A/i', 'a', $format);
 

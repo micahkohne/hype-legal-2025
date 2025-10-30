@@ -1,1 +1,7 @@
-"use strict";var stateCheck=setInterval(function(){"complete"===document.readyState&&(clearInterval(stateCheck),document.getElementById("{{FORM_ANCHOR}}").scrollIntoView())},300);
+let stateCheck = setInterval(() => {
+  if (document.readyState === 'complete') {
+    clearInterval(stateCheck);
+
+    document.getElementById('{{FORM_ANCHOR}}').scrollIntoView(); ;
+  }
+}, 300);

@@ -83,20 +83,12 @@ class ExportController extends Controller
 
         $exportService = new ExportProfilesService();
 
-        switch ($exportType) {
-            case 'json':
-                return $exportService->exportJson($form, $data);
-
-            case 'xml':
-                return $exportService->exportXml($form, $data);
-
-            case 'text':
-                return $exportService->exportText($form, $data);
-
-            case 'csv':
-            default:
-                return $exportService->exportCsv($form, $labels, $data);
-        }
+        return match ($exportType) {
+            'json' => $exportService->exportJson($form, $data),
+            'xml' => $exportService->exportXml($form, $data),
+            'text' => $exportService->exportText($form, $data),
+            default => $exportService->exportCsv($form, $labels, $data),
+        };
     }
 
     /**

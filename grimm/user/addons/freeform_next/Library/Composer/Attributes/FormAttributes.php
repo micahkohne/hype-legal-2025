@@ -18,9 +18,6 @@ use Solspace\Addons\FreeformNext\Library\Session\SessionInterface;
 
 class FormAttributes
 {
-    /** @var int */
-    private $id;
-
     /** @var bool */
     private $csrfEnabled;
 
@@ -33,8 +30,7 @@ class FormAttributes
     /** @var string */
     private $actionUrl;
 
-    /** @var string */
-    private $method;
+    private string $method;
 
     /** @var FormValueContext */
     private $formValueContext;
@@ -45,10 +41,10 @@ class FormAttributes
      * @param                  $formId
      * @param SessionInterface $session
      * @param RequestInterface $request
+     * @param int $formId
      */
-    public function __construct($formId, SessionInterface $session, RequestInterface $request)
+    public function __construct(private $id, SessionInterface $session, RequestInterface $request)
     {
-        $this->id     = $formId;
         $this->method = 'POST';
         $this->setFormValueContext($session, $request);
     }
@@ -74,7 +70,7 @@ class FormAttributes
      *
      * @return $this
      */
-    public function setCsrfEnabled($csrfEnabled)
+    public function setCsrfEnabled($csrfEnabled): static
     {
         $this->csrfEnabled = $csrfEnabled;
 
@@ -94,7 +90,7 @@ class FormAttributes
      *
      * @return $this
      */
-    public function setCsrfToken($csrfToken)
+    public function setCsrfToken($csrfToken): static
     {
         $this->csrfToken = $csrfToken;
 
@@ -114,7 +110,7 @@ class FormAttributes
      *
      * @return $this
      */
-    public function setCsrfTokenName($csrfTokenName)
+    public function setCsrfTokenName($csrfTokenName): static
     {
         $this->csrfTokenName = $csrfTokenName;
 
@@ -134,7 +130,7 @@ class FormAttributes
      *
      * @return $this
      */
-    public function setActionUrl($actionUrl)
+    public function setActionUrl($actionUrl): static
     {
         $this->actionUrl = $actionUrl;
 
@@ -144,7 +140,7 @@ class FormAttributes
     /**
      * @return string
      */
-    public function getMethod()
+    public function getMethod(): string
     {
         return $this->method;
     }
@@ -154,7 +150,7 @@ class FormAttributes
      *
      * @return $this
      */
-    public function setMethod($method)
+    public function setMethod(string $method): static
     {
         $this->method = $method;
 
@@ -175,7 +171,7 @@ class FormAttributes
      *
      * @return FormValueContext
      */
-    private function setFormValueContext(SessionInterface $session, RequestInterface $request)
+    private function setFormValueContext(SessionInterface $session, RequestInterface $request): void
     {
         $hashPrefix = HashHelper::hash($this->id);
 

@@ -25,11 +25,9 @@ class Codepack
     /** @var string */
     private $location;
 
-    /** @var Manifest */
-    private $manifest;
+    private readonly Manifest $manifest;
 
-    /** @var TemplatesFileComponent */
-    private $templates;
+    private readonly TemplatesFileComponent $templates;
 
     /** @var AssetsFileComponent */
     private $assets;
@@ -39,10 +37,10 @@ class Codepack
      *
      * @return string
      */
-    public static function getCleanPrefix($prefix)
+    public static function getCleanPrefix($prefix): string
     {
         $prefix = preg_replace('/\/+/', '/', $prefix);
-        $prefix = trim($prefix, '/');
+        $prefix = trim((string) $prefix, '/');
 
         return $prefix;
     }
@@ -79,7 +77,7 @@ class Codepack
      *
      * @throws FileObjectException
      */
-    public function install($prefix)
+    public function install($prefix): void
     {
         $prefix = self::getCleanPrefix($prefix);
 
@@ -91,7 +89,7 @@ class Codepack
     /**
      * @return Manifest
      */
-    public function getManifest()
+    public function getManifest(): Manifest
     {
         return $this->manifest;
     }
@@ -99,7 +97,7 @@ class Codepack
     /**
      * @return TemplatesFileComponent
      */
-    public function getTemplates()
+    public function getTemplates(): TemplatesFileComponent
     {
         return $this->templates;
     }
@@ -125,7 +123,7 @@ class Codepack
      *
      * @return Manifest
      */
-    private function assembleManifest()
+    private function assembleManifest(): Manifest
     {
         return new Manifest($this->location . '/' . self::MANIFEST_NAME);
     }
@@ -135,7 +133,7 @@ class Codepack
      *
      * @return TemplatesFileComponent
      */
-    private function assembleTemplates()
+    private function assembleTemplates(): TemplatesFileComponent
     {
         return new TemplatesFileComponent($this->location);
     }
@@ -145,7 +143,7 @@ class Codepack
      *
      * @return AssetsFileComponent
      */
-    private function assembleAssets()
+    private function assembleAssets(): AssetsFileComponent
     {
         return new AssetsFileComponent($this->location);
     }
@@ -155,7 +153,7 @@ class Codepack
      *
      * @return RoutesComponent
      */
-    private function assembleRoutes()
+    private function assembleRoutes(): RoutesComponent
     {
         return new RoutesComponent($this->location);
     }

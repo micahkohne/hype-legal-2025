@@ -2,6 +2,7 @@
 
 namespace Solspace\Addons\FreeformNext\Controllers;
 
+use Exception;
 use ExpressionEngine\Library\CP\Table;
 use ExpressionEngine\Service\Validation\Result;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Fields\Interfaces\MultipleValueInterface;
@@ -23,7 +24,7 @@ class ExportProfilesController extends Controller
     /**
      * @return CpView
      */
-    public function index()
+    public function index(): CpView
     {
         $forms = FormRepository::getInstance()->getAllForms();
 
@@ -83,7 +84,7 @@ class ExportProfilesController extends Controller
                     'value' => $profile->id,
                     'data'  => [
                         'confirm' => lang('Export Profile') . ': <b>' . htmlentities(
-                                $profile->name,
+                                (string) $profile->name,
                                 ENT_QUOTES
                             ) . '</b>',
                     ],
@@ -134,7 +135,7 @@ class ExportProfilesController extends Controller
      * @return CpView
      * @throws FreeformException
      */
-    public function edit($profileId, $formHandle, Result $validation = null)
+    public function edit($profileId, $formHandle, ?Result $validation = null): CpView
     {
         $profile = ExportProfilesRepository::getInstance()->getProfileById($profileId);
 
@@ -262,7 +263,7 @@ class ExportProfilesController extends Controller
      * @return bool
      * @throws FreeformException
      */
-    public function save($id)
+    public function save($id): bool
     {
         $formId = ee()->input->post('formId');
         $form   = FormRepository::getInstance()->getFormById($formId);
@@ -296,7 +297,7 @@ class ExportProfilesController extends Controller
     /**
      * @return RedirectView
      */
-    public function batchDelete()
+    public function batchDelete(): RedirectView
     {
         if (isset($_POST['id_list'])) {
             $ids = [];
@@ -318,14 +319,14 @@ class ExportProfilesController extends Controller
      * @param int    $profileId
      * @param string $type
      *
-     * @throws \Exception
+     * @throws Exception
      */
-    public function export($profileId, $type)
+    public function export($profileId, $type): void
     {
         $profile = ExportProfilesRepository::getInstance()->getProfileById($profileId);
 
         if (!$profile) {
-            throw new \Exception(sprintf('Profile with ID %d not found', $profileId));
+            throw new Exception(sprintf('Profile with ID %d not found', $profileId));
         }
 
         $form = $profile->getFormModel()->getForm();
@@ -363,7 +364,7 @@ class ExportProfilesController extends Controller
      *
      * @return string
      */
-    private function getFieldExportTemplate(ExportProfileModel $profile)
+    private function getFieldExportTemplate(ExportProfileModel $profile): string|false
     {
         ob_start();
         include __DIR__ . '/../View/export_profiles/fieldSettings.php';
@@ -376,7 +377,7 @@ class ExportProfilesController extends Controller
      *
      * @return string
      */
-    private function getFiltersTemplate(ExportProfileModel $profile)
+    private function getFiltersTemplate(ExportProfileModel $profile): string|false
     {
         ob_start();
         include __DIR__ . '/../View/export_profiles/filters.php';

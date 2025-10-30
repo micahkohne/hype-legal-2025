@@ -14,7 +14,7 @@ class FormTagParamUtilities
     /**
      * @param Form $form
      */
-    public static function setFormCustomAttributes(Form $form)
+    public static function setFormCustomAttributes(Form $form): void
     {
         $new = [
             'overrideValues'  => [],
@@ -34,11 +34,11 @@ class FormTagParamUtilities
 
         $tagproper = ee()->TMPL->tagproper;
 
-        if (preg_match_all(self::PATTERN_ARRAY_ATTRIBUTES, $tagproper, $matches)) {
+        if (preg_match_all(self::PATTERN_ARRAY_ATTRIBUTES, (string) $tagproper, $matches)) {
             /** @var array $keys */
             /** @var array $handles */
             /** @var array $values */
-            list ($_, $keys, $handles, $values) = $matches;
+            [$_, $keys, $handles, $values] = $matches;
 
             foreach ($handles as $index => $handle) {
                 $key          = $keys[$index];
@@ -56,17 +56,17 @@ class FormTagParamUtilities
                 }
 
                 if ($field instanceof MultipleValueInterface) {
-                    $value = explode('|', $value);
+                    $value = explode('|', (string) $value);
                 }
 
                 $new[$camelizedKey][$handle] = $value;
             }
         }
 
-        if (preg_match_all(self::PATTERN_SINGLE_ATTRIBUTES, $tagproper, $matches)) {
+        if (preg_match_all(self::PATTERN_SINGLE_ATTRIBUTES, (string) $tagproper, $matches)) {
             /** @var array $keys */
             /** @var array $handles */
-            list ($_, $keys, $handles) = $matches;
+            [$_, $keys, $handles] = $matches;
 
             foreach ($handles as $index => $handle) {
                 $key          = $keys[$index];

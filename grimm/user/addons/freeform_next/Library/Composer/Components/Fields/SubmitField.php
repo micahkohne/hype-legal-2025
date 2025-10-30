@@ -91,7 +91,7 @@ class SubmitField extends AbstractField implements SingleValueInterface, InputOn
      *
      * @return string
      */
-    public function getType()
+    public function getType(): string
     {
         return self::TYPE_SUBMIT;
     }
@@ -101,7 +101,7 @@ class SubmitField extends AbstractField implements SingleValueInterface, InputOn
      *
      * @return string
      */
-    public function getInputHtml()
+    public function getInputHtml(): string
     {
         $attributes = $this->getCustomAttributes();
         $submitClass = $attributes->getInputClassOnly();
@@ -143,7 +143,7 @@ class SubmitField extends AbstractField implements SingleValueInterface, InputOn
     /**
      * @return bool
      */
-    private function isFirstPage()
+    private function isFirstPage(): bool
     {
         return $this->getPageIndex() === 0;
     }

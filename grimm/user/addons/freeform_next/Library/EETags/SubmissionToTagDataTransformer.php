@@ -14,15 +14,6 @@ class SubmissionToTagDataTransformer
     const PATTERN_FIELD_RENDER           = '/{field:([a-zA-Z0-9\-_]+):(render(?:_?[a-zA-Z]+)?)?\s+([^}]+)}/i';
     const PATTERN_FIELD_RENDER_VARIABLES = '/\b([a-zA-Z0-9_\-:]+)=(?:\'|")([^"\']+)(?:\'|")/';
 
-    /** @var Form */
-    private $form;
-
-    /** @var string */
-    private $content;
-
-    /** @var SubmissionModel[] */
-    private $submissions;
-
     /**
      * FormToTagDataTransformer constructor.
      *
@@ -30,11 +21,8 @@ class SubmissionToTagDataTransformer
      * @param string $content
      * @param array  $submissions
      */
-    public function __construct(Form $form, $content, array $submissions)
+    public function __construct(private readonly Form $form, private $content, private readonly array $submissions)
     {
-        $this->form        = $form;
-        $this->content     = $content;
-        $this->submissions = $submissions;
     }
 
     /**
@@ -55,7 +43,7 @@ class SubmissionToTagDataTransformer
      *
      * @return array
      */
-    private function transform(SubmissionAttributes $attributes)
+    private function transform(SubmissionAttributes $attributes): array
     {
         $formTransformer = new FormTransformer();
         $absoluteSubmissionCount = SubmissionRepository::getInstance()->getAllSubmissionCountFor($attributes);

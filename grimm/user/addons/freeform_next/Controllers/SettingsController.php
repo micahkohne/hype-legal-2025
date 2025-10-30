@@ -2,6 +2,7 @@
 
 namespace Solspace\Addons\FreeformNext\Controllers;
 
+use Solspace\Addons\FreeformNext\Library\Helpers\FreeformHelper;
 use Solspace\Addons\FreeformNext\Library\Exceptions\FreeformException;
 use Solspace\Addons\FreeformNext\Library\Helpers\UrlHelper;
 use Solspace\Addons\FreeformNext\Model\PermissionsModel;
@@ -30,8 +31,7 @@ class SettingsController extends Controller
     const TYPE_DEMO_TEMPLATES       = 'demo_templates';
     const TYPE_RECAPTCHA            = 'recaptcha';
 
-    /** @var array */
-    private static $allowedTypes = [
+    private static array $allowedTypes = [
         self::TYPE_STATUSES,
         self::TYPE_LICENSE,
         self::TYPE_GENERAL,
@@ -72,35 +72,17 @@ class SettingsController extends Controller
             return new RedirectView($this->getLink('settings/' . $type));
         }
 
-        switch ($type) {
-            case self::TYPE_STATUSES:
-                return $this->statusesAction($id);
-
-            case self::TYPE_LICENSE:
-                return $this->licenseAction();
-
-            case self::TYPE_FORMATTING_TEMPLATES:
-                return $this->formattingTemplatesAction();
-
-            case self::TYPE_EMAIL_TEMPLATES:
-                return $this->emailTemplatesAction();
-
-            case self::TYPE_DEMO_TEMPLATES:
-                return $this->demoTemplatesAction();
-
-            case self::TYPE_PERMISSIONS:
-                return $this->permissionsAction();
-
-            case self::TYPE_RECAPTCHA:
-                return $this->recaptchaAction();
-
-			case self::TYPE_SPAM_PROTECTION:
-				return $this->spamProtectionAction();
-
-            case self::TYPE_GENERAL:
-            default:
-                return $this->generalAction();
-        }
+        return match ($type) {
+            self::TYPE_STATUSES => $this->statusesAction($id),
+            self::TYPE_LICENSE => $this->licenseAction(),
+            self::TYPE_FORMATTING_TEMPLATES => $this->formattingTemplatesAction(),
+            self::TYPE_EMAIL_TEMPLATES => $this->emailTemplatesAction(),
+            self::TYPE_DEMO_TEMPLATES => $this->demoTemplatesAction(),
+            self::TYPE_PERMISSIONS => $this->permissionsAction(),
+            self::TYPE_RECAPTCHA => $this->recaptchaAction(),
+            self::TYPE_SPAM_PROTECTION => $this->spamProtectionAction(),
+            default => $this->generalAction(),
+        };
     }
 
     /**
@@ -132,7 +114,7 @@ class SettingsController extends Controller
                 }
             }
 
-            return $this->getStatusController()->edit($id, $validation);
+            return $this->getStatusController()->edit($id);
         }
 
         return $this->getStatusController()->index();
@@ -141,7 +123,7 @@ class SettingsController extends Controller
     /**
      * @return CpView
      */
-    private function licenseAction()
+    private function licenseAction(): RedirectView|CpView
     {
         $canAccessSettings = $this->getPermissionsService()->canAccessSettings(ee()->session->userdata('group_id'));
 
@@ -184,7 +166,7 @@ class SettingsController extends Controller
     /**
      * @return View
      */
-    public function permissionDenied()
+    public function permissionDenied(): CpView
     {
         $pageTitle = lang('Permission Denied');
 
@@ -203,7 +185,7 @@ class SettingsController extends Controller
     /**
      * @return CpView
      */
-    private function generalAction()
+    private function generalAction(): CpView
     {
         $settings = $this->getSettings();
 
@@ -308,7 +290,7 @@ class SettingsController extends Controller
 	/**
 	 * @return CpView
 	 */
-	private function spamProtectionAction()
+	private function spamProtectionAction(): CpView
 	{
 		$settings = $this->getSettings();
 
@@ -364,9 +346,9 @@ class SettingsController extends Controller
     /**
      * @return CpView
      */
-    private function permissionsAction()
+    private function permissionsAction(): CpView
     {
-        $version = \Solspace\Addons\FreeformNext\Library\Helpers\FreeformHelper::get('version');
+        $version = FreeformHelper::get('version');
 
         $permissionsModel = $this->getPermissionsModel();
 
@@ -530,7 +512,7 @@ class SettingsController extends Controller
     /**
      * @return CpView
      */
-    private function formattingTemplatesAction()
+    private function formattingTemplatesAction(): CpView
     {
         $settings = $this->getSettings();
 
@@ -591,7 +573,7 @@ class SettingsController extends Controller
     /**
      * @return CpView
      */
-    private function emailTemplatesAction()
+    private function emailTemplatesAction(): CpView
     {
         $settings = $this->getSettings();
 
@@ -665,7 +647,7 @@ class SettingsController extends Controller
     /**
      * @return View
      */
-    private function demoTemplatesAction()
+    private function demoTemplatesAction(): RedirectView|CpView
     {
         $controller = new DemoTemplatesController();
 
@@ -675,7 +657,7 @@ class SettingsController extends Controller
     /**
      * @return View
      */
-    private function recaptchaAction()
+    private function recaptchaAction(): CpView
     {
         $settings = $this->getSettings();
 
@@ -775,7 +757,7 @@ class SettingsController extends Controller
      *
      * @return bool
      */
-    private function handlePost($type)
+    private function handlePost($type): ?bool
     {
         if ($type == self::TYPE_PERMISSIONS) {
             $settings = $this->getPermissionsModel();
@@ -826,7 +808,7 @@ class SettingsController extends Controller
      *
      * @return string
      */
-    private function getActionUrl($method)
+    private function getActionUrl(string $method)
     {
         $target = (string) Stringy::create($method)->underscored();
         $target = str_replace('_action', '', $target);

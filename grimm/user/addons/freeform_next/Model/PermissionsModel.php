@@ -11,7 +11,7 @@
 
 namespace Solspace\Addons\FreeformNext\Model;
 
-use EllisLab\ExpressionEngine\Service\Model\Model;
+use ExpressionEngine\Service\Model\Model;
 
 /**
  *
@@ -99,7 +99,7 @@ class PermissionsModel extends Model
     /**
      * @return int
      */
-    public function getId()
+    public function getId(): int
     {
         return (int) $this->id;
     }
@@ -107,7 +107,7 @@ class PermissionsModel extends Model
     /**
      * @return int
      */
-    public function getSiteId()
+    public function getSiteId(): int
     {
         return (int) $this->siteId;
     }
@@ -115,7 +115,7 @@ class PermissionsModel extends Model
     /**
      * @return array
      */
-    private static function getDefaultPermissions()
+    private static function getDefaultPermissions(): array
     {
         return [];
     }

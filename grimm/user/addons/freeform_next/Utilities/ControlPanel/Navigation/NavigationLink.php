@@ -12,14 +12,11 @@
 namespace Solspace\Addons\FreeformNext\Utilities\ControlPanel\Navigation;
 
 
-use EllisLab\ExpressionEngine\Library\CP\URL;
+use ExpressionEngine\Library\CP\URL;
 use Solspace\Addons\FreeformNext\Utilities\AddonInfo;
 
 class NavigationLink
 {
-    /** @var string */
-    private $title;
-
     /** @var string */
     private $link;
 
@@ -27,10 +24,9 @@ class NavigationLink
     private $method;
 
     /** @var NavigationLink[] */
-    private $subNav;
+    private array $subNav;
 
-    /** @var NavigationLink */
-    private $buttonLink;
+    private ?\Solspace\Addons\FreeformNext\Utilities\ControlPanel\Navigation\NavigationLink $buttonLink = null;
 
     /**
      * NavigationLink constructor.
@@ -38,9 +34,8 @@ class NavigationLink
      * @param string $title
      * @param string $method
      */
-    public function __construct($title, $method = null)
+    public function __construct(private $title, $method = null)
     {
-        $this->title  = $title;
         $this->subNav = [];
 
         if (null !== $method) {
@@ -94,7 +89,7 @@ class NavigationLink
     /**
      * @return NavigationLink
      */
-    public function getButtonLink()
+    public function getButtonLink(): ?\Solspace\Addons\FreeformNext\Utilities\ControlPanel\Navigation\NavigationLink
     {
         return $this->buttonLink;
     }
@@ -104,7 +99,7 @@ class NavigationLink
      *
      * @return $this
      */
-    public function setMethod($method)
+    public function setMethod($method): static
     {
         $this->method = $method;
 
@@ -116,7 +111,7 @@ class NavigationLink
      *
      * @return $this
      */
-    public function setButtonLink(NavigationLink $link = null)
+    public function setButtonLink(?NavigationLink $link = null): static
     {
         $this->buttonLink = $link;
 
@@ -128,7 +123,7 @@ class NavigationLink
      *
      * @return $this
      */
-    public function addSubNavItem(NavigationLink $link)
+    public function addSubNavItem(NavigationLink $link): static
     {
         $this->subNav[] = $link;
 
@@ -138,7 +133,7 @@ class NavigationLink
     /**
      * @return array|NavigationLink[]
      */
-    public function getSubNav()
+    public function getSubNav(): array
     {
         return $this->subNav;
     }

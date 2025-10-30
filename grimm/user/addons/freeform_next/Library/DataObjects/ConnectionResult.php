@@ -4,11 +4,9 @@ namespace Solspace\Addons\FreeformNext\Library\DataObjects;
 
 class ConnectionResult
 {
-    /** @var array */
-    private $formErrors;
+    private array $formErrors;
 
-    /** @var array */
-    private $fieldErrors;
+    private array $fieldErrors;
 
     /**
      * ConnectionResult constructor.
@@ -45,7 +43,7 @@ class ConnectionResult
     /**
      * @return array
      */
-    public function getFormErrors()
+    public function getFormErrors(): array
     {
         return $this->formErrors;
     }
@@ -53,7 +51,7 @@ class ConnectionResult
     /**
      * @return array
      */
-    public function getFieldErrors()
+    public function getFieldErrors(): array
     {
         return $this->fieldErrors;
     }
@@ -63,7 +61,7 @@ class ConnectionResult
      *
      * @return $this
      */
-    public function addFormError($message)
+    public function addFormError($message): static
     {
         $this->formErrors[] = $message;
 
@@ -75,7 +73,7 @@ class ConnectionResult
      *
      * @return $this
      */
-    public function addFormErrors(array $errors)
+    public function addFormErrors(array $errors): static
     {
         foreach ($errors as $error) {
             $this->formErrors[] = $error;
@@ -90,7 +88,7 @@ class ConnectionResult
      *
      * @return ConnectionResult
      */
-    public function addFieldError($fieldName, $message)
+    public function addFieldError($fieldName, $message): static
     {
         if (!isset($this->fieldErrors[$fieldName])) {
             $this->fieldErrors[$fieldName] = [];
@@ -106,7 +104,7 @@ class ConnectionResult
      *
      * @return ConnectionResult
      */
-    public function addFieldErrors(array $errors)
+    public function addFieldErrors(array $errors): static
     {
         foreach ($errors as $key => $message) {
             $this->addFieldError($key, $message);

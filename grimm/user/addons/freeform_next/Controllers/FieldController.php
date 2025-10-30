@@ -11,8 +11,9 @@
 
 namespace Solspace\Addons\FreeformNext\Controllers;
 
-use EllisLab\ExpressionEngine\Library\CP\Table;
-use EllisLab\ExpressionEngine\Service\Validation\Result;
+use Exception;
+use ExpressionEngine\Library\CP\Table;
+use ExpressionEngine\Service\Validation\Result;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\FieldInterface;
 use Solspace\Addons\FreeformNext\Library\Exceptions\FieldExceptions\FieldException;
 use Solspace\Addons\FreeformNext\Library\Helpers\ExtensionHelper;
@@ -31,7 +32,7 @@ class FieldController extends Controller
     /**
      * @return CpView
      */
-    public function index()
+    public function index(): RedirectView|CpView
     {
         $canAccessFields = $this->getPermissionsService()->canAccessFields(ee()->session->userdata('group_id'));
 
@@ -77,7 +78,7 @@ class FieldController extends Controller
                     'name'  => 'id_list[]',
                     'value' => $field->id,
                     'data'  => [
-                        'confirm' => lang('Field') . ': <b>' . htmlentities($field->label, ENT_QUOTES) . '</b>',
+                        'confirm' => lang('Field') . ': <b>' . htmlentities((string) $field->label, ENT_QUOTES) . '</b>',
                     ],
                 ],
             ];
@@ -104,13 +105,13 @@ class FieldController extends Controller
     }
 
     /**
-     * @param int|null    $id
-     * @param Result|null $validation
+     * @param null|int|string   $id
+     * @param ?Result           $validation
      *
      * @return CpView
      * @throws FieldException
      */
-    public function edit($id, Result $validation = null)
+    public function edit(null|int|string $id, ?Result $validation = null): RedirectView|CpView
     {
         $canAccessFields = $this->getPermissionsService()->canAccessFields(ee()->session->userdata('group_id'));
 
@@ -241,7 +242,7 @@ class FieldController extends Controller
         $isNew = !$field->id;
 
         $post        = $_POST;
-        $type        = isset($_POST['type']) ? $_POST['type'] : $field->type;
+        $type        = $_POST['type'] ?? $field->type;
         $validValues = $additionalProperties = [];
         foreach ($post as $key => $value) {
             if (property_exists($field, $key)) {
@@ -353,7 +354,7 @@ class FieldController extends Controller
                 ->defer();
 
             return $field;
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             ee('CP/Alert')
                 ->makeInline('shared-form')
                 ->asIssue()
@@ -367,7 +368,7 @@ class FieldController extends Controller
     /**
      * @return RedirectView
      */
-    public function batchDelete()
+    public function batchDelete(): RedirectView
     {
         $canAccessFields = $this->getPermissionsService()->canAccessFields(ee()->session->userdata('group_id'));
 
@@ -402,7 +403,7 @@ class FieldController extends Controller
      *
      * @return array
      */
-    private function getFieldSettingsByType(FieldModel $model)
+    private function getFieldSettingsByType(FieldModel $model): array
     {
         $fileKinds         = [];
         $fileKindsOriginal = $this->getFileService()->getFileKinds();
@@ -1101,7 +1102,7 @@ class FieldController extends Controller
                 $sectionData[] = [
                     'group'  => $type,
                     'title'  => $data['title'],
-                    'desc'   => isset($data['desc']) ? $data['desc'] : '',
+                    'desc'   => $data['desc'] ?? '',
                     'fields' => $fields,
                 ];
             }
@@ -1116,7 +1117,7 @@ class FieldController extends Controller
      *
      * @return string
      */
-    private function getFieldHtml(FieldModel $model, $template, $type)
+    private function getFieldHtml(FieldModel $model, string $template, string $type): string|false
     {
         $singleValue = $type !== FieldInterface::TYPE_CHECKBOX_GROUP;
 

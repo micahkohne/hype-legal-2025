@@ -2,6 +2,7 @@
 
 namespace Solspace\Addons\FreeformNext\Repositories;
 
+use Override;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Form;
 use Solspace\Addons\FreeformNext\Model\SubmissionModel;
 use Solspace\Addons\FreeformNext\Model\SubmissionPreferencesModel;
@@ -11,6 +12,7 @@ class SubmissionPreferencesRepository extends Repository
     /**
      * @return SubmissionPreferencesRepository
      */
+    #[Override]
     public static function getInstance()
     {
         return parent::getInstance();

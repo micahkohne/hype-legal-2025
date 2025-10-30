@@ -44,7 +44,7 @@ class RegexConstraint implements ConstraintInterface
             $pattern .= '/';
         }
 
-        if (!preg_match($pattern, $value)) {
+        if (!preg_match($pattern, (string) $value)) {
             $message = str_replace('{pattern}', $pattern, $this->message);
 
             $violationList->addError($message);

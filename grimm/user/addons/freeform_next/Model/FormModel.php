@@ -11,7 +11,9 @@
 
 namespace Solspace\Addons\FreeformNext\Model;
 
-use EllisLab\ExpressionEngine\Service\Model\Model;
+use Stringable;
+use DateTime;
+use ExpressionEngine\Service\Model\Model;
 use Solspace\Addons\FreeformNext\Library\Composer\Attributes\FormAttributes;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Form;
 use Solspace\Addons\FreeformNext\Library\Composer\Composer;
@@ -41,7 +43,7 @@ use Solspace\Addons\FreeformNext\Services\SubmissionsService;
  * @property string $defaultStatus
  * @property int    $legacyId
  */
-class FormModel extends Model
+class FormModel extends Model implements Stringable
 {
     const MODEL = 'freeform_next:FormModel';
     const TABLE = 'freeform_next_forms';
@@ -64,8 +66,7 @@ class FormModel extends Model
     protected $dateCreated;
     protected $dateUpdated;
 
-    /** @var Composer */
-    private $composer;
+    private ?Composer $composer = null;
 
     /**
      * Creates a Form object with default settings
@@ -93,7 +94,7 @@ class FormModel extends Model
      *
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
         return $this->name;
     }
@@ -104,7 +105,7 @@ class FormModel extends Model
      *
      * @param Composer $composer
      */
-    public function setLayout(Composer $composer)
+    public function setLayout(Composer $composer): void
     {
         $form = $composer->getForm();
         $this->set(
@@ -124,31 +125,32 @@ class FormModel extends Model
      *
      * @return Composer
      */
-    public function getComposer()
+    public function getComposer(): Composer
     {
         if (null === $this->composer) {
             $composerState  = $this->layoutJson ? json_decode($this->layoutJson, true) : null;
             $formAttributes = $this->getFormAttributes();
 
             $this->composer = new Composer(
-                $composerState,
-                $formAttributes,
-                new FormsService(),
-                new FieldsService(),
-                new SubmissionsService(),
-                new MailerService(),
-                new FilesService(),
-                new MailingListsService(),
-                new CrmService(),
-                new StatusesService(),
-                new EETranslator()
+                new FormsService(),              // implements FormHandlerInterface
+                new FieldsService(),             // implements FieldHandlerInterface
+                new SubmissionsService(),        // implements SubmissionHandlerInterface
+                new MailerService(),             // implements MailHandlerInterface
+                new FilesService(),              // implements FileUploadHandlerInterface
+                new MailingListsService(),       // implements MailingListHandlerInterface
+                new CrmService(),                // implements CRMHandlerInterface
+                new StatusesService(),           // implements StatusHandlerInterface
+                new EETranslator(),              // implements TranslatorInterface
+                $composerState,                  // ?array $composerState
+                $formAttributes,                 // ?FormAttributes $formAttributes
+                null          // ?ComposerState $customComposerState
             );
         }
 
         return $this->composer;
     }
 
-    public function setHandle($handle) {
+    public function setHandle($handle): void {
         $this->handle = $handle;
         $composer = $this->getComposer();
 
@@ -168,7 +170,7 @@ class FormModel extends Model
     /**
      * @return Form
      */
-    public function getForm()
+    public function getForm(): Form
     {
         return $this->getComposer()->getForm();
     }
@@ -176,7 +178,7 @@ class FormModel extends Model
     /**
      * @param int $id
      */
-    public function setLegacyId($id)
+    public function setLegacyId($id): void
     {
         $this->set(['legacyId' => $id]);
     }
@@ -184,7 +186,7 @@ class FormModel extends Model
     /**
      * @return FormAttributes
      */
-    private function getFormAttributes()
+    private function getFormAttributes(): FormAttributes
     {
         $sessionImplementation = (new SettingsService())->getSessionStorageImplementation();
 
@@ -201,7 +203,7 @@ class FormModel extends Model
     /**
      * Event beforeInsert sets the $dateCreated and $dateUpdated properties
      */
-    public function onBeforeInsert()
+    public function onBeforeInsert(): void
     {
         $this->set(
             [
@@ -214,15 +216,15 @@ class FormModel extends Model
     /**
      * Event beforeUpdate sets the $dateUpdated property
      */
-    public function onBeforeUpdate()
+    public function onBeforeUpdate(): void
     {
         $this->set(['dateUpdated' => $this->getTimestampableDate()]);
     }
 
     /**
-     * @return \DateTime
+     * @return DateTime
      */
-    private function getTimestampableDate()
+    private function getTimestampableDate(): string
     {
         return date('Y-m-d H:i:s');
     }
@@ -230,7 +232,7 @@ class FormModel extends Model
     /**
      * Event beforeSave validates the form
      */
-    public function onBeforeSave()
+    public function onBeforeSave(): void
     {
         FreeformHelper::get('validate', $this);
     }
@@ -238,7 +240,7 @@ class FormModel extends Model
     /**
      * Event beforeSave validates the form
      */
-    public function onBeforeDelete()
+    public function onBeforeDelete(): void
     {
         FreeformHelper::get('validate', $this);
     }

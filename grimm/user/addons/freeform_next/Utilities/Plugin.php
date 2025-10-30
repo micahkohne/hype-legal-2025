@@ -41,7 +41,7 @@ class Plugin
     /**
      * @param mixed $object
      */
-    public function returnJson($object)
+    public function returnJson($object): never
     {
         echo json_encode($object);
         die();
@@ -52,7 +52,7 @@ class Plugin
      *
      * @param string $url
      */
-    public function redirect($url)
+    public function redirect(string $url): never
     {
         header('Location: ' . $url);
         die();
@@ -63,7 +63,7 @@ class Plugin
      *
      * @return string
      */
-    public function theme_folder_url()
+    public function theme_folder_url(): string
     {
         return rtrim(URL_THIRD_THEMES, '/') . '/' . $this->getAddonLowerName() . '/';
     }
@@ -75,7 +75,7 @@ class Plugin
     {
         $pattern = '/{if (?:freeform_next|submission|form):no_results}(.*?){\/if}/s';
 
-        if (preg_match($pattern, ee()->TMPL->tagdata, $match)) {
+        if (preg_match($pattern, (string) ee()->TMPL->tagdata, $match)) {
             return $match[1];
         }
 
@@ -93,7 +93,7 @@ class Plugin
     /**
      * @return bool
      */
-    protected function loadLanguageFiles()
+    protected function loadLanguageFiles(): bool
     {
         $lowerName       = $this->getAddonLowerName();
         $language        = ee()->lang;
@@ -122,7 +122,7 @@ class Plugin
 
         if (
             is_object($object) &&
-            strtolower(get_class($object)) === 'session' &&
+            strtolower($object::class) === 'session' &&
             $object->userdata['language']
         ) {
             $userLanguage = $object->userdata['language'];

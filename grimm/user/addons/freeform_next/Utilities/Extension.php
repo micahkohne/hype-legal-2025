@@ -14,7 +14,7 @@ abstract class Extension
     /**
      * Installs all hooks
      */
-    public final function activate_extension()
+    public final function activate_extension(): void
     {
         foreach ($this->getHooks() as $hook) {
             ee()->db
@@ -36,7 +36,7 @@ abstract class Extension
     /**
      * Removes all hooks
      */
-    public final function disable_extension()
+    public final function disable_extension(): void
     {
         foreach ($this->getHooks() as $hook) {
             ee()->db

@@ -29,7 +29,7 @@ trait OptionsTrait
     /**
      * @return array
      */
-    public function getOptionsAsArray()
+    public function getOptionsAsArray(): array
     {
         $data = [];
         foreach ($this->options as $option) {

@@ -11,6 +11,7 @@
 
 namespace Solspace\Addons\FreeformNext\Repositories;
 
+use Override;
 use Solspace\Addons\FreeformNext\Model\FormModel;
 use Solspace\Addons\FreeformNext\Model\SubmissionModel;
 
@@ -25,6 +26,7 @@ class FormRepository extends Repository
     /**
      * @return FormRepository
      */
+    #[Override]
     public static function getInstance()
     {
         return parent::getInstance();
@@ -62,7 +64,7 @@ class FormRepository extends Repository
 
         if (null !== $ids) {
             $operator = 'IN';
-            if (strpos($ids, 'not ') === 0) {
+            if (str_starts_with($ids, 'not ')) {
                 $ids      = substr($ids, 4);
                 $operator = 'NOT IN';
             }
@@ -74,7 +76,7 @@ class FormRepository extends Repository
 
         if (null !== $handles) {
             $operator = 'IN';
-            if (strpos($handles, 'not ') === 0) {
+            if (str_starts_with($handles, 'not ')) {
                 $handles  = substr($handles, 4);
                 $operator = 'NOT IN';
             }
@@ -163,7 +165,7 @@ class FormRepository extends Repository
      *
      * @return array
      */
-    public function getFormSubmissionCount(array $formIds)
+    public function getFormSubmissionCount(array $formIds): array
     {
         if (empty($formIds)) {
             return [];

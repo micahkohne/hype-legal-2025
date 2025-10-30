@@ -32,7 +32,7 @@ class PageProperties extends AbstractProperties
      *
      * @return array
      */
-    protected function getPropertyManifest()
+    protected function getPropertyManifest(): array
     {
         return ["label" => self::TYPE_STRING];
     }

@@ -11,6 +11,8 @@
 
 namespace Solspace\Addons\FreeformNext\Library\Helpers;
 
+use RuntimeException;
+
 /**
  * Http utility functions.
  *
@@ -18,7 +20,7 @@ namespace Solspace\Addons\FreeformNext\Library\Helpers;
  */
 class IpUtils
 {
-    private static $checkedIps = array();
+    private static array $checkedIps = [];
 
     /**
      * This class should not be instantiated.
@@ -35,10 +37,10 @@ class IpUtils
      *
      * @return bool Whether the IP is valid
      */
-    public static function checkIp($requestIp, $ips)
+    public static function checkIp($requestIp, $ips): bool
     {
         if (!is_array($ips)) {
-            $ips = array($ips);
+            $ips = [$ips];
         }
 
         $method = substr_count($requestIp, ':') > 1 ? 'checkIp6' : 'checkIp4';
@@ -61,7 +63,7 @@ class IpUtils
      *
      * @return bool Whether the request IP matches the IP, or whether the request IP is within the CIDR subnet
      */
-    public static function checkIp4($requestIp, $ip)
+    public static function checkIp4(string $requestIp, string $ip)
     {
         $cacheKey = $requestIp.'-'.$ip;
         if (isset(self::$checkedIps[$cacheKey])) {
@@ -72,8 +74,8 @@ class IpUtils
             return self::$checkedIps[$cacheKey] = false;
         }
 
-        if (false !== strpos($ip, '/')) {
-            list($address, $netmask) = explode('/', $ip, 2);
+        if (str_contains($ip, '/')) {
+            [$address, $netmask] = explode('/', $ip, 2);
 
             if ('0' === $netmask) {
                 return self::$checkedIps[$cacheKey] = filter_var($address, FILTER_VALIDATE_IP, FILTER_FLAG_IPV4);
@@ -107,9 +109,9 @@ class IpUtils
      *
      * @return bool Whether the IP is valid
      *
-     * @throws \RuntimeException When IPV6 support is not enabled
+     * @throws RuntimeException When IPV6 support is not enabled
      */
-    public static function checkIp6($requestIp, $ip)
+    public static function checkIp6(string $requestIp, string $ip)
     {
         $cacheKey = $requestIp.'-'.$ip;
         if (isset(self::$checkedIps[$cacheKey])) {
@@ -117,11 +119,11 @@ class IpUtils
         }
 
         if (!((extension_loaded('sockets') && defined('AF_INET6')) || @inet_pton('::1'))) {
-            throw new \RuntimeException('Unable to check Ipv6. Check that PHP was not compiled with option "disable-ipv6".');
+            throw new RuntimeException('Unable to check Ipv6. Check that PHP was not compiled with option "disable-ipv6".');
         }
 
-        if (false !== strpos($ip, '/')) {
-            list($address, $netmask) = explode('/', $ip, 2);
+        if (str_contains($ip, '/')) {
+            [$address, $netmask] = explode('/', $ip, 2);
 
             if ('0' === $netmask) {
                 return (bool) unpack('n*', @inet_pton($address));

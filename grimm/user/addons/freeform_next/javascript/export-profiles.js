@@ -1,1 +1,48 @@
-"use strict";$(function(){var t=$("#field-settings");$("tbody",t).sortable(),$(".tbl-search .dropdown-field > a").on({click:function(t){var e=$(this).parents(".dropdown-field");return window.location.href=$("select[name=form_handle]",e).val(),t.stopPropagation(),t.preventDefault(),!1}});var e=$("#add-filter"),r=$("#filter-table"),a=$("template",r);e.on({click:function(){var t=a.html(),e=$("tbody > tr[data-iterator]:last").data("iterator"),o=0;void 0!==e&&(o=parseInt(e)+1),t=t.replace(/__iterator__/g,o),$("tbody",r).append(t)}}),r.on({click:function(){return!!confirm("Are you sure?")&&void $(this).parents("tr:first").remove()}},"li.delete a")});
+$(() => {
+  const table = $('#field-settings');
+
+  $('tbody', table).sortable();
+
+  $('.tbl-search .dropdown-field > a').on({
+    click: function(e) {
+      const parent = $(this).parents('.dropdown-field');
+
+      window.location.href = $('select[name=form_handle]', parent).val();
+
+      e.stopPropagation();
+      e.preventDefault();
+      return false;
+    }
+  });
+
+  const addFilterButton = $('#add-filter');
+  const filterTable = $('#filter-table');
+  const template = $("template", filterTable);
+
+  addFilterButton.on({
+    click: () => {
+      let clone = template.html();
+      const lastIterator = $('tbody > tr[data-iterator]:last').data('iterator');
+
+      let currentIterator = 0;
+      if (lastIterator !== undefined) {
+        currentIterator = parseInt(lastIterator) + 1;
+      }
+
+      clone = clone.replace(/__iterator__/g, currentIterator);
+
+      $('tbody', filterTable).append(clone);
+    }
+  });
+
+  filterTable.on({
+    click: function() {
+      if (!confirm('Are you sure?')) {
+        return false;
+      }
+
+      $(this).parents('tr:first').remove();
+    }
+  }, 'li.delete a');
+
+});

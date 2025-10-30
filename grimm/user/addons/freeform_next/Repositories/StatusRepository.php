@@ -11,6 +11,7 @@
 
 namespace Solspace\Addons\FreeformNext\Repositories;
 
+use Override;
 use Solspace\Addons\FreeformNext\Model\StatusModel;
 
 class StatusRepository extends Repository
@@ -18,6 +19,7 @@ class StatusRepository extends Repository
     /**
      * @return StatusRepository
      */
+    #[Override]
     public static function getInstance()
     {
         return parent::getInstance();
@@ -37,7 +39,7 @@ class StatusRepository extends Repository
     /**
      * @return array
      */
-    public function getStatusNamesById()
+    public function getStatusNamesById(): array
     {
         $names = [];
         foreach ($this->getAllStatuses() as $status) {
@@ -50,7 +52,7 @@ class StatusRepository extends Repository
     /**
      * @return array
      */
-    public function getColorsById()
+    public function getColorsById(): array
     {
         $colors = [];
         foreach ($this->getAllStatuses() as $status) {

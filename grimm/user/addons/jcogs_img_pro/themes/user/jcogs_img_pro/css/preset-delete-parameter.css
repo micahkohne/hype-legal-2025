@@ -1,0 +1,80 @@
+/**
+ * JCOGS Image Pro - Preset Delete Parameter Styles
+ * =================================================
+ * CSS styles for parameter deletion confirmation interface
+ * 
+ * @category   ExpressionEngine Add-on
+ * @package    JCOGS Image Pro
+ * @author     JCOGS Design <contact@jcogs.net>
+ * @copyright  Copyright (c) 2021 - 2025 JCOGS Design
+ * @license    https://jcogs.net/add-ons/license/jcogs_img_pro
+ * @version    2.0.0-beta7
+ * @link       https://JCOGS.net/
+ * @since      Parameter Deletion Interface Implementation
+ */
+
+/* Preset Context */
+.preset-context {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 4px;
+    margin-bottom: 1.5rem;
+}
+
+.preset-context p {
+    margin: 0;
+    color: #5d6975;
+}
+
+/* Warning Notice */
+.warning-notice {
+    display: flex;
+    align-items: flex-start;
+    padding: 1.5rem;
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 4px;
+    margin-bottom: 1.5rem;
+}
+
+.warning-icon {
+    font-size: 1.5rem;
+    margin-right: 1rem;
+    flex-shrink: 0;
+}
+
+.warning-content h4 {
+    margin: 0 0 0.5rem 0;
+    color: #856404;
+    font-weight: 600;
+}
+
+.warning-content p {
+    margin: 0;
+    color: #856404;
+}
+
+/* Parameter Info Display */
+.parameter-info-display {
+    background: #f8f9fa;
+    padding: 1rem;
+    border-radius: 4px;
+    border-left: 4px solid #dc3545;
+}
+
+.parameter-info-display p {
+    margin: 0.5rem 0;
+    color: #5d6975;
+}
+
+.parameter-info-display p:first-child {
+    margin-top: 0;
+}
+
+.parameter-info-display p:last-child {
+    margin-bottom: 0;
+}
+
+.parameter-info-display strong {
+    color: #dc3545;
+}

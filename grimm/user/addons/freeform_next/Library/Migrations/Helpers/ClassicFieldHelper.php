@@ -236,6 +236,6 @@ class ClassicFieldHelper extends AddonBuilder
 
     public function getSettings($classicField)
     {
-        return json_decode($classicField['settings'], true);
+        return json_decode((string) $classicField['settings'], true);
     }
 }

@@ -2,7 +2,8 @@
 
 namespace Solspace\Addons\FreeformNext\Model;
 
-use EllisLab\ExpressionEngine\Service\Model\Model;
+use DateTime;
+use ExpressionEngine\Service\Model\Model;
 
 /**
  * @property int       $id
@@ -12,8 +13,8 @@ use EllisLab\ExpressionEngine\Service\Model\Model;
  * @property string    $label
  * @property string    $type
  * @property bool      $required
- * @property \DateTime $dateCreated
- * @property \DateTime $dateUpdated
+ * @property DateTime $dateCreated
+ * @property DateTime $dateUpdated
  */
 class CrmFieldModel extends Model
 {

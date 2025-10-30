@@ -16,12 +16,19 @@ trait RecipientTrait
     /** @var int */
     protected $notificationId;
 
+    protected string $format = 'html';
+
     /**
      * @return int|null
      */
     public function getNotificationId()
     {
         return $this->notificationId;
+    }
+
+    public function getFormat(): string
+    {
+        return $this->format;
     }
 
     /**

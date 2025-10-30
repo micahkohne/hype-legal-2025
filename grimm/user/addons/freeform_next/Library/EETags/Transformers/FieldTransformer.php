@@ -33,10 +33,10 @@ class FieldTransformer
     public function transformField(
         AbstractField $field,
         $value = null,
-        $prefix = 'field:',
+        string $prefix = 'field:',
         $columnIndex = null,
         $columnCount = null
-    ) {
+    ): array {
         $files = [];
         if ($field instanceof FileUploadField && is_array($value)) {
             foreach ($value as $fileId) {
@@ -171,7 +171,7 @@ class FieldTransformer
      *
      * @return string|null
      */
-    private function getOptionValues(AbstractField $field)
+    private function getOptionValues(AbstractField $field): ?string
     {
         if (!$field instanceof OptionsInterface) {
             return null;
@@ -192,7 +192,7 @@ class FieldTransformer
      *
      * @return array|null
      */
-    private function getTableLayout(AbstractField $field)
+    private function getTableLayout(AbstractField $field): ?array
     {
         if (!$field instanceof TableField) {
             return null;
@@ -203,9 +203,9 @@ class FieldTransformer
         $layoutColumnData = [];
         foreach ($field->getLayout() as $column) {
             $layoutColumnData[] = [
-                'column:type'         => isset($column['type']) ? $column['type'] : null,
-                'column:defaultValue' => isset($column['defaultValue']) ? $column['defaultValue'] : '',
-                'column:label'        => isset($column['label']) ? $column['label'] : '',
+                'column:type'         => $column['type'] ?? null,
+                'column:defaultValue' => $column['defaultValue'] ?? '',
+                'column:label'        => $column['label'] ?? '',
             ];
         }
 
@@ -214,11 +214,11 @@ class FieldTransformer
         if (empty($rows)) {
             $firstRow = [];
             foreach ($field->getLayout() as $column) {
-                $type = isset($column['type']) ? $column['type'] : TableField::COLUMN_TYPE_STRING;
+                $type = $column['type'] ?? TableField::COLUMN_TYPE_STRING;
                 if ($type === TableField::COLUMN_TYPE_CHECKBOX) {
                     $firstRow[] = null;
                 } else {
-                    $firstRow[] = isset($column['value']) ? $column['value'] : '';
+                    $firstRow[] = $column['value'] ?? '';
                 }
             }
 
@@ -229,10 +229,10 @@ class FieldTransformer
         foreach ($rows as $rowIndex => $row) {
             $rowData = ['row:columns' => [], 'row:index' => $rowIndex];
             foreach ($field->getLayout() as $index => $column) {
-                $type         = isset($column['type']) ? $column['type'] : TableField::COLUMN_TYPE_STRING;
-                $label        = isset($column['label']) ? $column['label'] : '';
-                $defaultValue = isset($column['value']) ? $column['value'] : '';
-                $value        = $row[$index] !== null ? $row[$index] : $defaultValue;
+                $type         = $column['type'] ?? TableField::COLUMN_TYPE_STRING;
+                $label        = $column['label'] ?? '';
+                $defaultValue = $column['value'] ?? '';
+                $value        = $row[$index] ?? $defaultValue;
                 $value        = htmlentities($value);
                 $templateOptions = [];
 

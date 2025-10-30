@@ -1,1 +1,18 @@
-"use strict";document.addEventListener("DOMContentLoaded",function(){var t=document.getElementById("{{FORM_ANCHOR}}");if(t){var e=t.parentElement;e&&e.addEventListener("submit",function(){var t=e.querySelectorAll("[type=submit]:not([name={{PREV_BUTTON_NAME}}])"),n=!0,r=!1,i=void 0;try{for(var a,o=function(){var t=a.value;t.disabled=!0,setTimeout(function(){t.disabled=!1},6e5)},d=t[Symbol.iterator]();!(n=(a=d.next()).done);n=!0)o()}catch(u){r=!0,i=u}finally{try{!n&&d["return"]&&d["return"]()}finally{if(r)throw i}}})}});
+document.addEventListener('DOMContentLoaded', () => {
+  let anchor = document.getElementById('{{FORM_ANCHOR}}');
+  if (anchor) {
+    let form = anchor.parentElement;
+    if (form) {
+      form.addEventListener('submit', () => {
+        const submitButtonList = form.querySelectorAll('[type=submit]:not([name={{PREV_BUTTON_NAME}}])');
+        for (const submit of submitButtonList) {
+          submit.disabled = true;
+
+          setTimeout(function () {
+            submit.disabled = false;
+          }, 600000);
+        }
+      });
+    }
+  }
+});

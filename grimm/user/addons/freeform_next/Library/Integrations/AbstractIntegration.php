@@ -11,6 +11,8 @@
 
 namespace Solspace\Addons\FreeformNext\Library\Integrations;
 
+use DateTime;
+use ReflectionClass;
 use Solspace\Addons\FreeformNext\Library\Configuration\ConfigurationInterface;
 use Solspace\Addons\FreeformNext\Library\Database\IntegrationHandlerInterface;
 use Solspace\Addons\FreeformNext\Library\Exceptions\Integrations\IntegrationException;
@@ -20,38 +22,9 @@ use Solspace\Addons\FreeformNext\Library\Translations\TranslatorInterface;
 
 abstract class AbstractIntegration implements IntegrationInterface
 {
-    /** @var int */
-    private $id;
+    private ?bool $accessTokenUpdated = null;
 
-    /** @var string */
-    private $name;
-
-    /** @var \DateTime */
-    private $lastUpdate;
-
-    /** @var string */
-    private $accessToken;
-
-    /** @var bool */
-    private $accessTokenUpdated;
-
-    /** @var array */
-    private $settings;
-
-    /** @var ConfigurationInterface */
-    private $configuration;
-
-    /** @var LoggerInterface */
-    private $logger;
-
-    /** @var bool */
-    private $forceUpdate;
-
-    /** @var TranslatorInterface */
-    private $translator;
-
-    /** @var IntegrationHandlerInterface */
-    private $handler;
+    private ?bool $forceUpdate = null;
 
     /**
      * Returns a list of additional settings for this integration
@@ -67,33 +40,15 @@ abstract class AbstractIntegration implements IntegrationInterface
     /**
      * @param int                    $id
      * @param string                 $name
-     * @param \DateTime              $lastUpdate
+     * @param DateTime $lastUpdate
      * @param string                 $accessToken
      * @param array|null             $settings
      * @param LoggerInterface        $logger
      * @param ConfigurationInterface $configuration
      * @param TranslatorInterface    $translator
      */
-    public function __construct(
-        $id,
-        $name,
-        \DateTime $lastUpdate,
-        $accessToken,
-        $settings,
-        LoggerInterface $logger,
-        ConfigurationInterface $configuration,
-        TranslatorInterface $translator,
-        IntegrationHandlerInterface $handler
-    ) {
-        $this->id            = $id;
-        $this->name          = $name;
-        $this->lastUpdate    = $lastUpdate;
-        $this->accessToken   = $accessToken;
-        $this->settings      = $settings;
-        $this->logger        = $logger;
-        $this->configuration = $configuration;
-        $this->translator    = $translator;
-        $this->handler       = $handler;
+    public function __construct(private $id, private $name, private readonly DateTime $lastUpdate, private $accessToken, private $settings, private readonly LoggerInterface $logger, private readonly ConfigurationInterface $configuration, private readonly TranslatorInterface $translator, private readonly IntegrationHandlerInterface $handler)
+    {
     }
 
     /**
@@ -120,7 +75,7 @@ abstract class AbstractIntegration implements IntegrationInterface
     }
 
     /**
-     * @return \DateTime
+     * @return DateTime
      */
     public function getLastUpdate()
     {
@@ -132,7 +87,7 @@ abstract class AbstractIntegration implements IntegrationInterface
      *
      * @param bool $value
      */
-    final public function setForceUpdate($value)
+    final public function setForceUpdate($value): void
     {
         $this->forceUpdate = (bool)$value;
     }
@@ -153,7 +108,7 @@ abstract class AbstractIntegration implements IntegrationInterface
      */
     public function getServiceProvider()
     {
-        $reflection = new \ReflectionClass($this);
+        $reflection = new ReflectionClass($this);
 
         return $reflection->getShortName();
     }
@@ -231,7 +186,7 @@ abstract class AbstractIntegration implements IntegrationInterface
 
         switch ($fieldObject->getType()) {
             case FieldObject::TYPE_NUMERIC:
-                return (int)preg_replace('/\D/', '', $value) ?: '';
+                return (int)preg_replace('/\D/', '', (string) $value) ?: '';
 
             case FieldObject::TYPE_BOOLEAN:
                 return (bool)$value;
@@ -320,7 +275,7 @@ abstract class AbstractIntegration implements IntegrationInterface
                     return $this->settings[$handle];
                 }
 
-                return strtolower($this->settings[$handle]) === "y";
+                return strtolower((string) $this->settings[$handle]) === "y";
             }
 
             return $this->settings[$handle];

@@ -25,18 +25,14 @@ abstract class AbstractProperties
     /** @var string */
     protected $type;
 
-    /** @var TranslatorInterface */
-    private $translator;
-
     /**
      * AbstractProperties constructor.
      *
      * @param array               $properties
      * @param TranslatorInterface $translator
      */
-    public final function __construct(array $properties, TranslatorInterface $translator)
+    public final function __construct(array $properties, private readonly TranslatorInterface $translator)
     {
-        $this->translator = $translator;
         $this->validateAndSetProperties($properties);
     }
 
@@ -71,7 +67,7 @@ abstract class AbstractProperties
      *
      * @throws ComposerException
      */
-    private function validateAndSetProperties(array $properties)
+    private function validateAndSetProperties(array $properties): void
     {
         $manifest = $this->getPropertyManifest();
 
@@ -83,11 +79,11 @@ abstract class AbstractProperties
                 continue;
             }
 
-            $expectedType = strtolower($manifest[$key]);
+            $expectedType = strtolower((string) $manifest[$key]);
             switch ($expectedType) {
                 case self::TYPE_BOOLEAN:
                     if (!\is_bool($value)) {
-                        $value = \in_array(strtolower($value), ['1', 1, 'true'], true) ? true : false;
+                        $value = \in_array(strtolower((string) $value), ['1', 1, 'true'], true) ? true : false;
                     }
 
                     break;

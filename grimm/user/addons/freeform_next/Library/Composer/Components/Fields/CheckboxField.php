@@ -11,6 +11,7 @@
 
 namespace Solspace\Addons\FreeformNext\Library\Composer\Components\Fields;
 
+use Override;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\AbstractField;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\FieldInterface;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Fields\Interfaces\InputOnlyInterface;
@@ -35,7 +36,7 @@ class CheckboxField extends AbstractField implements SingleValueInterface, Input
      *
      * @return string
      */
-    public function getType()
+    public function getType(): string
     {
         return self::TYPE_CHECKBOX;
     }
@@ -57,7 +58,7 @@ class CheckboxField extends AbstractField implements SingleValueInterface, Input
      *
      * @return $this
      */
-    public function setIsChecked($isChecked)
+    public function setIsChecked($isChecked): static
     {
         $this->checked = (bool) $isChecked;
 
@@ -69,7 +70,7 @@ class CheckboxField extends AbstractField implements SingleValueInterface, Input
      *
      * @return $this
      */
-    public function setIsCheckedByPost($isChecked)
+    public function setIsCheckedByPost($isChecked): static
     {
         $this->checkedByPost = (bool) $isChecked;
 
@@ -81,7 +82,7 @@ class CheckboxField extends AbstractField implements SingleValueInterface, Input
      *
      * @return string
      */
-    public function getInputHtml()
+    public function getInputHtml(): string
     {
         $attributes = $this->getCustomAttributes();
         $output     = '';
@@ -112,7 +113,8 @@ class CheckboxField extends AbstractField implements SingleValueInterface, Input
      *
      * @return string
      */
-    public function getValueAsString($optionsAsValues = true)
+    #[Override]
+    public function getValueAsString($optionsAsValues = true): string
     {
         if ($optionsAsValues) {
             $value = (int) $this->getValue() === 1 ? $this->getStaticValue() : $this->getValue();
@@ -128,7 +130,8 @@ class CheckboxField extends AbstractField implements SingleValueInterface, Input
      *
      * @return string
      */
-    protected function onBeforeInputHtml()
+    #[Override]
+    protected function onBeforeInputHtml(): string
     {
         $attributes = $this->getCustomAttributes();
 
@@ -142,7 +145,8 @@ class CheckboxField extends AbstractField implements SingleValueInterface, Input
      *
      * @return string
      */
-    protected function onAfterInputHtml()
+    #[Override]
+    protected function onAfterInputHtml(): string
     {
         $output = $this->getLabel();
         $output .= '</label>';

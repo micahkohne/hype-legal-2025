@@ -2,9 +2,13 @@
 
 namespace Solspace\Addons\FreeformNext\Library\Configuration;
 
+use Stringable;
+use ReflectionClass;
+use ReflectionProperty;
+use ReflectionException;
 use Solspace\Addons\FreeformNext\Library\Exceptions\FreeformException;
 
-abstract class BaseConfiguration
+abstract class BaseConfiguration implements Stringable
 {
     /**
      * BaseConfiguration constructor.
@@ -13,21 +17,21 @@ abstract class BaseConfiguration
      * @param array $config
      *
      * @throws FreeformException
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
-    public function __construct(array $config = null)
+    public function __construct(?array $config = null)
     {
         if (null === $config) {
             return;
         }
 
         foreach ($config as $key => $value) {
-            if (property_exists(\get_class($this), $key)) {
+            if (property_exists(static::class, $key)) {
                 $this->$key = $value;
             } else {
-                $reflection = new \ReflectionClass($this);
+                $reflection = new ReflectionClass($this);
                 $properties = $reflection->getProperties(
-                    \ReflectionProperty::IS_PUBLIC | \ReflectionProperty::IS_PROTECTED
+                    ReflectionProperty::IS_PUBLIC | ReflectionProperty::IS_PROTECTED
                 );
 
                 $availableProperties = [];
@@ -49,7 +53,7 @@ abstract class BaseConfiguration
     /**
      * @return string
      */
-    public function __toString()
+    public function __toString(): string
     {
         return $this->getConfigHash();
     }

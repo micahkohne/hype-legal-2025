@@ -74,7 +74,7 @@ interface FormHandlerInterface
      * @param Form                 $form
      * @param SubmissionModel|null $submission
      */
-    public function onAfterSubmit(Form $form, SubmissionModel $submission = null);
+    public function onAfterSubmit(Form $form, ?SubmissionModel $submission = null);
 
     /**
      * Attach anything to the form after opening tag

@@ -11,6 +11,7 @@
 
 namespace Solspace\Addons\FreeformNext\Integrations\MailingLists;
 
+use Override;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\BadResponseException;
 use Solspace\Addons\FreeformNext\Library\Exceptions\Integrations\IntegrationException;
@@ -34,7 +35,8 @@ class ConstantContact extends AbstractMailingListIntegration
      *
      * @return SettingBlueprint[]
      */
-    public static function getSettingBlueprints()
+    #[Override]
+    public static function getSettingBlueprints(): array
     {
         return [
             new SettingBlueprint(
@@ -60,7 +62,8 @@ class ConstantContact extends AbstractMailingListIntegration
      *
      * @return string
      */
-    public function getServiceProvider()
+    #[Override]
+    public function getServiceProvider(): string
     {
         return 'Constant Contact';
     }
@@ -122,7 +125,7 @@ class ConstantContact extends AbstractMailingListIntegration
      *
      * @throws IntegrationException
      */
-    public function onBeforeSave(IntegrationStorageInterface $model)
+    public function onBeforeSave(IntegrationStorageInterface $model): void
     {
         $model->updateAccessToken($this->getSetting(self::SETTING_ACCESS_TOKEN));
         $model->updateSettings($this->getSettings());
@@ -138,7 +141,7 @@ class ConstantContact extends AbstractMailingListIntegration
      * @return bool
      * @throws IntegrationException
      */
-    public function pushEmails(ListObject $mailingList, array $emails, array $mappedValues)
+    public function pushEmails(ListObject $mailingList, array $emails, array $mappedValues): bool
     {
         $client = new Client();
 
@@ -195,10 +198,10 @@ class ConstantContact extends AbstractMailingListIntegration
      * Builds ListObject objects based on the results
      * And returns them
      *
-     * @return \Solspace\Addons\FreeformNext\Library\Integrations\MailingLists\DataObjects\ListObject[]
+     * @return ListObject[]
      * @throws IntegrationException
      */
-    protected function fetchLists()
+    protected function fetchLists(): array
     {
         $client = new Client();
 
@@ -263,7 +266,7 @@ class ConstantContact extends AbstractMailingListIntegration
      * @return FieldObject[]
      * @throws IntegrationException
      */
-    protected function fetchFields($listId)
+    protected function fetchFields($listId): array
     {
         return [
             new FieldObject('first_name', 'First Name', FieldObject::TYPE_STRING, false),
@@ -282,7 +285,7 @@ class ConstantContact extends AbstractMailingListIntegration
      * @return string
      * @throws IntegrationException
      */
-    protected function getApiRootUrl()
+    protected function getApiRootUrl(): string
     {
         return 'https://api.constantcontact.com/v2/';
     }

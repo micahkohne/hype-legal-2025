@@ -2,6 +2,7 @@
 
 namespace Solspace\Addons\FreeformNext\Services;
 
+use SimpleXMLElement;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Fields\FileUploadField;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Fields\Interfaces\MultipleValueInterface;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Fields\TextareaField;
@@ -19,7 +20,7 @@ class ExportProfilesService
      * @param array $labels
      * @param array $data
      */
-    public function exportCsv(Form $form, array $labels, array $data)
+    public function exportCsv(Form $form, array $labels, array $data): void
     {
         $data = $this->normalizeArrayData($form, $data);
 
@@ -44,7 +45,7 @@ class ExportProfilesService
      * @param Form  $form
      * @param array $data
      */
-    public function exportJson(Form $form, array $data)
+    public function exportJson(Form $form, array $data): void
     {
         $data = $this->normalizeArrayData($form, $data, false);
 
@@ -71,7 +72,7 @@ class ExportProfilesService
      * @param Form  $form
      * @param array $data
      */
-    public function exportText(Form $form, array $data)
+    public function exportText(Form $form, array $data): void
     {
         $data = $this->normalizeArrayData($form, $data);
 
@@ -95,11 +96,11 @@ class ExportProfilesService
      * @param Form  $form
      * @param array $data
      */
-    public function exportXml(Form $form, array $data)
+    public function exportXml(Form $form, array $data): void
     {
         $data = $this->normalizeArrayData($form, $data);
 
-        $xml = new \SimpleXMLElement('<root/>');
+        $xml = new SimpleXMLElement('<root/>');
 
         foreach ($data as $itemList) {
             $submission = $xml->addChild('submission');
@@ -141,22 +142,14 @@ class ExportProfilesService
                 try {
                     $field = $form->getLayout()->getFieldById($fieldId);
                     $label = $field->getLabel();
-                } catch (FreeformException $e) {
+                } catch (FreeformException) {
                 }
             } else {
-                switch ($id) {
-                    case 'id':
-                        $label = 'ID';
-                        break;
-
-                    case 'dateCreated':
-                        $label = 'Date Created';
-                        break;
-
-                    default:
-                        $label = ucfirst($label);
-                        break;
-                }
+                $label = match ($id) {
+                    'id' => 'ID',
+                    'dateCreated' => 'Date Created',
+                    default => ucfirst($label),
+                };
             }
 
             $cache[$id] = $label;
@@ -196,7 +189,7 @@ class ExportProfilesService
                         }
                     }
 
-                } catch (FreeformException $e) {
+                } catch (FreeformException) {
                 }
             }
 
@@ -213,7 +206,7 @@ class ExportProfilesService
      *
      * @return array
      */
-    private function normalizeArrayData(Form $form, array $data, $flattenArrays = true)
+    private function normalizeArrayData(Form $form, array $data, bool $flattenArrays = true)
     {
         $isRemoveNewlines = (bool) SettingsRepository::getInstance()->getOrCreate()->removeNewlines;
 
@@ -222,7 +215,7 @@ class ExportProfilesService
 
         foreach ($data as $index => $item) {
             foreach ($item as $fieldId => $value) {
-                if (!preg_match('/^' . SubmissionModel::FIELD_COLUMN_PREFIX . '(\d+)$/', $fieldId, $matches)) {
+                if (!preg_match('/^' . SubmissionModel::FIELD_COLUMN_PREFIX . '(\d+)$/', (string) $fieldId, $matches)) {
                     continue;
                 }
 
@@ -230,7 +223,7 @@ class ExportProfilesService
                     $field = $form->getLayout()->getFieldById($matches[1]);
 
                     if ($field instanceof FileUploadField) {
-                        $value = (array) json_decode($value ?: '[]', true);
+                        $value = (array) json_decode((string) $value ?: '[]', true);
                         $combo = [];
 
                         foreach ($value as $assetId) {
@@ -256,7 +249,7 @@ class ExportProfilesService
                     }
 
                     if ($field instanceof TableField) {
-                        $rowsValues = json_decode($value ?: '[]', true);
+                        $rowsValues = json_decode((string) $value ?: '[]', true);
                         $rowsValuesFormatted = [];
 
                         if ($rowsValues) {
@@ -284,7 +277,7 @@ class ExportProfilesService
                     }
 
                     if ($field instanceof MultipleValueInterface) {
-                        $value = json_decode($value ?: '[]', true);
+                        $value = json_decode((string) $value ?: '[]', true);
                         if ($flattenArrays && is_array($value)) {
                             $value = implode(', ', $value);
                         }
@@ -293,9 +286,9 @@ class ExportProfilesService
                     }
 
                     if ($isRemoveNewlines && $field instanceof TextareaField) {
-                        $data[$index][$fieldId] = trim(preg_replace('/\s+/', ' ', $value));
+                        $data[$index][$fieldId] = trim((string) preg_replace('/\s+/', ' ', (string) $value));
                     }
-                } catch (FreeformException $e) {
+                } catch (FreeformException) {
                     continue;
                 }
             }
@@ -313,7 +306,7 @@ class ExportProfilesService
      * @param string $fileName
      * @param string $contentType
      */
-    private function outputFile($content, $fileName, $contentType)
+    private function outputFile($content, string $fileName, string $contentType): never
     {
         header('Content-Description: File Transfer');
         header('Content-Type: ' . $contentType);
@@ -330,7 +323,10 @@ class ExportProfilesService
     }
 
 
-    private function populateDataWithTableDate($data, $tableRowsData, $tableFieldIds, $form)
+    /**
+     * @return list
+     */
+    private function populateDataWithTableDate(array $data, $tableRowsData, $tableFieldIds, Form $form): array
     {
         $newData = [];
 
@@ -370,7 +366,7 @@ class ExportProfilesService
                             $tableFieldRowValue = $submissionTableData[$tableFieldId][$i-1];
 
                         } else {
-                            preg_match('/^' . SubmissionModel::FIELD_COLUMN_PREFIX . '(\d+)$/', $tableFieldId, $matches);
+                            preg_match('/^' . SubmissionModel::FIELD_COLUMN_PREFIX . '(\d+)$/', (string) $tableFieldId, $matches);
 
                             if (array_key_exists(1, $matches)) {
                                 $field = $form->getLayout()->getFieldById($matches[1]);
@@ -411,7 +407,10 @@ class ExportProfilesService
         return $newData;
     }
 
-    private function getArtificialRowsCount($tableRowsData)
+    /**
+     * @return int[]
+     */
+    private function getArtificialRowsCount($tableRowsData): array
     {
         $artificialRowsCount = [];
 

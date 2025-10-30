@@ -28,6 +28,8 @@ interface RecipientInterface
      */
     public function getNotificationId();
 
+    public function getFormat(): string;
+
     /**
      * Returns true/false based on if the field should or should not act
      * as a recipient email field and receive emails
