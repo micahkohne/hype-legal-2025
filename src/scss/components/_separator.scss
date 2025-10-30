@@ -17,3 +17,13 @@
 .separator--fullwidth {
 	width: 100%;
 }
+
+.separator--article {
+	display: none;
+
+	@include breakpoint-up(tablet) {
+		display: block;
+		margin-bottom: 9rem;
+		background: var(--c-gray-400);
+	}
+}

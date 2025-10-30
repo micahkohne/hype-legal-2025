@@ -1,0 +1,50 @@
+{layout="layout/_html-wrapper"}
+
+{exp:channel:entries channel="insights" disable="categories|category_fields|member_data|pagination" require_entry="yes" limit="1" status="open"}
+<section class="section section--offset">
+	<div class="shell">
+		<div class="section__head">
+			<span class="separator"></span><!-- /.separator -->
+
+			<h1>{title}</h1>
+		</div><!-- /.section__head -->
+
+		<div class="section__body">
+			<div class="section__entry">
+				<figure>
+					<picture>
+						<source media="(min-width:768px)" srcset="{exp:jcogs_img:image src='{hero_image}' url_only='yes'}">
+
+						{exp:jcogs_img:image src='{hero_image_mobile}' add_dims='yes' alt='{hero_image_mobile}{title}{/hero_image_mobile}'}
+					</picture>
+				</figure>
+			</div><!-- /.section__entry -->
+
+			{article_section}
+			{article_section:text_block_section}
+			{fields}
+			{article_section:headline}
+			<div class="section__entry">
+				{if "{article_section:count}" != 1}<span class="separator separator--fullwidth separator--article"></span>{/if}
+				<div class="block-content grid-flex grid-flex--no-gap-y">
+
+					<div class="block__title block__title--no-offset grid__col grid__col-md--1of2 block__title--article">
+						<h2 class="level-2">{content}</h2>
+					</div><!-- /.block__title -->
+					{/article_section:headline}
+					{article_section:text_block}
+					<div class="block__content block__content--alt grid__col grid__col-md--1of2 article">
+						{content}
+					</div><!-- /.block__content -->
+
+				</div><!-- /.block-content -->
+			</div><!-- /.section__entry -->
+			{/article_section:text_block}
+			{/fields}
+			{/article_section:text_block_section}
+			{/article_section}
+
+		</div><!-- /.section__body -->
+	</div><!-- /.shell -->
+</section><!-- /.section -->
+{/exp:channel:entries}

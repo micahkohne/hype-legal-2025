@@ -22,7 +22,7 @@
  * https://expressionengine.com/expressionengine/user-guide/installation/best_practices.html
  *
  */
-
+    require_once('../grimm/user/addons/rocket/snippet.rocket.php');
     $system_path = '../grimm';
 
 /*
@@ -87,7 +87,6 @@
 //	$assign_to_config['template'] = '';
 //	$assign_to_config['site_index'] = '';
 //	$assign_to_config['site_404'] = '';
-    $assign_to_config['global_vars'] = array('cdn_url' => 'https://cdn.hypelegal.com');
 
 /*
  * --------------------------------------------------------------------

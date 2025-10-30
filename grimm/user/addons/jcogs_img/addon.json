@@ -1,0 +1,17 @@
+{
+    "author": "JCOGS Design",
+    "author_url": "https://jcogs.net/",
+    "name": "JCOGS Image",
+    "shortname": "jcogs_img",
+    "class": "Jcogs_img",
+    "version": "1.4.16.1",
+    "description": "Advanced Image Manipulation",
+    "license": "JCOGS Design",
+    "namespace": "JCOGSDesign\\Jcogs_img",
+    "settings_exist": true,
+    "docs_url": "https://jcogs.net/documentation/jcogs_img",
+    "require": {
+        "php": ">=8.1.*",
+        "expressionengine": ">=6.*"
+    }
+}

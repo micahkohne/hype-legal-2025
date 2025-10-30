@@ -1,0 +1,41 @@
+{layout="layout/_html-wrapper" seo_title="Insights | Hype Legal" seo_description="Stay informed with the valuable insights from Hype Legal."}
+
+<section class="section">
+	<div class="shell">
+		<div class="section__head">
+			<span class="separator"></span>
+
+			<h2>Insights</h2>
+		</div><!-- /.section__head -->
+
+		<div class="section__body">
+			<div class="grid-flex">
+
+				{exp:channel:entries channel="insights" disable="category_fields|member_data|pagination" status="open"}
+				<div class="grid__col grid__col-md--1of2 grid__col-lg--1of3">
+					<div class="card">
+						<a href="{url_title_path='insights'}">
+							<div class="card__image">
+								<picture>
+									<source media="(min-width:1024px)" srcset="{exp:jcogs_img:image src='{hero_image}' url_only='yes' aspect_ratio='4:3' crop='yes'}">
+
+									{hero_image_mobile}
+										{exp:jcogs_img:image src='{url}' add_dims='yes' alt='{title}' lazy='dominant_color' class='fade-in' aspect_ratio='4:3' crop='yes'}
+									{/hero_image_mobile}
+								</picture>
+							</div><!-- /.card__image -->
+
+							<div class="card__content">
+								<span>{categories}{category_name}{/categories}</span>
+
+								<h4>{title}</h4>
+							</div><!-- /.card__content -->
+						</a>
+					</div><!-- /.card -->
+				</div><!-- /.grid__col -->
+				{/exp:channel:entries}
+
+			</div><!-- /.grid-flex -->
+		</div><!-- /.section__body -->
+	</div><!-- /.shell -->
+</section><!-- /.section -->

@@ -17,8 +17,8 @@
 
 	{if segment_1 == ""}
 	{exp:seo_lite entry_id="1"}
-	{if:elseif last_segment == "work"}
-	{exp:seo_lite default_title="A Selection of our Recent Work | Hype Legal" default_description="Strategic solutions designed to enhance online presence and client engagement for law firms across the country."}
+	{if:elseif last_segment == "work" OR last_segment == "insights"}
+	{exp:seo_lite default_title="{layout:seo_title}" default_description="{layout:seo_description}"}
 	{if:else}
 	{exp:seo_lite use_last_segment="yes"}
 	{/if}
@@ -66,6 +66,10 @@
 
 							<li>
 								<a href="{path='about'}">About</a>
+							</li>
+
+							<li>
+								<a href="{path='insights'}">Insights</a>
 							</li>
 
 							<li>
