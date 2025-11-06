@@ -49,6 +49,14 @@
 		@include breakpoint-up(mobile) {
 			padding-right: 14.6rem !important;
 		}
+
+		h2 {
+			font-size: 2.7rem;
+
+			@include breakpoint-up(tablet) {
+				font-size: 3.2rem;
+			}
+		}
 	}
 
 	.block__title span {
@@ -158,7 +166,7 @@
 		}
 
 		h3 {
-			font-size: 2.5rem;
+			font-size: 2.3rem;
 			margin-top: 3.5rem;
 
 			@include breakpoint-up(tablet) {

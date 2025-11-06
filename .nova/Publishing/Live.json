@@ -10,7 +10,12 @@
     "node_modules",
     "web\/images",
     "web\/rocket_cache",
-    "grimm\/user\/config\/config.php"
+    "grimm\/user\/config\/config.php",
+    "web\/build\/article.html",
+    "web\/build\/ajax\/.gitkeep",
+    "web\/build\/assets\/fonts",
+    "web\/build\/assets\/images",
+    "web\/build\/assets\/vendor\/jquery-3.7.1.min.js"
   ],
   "remotePath" : "\/applications\/pjeahgjaqw\/public_html",
   "server" : "Cloudways - 2.0",
