@@ -143,6 +143,18 @@
 		text-underline-offset: 3px;
 	}
 
+	.block__content figure {
+		margin-block: 2rem;
+
+		@include breakpoint-up(tablet) {
+			margin-block: 3rem;
+		}
+
+		img {
+			border-radius: .5rem;
+		}
+	}
+
 	.block__link {
 		@include breakpoint-up(tablet) {
 			margin-top: 4rem;

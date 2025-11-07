@@ -1,6 +1,36 @@
 {layout="layout/_html-wrapper"}
-
 {exp:channel:entries channel="insights" disable="categories|category_fields|member_data|pagination" require_entry="yes" limit="1" status="open"}
+
+{layout:set name="schema_article"}
+  <script type="application/ld+json">
+  {
+	"@context": "http://schema.org",
+	"@type": "Article",
+	"mainEntityOfPage": {
+	  "@type": "WebPage",
+	  "@id": "https://www.hypelegal.com/insights/{url_title}"
+	},
+	"headline": "{title}",
+	"image": "{hero_image}",
+	"datePublished": "{entry_date format="%c"}",
+	"dateModified": "{edit_date format="%c"}",
+	"author": {
+	  "@type": "Person",
+	  "name": "Micah Kohne"
+	},
+	 "publisher": {
+	  "@type": "Organization",
+	  "name": "Hype Legal LLP",
+	  "logo": {
+		"@type": "ImageObject",
+		"url": "https://www.hypelegal.com/images/uploads/hype-legal.png"
+	  }
+	},
+	"description": "{schema_description}"
+  }
+  </script>
+{/layout:set}
+
 <section class="section section--offset">
 	<div class="shell">
 		<div class="section__head">
