@@ -3,9 +3,9 @@
 namespace Solspace\Addons\FreeformNext\Library\Configuration;
 
 use Stringable;
+use ReflectionException;
 use ReflectionClass;
 use ReflectionProperty;
-use ReflectionException;
 use Solspace\Addons\FreeformNext\Library\Exceptions\FreeformException;
 
 abstract class BaseConfiguration implements Stringable
@@ -14,7 +14,6 @@ abstract class BaseConfiguration implements Stringable
      * BaseConfiguration constructor.
      * Passing an array config populates all of the configuration values for a given configuration
      *
-     * @param array $config
      *
      * @throws FreeformException
      * @throws ReflectionException
@@ -69,12 +68,10 @@ abstract class BaseConfiguration implements Stringable
     }
 
     /**
-     * @param mixed $value
      * @param bool  $nullable
-     *
      * @return int|null
      */
-    protected function castToInt($value, $nullable = true)
+    protected function castToInt(mixed $value, $nullable = true)
     {
         if (null === $value && $nullable) {
             return null;
@@ -84,12 +81,10 @@ abstract class BaseConfiguration implements Stringable
     }
 
     /**
-     * @param mixed $value
      * @param bool  $nullable
-     *
      * @return string|null
      */
-    protected function castToString($value, $nullable = true)
+    protected function castToString(mixed $value, $nullable = true)
     {
         if (null === $value && $nullable) {
             return null;
@@ -99,12 +94,10 @@ abstract class BaseConfiguration implements Stringable
     }
 
     /**
-     * @param mixed $value
      * @param bool  $nullable
-     *
      * @return bool|null
      */
-    protected function castToBool($value, $nullable = true)
+    protected function castToBool(mixed $value, $nullable = true)
     {
         if (null === $value && $nullable) {
             return null;
@@ -114,12 +107,10 @@ abstract class BaseConfiguration implements Stringable
     }
 
     /**
-     * @param mixed $value
      * @param bool  $nullable
-     *
      * @return array|null
      */
-    protected function castToArray($value, $nullable = true)
+    protected function castToArray(mixed $value, $nullable = true)
     {
         if (null === $value) {
             return $nullable ? null : [];

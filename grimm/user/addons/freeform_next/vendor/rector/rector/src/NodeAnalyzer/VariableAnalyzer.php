@@ -1,7 +1,7 @@
 <?php
 
 declare (strict_types=1);
-namespace Rector\NodeAnalyzer;
+namespace Rector\Core\NodeAnalyzer;
 
 use PhpParser\Node\Expr\Variable;
 use Rector\NodeTypeResolver\Node\AttributeKey;

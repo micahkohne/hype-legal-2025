@@ -7,21 +7,25 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\Name;
 use PhpParser\Node\Name\FullyQualified;
+use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ReflectionProvider;
-use Rector\Rector\AbstractRector;
-use Rector\ValueObject\PhpVersionFeature;
+use Rector\Core\Rector\AbstractScopeAwareRector;
+use Rector\Core\ValueObject\PhpVersionFeature;
 use Rector\VersionBonding\Contract\MinPhpVersionInterface;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
+ * @changelog https://wiki.php.net/rfc/case_insensitive_constant_deprecation
+ *
  * @see \Rector\Tests\Php73\Rector\ConstFetch\SensitiveConstantNameRector\SensitiveConstantNameRectorTest
  */
-final class SensitiveConstantNameRector extends AbstractRector implements MinPhpVersionInterface
+final class SensitiveConstantNameRector extends AbstractScopeAwareRector implements MinPhpVersionInterface
 {
     /**
      * @readonly
+     * @var \PHPStan\Reflection\ReflectionProvider
      */
-    private ReflectionProvider $reflectionProvider;
+    private $reflectionProvider;
     /**
      * @see http://php.net/manual/en/reserved.constants.php
      * @var string[]
@@ -59,7 +63,7 @@ CODE_SAMPLE
     /**
      * @param ConstFetch $node
      */
-    public function refactor(Node $node) : ?Node
+    public function refactorWithScope(Node $node, Scope $scope) : ?Node
     {
         $constantName = $this->getName($node);
         if ($constantName === null) {
@@ -71,14 +75,14 @@ CODE_SAMPLE
             return null;
         }
         // constant is defined in current lower/upper case
-        if ($this->reflectionProvider->hasConstant(new Name($constantName), null)) {
+        if ($this->reflectionProvider->hasConstant(new Name($constantName), $scope)) {
             return null;
         }
         // is uppercase, all good
         if ($constantName === $uppercasedConstantName) {
             return null;
         }
-        if (\strpos($uppercasedConstantName, '\\') !== \false || \strpos($uppercasedConstantName, '(') !== \false || \strpos($uppercasedConstantName, "'") !== \false) {
+        if (\strpos($uppercasedConstantName, '\\') !== \false) {
             return null;
         }
         $node->name = new FullyQualified($uppercasedConstantName);

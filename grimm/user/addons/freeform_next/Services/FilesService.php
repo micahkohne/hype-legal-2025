@@ -303,7 +303,7 @@ class FilesService implements FileUploadHandlerInterface
 			}
 
 			$extraFileKinds = [
-				strtolower((string) $extraFileExtensions['label']) => $extraFileExtensions,
+				strtolower($extraFileExtensions['label']) => $extraFileExtensions,
 			];
 		}
 

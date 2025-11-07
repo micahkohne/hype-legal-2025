@@ -1,12 +1,11 @@
 <?php
 
 declare (strict_types=1);
-namespace Rector\NodeAnalyzer;
+namespace Rector\Core\NodeAnalyzer;
 
 use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Exit_;
-use PhpParser\Node\Expr\Throw_;
 use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\Break_;
 use PhpParser\Node\Stmt\ClassLike;
@@ -23,15 +22,20 @@ use PhpParser\Node\Stmt\Namespace_;
 use PhpParser\Node\Stmt\Nop;
 use PhpParser\Node\Stmt\Return_;
 use PhpParser\Node\Stmt\Switch_;
+use PhpParser\Node\Stmt\Throw_;
 use PhpParser\Node\Stmt\TryCatch;
-use Rector\Contract\PhpParser\Node\StmtsAwareInterface;
-use Rector\PhpParser\Node\CustomNode\FileWithoutNamespace;
+use Rector\Core\Contract\PhpParser\Node\StmtsAwareInterface;
+use Rector\Core\PhpParser\Node\CustomNode\FileWithoutNamespace;
 final class TerminatedNodeAnalyzer
 {
     /**
      * @var array<class-string<Node>>
      */
-    private const TERMINABLE_NODES = [Return_::class, Break_::class, Continue_::class];
+    private const TERMINATED_NODES = [Return_::class, Throw_::class];
+    /**
+     * @var array<class-string<Node>>
+     */
+    private const TERMINABLE_NODES = [Throw_::class, Return_::class, Break_::class, Continue_::class];
     /**
      * @var array<class-string<Node>>
      */
@@ -65,7 +69,7 @@ final class TerminatedNodeAnalyzer
         if (\in_array(\get_class($previousNode), self::TERMINABLE_NODES, \true)) {
             return \true;
         }
-        if ($previousNode instanceof Expression && ($previousNode->expr instanceof Exit_ || $previousNode->expr instanceof Throw_)) {
+        if ($previousNode instanceof Expression && $previousNode->expr instanceof Exit_) {
             return \true;
         }
         if ($previousNode instanceof Goto_) {
@@ -131,14 +135,15 @@ final class TerminatedNodeAnalyzer
         if ($stmts === []) {
             return \false;
         }
-        $lastKey = \array_key_last($stmts);
+        \end($stmts);
+        $lastKey = \key($stmts);
         $lastNode = $stmts[$lastKey];
-        if (isset($stmts[$lastKey - 1]) && !$this->isTerminatedNode($stmts[$lastKey - 1], $node)) {
+        if (isset($stmts[$lastKey - 1]) && $this->isTerminatedNode($stmts[$lastKey - 1], $node)) {
             return \false;
         }
         if ($lastNode instanceof Expression) {
-            return $lastNode->expr instanceof Exit_ || $lastNode->expr instanceof Throw_;
+            return $lastNode->expr instanceof Exit_;
         }
-        return $lastNode instanceof Return_;
+        return \in_array(\get_class($lastNode), self::TERMINATED_NODES, \true);
     }
 }

@@ -3,7 +3,7 @@
 declare (strict_types=1);
 namespace PhpParser\Lexer\TokenEmulator;
 
-use PhpParser\PhpVersion;
+use PhpParser\Lexer\Emulative;
 /*
  * In PHP 8.1, "readonly(" was special cased in the lexer in order to support functions with
  * name readonly. In PHP 8.2, this may conflict with readonly properties having a DNF type. For
@@ -21,9 +21,9 @@ class ReadonlyFunctionTokenEmulator extends \PhpParser\Lexer\TokenEmulator\Keywo
     {
         return \T_READONLY;
     }
-    public function getPhpVersion() : PhpVersion
+    public function getPhpVersion() : string
     {
-        return PhpVersion::fromComponents(8, 2);
+        return Emulative::PHP_8_2;
     }
     public function reverseEmulate(string $code, array $tokens) : array
     {

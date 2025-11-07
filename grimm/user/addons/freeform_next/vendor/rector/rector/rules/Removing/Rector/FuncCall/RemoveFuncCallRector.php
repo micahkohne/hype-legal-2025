@@ -6,12 +6,12 @@ namespace Rector\Removing\Rector\FuncCall;
 use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Stmt\Expression;
-use PhpParser\NodeVisitor;
-use Rector\Contract\Rector\ConfigurableRectorInterface;
-use Rector\Rector\AbstractRector;
+use PhpParser\NodeTraverser;
+use Rector\Core\Contract\Rector\ConfigurableRectorInterface;
+use Rector\Core\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\ConfiguredCodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
-use RectorPrefix202507\Webmozart\Assert\Assert;
+use RectorPrefix202308\Webmozart\Assert\Assert;
 /**
  * @see \Rector\Tests\Removing\Rector\FuncCall\RemoveFuncCallRector\RemoveFuncCallRectorTest
  */
@@ -20,7 +20,7 @@ final class RemoveFuncCallRector extends AbstractRector implements ConfigurableR
     /**
      * @var string[]
      */
-    private array $removedFunctions = [];
+    private $removedFunctions = [];
     public function getRuleDefinition() : RuleDefinition
     {
         return new RuleDefinition('Remove function', [new ConfiguredCodeSample(<<<'CODE_SAMPLE'
@@ -52,7 +52,7 @@ CODE_SAMPLE
             if (!$this->isName($expr->name, $removedFunction)) {
                 continue;
             }
-            return NodeVisitor::REMOVE_NODE;
+            return NodeTraverser::REMOVE_NODE;
         }
         return null;
     }

@@ -9,17 +9,17 @@ use PhpParser\Node\Expr\ClassConstFetch;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\Ternary;
 use PhpParser\Node\Identifier;
-use Rector\Rector\AbstractRector;
-use Rector\ValueObject\PhpVersionFeature;
-use Rector\ValueObject\PolyfillPackage;
+use Rector\Core\Rector\AbstractRector;
+use Rector\Core\ValueObject\PhpVersionFeature;
 use Rector\VersionBonding\Contract\MinPhpVersionInterface;
-use Rector\VersionBonding\Contract\RelatedPolyfillInterface;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
+ * @changelog https://wiki.php.net/rfc/get_debug_type
+ *
  * @see \Rector\Tests\Php80\Rector\Ternary\GetDebugTypeRector\GetDebugTypeRectorTest
  */
-final class GetDebugTypeRector extends AbstractRector implements MinPhpVersionInterface, RelatedPolyfillInterface
+final class GetDebugTypeRector extends AbstractRector implements MinPhpVersionInterface
 {
     public function provideMinPhpVersion() : int
     {
@@ -70,10 +70,6 @@ CODE_SAMPLE
         $firstExpr = $getClassFuncCallOrClassConstFetchClass instanceof FuncCall ? $getClassFuncCallOrClassConstFetchClass->getArgs()[0]->value : $getClassFuncCallOrClassConstFetchClass->class;
         return $this->nodeFactory->createFuncCall('get_debug_type', [$firstExpr]);
     }
-    public function providePolyfillPackage() : string
-    {
-        return PolyfillPackage::PHP_80;
-    }
     private function shouldSkip(Ternary $ternary) : bool
     {
         if (!$ternary->cond instanceof FuncCall) {
@@ -85,7 +81,7 @@ CODE_SAMPLE
         if (!isset($ternary->cond->getArgs()[0])) {
             return \true;
         }
-        if (!$this->isName($ternary->cond, 'is_object')) {
+        if (!$this->nodeNameResolver->isName($ternary->cond, 'is_object')) {
             return \true;
         }
         if (!$ternary->if instanceof FuncCall) {
@@ -94,7 +90,7 @@ CODE_SAMPLE
             }
             return $this->shouldSkipClassConstFetch($ternary->if);
         }
-        if (!$this->isName($ternary->if, 'get_class')) {
+        if (!$this->nodeNameResolver->isName($ternary->if, 'get_class')) {
             return \true;
         }
         if (!$ternary->else instanceof FuncCall) {
@@ -103,7 +99,7 @@ CODE_SAMPLE
         if ($ternary->else->isFirstClassCallable()) {
             return \true;
         }
-        return !$this->isName($ternary->else, 'gettype');
+        return !$this->nodeNameResolver->isName($ternary->else, 'gettype');
     }
     private function shouldSkipClassConstFetch(ClassConstFetch $classConstFetch) : bool
     {

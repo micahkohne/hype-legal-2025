@@ -13,16 +13,12 @@ use PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprTrueNode;
 use Rector\BetterPhpDocParser\PhpDoc\ArrayItemNode;
 use Rector\BetterPhpDocParser\PhpDoc\DoctrineAnnotationTagValueNode;
 use Rector\BetterPhpDocParser\PhpDoc\StringNode;
-use Rector\BetterPhpDocParser\PhpDocInfo\PhpDocInfoFactory;
 use Rector\BetterPhpDocParser\ValueObject\PhpDoc\DoctrineAnnotation\CurlyListNode;
-use Rector\Comments\NodeDocBlock\DocBlockUpdater;
+use Rector\Core\Rector\AbstractRector;
+use Rector\Core\ValueObject\MethodName;
 use Rector\Doctrine\NodeAnalyzer\ConstructorAssignPropertyAnalyzer;
 use Rector\Doctrine\NodeFactory\ValueAssignFactory;
 use Rector\Doctrine\NodeManipulator\ConstructorManipulator;
-use Rector\Doctrine\TypedCollections\NodeModifier\PropertyDefaultNullRemover;
-use Rector\PhpParser\Node\Value\ValueResolver;
-use Rector\Rector\AbstractRector;
-use Rector\ValueObject\MethodName;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -34,42 +30,28 @@ final class MoveCurrentDateTimeDefaultInEntityToConstructorRector extends Abstra
 {
     /**
      * @readonly
+     * @var \Rector\Doctrine\NodeManipulator\ConstructorManipulator
      */
-    private ConstructorManipulator $constructorManipulator;
+    private $constructorManipulator;
     /**
      * @readonly
+     * @var \Rector\Doctrine\NodeFactory\ValueAssignFactory
      */
-    private ValueAssignFactory $valueAssignFactory;
+    private $valueAssignFactory;
     /**
      * @readonly
+     * @var \Rector\Doctrine\NodeAnalyzer\ConstructorAssignPropertyAnalyzer
      */
-    private ConstructorAssignPropertyAnalyzer $constructorAssignPropertyAnalyzer;
+    private $constructorAssignPropertyAnalyzer;
     /**
-     * @readonly
+     * @var bool
      */
-    private DocBlockUpdater $docBlockUpdater;
-    /**
-     * @readonly
-     */
-    private PhpDocInfoFactory $phpDocInfoFactory;
-    /**
-     * @readonly
-     */
-    private ValueResolver $valueResolver;
-    /**
-     * @readonly
-     */
-    private PropertyDefaultNullRemover $propertyDefaultNullRemover;
-    private bool $hasChanged = \false;
-    public function __construct(ConstructorManipulator $constructorManipulator, ValueAssignFactory $valueAssignFactory, ConstructorAssignPropertyAnalyzer $constructorAssignPropertyAnalyzer, DocBlockUpdater $docBlockUpdater, PhpDocInfoFactory $phpDocInfoFactory, ValueResolver $valueResolver, PropertyDefaultNullRemover $propertyDefaultNullRemover)
+    private $hasChanged = \false;
+    public function __construct(ConstructorManipulator $constructorManipulator, ValueAssignFactory $valueAssignFactory, ConstructorAssignPropertyAnalyzer $constructorAssignPropertyAnalyzer)
     {
         $this->constructorManipulator = $constructorManipulator;
         $this->valueAssignFactory = $valueAssignFactory;
         $this->constructorAssignPropertyAnalyzer = $constructorAssignPropertyAnalyzer;
-        $this->docBlockUpdater = $docBlockUpdater;
-        $this->phpDocInfoFactory = $phpDocInfoFactory;
-        $this->valueResolver = $valueResolver;
-        $this->propertyDefaultNullRemover = $propertyDefaultNullRemover;
     }
     public function getRuleDefinition() : RuleDefinition
     {
@@ -174,7 +156,9 @@ CODE_SAMPLE
             }
             $this->hasChanged = \true;
         }
-        $this->docBlockUpdater->updateRefactoredNodeWithPhpDocInfo($property);
+        if ($this->hasChanged) {
+            $phpDocInfo->markAsChanged();
+        }
         $this->refactorClassWithRemovalDefault($class, $property);
     }
     private function refactorClassWithRemovalDefault(Class_ $class, Property $property) : void
@@ -185,7 +169,8 @@ CODE_SAMPLE
             return;
         }
         // 3. remove default from property
-        $this->propertyDefaultNullRemover->remove($property);
+        $onlyProperty = $property->props[0];
+        $onlyProperty->default = null;
         $this->hasChanged = \true;
     }
     private function refactorClass(Class_ $class, Property $property) : void

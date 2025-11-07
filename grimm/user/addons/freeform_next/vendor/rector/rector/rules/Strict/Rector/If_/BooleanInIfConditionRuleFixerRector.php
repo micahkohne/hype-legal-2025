@@ -6,7 +6,7 @@ namespace Rector\Strict\Rector\If_;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Stmt\If_;
-use Rector\PHPStan\ScopeFetcher;
+use PHPStan\Analyser\Scope;
 use Rector\Strict\NodeFactory\ExactCompareFactory;
 use Rector\Strict\Rector\AbstractFalsyScalarRuleFixerRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\ConfiguredCodeSample;
@@ -22,8 +22,9 @@ final class BooleanInIfConditionRuleFixerRector extends AbstractFalsyScalarRuleF
 {
     /**
      * @readonly
+     * @var \Rector\Strict\NodeFactory\ExactCompareFactory
      */
-    private ExactCompareFactory $exactCompareFactory;
+    private $exactCompareFactory;
     public function __construct(ExactCompareFactory $exactCompareFactory)
     {
         $this->exactCompareFactory = $exactCompareFactory;
@@ -69,10 +70,9 @@ CODE_SAMPLE
     /**
      * @param If_ $node
      */
-    public function refactor(Node $node) : ?If_
+    public function refactorWithScope(Node $node, Scope $scope) : ?If_
     {
         $hasChanged = \false;
-        $scope = ScopeFetcher::fetch($node);
         // 1. if
         $ifCondExprType = $scope->getNativeType($node->cond);
         $notIdentical = $this->exactCompareFactory->createNotIdenticalFalsyCompare($ifCondExprType, $node->cond, $this->treatAsNonEmpty);

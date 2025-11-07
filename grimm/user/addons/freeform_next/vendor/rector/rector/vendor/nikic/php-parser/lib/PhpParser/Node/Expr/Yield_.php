@@ -7,17 +7,17 @@ use PhpParser\Node\Expr;
 class Yield_ extends Expr
 {
     /** @var null|Expr Key expression */
-    public ?Expr $key;
+    public $key;
     /** @var null|Expr Value expression */
-    public ?Expr $value;
+    public $value;
     /**
      * Constructs a yield expression node.
      *
-     * @param null|Expr $value Value expression
-     * @param null|Expr $key Key expression
-     * @param array<string, mixed> $attributes Additional attributes
+     * @param null|Expr $value      Value expression
+     * @param null|Expr $key        Key expression
+     * @param array     $attributes Additional attributes
      */
-    public function __construct(?Expr $value = null, ?Expr $key = null, array $attributes = [])
+    public function __construct(Expr $value = null, Expr $key = null, array $attributes = [])
     {
         $this->attributes = $attributes;
         $this->key = $key;

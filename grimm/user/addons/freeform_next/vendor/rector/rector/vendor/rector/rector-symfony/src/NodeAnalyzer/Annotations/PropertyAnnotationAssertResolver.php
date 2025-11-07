@@ -6,23 +6,26 @@ namespace Rector\Symfony\NodeAnalyzer\Annotations;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\New_;
 use PhpParser\Node\Stmt;
-use Rector\PhpParser\Node\Value\ValueResolver;
+use Rector\Core\PhpParser\Node\Value\ValueResolver;
 use Rector\Symfony\NodeFactory\Annotations\DoctrineAnnotationFromNewFactory;
 use Rector\Symfony\ValueObject\ValidatorAssert\PropertyAndAnnotation;
 final class PropertyAnnotationAssertResolver
 {
     /**
      * @readonly
+     * @var \Rector\Core\PhpParser\Node\Value\ValueResolver
      */
-    private ValueResolver $valueResolver;
+    private $valueResolver;
     /**
      * @readonly
+     * @var \Rector\Symfony\NodeFactory\Annotations\DoctrineAnnotationFromNewFactory
      */
-    private DoctrineAnnotationFromNewFactory $doctrineAnnotationFromNewFactory;
+    private $doctrineAnnotationFromNewFactory;
     /**
      * @readonly
+     * @var \Rector\Symfony\NodeAnalyzer\Annotations\StmtMethodCallMatcher
      */
-    private \Rector\Symfony\NodeAnalyzer\Annotations\StmtMethodCallMatcher $stmtMethodCallMatcher;
+    private $stmtMethodCallMatcher;
     public function __construct(ValueResolver $valueResolver, DoctrineAnnotationFromNewFactory $doctrineAnnotationFromNewFactory, \Rector\Symfony\NodeAnalyzer\Annotations\StmtMethodCallMatcher $stmtMethodCallMatcher)
     {
         $this->valueResolver = $valueResolver;

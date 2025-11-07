@@ -9,27 +9,30 @@ declare (strict_types=1);
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-namespace RectorPrefix202507\SebastianBergmann\Diff;
+namespace RectorPrefix202308\SebastianBergmann\Diff;
 
-use ArrayIterator;
-use IteratorAggregate;
-use Traversable;
-/**
- * @template-implements IteratorAggregate<int, Line>
- */
-final class Chunk implements IteratorAggregate
+final class Chunk
 {
-    private int $start;
-    private int $startRange;
-    private int $end;
-    private int $endRange;
     /**
-     * @var list<Line>
+     * @var int
      */
-    private array $lines;
+    private $start;
     /**
-     * @param list<Line> $lines
+     * @var int
      */
+    private $startRange;
+    /**
+     * @var int
+     */
+    private $end;
+    /**
+     * @var int
+     */
+    private $endRange;
+    /**
+     * @var mixed[]
+     */
+    private $lines;
     public function __construct(int $start = 0, int $startRange = 1, int $end = 0, int $endRange = 1, array $lines = [])
     {
         $this->start = $start;
@@ -38,31 +41,31 @@ final class Chunk implements IteratorAggregate
         $this->endRange = $endRange;
         $this->lines = $lines;
     }
-    public function start() : int
+    public function getStart() : int
     {
         return $this->start;
     }
-    public function startRange() : int
+    public function getStartRange() : int
     {
         return $this->startRange;
     }
-    public function end() : int
+    public function getEnd() : int
     {
         return $this->end;
     }
-    public function endRange() : int
+    public function getEndRange() : int
     {
         return $this->endRange;
     }
     /**
-     * @return list<Line>
+     * @psalm-return list<Line>
      */
-    public function lines() : array
+    public function getLines() : array
     {
         return $this->lines;
     }
     /**
-     * @param list<Line> $lines
+     * @psalm-param list<Line> $lines
      */
     public function setLines(array $lines) : void
     {
@@ -72,9 +75,5 @@ final class Chunk implements IteratorAggregate
             }
         }
         $this->lines = $lines;
-    }
-    public function getIterator() : Traversable
-    {
-        return new ArrayIterator($this->lines);
     }
 }

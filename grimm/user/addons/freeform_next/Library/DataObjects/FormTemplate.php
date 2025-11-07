@@ -16,9 +16,9 @@ use Solspace\Addons\FreeformNext\Library\Helpers\StringHelper;
 
 class FormTemplate implements JsonSerializable
 {
-    private readonly string $fileName;
+    private string|array $fileName;
 
-    private readonly string $name;
+    private string $name;
 
     /**
      * FormTemplate constructor.
@@ -27,8 +27,8 @@ class FormTemplate implements JsonSerializable
      */
     public function __construct(private $filePath)
     {
-        $this->fileName = pathinfo($this->filePath, PATHINFO_BASENAME);
-        $this->name     = StringHelper::camelize(StringHelper::humanize(pathinfo($this->filePath, PATHINFO_FILENAME)));
+        $this->fileName = pathinfo($filePath, PATHINFO_BASENAME);
+        $this->name     = StringHelper::camelize(StringHelper::humanize(pathinfo($filePath, PATHINFO_FILENAME)));
     }
 
     /**

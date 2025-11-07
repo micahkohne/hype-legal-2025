@@ -3,7 +3,6 @@
 declare (strict_types=1);
 namespace Rector\DowngradePhp72\PhpDoc;
 
-use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Param;
 use PhpParser\Node\Stmt\ClassMethod;
@@ -12,31 +11,36 @@ use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
 use Rector\BetterPhpDocParser\PhpDocInfo\PhpDocInfoFactory;
 use Rector\BetterPhpDocParser\PhpDocManipulator\PhpDocTypeChanger;
+use Rector\Core\PhpParser\Node\Value\ValueResolver;
 use Rector\NodeNameResolver\NodeNameResolver;
-use Rector\PhpParser\Node\Value\ValueResolver;
 use Rector\StaticTypeMapper\StaticTypeMapper;
 final class NativeParamToPhpDocDecorator
 {
     /**
      * @readonly
+     * @var \Rector\BetterPhpDocParser\PhpDocInfo\PhpDocInfoFactory
      */
-    private PhpDocInfoFactory $phpDocInfoFactory;
+    private $phpDocInfoFactory;
     /**
      * @readonly
+     * @var \Rector\NodeNameResolver\NodeNameResolver
      */
-    private NodeNameResolver $nodeNameResolver;
+    private $nodeNameResolver;
     /**
      * @readonly
+     * @var \Rector\StaticTypeMapper\StaticTypeMapper
      */
-    private StaticTypeMapper $staticTypeMapper;
+    private $staticTypeMapper;
     /**
      * @readonly
+     * @var \Rector\BetterPhpDocParser\PhpDocManipulator\PhpDocTypeChanger
      */
-    private PhpDocTypeChanger $phpDocTypeChanger;
+    private $phpDocTypeChanger;
     /**
      * @readonly
+     * @var \Rector\Core\PhpParser\Node\Value\ValueResolver
      */
-    private ValueResolver $valueResolver;
+    private $valueResolver;
     public function __construct(PhpDocInfoFactory $phpDocInfoFactory, NodeNameResolver $nodeNameResolver, StaticTypeMapper $staticTypeMapper, PhpDocTypeChanger $phpDocTypeChanger, ValueResolver $valueResolver)
     {
         $this->phpDocInfoFactory = $phpDocInfoFactory;
@@ -47,7 +51,7 @@ final class NativeParamToPhpDocDecorator
     }
     public function decorate(ClassMethod $classMethod, Param $param) : void
     {
-        if (!$param->type instanceof Node) {
+        if ($param->type === null) {
             return;
         }
         $phpDocInfo = $this->phpDocInfoFactory->createFromNodeOrEmpty($classMethod);

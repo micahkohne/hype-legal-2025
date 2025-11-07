@@ -10,28 +10,27 @@ use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Name\FullyQualified;
 use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\Stmt\ClassConst;
-use PhpParser\NodeVisitor;
+use PhpParser\NodeTraverser;
 use PHPStan\Reflection\ReflectionProvider;
-use Rector\Contract\Rector\ConfigurableRectorInterface;
-use Rector\Rector\AbstractRector;
-use Rector\ValueObject\PhpVersionFeature;
+use Rector\Core\Contract\Rector\ConfigurableRectorInterface;
+use Rector\Core\Rector\AbstractRector;
+use Rector\Core\ValueObject\PhpVersionFeature;
 use Rector\VersionBonding\Contract\MinPhpVersionInterface;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\ConfiguredCodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
-use RectorPrefix202507\Webmozart\Assert\Assert;
+use RectorPrefix202308\Webmozart\Assert\Assert;
 /**
+ * @changelog https://wiki.php.net/rfc/class_name_scalars https://github.com/symfony/symfony/blob/2.8/UPGRADE-2.8.md#form
+ *
  * @see \Rector\Tests\Php55\Rector\String_\StringClassNameToClassConstantRector\StringClassNameToClassConstantRectorTest
  */
 final class StringClassNameToClassConstantRector extends AbstractRector implements MinPhpVersionInterface, ConfigurableRectorInterface
 {
     /**
      * @readonly
+     * @var \PHPStan\Reflection\ReflectionProvider
      */
-    private ReflectionProvider $reflectionProvider;
-    /**
-     * @var string
-     */
-    public const SHOULD_KEEP_PRE_SLASH = 'should_keep_pre_slash';
+    private $reflectionProvider;
     /**
      * @var string
      */
@@ -39,15 +38,14 @@ final class StringClassNameToClassConstantRector extends AbstractRector implemen
     /**
      * @var string[]
      */
-    private array $classesToSkip = [];
-    private bool $shouldKeepPreslash = \false;
+    private $classesToSkip = [];
     public function __construct(ReflectionProvider $reflectionProvider)
     {
         $this->reflectionProvider = $reflectionProvider;
     }
     public function getRuleDefinition() : RuleDefinition
     {
-        return new RuleDefinition('Replace string class names by `<class>::class` constant', [new ConfiguredCodeSample(<<<'CODE_SAMPLE'
+        return new RuleDefinition('Replace string class names by <class>::class constant', [new ConfiguredCodeSample(<<<'CODE_SAMPLE'
 class AnotherClass
 {
 }
@@ -73,7 +71,7 @@ class SomeClass
     }
 }
 CODE_SAMPLE
-, ['ClassName', 'AnotherClassName', self::SHOULD_KEEP_PRE_SLASH => \false])]);
+, ['ClassName', 'AnotherClassName'])]);
     }
     /**
      * @return array<class-string<Node>>
@@ -90,13 +88,18 @@ CODE_SAMPLE
     {
         // allow class strings to be part of class const arrays, as probably on purpose
         if ($node instanceof ClassConst) {
-            $this->decorateClassConst($node);
+            $this->traverseNodesWithCallable($node->consts, static function (Node $subNode) {
+                if ($subNode instanceof String_) {
+                    $subNode->setAttribute(self::IS_UNDER_CLASS_CONST, \true);
+                }
+                return null;
+            });
             return null;
         }
         // keep allowed string as condition
         if ($node instanceof FuncCall) {
             if ($this->isName($node, 'is_a')) {
-                return NodeVisitor::DONT_TRAVERSE_CHILDREN;
+                return NodeTraverser::DONT_TRAVERSE_CHILDREN;
             }
             return null;
         }
@@ -113,7 +116,7 @@ CODE_SAMPLE
             return null;
         }
         $fullyQualified = new FullyQualified($classLikeName);
-        if ($this->shouldKeepPreslash && $classLikeName !== $node->value) {
+        if ($classLikeName !== $node->value) {
             $preSlashCount = \strlen($node->value) - \strlen($classLikeName);
             $preSlash = \str_repeat('\\', $preSlashCount);
             $string = new String_($preSlash);
@@ -126,10 +129,6 @@ CODE_SAMPLE
      */
     public function configure(array $configuration) : void
     {
-        if (isset($configuration[self::SHOULD_KEEP_PRE_SLASH]) && \is_bool($configuration[self::SHOULD_KEEP_PRE_SLASH])) {
-            $this->shouldKeepPreslash = $configuration[self::SHOULD_KEEP_PRE_SLASH];
-            unset($configuration[self::SHOULD_KEEP_PRE_SLASH]);
-        }
         Assert::allString($configuration);
         $this->classesToSkip = $configuration;
     }
@@ -151,25 +150,10 @@ CODE_SAMPLE
             return \true;
         }
         foreach ($this->classesToSkip as $classToSkip) {
-            if (\strpos($classToSkip, '*') !== \false) {
-                if (\fnmatch($classToSkip, $classLikeName, \FNM_NOESCAPE)) {
-                    return \true;
-                }
-                continue;
-            }
             if ($this->nodeNameResolver->isStringName($classLikeName, $classToSkip)) {
                 return \true;
             }
         }
         return \false;
-    }
-    private function decorateClassConst(ClassConst $classConst) : void
-    {
-        $this->traverseNodesWithCallable($classConst->consts, static function (Node $subNode) {
-            if ($subNode instanceof String_) {
-                $subNode->setAttribute(self::IS_UNDER_CLASS_CONST, \true);
-            }
-            return null;
-        });
     }
 }

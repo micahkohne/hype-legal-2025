@@ -7,25 +7,29 @@ use PhpParser\Node;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassMethod;
 use PHPStan\Reflection\ClassReflection;
+use Rector\Core\Rector\AbstractRector;
+use Rector\Core\Reflection\ReflectionResolver;
 use Rector\Privatization\NodeManipulator\VisibilityManipulator;
-use Rector\Rector\AbstractRector;
-use Rector\Reflection\ReflectionResolver;
 use ReflectionMethod;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
+ * @changelog https://3v4l.org/RFYmn
+ *
  * @see \Rector\Tests\CodingStyle\Rector\ClassMethod\MakeInheritedMethodVisibilitySameAsParentRector\MakeInheritedMethodVisibilitySameAsParentRectorTest
  */
 final class MakeInheritedMethodVisibilitySameAsParentRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\Privatization\NodeManipulator\VisibilityManipulator
      */
-    private VisibilityManipulator $visibilityManipulator;
+    private $visibilityManipulator;
     /**
      * @readonly
+     * @var \Rector\Core\Reflection\ReflectionResolver
      */
-    private ReflectionResolver $reflectionResolver;
+    private $reflectionResolver;
     public function __construct(VisibilityManipulator $visibilityManipulator, ReflectionResolver $reflectionResolver)
     {
         $this->visibilityManipulator = $visibilityManipulator;
@@ -81,28 +85,17 @@ CODE_SAMPLE
         if (!$classReflection instanceof ClassReflection) {
             return null;
         }
-        if ($classReflection->isAnonymous()) {
-            return null;
-        }
         $parentClassReflections = $classReflection->getParents();
         if ($parentClassReflections === []) {
             return null;
         }
         $hasChanged = \false;
-        $interfaces = $classReflection->getInterfaces();
         foreach ($node->getMethods() as $classMethod) {
             if ($classMethod->isMagic()) {
                 continue;
             }
             /** @var string $methodName */
             $methodName = $this->getName($classMethod->name);
-            if ($classMethod->isPublic()) {
-                foreach ($interfaces as $interface) {
-                    if ($interface->hasNativeMethod($methodName)) {
-                        continue 2;
-                    }
-                }
-            }
             foreach ($parentClassReflections as $parentClassReflection) {
                 $nativeClassReflection = $parentClassReflection->getNativeReflection();
                 // the class reflection above takes also @method annotations into an account
@@ -112,7 +105,7 @@ CODE_SAMPLE
                 /** @var ReflectionMethod $parentReflectionMethod */
                 $parentReflectionMethod = $nativeClassReflection->getMethod($methodName);
                 if ($this->isClassMethodCompatibleWithParentReflectionMethod($classMethod, $parentReflectionMethod)) {
-                    continue 2;
+                    continue;
                 }
                 $this->changeClassMethodVisibilityBasedOnReflectionMethod($classMethod, $parentReflectionMethod);
                 $hasChanged = \true;

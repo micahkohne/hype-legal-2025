@@ -9,8 +9,10 @@ use function trim;
 class TypeAliasTagValueNode implements \PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocTagValueNode
 {
     use NodeAttributes;
-    public string $alias;
-    public TypeNode $type;
+    /** @var string */
+    public $alias;
+    /** @var TypeNode */
+    public $type;
     public function __construct(string $alias, TypeNode $type)
     {
         $this->alias = $alias;

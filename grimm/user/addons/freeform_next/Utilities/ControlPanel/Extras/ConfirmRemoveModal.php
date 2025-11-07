@@ -33,7 +33,7 @@ class ConfirmRemoveModal extends Modal
      *
      * @return $this
      */
-    public function setUrl($url): static
+    public function setUrl($url)
     {
         $this->url = $url;
 
@@ -45,7 +45,7 @@ class ConfirmRemoveModal extends Modal
      *
      * @return $this
      */
-    public function setName($name): static
+    public function setName($name)
     {
         $this->name = $name;
 
@@ -65,7 +65,7 @@ class ConfirmRemoveModal extends Modal
      *
      * @return $this
      */
-    public function setKind($kind): static
+    public function setKind($kind)
     {
         $this->kind = $kind;
 
@@ -77,7 +77,7 @@ class ConfirmRemoveModal extends Modal
      *
      * @return $this
      */
-    public function setPlural($plural): static
+    public function setPlural($plural)
     {
         $this->plural = $plural;
 
@@ -86,11 +86,10 @@ class ConfirmRemoveModal extends Modal
 
     /**
      * @param string $key
-     * @param mixed  $value
      *
      * @return $this
      */
-    public function addVariable($key, $value): static
+    public function addVariable($key, mixed $value)
     {
         $this->variables[$key] = $value;
 

@@ -19,13 +19,12 @@ interface SessionInterface
      *
      * @return mixed
      */
-    public function get($key, $defaultValue = null);
+    public function get($key, mixed $defaultValue = null);
 
     /**
      * @param string $key
-     * @param mixed  $value
      */
-    public function set($key, $value);
+    public function set($key, mixed $value);
 
     /**
      * @param string $key

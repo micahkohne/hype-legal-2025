@@ -7,12 +7,10 @@ use Solspace\Addons\FreeformNext\Library\Composer\Components\AbstractField;
 
 class SubmissionPreferenceSetting implements JsonSerializable
 {
-    private readonly bool $checked;
+    private bool $checked;
 
     /**
-     * @param AbstractField $field
      * @param bool          $checked
-     *
      * @return SubmissionPreferenceSetting
      */
     public static function createFromField(AbstractField $field, $checked): \Solspace\Addons\FreeformNext\Library\DataObjects\SubmissionPreferenceSetting
@@ -26,8 +24,6 @@ class SubmissionPreferenceSetting implements JsonSerializable
     }
 
     /**
-     * @param array $data
-     *
      * @return SubmissionPreferenceSetting
      */
     public static function createFromArray(array $data): \Solspace\Addons\FreeformNext\Library\DataObjects\SubmissionPreferenceSetting

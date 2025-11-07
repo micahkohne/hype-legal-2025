@@ -8,17 +8,19 @@ use PhpParser\Node\Name;
 use PhpParser\Node\Scalar\String_;
 use PHPStan\PhpDocParser\Ast\PhpDoc\GenericTagValueNode;
 use PHPStan\Reflection\ReflectionProvider;
-use Rector\PhpParser\Node\NodeFactory;
+use Rector\Core\PhpParser\Node\NodeFactory;
 final class PhpDocValueToNodeMapper
 {
     /**
      * @readonly
+     * @var \Rector\Core\PhpParser\Node\NodeFactory
      */
-    private NodeFactory $nodeFactory;
+    private $nodeFactory;
     /**
      * @readonly
+     * @var \PHPStan\Reflection\ReflectionProvider
      */
-    private ReflectionProvider $reflectionProvider;
+    private $reflectionProvider;
     public function __construct(NodeFactory $nodeFactory, ReflectionProvider $reflectionProvider)
     {
         $this->nodeFactory = $nodeFactory;

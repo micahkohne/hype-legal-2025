@@ -8,10 +8,10 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-namespace RectorPrefix202507\Symfony\Component\Console\Output;
+namespace RectorPrefix202308\Symfony\Component\Console\Output;
 
-use RectorPrefix202507\Symfony\Component\Console\Formatter\OutputFormatter;
-use RectorPrefix202507\Symfony\Component\Console\Formatter\OutputFormatterInterface;
+use RectorPrefix202308\Symfony\Component\Console\Formatter\OutputFormatter;
+use RectorPrefix202308\Symfony\Component\Console\Formatter\OutputFormatterInterface;
 /**
  * Base class for output classes.
  *
@@ -27,14 +27,20 @@ use RectorPrefix202507\Symfony\Component\Console\Formatter\OutputFormatterInterf
  */
 abstract class Output implements OutputInterface
 {
-    private int $verbosity;
-    private OutputFormatterInterface $formatter;
+    /**
+     * @var int
+     */
+    private $verbosity;
+    /**
+     * @var \Symfony\Component\Console\Formatter\OutputFormatterInterface
+     */
+    private $formatter;
     /**
      * @param int|null                      $verbosity The verbosity level (one of the VERBOSITY constants in OutputInterface)
      * @param bool                          $decorated Whether to decorate messages
      * @param OutputFormatterInterface|null $formatter Output formatter instance (null to use default OutputFormatter)
      */
-    public function __construct(?int $verbosity = self::VERBOSITY_NORMAL, bool $decorated = \false, ?OutputFormatterInterface $formatter = null)
+    public function __construct(?int $verbosity = self::VERBOSITY_NORMAL, bool $decorated = \false, OutputFormatterInterface $formatter = null)
     {
         $this->verbosity = $verbosity ?? self::VERBOSITY_NORMAL;
         $this->formatter = $formatter ?? new OutputFormatter();

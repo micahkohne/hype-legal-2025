@@ -12,9 +12,9 @@ use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Expression;
 use PhpParser\Node\Stmt\If_;
 use PhpParser\Node\Stmt\Property;
-use Rector\NodeAnalyzer\ExprAnalyzer;
-use Rector\Rector\AbstractRector;
-use Rector\ValueObject\MethodName;
+use Rector\Core\NodeAnalyzer\ExprAnalyzer;
+use Rector\Core\Rector\AbstractRector;
+use Rector\Core\ValueObject\MethodName;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -24,8 +24,9 @@ final class InlineConstructorDefaultToPropertyRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\Core\NodeAnalyzer\ExprAnalyzer
      */
-    private ExprAnalyzer $exprAnalyzer;
+    private $exprAnalyzer;
     public function __construct(ExprAnalyzer $exprAnalyzer)
     {
         $this->exprAnalyzer = $exprAnalyzer;
@@ -111,10 +112,10 @@ CODE_SAMPLE
             return null;
         }
         $propertyFetch = $assign->var;
-        if (!$this->isName($propertyFetch->var, 'this')) {
+        if (!$this->nodeNameResolver->isName($propertyFetch->var, 'this')) {
             return null;
         }
-        $propertyName = $this->getName($propertyFetch->name);
+        $propertyName = $this->nodeNameResolver->getName($propertyFetch->name);
         if (!\is_string($propertyName)) {
             return null;
         }
@@ -122,9 +123,6 @@ CODE_SAMPLE
     }
     private function refactorProperty(Class_ $class, string $propertyName, Expr $defaultExpr, ClassMethod $constructClassMethod, int $key) : bool
     {
-        if ($class->isReadonly()) {
-            return \false;
-        }
         foreach ($class->stmts as $classStmt) {
             if (!$classStmt instanceof Property) {
                 continue;

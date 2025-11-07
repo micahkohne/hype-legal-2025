@@ -11,9 +11,8 @@ use PHPStan\Type\Generic\GenericObjectType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeWithClassName;
-use Rector\BetterPhpDocParser\PhpDocInfo\PhpDocInfoFactory;
 use Rector\BetterPhpDocParser\PhpDocManipulator\PhpDocTypeChanger;
-use Rector\Rector\AbstractRector;
+use Rector\Core\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -23,20 +22,16 @@ final class AddParamTypeSplFixedArrayRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\BetterPhpDocParser\PhpDocManipulator\PhpDocTypeChanger
      */
-    private PhpDocTypeChanger $phpDocTypeChanger;
-    /**
-     * @readonly
-     */
-    private PhpDocInfoFactory $phpDocInfoFactory;
+    private $phpDocTypeChanger;
     /**
      * @var array<string, string>
      */
     private const SPL_FIXED_ARRAY_TO_SINGLE = ['PhpCsFixer\\Tokenizer\\Tokens' => 'PhpCsFixer\\Tokenizer\\Token', 'PhpCsFixer\\Doctrine\\Annotation\\Tokens' => 'PhpCsFixer\\Doctrine\\Annotation\\Token'];
-    public function __construct(PhpDocTypeChanger $phpDocTypeChanger, PhpDocInfoFactory $phpDocInfoFactory)
+    public function __construct(PhpDocTypeChanger $phpDocTypeChanger)
     {
         $this->phpDocTypeChanger = $phpDocTypeChanger;
-        $this->phpDocInfoFactory = $phpDocInfoFactory;
     }
     /**
      * @return array<class-string<Node>>
@@ -82,7 +77,6 @@ CODE_SAMPLE
             return null;
         }
         $functionLikePhpDocInfo = $this->phpDocInfoFactory->createFromNodeOrEmpty($node);
-        $hasChanged = \false;
         foreach ($node->getParams() as $param) {
             if ($param->type === null) {
                 continue;
@@ -102,12 +96,9 @@ CODE_SAMPLE
                 continue;
             }
             $paramName = $this->getName($param);
-            $changedParamType = $this->phpDocTypeChanger->changeParamType($node, $functionLikePhpDocInfo, $genericParamType, $param, $paramName);
-            if ($changedParamType) {
-                $hasChanged = \true;
-            }
+            $this->phpDocTypeChanger->changeParamType($node, $functionLikePhpDocInfo, $genericParamType, $param, $paramName);
         }
-        if ($hasChanged) {
+        if ($functionLikePhpDocInfo->hasChanged()) {
             return $node;
         }
         return null;

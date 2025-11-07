@@ -1,22 +1,22 @@
 <?php
 
 declare (strict_types=1);
-namespace Rector\PhpParser;
+namespace Rector\Core\PhpParser;
 
 use PhpParser\BuilderHelpers;
 use PhpParser\Node\Arg;
-use PhpParser\Node\ArrayItem;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Array_;
+use PhpParser\Node\Expr\ArrayItem;
 use PhpParser\Node\Expr\BinaryOp\Concat;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\Yield_;
 use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\Stmt\Expression;
-use Rector\Exception\ShouldNotHappenException;
+use Rector\Core\Exception\ShouldNotHappenException;
+use Rector\Core\Util\StringUtils;
+use Rector\Core\ValueObject\SprintfStringAndArgs;
 use Rector\NodeTypeResolver\Node\AttributeKey;
-use Rector\Util\StringUtils;
-use Rector\ValueObject\SprintfStringAndArgs;
 /**
  * @api used in phpunit
  */
@@ -64,6 +64,9 @@ final class NodeTransformer
     {
         $yields = [];
         foreach ($array->items as $arrayItem) {
+            if (!$arrayItem instanceof ArrayItem) {
+                continue;
+            }
             $yield = new Yield_($arrayItem->value, $arrayItem->key);
             $expression = new Expression($yield);
             $arrayItemComments = $arrayItem->getComments();
@@ -113,7 +116,7 @@ final class NodeTransformer
      */
     private function splitBySpace(string $value) : array
     {
-        $value = \str_getcsv($value, ' ', '"', '\\');
+        $value = \str_getcsv($value, ' ');
         return \array_filter($value);
     }
     /**

@@ -8,8 +8,8 @@ use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\BinaryOp\BooleanOr;
 use PhpParser\Node\Stmt\Continue_;
 use PhpParser\Node\Stmt\If_;
-use Rector\NodeManipulator\IfManipulator;
-use Rector\Rector\AbstractRector;
+use Rector\Core\NodeManipulator\IfManipulator;
+use Rector\Core\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -19,15 +19,16 @@ final class ChangeOrIfContinueToMultiContinueRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\Core\NodeManipulator\IfManipulator
      */
-    private IfManipulator $ifManipulator;
+    private $ifManipulator;
     public function __construct(IfManipulator $ifManipulator)
     {
         $this->ifManipulator = $ifManipulator;
     }
     public function getRuleDefinition() : RuleDefinition
     {
-        return new RuleDefinition('Change `if a || b` to early return', [new CodeSample(<<<'CODE_SAMPLE'
+        return new RuleDefinition('Changes if || to early return', [new CodeSample(<<<'CODE_SAMPLE'
 class SomeClass
 {
     public function canDrive(Car $newCar)

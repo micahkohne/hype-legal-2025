@@ -4,11 +4,9 @@ namespace Solspace\Addons\FreeformNext\Library\Composer\Components\Validation\Er
 
 use Countable;
 use Stringable;
-
 class ConstraintViolationList implements Countable, Stringable
 {
     private array $errors;
-
     /**
      * ValidationErrors constructor.
      */
@@ -16,7 +14,6 @@ class ConstraintViolationList implements Countable, Stringable
     {
         $this->errors = [];
     }
-
     /**
      * @return string
      */
@@ -24,7 +21,6 @@ class ConstraintViolationList implements Countable, Stringable
     {
         return implode('; ', $this->errors);
     }
-
     /**
      * @param string $message
      */
@@ -32,7 +28,6 @@ class ConstraintViolationList implements Countable, Stringable
     {
         $this->errors[] = $message;
     }
-
     /**
      * @return array
      */
@@ -40,7 +35,6 @@ class ConstraintViolationList implements Countable, Stringable
     {
         return $this->errors;
     }
-
     /**
      * @inheritDoc
      */
@@ -48,13 +42,10 @@ class ConstraintViolationList implements Countable, Stringable
     {
         return count($this->errors);
     }
-
     /**
-     * @param ConstraintViolationList $list
-     *
      * @return $this
      */
-    public function merge(ConstraintViolationList $list): static
+    public function merge(ConstraintViolationList $list)
     {
         foreach ($list->getErrors() as $error) {
             $this->addError($error);

@@ -11,7 +11,7 @@
 
 namespace Solspace\Addons\FreeformNext\Model;
 
-use ExpressionEngine\Service\Model\Model;
+use EllisLab\ExpressionEngine\Service\Model\Model;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Fields\Interfaces\NoStorageInterface;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Form;
 use Solspace\Addons\FreeformNext\Library\DataObjects\SubmissionPreferenceSetting;
@@ -27,8 +27,8 @@ use Solspace\Addons\FreeformNext\Repositories\FormRepository;
  */
 class SubmissionPreferencesModel extends Model
 {
-    const MODEL = 'freeform_next:SubmissionPreferencesModel';
-    const TABLE = 'freeform_next_submission_preferences';
+    public const MODEL = 'freeform_next:SubmissionPreferencesModel';
+    public const TABLE = 'freeform_next_submission_preferences';
 
     protected static $_primary_key = 'id';
     protected static $_table_name  = self::TABLE;
@@ -40,7 +40,7 @@ class SubmissionPreferencesModel extends Model
     protected $settings;
 
     /** @var SubmissionPreferenceSetting[] */
-    private $layout;
+    private ?array $layout = null;
 
     /** @var array */
     protected static $_typed_columns = [
@@ -50,7 +50,6 @@ class SubmissionPreferencesModel extends Model
     /**
      * Creates a Field object with default settings
      *
-     * @param Form $form
      * @param int  $memberId
      *
      * @return SubmissionPreferencesModel
@@ -86,7 +85,7 @@ class SubmissionPreferencesModel extends Model
     /**
      * @return SubmissionPreferenceSetting[]
      */
-    public function getLayout()
+    public function getLayout(): ?array
     {
         if (null === $this->layout) {
             /** @var array $settings */

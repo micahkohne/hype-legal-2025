@@ -11,33 +11,31 @@ use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Scalar\String_;
 use Rector\CodingStyle\NodeFactory\ArrayCallableToMethodCallFactory;
-use Rector\PhpParser\Node\Value\ValueResolver;
-use Rector\Rector\AbstractRector;
-use Rector\ValueObject\PhpVersionFeature;
+use Rector\Core\Rector\AbstractRector;
+use Rector\Core\ValueObject\PhpVersionFeature;
 use Rector\VersionBonding\Contract\MinPhpVersionInterface;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
+ * @changelog https://www.php.net/manual/en/function.call-user-func-array.php#117655
+ * @changelog https://3v4l.org/CBWt9
+ *
  * @see \Rector\Tests\CodingStyle\Rector\FuncCall\CallUserFuncArrayToVariadicRector\CallUserFuncArrayToVariadicRectorTest
  */
 final class CallUserFuncArrayToVariadicRector extends AbstractRector implements MinPhpVersionInterface
 {
     /**
      * @readonly
+     * @var \Rector\CodingStyle\NodeFactory\ArrayCallableToMethodCallFactory
      */
-    private ArrayCallableToMethodCallFactory $arrayCallableToMethodCallFactory;
-    /**
-     * @readonly
-     */
-    private ValueResolver $valueResolver;
-    public function __construct(ArrayCallableToMethodCallFactory $arrayCallableToMethodCallFactory, ValueResolver $valueResolver)
+    private $arrayCallableToMethodCallFactory;
+    public function __construct(ArrayCallableToMethodCallFactory $arrayCallableToMethodCallFactory)
     {
         $this->arrayCallableToMethodCallFactory = $arrayCallableToMethodCallFactory;
-        $this->valueResolver = $valueResolver;
     }
     public function getRuleDefinition() : RuleDefinition
     {
-        return new RuleDefinition('Replace `call_user_func_array()` with variadic', [new CodeSample(<<<'CODE_SAMPLE'
+        return new RuleDefinition('Replace call_user_func_array() with variadic', [new CodeSample(<<<'CODE_SAMPLE'
 class SomeClass
 {
     public function run()

@@ -7,31 +7,35 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
 use Rector\Arguments\ArgumentDefaultValueReplacer;
 use Rector\Arguments\ValueObject\ReplaceFuncCallArgumentDefaultValue;
-use Rector\Contract\Rector\ConfigurableRectorInterface;
-use Rector\Rector\AbstractRector;
+use Rector\Core\Contract\Rector\ConfigurableRectorInterface;
+use Rector\Core\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\ConfiguredCodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
-use RectorPrefix202507\Webmozart\Assert\Assert;
+use RectorPrefix202308\Webmozart\Assert\Assert;
 /**
+ * @changelog https://php.watch/versions/8.1/version_compare-operator-restrictions
+ * @changelog https://github.com/rectorphp/rector/issues/6271
+ *
  * @see \Rector\Tests\Arguments\Rector\FuncCall\FunctionArgumentDefaultValueReplacerRector\FunctionArgumentDefaultValueReplacerRectorTest
  */
 final class FunctionArgumentDefaultValueReplacerRector extends AbstractRector implements ConfigurableRectorInterface
 {
     /**
      * @readonly
+     * @var \Rector\Arguments\ArgumentDefaultValueReplacer
      */
-    private ArgumentDefaultValueReplacer $argumentDefaultValueReplacer;
+    private $argumentDefaultValueReplacer;
     /**
      * @var ReplaceFuncCallArgumentDefaultValue[]
      */
-    private array $replacedArguments = [];
+    private $replacedArguments = [];
     public function __construct(ArgumentDefaultValueReplacer $argumentDefaultValueReplacer)
     {
         $this->argumentDefaultValueReplacer = $argumentDefaultValueReplacer;
     }
     public function getRuleDefinition() : RuleDefinition
     {
-        return new RuleDefinition('Streamline the operator arguments of `version_compare` function', [new ConfiguredCodeSample(<<<'CODE_SAMPLE'
+        return new RuleDefinition('Streamline the operator arguments of version_compare function', [new ConfiguredCodeSample(<<<'CODE_SAMPLE'
 version_compare(PHP_VERSION, '5.6', 'gte');
 CODE_SAMPLE
 , <<<'CODE_SAMPLE'

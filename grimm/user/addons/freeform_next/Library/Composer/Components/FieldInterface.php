@@ -13,31 +13,31 @@ namespace Solspace\Addons\FreeformNext\Library\Composer\Components;
 
 interface FieldInterface
 {
-    const TYPE_TEXT               = 'text';
-    const TYPE_TEXTAREA           = 'textarea';
-    const TYPE_HIDDEN             = 'hidden';
-    const TYPE_SELECT             = 'select';
-    const TYPE_MULTIPLE_SELECT    = 'multiple_select';
-    const TYPE_CHECKBOX           = 'checkbox';
-    const TYPE_CHECKBOX_GROUP     = 'checkbox_group';
-    const TYPE_RADIO_GROUP        = 'radio_group';
-    const TYPE_HTML               = 'html';
-    const TYPE_SUBMIT             = 'submit';
-    const TYPE_DYNAMIC_RECIPIENTS = 'dynamic_recipients';
-    const TYPE_EMAIL              = 'email';
-    const TYPE_MAILING_LIST       = 'mailing_list';
-    const TYPE_FILE               = 'file';
-    const TYPE_PASSWORD           = 'password';
+    public const TYPE_TEXT               = 'text';
+    public const TYPE_TEXTAREA           = 'textarea';
+    public const TYPE_HIDDEN             = 'hidden';
+    public const TYPE_SELECT             = 'select';
+    public const TYPE_MULTIPLE_SELECT    = 'multiple_select';
+    public const TYPE_CHECKBOX           = 'checkbox';
+    public const TYPE_CHECKBOX_GROUP     = 'checkbox_group';
+    public const TYPE_RADIO_GROUP        = 'radio_group';
+    public const TYPE_HTML               = 'html';
+    public const TYPE_SUBMIT             = 'submit';
+    public const TYPE_DYNAMIC_RECIPIENTS = 'dynamic_recipients';
+    public const TYPE_EMAIL              = 'email';
+    public const TYPE_MAILING_LIST       = 'mailing_list';
+    public const TYPE_FILE               = 'file';
+    public const TYPE_PASSWORD           = 'password';
 
-    const TYPE_DATETIME     = 'datetime';
-    const TYPE_NUMBER       = 'number';
-    const TYPE_PHONE        = 'phone';
-    const TYPE_WEBSITE      = 'website';
-    const TYPE_RATING       = 'rating';
-    const TYPE_REGEX        = 'regex';
-    const TYPE_CONFIRMATION = 'confirmation';
-    const TYPE_RECAPTCHA    = 'recaptcha';
-    const TYPE_TABLE        = 'table';
+    public const TYPE_DATETIME     = 'datetime';
+    public const TYPE_NUMBER       = 'number';
+    public const TYPE_PHONE        = 'phone';
+    public const TYPE_WEBSITE      = 'website';
+    public const TYPE_RATING       = 'rating';
+    public const TYPE_REGEX        = 'regex';
+    public const TYPE_CONFIRMATION = 'confirmation';
+    public const TYPE_RECAPTCHA    = 'recaptcha';
+    public const TYPE_TABLE        = 'table';
 
     /**
      * Returns the INPUT type

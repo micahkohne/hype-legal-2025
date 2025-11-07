@@ -8,10 +8,10 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-namespace RectorPrefix202507\Symfony\Component\Console\Question;
+namespace RectorPrefix202308\Symfony\Component\Console\Question;
 
-use RectorPrefix202507\Symfony\Component\Console\Exception\InvalidArgumentException;
-use RectorPrefix202507\Symfony\Component\Console\Exception\LogicException;
+use RectorPrefix202308\Symfony\Component\Console\Exception\InvalidArgumentException;
+use RectorPrefix202308\Symfony\Component\Console\Exception\LogicException;
 /**
  * Represents a Question.
  *
@@ -19,22 +19,49 @@ use RectorPrefix202507\Symfony\Component\Console\Exception\LogicException;
  */
 class Question
 {
-    private string $question;
-    private ?int $attempts = null;
-    private bool $hidden = \false;
-    private bool $hiddenFallback = \true;
-    private ?\Closure $autocompleterCallback = null;
-    private ?\Closure $validator = null;
     /**
-     * @var bool|float|int|string|null
+     * @var string
+     */
+    private $question;
+    /**
+     * @var int|null
+     */
+    private $attempts;
+    /**
+     * @var bool
+     */
+    private $hidden = \false;
+    /**
+     * @var bool
+     */
+    private $hiddenFallback = \true;
+    /**
+     * @var \Closure|null
+     */
+    private $autocompleterCallback;
+    /**
+     * @var \Closure|null
+     */
+    private $validator;
+    /**
+     * @var string|int|bool|null|float
      */
     private $default;
-    private ?\Closure $normalizer = null;
-    private bool $trimmable = \true;
-    private bool $multiline = \false;
+    /**
+     * @var \Closure|null
+     */
+    private $normalizer;
+    /**
+     * @var bool
+     */
+    private $trimmable = \true;
+    /**
+     * @var bool
+     */
+    private $multiline = \false;
     /**
      * @param string                     $question The question to ask to the user
-     * @param string|bool|int|float|null $default  The default answer to return if the user enters nothing
+     * @param string|bool|int|float $default The default answer to return if the user enters nothing
      */
     public function __construct(string $question, $default = null)
     {
@@ -50,7 +77,7 @@ class Question
     }
     /**
      * Returns the default answer.
-     * @return bool|float|int|string|null
+     * @return string|bool|int|float|null
      */
     public function getDefault()
     {
@@ -131,11 +158,13 @@ class Question
     {
         if (\is_array($values)) {
             $values = $this->isAssoc($values) ? \array_merge(\array_keys($values), \array_values($values)) : \array_values($values);
-            $callback = static fn() => $values;
+            $callback = static function () use($values) {
+                return $values;
+            };
         } elseif ($values instanceof \Traversable) {
             $callback = static function () use($values) {
                 static $valueCache;
-                return $valueCache ??= \iterator_to_array($values, \false);
+                return $valueCache = $valueCache ?? \iterator_to_array($values, \false);
             };
         } else {
             $callback = null;
@@ -156,10 +185,10 @@ class Question
      *
      * @return $this
      */
-    public function setAutocompleterCallback(?callable $callback = null)
+    public function setAutocompleterCallback(callable $callback = null)
     {
         if (1 > \func_num_args()) {
-            trigger_deprecation('symfony/console', '6.2', 'Calling "%s()" without any arguments is deprecated, pass null explicitly instead.', __METHOD__);
+            \RectorPrefix202308\trigger_deprecation('symfony/console', '6.2', 'Calling "%s()" without any arguments is deprecated, pass null explicitly instead.', __METHOD__);
         }
         if ($this->hidden && null !== $callback) {
             throw new LogicException('A hidden question cannot use the autocompleter.');
@@ -172,10 +201,10 @@ class Question
      *
      * @return $this
      */
-    public function setValidator(?callable $validator = null)
+    public function setValidator(callable $validator = null)
     {
         if (1 > \func_num_args()) {
-            trigger_deprecation('symfony/console', '6.2', 'Calling "%s()" without any arguments is deprecated, pass null explicitly instead.', __METHOD__);
+            \RectorPrefix202308\trigger_deprecation('symfony/console', '6.2', 'Calling "%s()" without any arguments is deprecated, pass null explicitly instead.', __METHOD__);
         }
         $this->validator = null === $validator ? null : \Closure::fromCallable($validator);
         return $this;

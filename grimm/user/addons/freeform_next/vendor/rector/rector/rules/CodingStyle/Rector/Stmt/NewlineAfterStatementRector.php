@@ -22,16 +22,15 @@ use PhpParser\Node\Stmt\Switch_;
 use PhpParser\Node\Stmt\Trait_;
 use PhpParser\Node\Stmt\TryCatch;
 use PhpParser\Node\Stmt\While_;
-use Rector\Contract\PhpParser\Node\StmtsAwareInterface;
-use Rector\Contract\Rector\HTMLAverseRectorInterface;
+use Rector\Core\Contract\PhpParser\Node\StmtsAwareInterface;
+use Rector\Core\Rector\AbstractRector;
 use Rector\NodeTypeResolver\Node\AttributeKey;
-use Rector\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
  * @see \Rector\Tests\CodingStyle\Rector\Stmt\NewlineAfterStatementRector\NewlineAfterStatementRectorTest
  */
-final class NewlineAfterStatementRector extends AbstractRector implements HTMLAverseRectorInterface
+final class NewlineAfterStatementRector extends AbstractRector
 {
     /**
      * @var array<class-string<Node>>
@@ -73,22 +72,23 @@ CODE_SAMPLE
     }
     /**
      * @param StmtsAwareInterface|ClassLike $node
-     * @return null|\Rector\Contract\PhpParser\Node\StmtsAwareInterface|\PhpParser\Node\Stmt\ClassLike
+     * @return null|\Rector\Core\Contract\PhpParser\Node\StmtsAwareInterface|\PhpParser\Node\Stmt\ClassLike
      */
     public function refactor(Node $node)
     {
         return $this->processAddNewLine($node, \false);
     }
     /**
-     * @param \Rector\Contract\PhpParser\Node\StmtsAwareInterface|\PhpParser\Node\Stmt\ClassLike $node
-     * @return null|\Rector\Contract\PhpParser\Node\StmtsAwareInterface|\PhpParser\Node\Stmt\ClassLike
+     * @param \Rector\Core\Contract\PhpParser\Node\StmtsAwareInterface|\PhpParser\Node\Stmt\ClassLike $node
+     * @return null|\Rector\Core\Contract\PhpParser\Node\StmtsAwareInterface|\PhpParser\Node\Stmt\ClassLike
      */
     private function processAddNewLine($node, bool $hasChanged, int $jumpToKey = 0)
     {
         if ($node->stmts === null) {
             return null;
         }
-        $totalKeys = \array_key_last($node->stmts);
+        \end($node->stmts);
+        $totalKeys = \key($node->stmts);
         for ($key = $jumpToKey; $key < $totalKeys; ++$key) {
             if (!isset($node->stmts[$key], $node->stmts[$key + 1])) {
                 break;
@@ -122,7 +122,7 @@ CODE_SAMPLE
     }
     /**
      * @param int|float $rangeLine
-     * @return float|int
+     * @return int|float
      */
     private function resolveRangeLineFromComment($rangeLine, int $line, int $endLine, Stmt $nextStmt)
     {
@@ -131,9 +131,12 @@ CODE_SAMPLE
         if ($this->hasNoComment($comments)) {
             return $rangeLine;
         }
+        $phpDocInfo = $this->phpDocInfoFactory->createFromNodeOrEmpty($nextStmt);
+        if ($phpDocInfo->hasChanged()) {
+            return $rangeLine;
+        }
         /** @var Comment[] $comments */
-        $firstComment = $comments[0];
-        $line = $firstComment->getStartLine();
+        $line = $comments[0]->getStartLine();
         return $line - $endLine;
     }
     /**
@@ -141,7 +144,10 @@ CODE_SAMPLE
      */
     private function hasNoComment(?array $comments) : bool
     {
-        return $comments === null || $comments === [];
+        if ($comments === null) {
+            return \true;
+        }
+        return !isset($comments[0]);
     }
     private function shouldSkip(Stmt $stmt) : bool
     {

@@ -13,7 +13,7 @@ namespace Solspace\Addons\FreeformNext\Controllers;
 
 use Exception;
 use stdClass;
-use ExpressionEngine\Library\CP\Table;
+use EllisLab\ExpressionEngine\Library\CP\Table;
 use Solspace\Addons\FreeformNext\Library\Composer\Attributes\FormAttributes;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Fields\Interfaces\ExternalOptionsInterface;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Form;
@@ -119,7 +119,7 @@ class FormController extends Controller
                     'href'    => ($canAccessSubmissions ? $this->getLink('submissions/' . $form->handle) : null ),
                 ],
                 [
-                    'content' => isset($spamTotals[$form->id]) ? $spamTotals[$form->id] : 0,
+                    'content' => $spamTotals[$form->id] ?? 0,
                     'href'    => ($canAccessSubmissions ? $this->getLink('spam/' . $form->handle) : null ),
                 ],
                 $toolbar,
@@ -131,8 +131,8 @@ class FormController extends Controller
                     'value' => $form->id,
                     'data'  => [
                         'confirm' => lang('Form') . ': <b>' . htmlentities(
-                                (string) $form->getForm()->getName(),
-                                ENT_QUOTES
+                                $form->getForm()->getName(),
+                                ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401, 'UTF-8'
                             ) . '</b>',
                     ],
                 ];
@@ -152,10 +152,7 @@ class FormController extends Controller
             $template['form_right_links'] = FreeformHelper::get('right_links', $this);
         }
 
-		$template['footer'] = [
-			'submit_lang' => lang('submit'),
-			'type'        => 'bulk_action_form',
-		];
+		$template['footer'] = ['submit_lang' => lang('submit'), 'type'        => 'bulk_action_form'];
 
         $view = new CpView('form/listing', $template);
 
@@ -168,8 +165,6 @@ class FormController extends Controller
     }
 
     /**
-     * @param FormModel $form
-     *
      * @return CpView
      */
     public function edit(FormModel $form): RedirectView|CpView
@@ -251,7 +246,7 @@ class FormController extends Controller
         if ($this->getPost('duplicate', false)) {
             $oldHandle = $composerState['composer']['properties']['form']['handle'];
 
-            if (preg_match('/^([a-zA-Z0-9]*[a-zA-Z]+)(\d+)$/', (string) $oldHandle, $matches)) {
+            if (preg_match('/^([a-zA-Z0-9]*[a-zA-Z]+)(\d+)$/', $oldHandle, $matches)) {
                 [$string, $mainPart, $iterator] = $matches;
 
                 $newHandle = $mainPart . ((int) $iterator + 1);
@@ -268,21 +263,19 @@ class FormController extends Controller
             $sessionImplementation = (new SettingsService())->getSessionStorageImplementation();
 
             $formAttributes = new FormAttributes($formId, $sessionImplementation, new EERequest());
-            $composer = new Composer(
-                new FormsService(),              // implements FormHandlerInterface
-                new FieldsService(),             // implements FieldHandlerInterface
-                new SubmissionsService(),        // implements SubmissionHandlerInterface
-                new MailerService(),             // implements MailHandlerInterface
-                new FilesService(),              // implements FileUploadHandlerInterface
-                new MailingListsService(),       // implements MailingListHandlerInterface
-                new CrmService(),                // implements CRMHandlerInterface
-                new StatusesService(),           // implements StatusHandlerInterface
-                new EETranslator(),              // implements TranslatorInterface
-                $composerState,                  // ?array $composerState
-                $formAttributes,                 // ?FormAttributes $formAttributes
-                null          // ?ComposerState $customComposerState
+            $composer       = new Composer(
+                $formsService,
+                new FieldsService(),
+                new SubmissionsService(),
+                new MailerService(),
+                new FilesService(),
+                new MailingListsService(),
+                new CrmService(),
+                new StatusesService(),
+                new EETranslator(),
+                $composerState,
+                $formAttributes,
             );
-
         } catch (ComposerException $exception) {
             $view->addError($exception->getMessage());
 
@@ -351,8 +344,6 @@ class FormController extends Controller
     }
 
     /**
-     * @param Form $form
-     *
      * @return array|stdClass
      */
     private function getGeneratedOptionsList(Form $form)
@@ -433,7 +424,7 @@ class FormController extends Controller
     /**
      * @return array
      */
-    private function getChannelFields(): array
+    private function getChannelFields()
     {
         $fieldList = [
             ['key' => 'entry_id', 'value' => 'ID'],
@@ -457,7 +448,7 @@ class FormController extends Controller
     /**
      * @return array
      */
-    private function getCategoryFields(): array
+    private function getCategoryFields()
     {
         $fieldList = [
             ['key' => 'cat_id', 'value' => 'ID'],
@@ -481,7 +472,7 @@ class FormController extends Controller
     /**
      * @return array
      */
-    private function getMemberFields(): array
+    private function getMemberFields()
     {
         $fieldList = [
             ['key' => 'member_id', 'value' => 'ID'],

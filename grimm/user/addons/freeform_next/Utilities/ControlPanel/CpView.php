@@ -39,7 +39,6 @@ class CpView extends View
      * CpView constructor.
      *
      * @param       $template
-     * @param array $templateVariables
      * @param string $template
      */
     public function __construct(private $template, private array $templateVariables = [])
@@ -56,11 +55,11 @@ class CpView extends View
     public function compile()
     {
         foreach ($this->javascriptList as $path) {
-            ee()->cp->load_package_js(preg_replace('/\.js$/is', '', (string) $path));
+            ee()->cp->load_package_js(preg_replace('/\.js$/is', '', $path));
         }
 
         foreach ($this->cssList as $path) {
-            ee()->cp->load_package_css(preg_replace('/\.css$/is', '', (string) $path));
+            ee()->cp->load_package_css(preg_replace('/\.css$/is', '', $path));
         }
 
         foreach ($this->modals as $modal) {
@@ -85,7 +84,7 @@ class CpView extends View
      *
      * @return $this
      */
-    public function setTemplate($template): static
+    public function setTemplate($template)
     {
         $this->template = $template;
 
@@ -101,11 +100,9 @@ class CpView extends View
     }
 
     /**
-     * @param array $templateVariables
-     *
      * @return $this
      */
-    public function setTemplateVariables(array $templateVariables): static
+    public function setTemplateVariables(array $templateVariables)
     {
         $this->templateVariables = $templateVariables;
 
@@ -113,11 +110,9 @@ class CpView extends View
     }
 
     /**
-     * @param array $templateVariables
-     *
      * @return $this
      */
-    public function addTemplateVariables(array $templateVariables): static
+    public function addTemplateVariables(array $templateVariables)
     {
         if (null === $this->templateVariables) {
             $this->templateVariables = $templateVariables;
@@ -143,7 +138,7 @@ class CpView extends View
      *
      * @return $this
      */
-    public function setHeading($heading): static
+    public function setHeading($heading)
     {
         $this->heading = $heading;
 
@@ -163,7 +158,7 @@ class CpView extends View
      *
      * @return $this
      */
-    public function setSidebarDisabled($sidebarDisabled): static
+    public function setSidebarDisabled($sidebarDisabled)
     {
         $this->sidebarDisabled = (bool) $sidebarDisabled;
 
@@ -175,7 +170,7 @@ class CpView extends View
      *
      * @return $this
      */
-    public function addJavascript($scriptPath): static
+    public function addJavascript($scriptPath)
     {
         $this->javascriptList[] = $scriptPath;
 
@@ -187,7 +182,7 @@ class CpView extends View
      *
      * @return $this
      */
-    public function addCss($cssPath): static
+    public function addCss($cssPath)
     {
         $this->cssList[] = $cssPath;
 
@@ -211,11 +206,9 @@ class CpView extends View
     }
 
     /**
-     * @param Modal $modal
-     *
      * @return $this
      */
-    public function addModal(Modal $modal): static
+    public function addModal(Modal $modal)
     {
         $this->modals[] = $modal;
 
@@ -223,11 +216,9 @@ class CpView extends View
     }
 
     /**
-     * @param NavigationLink $link
-     *
      * @return $this
      */
-    public function addBreadcrumb(NavigationLink $link): static
+    public function addBreadcrumb(NavigationLink $link)
     {
         $this->breadcrumbs[] = $link;
 

@@ -3,21 +3,24 @@
 declare (strict_types=1);
 namespace Rector\Transform\ValueObject;
 
-use Rector\Validation\RectorAssert;
+use Rector\Core\Validation\RectorAssert;
 final class FuncCallToStaticCall
 {
     /**
      * @readonly
+     * @var string
      */
-    private string $oldFuncName;
+    private $oldFuncName;
     /**
      * @readonly
+     * @var string
      */
-    private string $newClassName;
+    private $newClassName;
     /**
      * @readonly
+     * @var string
      */
-    private string $newMethodName;
+    private $newMethodName;
     public function __construct(string $oldFuncName, string $newClassName, string $newMethodName)
     {
         $this->oldFuncName = $oldFuncName;

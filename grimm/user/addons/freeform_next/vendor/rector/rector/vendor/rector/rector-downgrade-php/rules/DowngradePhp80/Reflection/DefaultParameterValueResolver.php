@@ -10,12 +10,10 @@ use PhpParser\Node\Name;
 use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Type\Constant\ConstantArrayType;
 use PHPStan\Type\Constant\ConstantBooleanType;
-use PHPStan\Type\Constant\ConstantIntegerType;
-use PHPStan\Type\Constant\ConstantStringType;
-use PHPStan\Type\NullType;
+use PHPStan\Type\ConstantType;
 use PHPStan\Type\Type;
 use PHPStan\Type\VerbosityLevel;
-use Rector\Exception\ShouldNotHappenException;
+use Rector\Core\Exception\ShouldNotHappenException;
 final class DefaultParameterValueResolver
 {
     public function resolveFromParameterReflection(ParameterReflection $parameterReflection) : ?\PhpParser\Node\Expr
@@ -24,7 +22,7 @@ final class DefaultParameterValueResolver
         if (!$defaultValueType instanceof Type) {
             return null;
         }
-        if (!$defaultValueType->isConstantValue()->yes()) {
+        if (!$defaultValueType instanceof ConstantType) {
             throw new ShouldNotHappenException();
         }
         return $this->resolveValueFromType($defaultValueType);
@@ -32,7 +30,7 @@ final class DefaultParameterValueResolver
     /**
      * @return \PhpParser\Node\Expr\ConstFetch|\PhpParser\Node\Expr
      */
-    private function resolveValueFromType(Type $constantType)
+    private function resolveValueFromType(ConstantType $constantType)
     {
         if ($constantType instanceof ConstantBooleanType) {
             return $this->resolveConstantBooleanType($constantType);
@@ -40,14 +38,13 @@ final class DefaultParameterValueResolver
         if ($constantType instanceof ConstantArrayType) {
             $values = [];
             foreach ($constantType->getValueTypes() as $valueType) {
-                if (!$valueType->isConstantValue()->yes()) {
+                if (!$valueType instanceof ConstantType) {
                     throw new ShouldNotHappenException();
                 }
                 $values[] = $this->resolveValueFromType($valueType);
             }
             return BuilderHelpers::normalizeValue($values);
         }
-        /** @var ConstantStringType|ConstantIntegerType|NullType $constantType */
         return BuilderHelpers::normalizeValue($constantType->getValue());
     }
     private function resolveConstantBooleanType(ConstantBooleanType $constantBooleanType) : ConstFetch

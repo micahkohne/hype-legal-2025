@@ -1,11 +1,11 @@
 <?php
 
 declare (strict_types=1);
-namespace Rector\Configuration\Parameter;
+namespace Rector\Core\Configuration\Parameter;
 
-use Rector\Configuration\Option;
-use Rector\Exception\ShouldNotHappenException;
-use RectorPrefix202507\Webmozart\Assert\Assert;
+use Rector\Core\Configuration\Option;
+use RectorPrefix202308\Symfony\Component\DependencyInjection\Exception\ParameterNotFoundException;
+use RectorPrefix202308\Webmozart\Assert\Assert;
 /**
  * @api
  */
@@ -14,7 +14,7 @@ final class SimpleParameterProvider
     /**
      * @var array<string, mixed>
      */
-    private static array $parameters = [];
+    private static $parameters = [];
     /**
      * @param Option::* $name
      * @param mixed $value
@@ -62,7 +62,7 @@ final class SimpleParameterProvider
         };
         if ($arrayIsListFunction($parameter)) {
             // remove duplicates
-            $uniqueParameters = \array_unique($parameter, \SORT_REGULAR);
+            $uniqueParameters = \array_unique($parameter);
             return \array_values($uniqueParameters);
         }
         return $parameter;
@@ -115,6 +115,6 @@ final class SimpleParameterProvider
         if (\array_key_exists($name, self::$parameters)) {
             return;
         }
-        throw new ShouldNotHappenException(\sprintf('Parameter "%s" was not found', $name));
+        throw new ParameterNotFoundException($name);
     }
 }

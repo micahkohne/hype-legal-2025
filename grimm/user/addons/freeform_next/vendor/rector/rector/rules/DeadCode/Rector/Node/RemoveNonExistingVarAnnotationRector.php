@@ -4,7 +4,6 @@ declare (strict_types=1);
 namespace Rector\DeadCode\Rector\Node;
 
 use PhpParser\Node;
-use PhpParser\Node\Expr\Assign;
 use PhpParser\Node\Expr\CallLike;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\New_;
@@ -14,59 +13,38 @@ use PhpParser\Node\Stmt\Echo_;
 use PhpParser\Node\Stmt\Expression;
 use PhpParser\Node\Stmt\Foreach_;
 use PhpParser\Node\Stmt\If_;
-use PhpParser\Node\Stmt\InlineHTML;
 use PhpParser\Node\Stmt\Nop;
 use PhpParser\Node\Stmt\Return_;
 use PhpParser\Node\Stmt\Static_;
 use PhpParser\Node\Stmt\Switch_;
+use PhpParser\Node\Stmt\Throw_;
 use PhpParser\Node\Stmt\While_;
 use PHPStan\PhpDocParser\Ast\PhpDoc\VarTagValueNode;
 use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
-use Rector\BetterPhpDocParser\PhpDocInfo\PhpDocInfoFactory;
-use Rector\Comments\NodeDocBlock\DocBlockUpdater;
-use Rector\Contract\PhpParser\Node\StmtsAwareInterface;
-use Rector\NodeManipulator\StmtsManipulator;
-use Rector\PhpParser\Node\BetterNodeFinder;
-use Rector\PhpParser\Node\Value\ValueResolver;
-use Rector\Rector\AbstractRector;
+use Rector\Core\Contract\PhpParser\Node\StmtsAwareInterface;
+use Rector\Core\NodeManipulator\StmtsManipulator;
+use Rector\Core\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
  * @see \Rector\Tests\DeadCode\Rector\Node\RemoveNonExistingVarAnnotationRector\RemoveNonExistingVarAnnotationRectorTest
+ *
+ * @changelog https://github.com/phpstan/phpstan/commit/d17e459fd9b45129c5deafe12bca56f30ea5ee99#diff-9f3541876405623b0d18631259763dc1
  */
 final class RemoveNonExistingVarAnnotationRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\Core\NodeManipulator\StmtsManipulator
      */
-    private StmtsManipulator $stmtsManipulator;
-    /**
-     * @readonly
-     */
-    private DocBlockUpdater $docBlockUpdater;
-    /**
-     * @readonly
-     */
-    private PhpDocInfoFactory $phpDocInfoFactory;
-    /**
-     * @readonly
-     */
-    private ValueResolver $valueResolver;
-    /**
-     * @readonly
-     */
-    private BetterNodeFinder $betterNodeFinder;
+    private $stmtsManipulator;
     /**
      * @var array<class-string<Stmt>>
      */
-    private const NODE_TYPES = [Foreach_::class, Static_::class, Echo_::class, Return_::class, Expression::class, If_::class, While_::class, Switch_::class, Nop::class];
-    public function __construct(StmtsManipulator $stmtsManipulator, DocBlockUpdater $docBlockUpdater, PhpDocInfoFactory $phpDocInfoFactory, ValueResolver $valueResolver, BetterNodeFinder $betterNodeFinder)
+    private const NODE_TYPES = [Foreach_::class, Static_::class, Echo_::class, Return_::class, Expression::class, Throw_::class, If_::class, While_::class, Switch_::class, Nop::class];
+    public function __construct(StmtsManipulator $stmtsManipulator)
     {
         $this->stmtsManipulator = $stmtsManipulator;
-        $this->docBlockUpdater = $docBlockUpdater;
-        $this->phpDocInfoFactory = $phpDocInfoFactory;
-        $this->valueResolver = $valueResolver;
-        $this->betterNodeFinder = $betterNodeFinder;
     }
     public function getRuleDefinition() : RuleDefinition
     {
@@ -130,7 +108,7 @@ CODE_SAMPLE
                 continue;
             }
             $variableName = \ltrim($varTagValueNode->variableName, '$');
-            if ($variableName === '' && $this->isAllowedEmptyVariableName($stmt)) {
+            if ($variableName === '' && $this->isAnnotatableReturn($stmt)) {
                 continue;
             }
             if ($this->hasVariableName($stmt, $variableName)) {
@@ -141,11 +119,7 @@ CODE_SAMPLE
                 // skip edge case with double comment, as impossible to resolve by PHPStan doc parser
                 continue;
             }
-            if ($this->stmtsManipulator->isVariableUsedInNextStmt($node, $key + 1, $variableName)) {
-                continue;
-            }
             $phpDocInfo->removeByType(VarTagValueNode::class);
-            $this->docBlockUpdater->updateRefactoredNodeWithPhpDocInfo($stmt);
             $hasChanged = \true;
         }
         if ($hasChanged) {
@@ -169,7 +143,7 @@ CODE_SAMPLE
                 return \true;
             }
         }
-        return isset($stmtsAware->stmts[$key + 1]) && $stmtsAware->stmts[$key + 1] instanceof InlineHTML;
+        return \false;
     }
     private function hasVariableName(Stmt $stmt, string $variableName) : bool
     {
@@ -197,11 +171,8 @@ CODE_SAMPLE
         }
         return \strpos($varTagValueNode->description, '}') !== \false;
     }
-    private function isAllowedEmptyVariableName(Stmt $stmt) : bool
+    private function isAnnotatableReturn(Stmt $stmt) : bool
     {
-        if ($stmt instanceof Return_ && $stmt->expr instanceof CallLike && !$stmt->expr instanceof New_) {
-            return \true;
-        }
-        return $stmt instanceof Expression && $stmt->expr instanceof Assign && $stmt->expr->var instanceof Variable;
+        return $stmt instanceof Return_ && $stmt->expr instanceof CallLike && !$stmt->expr instanceof New_;
     }
 }

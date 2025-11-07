@@ -11,9 +11,9 @@
 
 namespace Solspace\Addons\FreeformNext\Utilities\ControlPanel\Navigation;
 
-use ExpressionEngine\Library\CP\URL;
-use ExpressionEngine\Service\Sidebar\Header;
-use ExpressionEngine\Service\Sidebar\Sidebar;
+use EllisLab\ExpressionEngine\Library\CP\URL;
+use EllisLab\ExpressionEngine\Service\Sidebar\Header;
+use EllisLab\ExpressionEngine\Service\Sidebar\Sidebar;
 use Solspace\Addons\FreeformNext\Services\PermissionsService;
 
 class Navigation
@@ -22,11 +22,9 @@ class Navigation
     private ?array $stack = null;
 
     /**
-     * @param NavigationLink $link
-     *
      * @return $this
      */
-    public function addLink(?NavigationLink $link = null): static
+    public function addLink(?NavigationLink $link = null)
     {
         if (null === $link) {
             return $this;
@@ -171,7 +169,7 @@ class Navigation
         static $currentUrl;
 
         if (null === $currentUrl) {
-            $currentUrl = $this->getTrimLink(ltrim((string) $_SERVER['REQUEST_URI'], '/'));
+            $currentUrl = $this->getTrimLink(ltrim($_SERVER['REQUEST_URI'], '/'));
         }
 
         return $currentUrl;

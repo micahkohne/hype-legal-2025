@@ -4,13 +4,13 @@ declare (strict_types=1);
 namespace Rector\DowngradePhp80\Rector\MethodCall;
 
 use PhpParser\Node;
-use PhpParser\Node\ClosureUse;
 use PhpParser\Node\Expr\Array_;
 use PhpParser\Node\Expr\ArrayDimFetch;
 use PhpParser\Node\Expr\Assign;
 use PhpParser\Node\Expr\BinaryOp\BitwiseOr;
 use PhpParser\Node\Expr\ClassConstFetch;
 use PhpParser\Node\Expr\Closure;
+use PhpParser\Node\Expr\ClosureUse;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Identifier;
@@ -20,10 +20,10 @@ use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\Expression;
 use PhpParser\Node\Stmt\If_;
 use PHPStan\Type\ObjectType;
+use Rector\Core\Rector\AbstractRector;
 use Rector\Naming\Naming\VariableNaming;
 use Rector\NodeCollector\BinaryOpConditionsCollector;
 use Rector\NodeTypeResolver\Node\AttributeKey;
-use Rector\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -33,12 +33,14 @@ final class DowngradeReflectionClassGetConstantsFilterRector extends AbstractRec
 {
     /**
      * @readonly
+     * @var \Rector\Naming\Naming\VariableNaming
      */
-    private VariableNaming $variableNaming;
+    private $variableNaming;
     /**
      * @readonly
+     * @var \Rector\NodeCollector\BinaryOpConditionsCollector
      */
-    private BinaryOpConditionsCollector $binaryOpConditionsCollector;
+    private $binaryOpConditionsCollector;
     /**
      * @var array<string, string>
      */
@@ -180,11 +182,11 @@ CODE_SAMPLE
             return \true;
         }
         $constants = \array_keys(self::MAP_CONSTANT_TO_METHOD);
-        return !$this->isNames($classConstFetch->name, $constants);
+        return !$this->nodeNameResolver->isNames($classConstFetch->name, $constants);
     }
     private function shouldSkipMethodCall(MethodCall $methodCall) : bool
     {
-        if (!$this->isName($methodCall->name, 'getConstants')) {
+        if (!$this->nodeNameResolver->isName($methodCall->name, 'getConstants')) {
             return \true;
         }
         $varType = $this->nodeTypeResolver->getType($methodCall->var);

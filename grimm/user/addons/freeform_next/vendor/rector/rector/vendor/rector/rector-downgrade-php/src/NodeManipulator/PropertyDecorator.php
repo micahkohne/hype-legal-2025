@@ -6,7 +6,6 @@ namespace Rector\NodeManipulator;
 use PhpParser\Node\ComplexType;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
-use PhpParser\Node\Stmt\ClassConst;
 use PhpParser\Node\Stmt\Property;
 use PHPStan\PhpDocParser\Ast\PhpDoc\VarTagValueNode;
 use Rector\BetterPhpDocParser\PhpDocInfo\PhpDocInfoFactory;
@@ -16,16 +15,19 @@ final class PropertyDecorator
 {
     /**
      * @readonly
+     * @var \Rector\BetterPhpDocParser\PhpDocInfo\PhpDocInfoFactory
      */
-    private PhpDocInfoFactory $phpDocInfoFactory;
+    private $phpDocInfoFactory;
     /**
      * @readonly
+     * @var \Rector\StaticTypeMapper\StaticTypeMapper
      */
-    private StaticTypeMapper $staticTypeMapper;
+    private $staticTypeMapper;
     /**
      * @readonly
+     * @var \Rector\BetterPhpDocParser\PhpDocManipulator\PhpDocTypeChanger
      */
-    private PhpDocTypeChanger $phpDocTypeChanger;
+    private $phpDocTypeChanger;
     public function __construct(PhpDocInfoFactory $phpDocInfoFactory, StaticTypeMapper $staticTypeMapper, PhpDocTypeChanger $phpDocTypeChanger)
     {
         $this->phpDocInfoFactory = $phpDocInfoFactory;
@@ -33,10 +35,9 @@ final class PropertyDecorator
         $this->phpDocTypeChanger = $phpDocTypeChanger;
     }
     /**
-     * @param \PhpParser\Node\Stmt\Property|\PhpParser\Node\Stmt\ClassConst $property
      * @param \PhpParser\Node\ComplexType|\PhpParser\Node\Identifier|\PhpParser\Node\Name $typeNode
      */
-    public function decorateWithDocBlock($property, $typeNode) : void
+    public function decorateWithDocBlock(Property $property, $typeNode) : void
     {
         $phpDocInfo = $this->phpDocInfoFactory->createFromNodeOrEmpty($property);
         if ($phpDocInfo->getVarTagValueNode() instanceof VarTagValueNode) {

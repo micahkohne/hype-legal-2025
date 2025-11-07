@@ -11,8 +11,9 @@ final class AssignVariableTypeResolver
 {
     /**
      * @readonly
+     * @var \Rector\NodeTypeResolver\NodeTypeResolver
      */
-    private NodeTypeResolver $nodeTypeResolver;
+    private $nodeTypeResolver;
     public function __construct(NodeTypeResolver $nodeTypeResolver)
     {
         $this->nodeTypeResolver = $nodeTypeResolver;

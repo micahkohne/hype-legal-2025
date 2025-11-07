@@ -4,21 +4,24 @@ declare (strict_types=1);
 namespace Rector\Transform\ValueObject;
 
 use PHPStan\Type\ObjectType;
-use Rector\Validation\RectorAssert;
+use Rector\Core\Validation\RectorAssert;
 final class WrapReturn
 {
     /**
      * @readonly
+     * @var string
      */
-    private string $type;
+    private $type;
     /**
      * @readonly
+     * @var string
      */
-    private string $method;
+    private $method;
     /**
      * @readonly
+     * @var bool
      */
-    private bool $isArrayWrap;
+    private $isArrayWrap;
     public function __construct(string $type, string $method, bool $isArrayWrap)
     {
         $this->type = $type;

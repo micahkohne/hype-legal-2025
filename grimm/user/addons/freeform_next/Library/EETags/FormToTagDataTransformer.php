@@ -19,17 +19,16 @@ use Stringy\Stringy;
 
 class FormToTagDataTransformer
 {
-    const PATTERN_FIELD_RENDER           = '/{field:([a-zA-Z0-9\-_]+):(render(?:_?[a-zA-Z]+)?)?\s+([^}]+)}/i';
-    const PATTERN_FIELD_RENDER_VARIABLES = '/\b([a-zA-Z0-9_\-:]+)=(?:\'|")([^"\']+)(?:\'|")/';
+    public const PATTERN_FIELD_RENDER           = '/{field:([a-zA-Z0-9\-_]+):(render(?:_?[a-zA-Z]+)?)?\s+([^}]+)}/i';
+    public const PATTERN_FIELD_RENDER_VARIABLES = '/\b([a-zA-Z0-9_\-:]+)=(?:\'|")([^"\']+)(?:\'|")/';
 
     /**
      * FormToTagDataTransformer constructor.
      *
-     * @param Form   $form
      * @param string $content
      * @param bool   $skipHelperFields
      */
-    public function __construct(private readonly Form $form, private $content, private $skipHelperFields = false)
+    public function __construct(private Form $form, private $content, private $skipHelperFields = false)
     {
     }
 
@@ -62,7 +61,7 @@ class FormToTagDataTransformer
     /**
      * @return array
      */
-    private function transform(): array
+    private function transform()
     {
         $formTransformer = new FormTransformer();
 
@@ -113,14 +112,14 @@ class FormToTagDataTransformer
      */
     private function parseFieldTags($content): string|array|null
     {
-        if (preg_match_all('/##FFN:([a-zA-Z_\-0-9]+):FFN##{field:render/', (string) $content, $matches)) {
+        if (preg_match_all('/##FFN:([a-zA-Z_\-0-9]+):FFN##{field:render/', $content, $matches)) {
             [$matchedStrings, $hashes] = $matches;
             foreach ($hashes as $index => $hash) {
                 $content = str_replace($matchedStrings[$index], '{field:' . $hash . ':render', $content);
             }
         }
 
-        if (preg_match_all(self::PATTERN_FIELD_RENDER, (string) $content, $fieldMatches)) {
+        if (preg_match_all(self::PATTERN_FIELD_RENDER, $content, $fieldMatches)) {
 
             /**
              * @var array $strings
@@ -141,14 +140,14 @@ class FormToTagDataTransformer
                 $string     = $strings[$index];
                 $attributes = [];
 
-                if ($field && preg_match_all(self::PATTERN_FIELD_RENDER_VARIABLES, (string) $string, $varMatches)) {
+                if ($field && preg_match_all(self::PATTERN_FIELD_RENDER_VARIABLES, $string, $varMatches)) {
                     [$_, $keys, $values] = $varMatches;
 
                     foreach ($values as $varIndex => $value) {
                         $key    = $keys[$varIndex];
                         $subKey = null;
 
-                        if (str_contains((string) $key, ':')) {
+                        if (str_contains($key, ':')) {
                             [$key, $subKey] = explode(':', $key);
                         }
 
@@ -180,7 +179,7 @@ class FormToTagDataTransformer
             }
         }
 
-        $content = preg_replace('/##FFN:([a-zA-Z_\-0-9]+):FFN##/', '', (string) $content);
+        $content = preg_replace('/##FFN:([a-zA-Z_\-0-9]+):FFN##/', '', $content);
 
         return $content;
     }
@@ -228,7 +227,7 @@ class FormToTagDataTransformer
     /**
      * @return array
      */
-    private function getFields(): array
+    private function getFields()
     {
         $form = $this->form;
 
@@ -243,14 +242,11 @@ class FormToTagDataTransformer
     }
 
     /**
-     * @param AbstractField $field
-     * @param string        $prefix
      * @param int|null      $columnIndex
      * @param int|null      $columnCount
-     *
      * @return array
      */
-    private function getFieldData(AbstractField $field, string $prefix = 'field:', $columnIndex = null, $columnCount = null)
+    private function getFieldData(AbstractField $field, string $prefix = 'field:', ?int $columnIndex = null, ?int $columnCount = null)
     {
         static $transformer;
 
@@ -289,9 +285,6 @@ class FormToTagDataTransformer
     }
 
     /**
-     * @param Page   $page
-     * @param string $prefix
-     *
      * @return array
      */
     private function pageData(Page $page, string $prefix = 'page:'): array

@@ -11,9 +11,8 @@
 
 namespace Solspace\Addons\FreeformNext\Integrations\CRM;
 
-use Override;
-use stdClass;
 use Exception;
+use stdClass;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\BadResponseException;
 use Solspace\Addons\FreeformNext\Integrations\CRM\Salesforce\AbstractSalesforceIntegration;
@@ -27,17 +26,17 @@ use Solspace\Addons\FreeformNext\Library\Integrations\TokenRefreshInterface;
 
 class SalesforceLead extends AbstractSalesforceIntegration implements TokenRefreshInterface
 {
-    const TITLE        = 'Salesforce Lead';
-    const LOG_CATEGORY = 'Salesforce';
+    public const TITLE        = 'Salesforce Lead';
+    public const LOG_CATEGORY = 'Salesforce';
 
-    const SETTING_CLIENT_ID     = 'salesforce_client_id';
-    const SETTING_CLIENT_SECRET = 'salesforce_client_secret';
-    const SETTING_USER_LOGIN    = 'salesforce_username';
-    const SETTING_USER_PASSWORD = 'salesforce_password';
-    const SETTING_LEAD_OWNER    = 'salesforce_lead_owner';
-    const SETTING_SANDBOX       = 'salesforce_sandbox';
-    const SETTING_CUSTOM_URL    = 'salesforce_custom_url';
-    const SETTING_INSTANCE      = 'instance';
+    public const SETTING_CLIENT_ID     = 'salesforce_client_id';
+    public const SETTING_CLIENT_SECRET = 'salesforce_client_secret';
+    public const SETTING_USER_LOGIN    = 'salesforce_username';
+    public const SETTING_USER_PASSWORD = 'salesforce_password';
+    public const SETTING_LEAD_OWNER    = 'salesforce_lead_owner';
+    public const SETTING_SANDBOX       = 'salesforce_sandbox';
+    public const SETTING_CUSTOM_URL    = 'salesforce_custom_url';
+    public const SETTING_INSTANCE      = 'instance';
 
     /**
      * Returns a list of additional settings for this integration
@@ -45,7 +44,6 @@ class SalesforceLead extends AbstractSalesforceIntegration implements TokenRefre
      *
      * @return SettingBlueprint[]
      */
-    #[Override]
     public static function getSettingBlueprints(): array
     {
         return [
@@ -112,7 +110,7 @@ class SalesforceLead extends AbstractSalesforceIntegration implements TokenRefre
     /**
      * A method that initiates the authentication
      */
-    public function initiateAuthentication()
+    public function initiateAuthentication(): void
     {
     }
 
@@ -233,7 +231,7 @@ class SalesforceLead extends AbstractSalesforceIntegration implements TokenRefre
      * @return bool
      * @throws Exception
      */
-    public function pushObject(array $keyValueList, $formFields = NULL)
+    public function pushObject(array $keyValueList, ?array $formFields = NULL): bool
     {
         $client   = new Client();
         $endpoint = $this->getEndpoint('/sobjects/Lead');
@@ -267,7 +265,7 @@ class SalesforceLead extends AbstractSalesforceIntegration implements TokenRefre
 
                 if (is_array($errors)) {
                     foreach ($errors as $error) {
-                        if (strtoupper((string) $error->errorCode) === 'REQUIRED_FIELD_MISSING') {
+                        if (strtoupper($error->errorCode) === 'REQUIRED_FIELD_MISSING') {
                             return false;
                         }
                     }
@@ -284,7 +282,7 @@ class SalesforceLead extends AbstractSalesforceIntegration implements TokenRefre
      *
      * @return FieldObject[]
      */
-    public function fetchFields(): array
+    public function fetchFields()
     {
         $client = $this->generateAuthorizedClient();
 
@@ -376,8 +374,7 @@ class SalesforceLead extends AbstractSalesforceIntegration implements TokenRefre
      *
      * @return bool|string
      */
-    #[Override]
-    public function convertCustomFieldValue(FieldObject $fieldObject, $value = null)
+    public function convertCustomFieldValue(FieldObject $fieldObject, mixed $value = null): bool|string
     {
         if ($fieldObject->getType() === FieldObject::TYPE_ARRAY) {
             return is_array($value) ? implode(';', $value) : $value;
@@ -387,8 +384,6 @@ class SalesforceLead extends AbstractSalesforceIntegration implements TokenRefre
     }
 
     /**
-     * @param stdClass $responseData
-     *
      * @throws CRMIntegrationNotFoundException
      */
     protected function onAfterFetchAccessToken(stdClass $responseData)
@@ -428,7 +423,7 @@ class SalesforceLead extends AbstractSalesforceIntegration implements TokenRefre
         $instance        = $this->getSetting(self::SETTING_INSTANCE);
         $usingCustomUrls = $this->getSetting(self::SETTING_CUSTOM_URL);
 
-        if ($instance && !str_starts_with((string) $instance, 'https://')) {
+        if ($instance && !str_starts_with($instance, 'https://')) {
             return sprintf(
                 'https://%s%s.salesforce.com/services/data/v44.0/',
                 $instance,

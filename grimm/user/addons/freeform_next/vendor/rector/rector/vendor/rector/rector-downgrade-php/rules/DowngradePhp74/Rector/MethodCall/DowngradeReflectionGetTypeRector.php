@@ -12,7 +12,7 @@ use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\Ternary;
 use PhpParser\Node\Scalar\String_;
 use PHPStan\Type\ObjectType;
-use Rector\Rector\AbstractRector;
+use Rector\Core\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -63,16 +63,15 @@ CODE_SAMPLE
     }
     /**
      * @param MethodCall|Ternary|Instanceof_ $node
+     * @return \PhpParser\Node|null|int
      */
-    public function refactor(Node $node) : ?\PhpParser\Node
+    public function refactor(Node $node)
     {
         if ($node instanceof Instanceof_) {
-            $this->markSkipInstanceof($node);
-            return null;
+            return $this->refactorInstanceof($node);
         }
         if ($node instanceof Ternary) {
-            $this->markSkipTernary($node);
-            return null;
+            return $this->refactorTernary($node);
         }
         if ($node->getAttribute(self::SKIP_NODE) === \true) {
             return null;
@@ -86,28 +85,30 @@ CODE_SAMPLE
         $args = [new Arg($node->var), new Arg(new String_('getType'))];
         return new Ternary($this->nodeFactory->createFuncCall('method_exists', $args), $node, $this->nodeFactory->createNull());
     }
-    private function markSkipInstanceof(Instanceof_ $instanceof) : void
+    private function refactorInstanceof(Instanceof_ $instanceof) : ?Instanceof_
     {
         if (!$this->isName($instanceof->class, 'ReflectionNamedType')) {
-            return;
+            return null;
         }
         if (!$instanceof->expr instanceof MethodCall) {
-            return;
+            return null;
         }
         // checked typed → safe
         $instanceof->expr->setAttribute(self::SKIP_NODE, \true);
+        return $instanceof;
     }
-    private function markSkipTernary(Ternary $ternary) : void
+    private function refactorTernary(Ternary $ternary) : ?Ternary
     {
         if (!$ternary->if instanceof Expr) {
-            return;
+            return null;
         }
         if (!$ternary->cond instanceof FuncCall) {
-            return;
+            return null;
         }
         if (!$this->isName($ternary->cond, 'method_exists')) {
-            return;
+            return null;
         }
         $ternary->if->setAttribute(self::SKIP_NODE, \true);
+        return $ternary;
     }
 }

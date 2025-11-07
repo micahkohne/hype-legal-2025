@@ -14,12 +14,12 @@ use PhpParser\Node\Stmt\Expression;
 use PhpParser\Node\Stmt\Return_;
 use PhpParser\Node\Stmt\Switch_;
 use PHPStan\Analyser\Scope;
-use Rector\Contract\PhpParser\Node\StmtsAwareInterface;
-use Rector\Exception\ShouldNotHappenException;
+use Rector\Core\Contract\PhpParser\Node\StmtsAwareInterface;
+use Rector\Core\Exception\ShouldNotHappenException;
+use Rector\Core\PhpParser\Parser\InlineCodeParser;
+use Rector\Core\Rector\AbstractRector;
 use Rector\NodeAnalyzer\ExprInTopStmtMatcher;
 use Rector\NodeTypeResolver\Node\AttributeKey;
-use Rector\PhpParser\Parser\InlineCodeParser;
-use Rector\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -31,13 +31,18 @@ final class DowngradeArrayIsListRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\Core\PhpParser\Parser\InlineCodeParser
      */
-    private InlineCodeParser $inlineCodeParser;
+    private $inlineCodeParser;
     /**
      * @readonly
+     * @var \Rector\NodeAnalyzer\ExprInTopStmtMatcher
      */
-    private ExprInTopStmtMatcher $exprInTopStmtMatcher;
-    private ?Closure $cachedClosure = null;
+    private $exprInTopStmtMatcher;
+    /**
+     * @var \PhpParser\Node\Expr\Closure|null
+     */
+    private $cachedClosure;
     public function __construct(InlineCodeParser $inlineCodeParser, ExprInTopStmtMatcher $exprInTopStmtMatcher)
     {
         $this->inlineCodeParser = $inlineCodeParser;
@@ -106,7 +111,7 @@ CODE_SAMPLE
         if ($this->cachedClosure instanceof Closure) {
             return clone $this->cachedClosure;
         }
-        $stmts = $this->inlineCodeParser->parseFile(__DIR__ . '/../../snippet/array_is_list_closure.php.inc');
+        $stmts = $this->inlineCodeParser->parse(__DIR__ . '/../../snippet/array_is_list_closure.php.inc');
         /** @var Expression $expression */
         $expression = $stmts[0];
         $expr = $expression->expr;
@@ -121,7 +126,7 @@ CODE_SAMPLE
         if (!$callLike instanceof FuncCall) {
             return \false;
         }
-        if (!$this->isName($callLike, 'array_is_list')) {
+        if (!$this->nodeNameResolver->isName($callLike, 'array_is_list')) {
             return \true;
         }
         $scope = $callLike->getAttribute(AttributeKey::SCOPE);

@@ -6,18 +6,18 @@ namespace Rector\Transform\Rector\ClassMethod;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\Interface_;
-use Rector\Contract\Rector\ConfigurableRectorInterface;
+use Rector\Core\Contract\Rector\ConfigurableRectorInterface;
+use Rector\Core\Rector\AbstractRector;
+use Rector\Core\Reflection\ReflectionResolver;
+use Rector\Core\ValueObject\PhpVersionFeature;
 use Rector\Php80\NodeAnalyzer\PhpAttributeAnalyzer;
 use Rector\Php81\Enum\AttributeName;
 use Rector\PhpAttribute\NodeFactory\PhpAttributeGroupFactory;
-use Rector\Rector\AbstractRector;
-use Rector\Reflection\ReflectionResolver;
 use Rector\Transform\ValueObject\ClassMethodReference;
-use Rector\ValueObject\PhpVersionFeature;
 use Rector\VersionBonding\Contract\MinPhpVersionInterface;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\ConfiguredCodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
-use RectorPrefix202507\Webmozart\Assert\Assert;
+use RectorPrefix202308\Webmozart\Assert\Assert;
 /**
  * @see \Rector\Tests\Transform\Rector\ClassMethod\ReturnTypeWillChangeRector\ReturnTypeWillChangeRectorTest
  */
@@ -25,20 +25,23 @@ final class ReturnTypeWillChangeRector extends AbstractRector implements MinPhpV
 {
     /**
      * @readonly
+     * @var \Rector\Php80\NodeAnalyzer\PhpAttributeAnalyzer
      */
-    private PhpAttributeAnalyzer $phpAttributeAnalyzer;
+    private $phpAttributeAnalyzer;
     /**
      * @readonly
+     * @var \Rector\PhpAttribute\NodeFactory\PhpAttributeGroupFactory
      */
-    private PhpAttributeGroupFactory $phpAttributeGroupFactory;
+    private $phpAttributeGroupFactory;
     /**
      * @readonly
+     * @var \Rector\Core\Reflection\ReflectionResolver
      */
-    private ReflectionResolver $reflectionResolver;
+    private $reflectionResolver;
     /**
      * @var ClassMethodReference[]
      */
-    private array $returnTypeChangedClassMethodReferences = [];
+    private $returnTypeChangedClassMethodReferences = [];
     public function __construct(PhpAttributeAnalyzer $phpAttributeAnalyzer, PhpAttributeGroupFactory $phpAttributeGroupFactory, ReflectionResolver $reflectionResolver)
     {
         $this->phpAttributeAnalyzer = $phpAttributeAnalyzer;
@@ -86,11 +89,11 @@ CODE_SAMPLE
                 continue;
             }
             // the return type is known, no need to add attribute
-            if ($classMethod->returnType instanceof Node) {
+            if ($classMethod->returnType !== null) {
                 continue;
             }
             foreach ($this->returnTypeChangedClassMethodReferences as $returnTypeChangedClassMethodReference) {
-                if (!$classReflection->is($returnTypeChangedClassMethodReference->getClass())) {
+                if (!$classReflection->isSubclassOf($returnTypeChangedClassMethodReference->getClass())) {
                     continue;
                 }
                 if (!$this->isName($classMethod, $returnTypeChangedClassMethodReference->getMethod())) {

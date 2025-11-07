@@ -12,10 +12,10 @@ use PhpParser\Node\Expr\BinaryOp\NotIdentical;
 use PhpParser\Node\Expr\BinaryOp\Smaller;
 use PhpParser\Node\Expr\BooleanNot;
 use PhpParser\Node\Expr\FuncCall;
-use PhpParser\Node\Scalar\Int_;
+use PhpParser\Node\Scalar\LNumber;
 use PhpParser\Node\Stmt\ElseIf_;
 use PhpParser\Node\Stmt\If_;
-use Rector\Rector\AbstractRector;
+use Rector\Core\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -88,7 +88,7 @@ CODE_SAMPLE
     }
     private function isArray(Expr $expr) : bool
     {
-        return $this->nodeTypeResolver->getNativeType($expr)->isArray()->yes();
+        return $this->getType($expr)->isArray()->yes();
     }
     /**
      * @param \PhpParser\Node\Expr\BinaryOp\Identical|\PhpParser\Node\Expr\BinaryOp\NotIdentical $binaryOp
@@ -164,7 +164,7 @@ CODE_SAMPLE
     }
     private function isZeroLNumber(Expr $expr) : bool
     {
-        if (!$expr instanceof Int_) {
+        if (!$expr instanceof LNumber) {
             return \false;
         }
         return $expr->value === 0;

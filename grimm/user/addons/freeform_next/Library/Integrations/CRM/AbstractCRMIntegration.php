@@ -24,7 +24,7 @@ use Solspace\Addons\FreeformNext\Library\Translations\TranslatorInterface;
 
 abstract class AbstractCRMIntegration extends AbstractIntegration implements CRMIntegrationInterface, IntegrationInterface, JsonSerializable
 {
-    private readonly CRMHandlerInterface $crmHandler;
+    private CRMHandlerInterface $crmHandler;
 
     /**
      * AbstractMailingList constructor.

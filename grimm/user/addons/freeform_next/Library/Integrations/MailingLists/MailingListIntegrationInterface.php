@@ -31,8 +31,6 @@ interface MailingListIntegrationInterface
     /**
      * Push emails to a specific mailing list for the service provider
      *
-     * @param ListObject $mailingList
-     * @param array      $emails
      * @param array      $mappedValues - key => value pairs of integrations fields against form fields
      *
      * @return bool

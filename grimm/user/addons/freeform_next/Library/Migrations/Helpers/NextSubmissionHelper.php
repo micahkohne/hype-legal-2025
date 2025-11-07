@@ -48,7 +48,7 @@ use Solspace\Addons\FreeformNext\Services\SubmissionsService;
 
 class NextSubmissionHelper
 {
-    const STRICT_MODE = true;
+    public const STRICT_MODE = true;
 
     /** @var array */
     public $errors;
@@ -99,8 +99,8 @@ class NextSubmissionHelper
         $formattedValue = $value;
 
         if ($field instanceof SelectField || $field instanceof RadioGroupField) {
-            if (str_contains((string) $value, '|~|')) {
-                $formattedValue = substr((string) $value, 0, strpos((string) $value, '|~|'));
+            if (str_contains($value, '|~|')) {
+                $formattedValue = substr($value, 0, strpos($value, '|~|'));
             }
         }
 
@@ -115,7 +115,7 @@ class NextSubmissionHelper
         if ($field instanceof CheckboxGroupField) {
 
             $formattedValue = [];
-            $valueArray = explode("\n", (string) $value);
+            $valueArray = explode("\n", $value);
 
             foreach ($valueArray as $arrayValue) {
                 $formattedValue[] = substr($arrayValue, 0, strpos($arrayValue, '|~|'));

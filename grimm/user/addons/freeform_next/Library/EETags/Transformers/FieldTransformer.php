@@ -22,21 +22,17 @@ use Solspace\Addons\FreeformNext\Library\Pro\Fields\TableField;
 class FieldTransformer
 {
     /**
-     * @param AbstractField $field
-     * @param mixed         $value
-     * @param string        $prefix
      * @param null          $columnIndex
      * @param null          $columnCount
-     *
      * @return array
      */
     public function transformField(
         AbstractField $field,
-        $value = null,
+        mixed $value = null,
         string $prefix = 'field:',
         $columnIndex = null,
         $columnCount = null
-    ): array {
+    ) {
         $files = [];
         if ($field instanceof FileUploadField && is_array($value)) {
             foreach ($value as $fileId) {
@@ -61,7 +57,7 @@ class FieldTransformer
         }
 
         if ($value) {
-            $value = htmlentities($value, ENT_QUOTES, 'UTF-8');
+            $value = htmlentities($value, ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401, 'UTF-8');
             if ($field instanceof TextareaField) {
                 $value = str_replace(['&lt;br /&gt;', '&lt;br&gt;'], '<br />', $value);
                 $value = nl2br($value);
@@ -142,11 +138,9 @@ class FieldTransformer
     }
 
     /**
-     * @param AbstractField $field
-     *
      * @return array|null
      */
-    private function getOptions(AbstractField $field)
+    private function getOptions(AbstractField $field): ?array
     {
         if (!$field instanceof OptionsInterface) {
             return null;
@@ -167,8 +161,6 @@ class FieldTransformer
     }
 
     /**
-     * @param AbstractField $field
-     *
      * @return string|null
      */
     private function getOptionValues(AbstractField $field): ?string
@@ -188,8 +180,6 @@ class FieldTransformer
     }
 
     /**
-     * @param AbstractField $field
-     *
      * @return array|null
      */
     private function getTableLayout(AbstractField $field): ?array
@@ -233,7 +223,7 @@ class FieldTransformer
                 $label        = $column['label'] ?? '';
                 $defaultValue = $column['value'] ?? '';
                 $value        = $row[$index] ?? $defaultValue;
-                $value        = htmlentities($value);
+                $value        = htmlentities($value, ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401, 'UTF-8');
                 $templateOptions = [];
 
                 switch ($type) {

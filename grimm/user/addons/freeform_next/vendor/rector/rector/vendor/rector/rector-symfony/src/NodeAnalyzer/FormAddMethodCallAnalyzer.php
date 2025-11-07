@@ -12,16 +12,18 @@ final class FormAddMethodCallAnalyzer
 {
     /**
      * @readonly
+     * @var \Rector\NodeTypeResolver\NodeTypeResolver
      */
-    private NodeTypeResolver $nodeTypeResolver;
+    private $nodeTypeResolver;
     /**
      * @readonly
+     * @var \Rector\NodeNameResolver\NodeNameResolver
      */
-    private NodeNameResolver $nodeNameResolver;
+    private $nodeNameResolver;
     /**
      * @var ObjectType[]
      */
-    private array $formObjectTypes = [];
+    private $formObjectTypes = [];
     public function __construct(NodeTypeResolver $nodeTypeResolver, NodeNameResolver $nodeNameResolver)
     {
         $this->nodeTypeResolver = $nodeTypeResolver;

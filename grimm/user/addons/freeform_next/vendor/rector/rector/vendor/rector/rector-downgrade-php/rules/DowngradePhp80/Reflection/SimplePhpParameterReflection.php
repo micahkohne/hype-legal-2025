@@ -7,7 +7,7 @@ use PHPStan\Reflection\ParameterReflection;
 use PHPStan\Reflection\PassedByReference;
 use PHPStan\Type\ConstantTypeHelper;
 use PHPStan\Type\Type;
-use Rector\Exception\NotImplementedYetException;
+use Rector\Core\Exception\NotImplementedYetException;
 use ReflectionFunction;
 use ReflectionParameter;
 use Throwable;
@@ -15,8 +15,9 @@ final class SimplePhpParameterReflection implements ParameterReflection
 {
     /**
      * @readonly
+     * @var \ReflectionParameter
      */
-    private ReflectionParameter $reflectionParameter;
+    private $reflectionParameter;
     public function __construct(ReflectionFunction $reflectionFunction, int $position)
     {
         $this->reflectionParameter = $reflectionFunction->getParameters()[$position];

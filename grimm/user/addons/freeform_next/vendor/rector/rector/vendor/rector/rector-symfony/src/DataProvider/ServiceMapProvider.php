@@ -3,8 +3,8 @@
 declare (strict_types=1);
 namespace Rector\Symfony\DataProvider;
 
-use Rector\Configuration\Option;
-use Rector\Configuration\Parameter\SimpleParameterProvider;
+use Rector\Core\Configuration\Option;
+use Rector\Core\Configuration\Parameter\SimpleParameterProvider;
 use Rector\Symfony\ValueObject\ServiceMap\ServiceMap;
 use Rector\Symfony\ValueObjectFactory\ServiceMapFactory;
 /**
@@ -14,9 +14,13 @@ final class ServiceMapProvider
 {
     /**
      * @readonly
+     * @var \Rector\Symfony\ValueObjectFactory\ServiceMapFactory
      */
-    private ServiceMapFactory $serviceMapFactory;
-    private ?ServiceMap $serviceMap = null;
+    private $serviceMapFactory;
+    /**
+     * @var \Rector\Symfony\ValueObject\ServiceMap\ServiceMap|null
+     */
+    private $serviceMap;
     public function __construct(ServiceMapFactory $serviceMapFactory, ?ServiceMap $serviceMap = null)
     {
         $this->serviceMapFactory = $serviceMapFactory;
@@ -24,10 +28,6 @@ final class ServiceMapProvider
     }
     public function provide() : ServiceMap
     {
-        // avoid caching in tests
-        if (\defined('PHPUNIT_COMPOSER_INSTALL')) {
-            $this->serviceMap = null;
-        }
         if ($this->serviceMap instanceof ServiceMap) {
             return $this->serviceMap;
         }

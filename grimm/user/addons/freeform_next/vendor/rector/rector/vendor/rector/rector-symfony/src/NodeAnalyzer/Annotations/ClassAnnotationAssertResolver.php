@@ -7,18 +7,20 @@ use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\New_;
 use PhpParser\Node\Stmt;
 use Rector\BetterPhpDocParser\PhpDoc\DoctrineAnnotationTagValueNode;
-use Rector\Exception\NotImplementedYetException;
+use Rector\Core\Exception\NotImplementedYetException;
 use Rector\Symfony\NodeFactory\Annotations\DoctrineAnnotationFromNewFactory;
 final class ClassAnnotationAssertResolver
 {
     /**
      * @readonly
+     * @var \Rector\Symfony\NodeAnalyzer\Annotations\StmtMethodCallMatcher
      */
-    private \Rector\Symfony\NodeAnalyzer\Annotations\StmtMethodCallMatcher $stmtMethodCallMatcher;
+    private $stmtMethodCallMatcher;
     /**
      * @readonly
+     * @var \Rector\Symfony\NodeFactory\Annotations\DoctrineAnnotationFromNewFactory
      */
-    private DoctrineAnnotationFromNewFactory $doctrineAnnotationFromNewFactory;
+    private $doctrineAnnotationFromNewFactory;
     public function __construct(\Rector\Symfony\NodeAnalyzer\Annotations\StmtMethodCallMatcher $stmtMethodCallMatcher, DoctrineAnnotationFromNewFactory $doctrineAnnotationFromNewFactory)
     {
         $this->stmtMethodCallMatcher = $stmtMethodCallMatcher;

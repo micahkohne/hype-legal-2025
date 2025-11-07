@@ -1,8 +1,8 @@
 <?php
 
-namespace RectorPrefix202507\Illuminate\Contracts\Database\Eloquent;
+namespace RectorPrefix202308\Illuminate\Contracts\Database\Eloquent;
 
-use RectorPrefix202507\Illuminate\Database\Eloquent\Model;
+use RectorPrefix202308\Illuminate\Database\Eloquent\Model;
 interface CastsInboundAttributes
 {
     /**
@@ -11,7 +11,7 @@ interface CastsInboundAttributes
      * @param  \Illuminate\Database\Eloquent\Model  $model
      * @param  string  $key
      * @param  mixed  $value
-     * @param  array<string, mixed>  $attributes
+     * @param  array  $attributes
      * @return mixed
      */
     public function set(Model $model, string $key, $value, array $attributes);

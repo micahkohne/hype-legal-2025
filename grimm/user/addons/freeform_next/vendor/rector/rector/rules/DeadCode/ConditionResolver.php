@@ -10,32 +10,41 @@ use PhpParser\Node\Expr\BinaryOp\Identical;
 use PhpParser\Node\Expr\BinaryOp\NotEqual;
 use PhpParser\Node\Expr\BinaryOp\NotIdentical;
 use PhpParser\Node\Expr\FuncCall;
+use Rector\Core\Php\PhpVersionProvider;
+use Rector\Core\PhpParser\Node\Value\ValueResolver;
+use Rector\Core\Util\PhpVersionFactory;
 use Rector\DeadCode\Contract\ConditionInterface;
 use Rector\DeadCode\ValueObject\BinaryToVersionCompareCondition;
 use Rector\DeadCode\ValueObject\VersionCompareCondition;
 use Rector\NodeNameResolver\NodeNameResolver;
-use Rector\Php\PhpVersionProvider;
-use Rector\PhpParser\Node\Value\ValueResolver;
-use Rector\Util\PhpVersionFactory;
 final class ConditionResolver
 {
     /**
      * @readonly
+     * @var \Rector\NodeNameResolver\NodeNameResolver
      */
-    private NodeNameResolver $nodeNameResolver;
+    private $nodeNameResolver;
     /**
      * @readonly
+     * @var \Rector\Core\Php\PhpVersionProvider
      */
-    private PhpVersionProvider $phpVersionProvider;
+    private $phpVersionProvider;
     /**
      * @readonly
+     * @var \Rector\Core\PhpParser\Node\Value\ValueResolver
      */
-    private ValueResolver $valueResolver;
-    public function __construct(NodeNameResolver $nodeNameResolver, PhpVersionProvider $phpVersionProvider, ValueResolver $valueResolver)
+    private $valueResolver;
+    /**
+     * @readonly
+     * @var \Rector\Core\Util\PhpVersionFactory
+     */
+    private $phpVersionFactory;
+    public function __construct(NodeNameResolver $nodeNameResolver, PhpVersionProvider $phpVersionProvider, ValueResolver $valueResolver, PhpVersionFactory $phpVersionFactory)
     {
         $this->nodeNameResolver = $nodeNameResolver;
         $this->phpVersionProvider = $phpVersionProvider;
         $this->valueResolver = $valueResolver;
+        $this->phpVersionFactory = $phpVersionFactory;
     }
     public function resolveFromExpr(Expr $expr) : ?ConditionInterface
     {
@@ -112,7 +121,7 @@ final class ConditionResolver
             return $this->phpVersionProvider->provide();
         }
         if (\is_string($version)) {
-            return PhpVersionFactory::createIntVersion($version);
+            return $this->phpVersionFactory->createIntVersion($version);
         }
         return $version;
     }

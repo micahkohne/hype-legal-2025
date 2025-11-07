@@ -10,8 +10,8 @@ use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Name\FullyQualified;
 use PhpParser\Node\Scalar\String_;
 use PHPStan\Type\ObjectType;
+use Rector\Core\Rector\AbstractRector;
 use Rector\PHPUnit\NodeAnalyzer\TestsNodeAnalyzer;
-use Rector\Rector\AbstractRector;
 use Rector\Symfony\NodeAnalyzer\ServiceTypeMethodCallResolver;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
@@ -22,12 +22,14 @@ final class ContainerGetNameToTypeInTestsRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\PHPUnit\NodeAnalyzer\TestsNodeAnalyzer
      */
-    private TestsNodeAnalyzer $testsNodeAnalyzer;
+    private $testsNodeAnalyzer;
     /**
      * @readonly
+     * @var \Rector\Symfony\NodeAnalyzer\ServiceTypeMethodCallResolver
      */
-    private ServiceTypeMethodCallResolver $serviceTypeMethodCallResolver;
+    private $serviceTypeMethodCallResolver;
     public function __construct(TestsNodeAnalyzer $testsNodeAnalyzer, ServiceTypeMethodCallResolver $serviceTypeMethodCallResolver)
     {
         $this->testsNodeAnalyzer = $testsNodeAnalyzer;
@@ -35,7 +37,7 @@ final class ContainerGetNameToTypeInTestsRector extends AbstractRector
     }
     public function getRuleDefinition() : RuleDefinition
     {
-        return new RuleDefinition('Change $container->get("some_name") in tests to bare type, useful since Symfony 3.4', [new CodeSample(<<<'CODE_SAMPLE'
+        return new RuleDefinition('Change $container->get("some_name") to bare type, useful since Symfony 3.4', [new CodeSample(<<<'CODE_SAMPLE'
 use PHPUnit\Framework\TestCase;
 
 final class SomeTest extends TestCase

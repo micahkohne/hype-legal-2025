@@ -12,16 +12,19 @@ final class PropertyTypeDecorator
 {
     /**
      * @readonly
+     * @var \Rector\BetterPhpDocParser\PhpDocManipulator\PhpDocTypeChanger
      */
-    private PhpDocTypeChanger $phpDocTypeChanger;
+    private $phpDocTypeChanger;
     /**
      * @readonly
+     * @var \Rector\BetterPhpDocParser\PhpDocInfo\PhpDocInfoFactory
      */
-    private PhpDocInfoFactory $phpDocInfoFactory;
+    private $phpDocInfoFactory;
     /**
      * @readonly
+     * @var \Rector\Privatization\TypeManipulator\TypeNormalizer
      */
-    private TypeNormalizer $typeNormalizer;
+    private $typeNormalizer;
     public function __construct(PhpDocTypeChanger $phpDocTypeChanger, PhpDocInfoFactory $phpDocInfoFactory, TypeNormalizer $typeNormalizer)
     {
         $this->phpDocTypeChanger = $phpDocTypeChanger;

@@ -32,7 +32,8 @@ class SubmissionAttributes
     /** @var string */
     private $status;
 
-    private ?string $dateRangeStart = null;
+    /** @var DateTime */
+    private $dateRangeStart;
 
     /** @var DateTime */
     private $dateRangeEnd;
@@ -57,13 +58,11 @@ class SubmissionAttributes
 
     /**
      * SubmissionAttributes constructor.
-     *
-     * @param Form $form
      */
-    public function __construct(private readonly Form $form)
+    public function __construct(private Form $form)
     {
         $this->filters = [
-            SubmissionModel::TABLE . '.formId' => $this->form->getId(),
+            SubmissionModel::TABLE . '.formId' => $form->getId(),
         ];
 
         $this->orFilters     = [];
@@ -89,7 +88,7 @@ class SubmissionAttributes
      *
      * @return $this
      */
-    public function setSiteId($siteId = null): static
+    public function setSiteId($siteId = null)
     {
         $this->siteId = $siteId;
 
@@ -117,7 +116,7 @@ class SubmissionAttributes
      *
      * @return $this
      */
-    public function setSubmissionId($submissionId = null): static
+    public function setSubmissionId(mixed $submissionId = null)
     {
         $this->submissionId = $submissionId;
         $this->setFilter(SubmissionModel::TABLE . '.id', $submissionId);
@@ -138,7 +137,7 @@ class SubmissionAttributes
      *
      * @return SubmissionAttributes
      */
-    public function setToken($token = null): static
+    public function setToken(mixed $token = null)
     {
         $this->token = $token;
         $this->setFilter(SubmissionModel::TABLE . '.token', $token);
@@ -159,7 +158,7 @@ class SubmissionAttributes
      *
      * @return $this
      */
-    public function setLimit($limit = null): static
+    public function setLimit($limit = null)
     {
         $this->limit = $limit;
 
@@ -179,7 +178,7 @@ class SubmissionAttributes
      *
      * @return $this
      */
-    public function setOffset($offset = null): static
+    public function setOffset($offset = null)
     {
         $this->offset = $offset;
 
@@ -221,7 +220,7 @@ class SubmissionAttributes
      *
      * @return $this
      */
-    public function setOrderBy($orderBy = null): static
+    public function setOrderBy($orderBy = null)
     {
         $this->orderBy = $orderBy;
 
@@ -241,7 +240,7 @@ class SubmissionAttributes
      *
      * @return $this
      */
-    public function setSort($sort = null): static
+    public function setSort($sort = null)
     {
         $this->sort = strtolower((string) $sort) === 'desc' ? 'DESC' : 'ASC';
 
@@ -261,7 +260,7 @@ class SubmissionAttributes
      *
      * @return $this
      */
-    public function setStatus($status = null): static
+    public function setStatus(mixed $status = null)
     {
         $this->status = $status;
         $this->setFilter(StatusModel::TABLE . '.name', $status);
@@ -272,7 +271,7 @@ class SubmissionAttributes
     /**
      * @return DateTime
      */
-    public function getDateRangeStart(): ?string
+    public function getDateRangeStart()
     {
         return $this->dateRangeStart;
     }
@@ -282,7 +281,7 @@ class SubmissionAttributes
      *
      * @return $this
      */
-    public function setDateRangeStart($dateRangeStart): static
+    public function setDateRangeStart($dateRangeStart)
     {
         $dateRangeStart = $this->getDateValue($dateRangeStart);
 
@@ -307,7 +306,7 @@ class SubmissionAttributes
      *
      * @return $this
      */
-    public function setDateRangeEnd($dateRangeEnd): static
+    public function setDateRangeEnd($dateRangeEnd)
     {
         if ($dateRangeEnd) {
             $dateRangeEnd = str_replace('00:00:00', '23:59:59', $this->getDateValue($dateRangeEnd));
@@ -324,7 +323,7 @@ class SubmissionAttributes
      *
      * @return $this
      */
-    public function setDateRange($string): static
+    public function setDateRange($string)
     {
         if (null === $string) {
             return $this;
@@ -457,11 +456,10 @@ class SubmissionAttributes
 
     /**
      * @param string $key
-     * @param mixed  $value
      *
      * @return $this
      */
-    public function addFilter($key, $value): static
+    public function addFilter($key, mixed $value)
     {
         if (false !== $this->getNotInArray($value)) {
             $this->notInFilters[$key] = $value;
@@ -476,11 +474,10 @@ class SubmissionAttributes
 
     /**
      * @param string $key
-     * @param mixed  $value
      *
      * @return $this
      */
-    public function addOrFilter($key, $value): static
+    public function addOrFilter($key, mixed $value)
     {
         $this->orFilters[$key] = $value;
 
@@ -489,11 +486,10 @@ class SubmissionAttributes
 
     /**
      * @param string $key
-     * @param mixed  $value
      *
      * @return $this
      */
-    public function addLikeFilter($key, $value): static
+    public function addLikeFilter($key, mixed $value)
     {
         $this->likeFilters[$key] = $value;
 
@@ -502,11 +498,10 @@ class SubmissionAttributes
 
     /**
      * @param string $key
-     * @param mixed  $value
      *
      * @return $this
      */
-    public function addOrLikeFilter($key, $value): static
+    public function addOrLikeFilter($key, mixed $value)
     {
         $this->orLikeFilters[$key] = $value;
 
@@ -515,11 +510,10 @@ class SubmissionAttributes
 
     /**
      * @param string $key
-     * @param mixed  $value
      *
      * @return $this
      */
-    public function addIdFilter($key, $value): static
+    public function addIdFilter($key, mixed $value)
     {
         $this->idFilters[$key] = $value;
 
@@ -528,11 +522,10 @@ class SubmissionAttributes
 
     /**
      * @param string $key
-     * @param mixed  $value
      *
      * @return $this
      */
-    public function addOrIdFilter($key, $value): static
+    public function addOrIdFilter($key, mixed $value)
     {
         $this->orIdFilters[$key] = $value;
 
@@ -544,7 +537,7 @@ class SubmissionAttributes
      *
      * @return $this
      */
-    public function addWhere($value): static
+    public function addWhere($value)
     {
         $this->where[] = $value;
 
@@ -556,7 +549,7 @@ class SubmissionAttributes
      *
      * @return array|bool
      */
-    private function getInArray($string)
+    private function getInArray($string): bool|array
     {
         if (false !== $this->getNotInArray($string)) {
             return false;
@@ -574,7 +567,7 @@ class SubmissionAttributes
      *
      * @return array|bool
      */
-    private function getNotInArray($string)
+    private function getNotInArray($string): bool|array
     {
         if (!str_starts_with($string, 'not ')) {
             return false;
@@ -585,11 +578,7 @@ class SubmissionAttributes
         return explode('|', $string);
     }
 
-    /**
-     * @param string $key
-     * @param mixed  $value
-     */
-    private function setFilter(string $key, $value): void
+    private function setFilter(string $key, mixed $value): void
     {
         unset($this->filters[$key], $this->inFilters[$key], $this->notInFilters[$key]);
 
@@ -614,7 +603,7 @@ class SubmissionAttributes
      *
      * @return string|null
      */
-    private function getDateValue($date): ?string
+    private function getDateValue($date)
     {
         if (null === $date) {
             return null;

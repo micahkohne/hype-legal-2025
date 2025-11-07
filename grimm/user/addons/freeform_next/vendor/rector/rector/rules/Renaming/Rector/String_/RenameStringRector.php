@@ -5,29 +5,22 @@ namespace Rector\Renaming\Rector\String_;
 
 use PhpParser\Node;
 use PhpParser\Node\Scalar\String_;
-use Rector\Contract\Rector\ConfigurableRectorInterface;
-use Rector\PhpParser\Node\Value\ValueResolver;
-use Rector\Rector\AbstractRector;
+use Rector\Core\Contract\Rector\ConfigurableRectorInterface;
+use Rector\Core\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\ConfiguredCodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
-use RectorPrefix202507\Webmozart\Assert\Assert;
+use RectorPrefix202308\Webmozart\Assert\Assert;
 /**
+ * @changelog https://github.com/symfony/symfony/pull/35858
+ *
  * @see \Rector\Tests\Renaming\Rector\String_\RenameStringRector\RenameStringRectorTest
  */
 final class RenameStringRector extends AbstractRector implements ConfigurableRectorInterface
 {
     /**
-     * @readonly
-     */
-    private ValueResolver $valueResolver;
-    /**
      * @var array<string, string>
      */
-    private array $stringChanges = [];
-    public function __construct(ValueResolver $valueResolver)
-    {
-        $this->valueResolver = $valueResolver;
-    }
+    private $stringChanges = [];
     public function getRuleDefinition() : RuleDefinition
     {
         return new RuleDefinition('Change string value', [new ConfiguredCodeSample(<<<'CODE_SAMPLE'

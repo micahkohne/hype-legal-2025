@@ -9,7 +9,7 @@ declare (strict_types=1);
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-namespace RectorPrefix202507\SebastianBergmann\Diff;
+namespace RectorPrefix202308\SebastianBergmann\Diff;
 
 use const PHP_INT_SIZE;
 use const PREG_SPLIT_DELIM_CAPTURE;
@@ -28,7 +28,7 @@ use function prev;
 use function reset;
 use function str_ends_with;
 use function substr;
-use RectorPrefix202507\SebastianBergmann\Diff\Output\DiffOutputBuilderInterface;
+use RectorPrefix202308\SebastianBergmann\Diff\Output\DiffOutputBuilderInterface;
 final class Differ
 {
     public const OLD = 0;
@@ -36,25 +36,28 @@ final class Differ
     public const REMOVED = 2;
     public const DIFF_LINE_END_WARNING = 3;
     public const NO_LINE_END_EOF_WARNING = 4;
-    private DiffOutputBuilderInterface $outputBuilder;
+    /**
+     * @var \SebastianBergmann\Diff\Output\DiffOutputBuilderInterface
+     */
+    private $outputBuilder;
     public function __construct(DiffOutputBuilderInterface $outputBuilder)
     {
         $this->outputBuilder = $outputBuilder;
     }
     /**
-     * @param list<string>|string $from
-     * @param list<string>|string $to
+     * @param mixed[]|string $from
+     * @param mixed[]|string $to
      */
-    public function diff($from, $to, ?LongestCommonSubsequenceCalculator $lcs = null) : string
+    public function diff($from, $to, LongestCommonSubsequenceCalculator $lcs = null) : string
     {
         $diff = $this->diffToArray($from, $to, $lcs);
         return $this->outputBuilder->getDiff($diff);
     }
     /**
-     * @param list<string>|string $from
-     * @param list<string>|string $to
+     * @param mixed[]|string $from
+     * @param mixed[]|string $to
      */
-    public function diffToArray($from, $to, ?LongestCommonSubsequenceCalculator $lcs = null) : array
+    public function diffToArray($from, $to, LongestCommonSubsequenceCalculator $lcs = null) : array
     {
         if (is_string($from)) {
             $from = $this->splitStringByLines($from);

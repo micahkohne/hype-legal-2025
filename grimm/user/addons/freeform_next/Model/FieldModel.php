@@ -11,11 +11,11 @@
 
 namespace Solspace\Addons\FreeformNext\Model;
 
+use DateTime;
 use JsonSerializable;
 use stdClass;
 use Exception;
-use DateTime;
-use ExpressionEngine\Service\Model\Model;
+use EllisLab\ExpressionEngine\Service\Model\Model;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\FieldInterface;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Fields\FileUploadField;
 use Solspace\Addons\FreeformNext\Library\Helpers\FreeformHelper;
@@ -47,8 +47,8 @@ use Solspace\Addons\FreeformNext\Services\FieldsService;
  */
 class FieldModel extends Model implements JsonSerializable
 {
-    const MODEL = 'freeform_next:FieldModel';
-    const TABLE = 'freeform_next_fields';
+    public const MODEL = 'freeform_next:FieldModel';
+    public const TABLE = 'freeform_next_fields';
 
     protected static $_primary_key = 'id';
     protected static $_table_name  = self::TABLE;
@@ -281,7 +281,6 @@ class FieldModel extends Model implements JsonSerializable
     }
 
     /**
-     * @param array $postValues
      * @param bool  $forceLabelToValue
      */
     public function setPostValues(array $postValues, $forceLabelToValue = false): void
@@ -382,7 +381,7 @@ class FieldModel extends Model implements JsonSerializable
      *
      * @return string
      */
-    public function getColumnType(): string
+    public function getColumnType()
     {
         $columnType = 'TEXT';
 
@@ -397,7 +396,7 @@ class FieldModel extends Model implements JsonSerializable
     /**
      * @return bool
      */
-    public function isSerializable()
+    public function isSerializable(): bool
     {
         return match ($this->type) {
             FieldInterface::TYPE_FILE, FieldInterface::TYPE_CHECKBOX_GROUP, FieldInterface::TYPE_DYNAMIC_RECIPIENTS, FieldInterface::TYPE_EMAIL, FieldInterface::TYPE_TABLE => true,
@@ -407,11 +406,10 @@ class FieldModel extends Model implements JsonSerializable
 
     /**
      * @param string $name
-     * @param mixed  $defaultValue
      *
      * @return mixed|null
      */
-    public function getAdditionalProperty($name, $defaultValue = null)
+    public function getAdditionalProperty($name, mixed $defaultValue = null)
     {
         if (is_array($this->additionalProperties) && isset($this->additionalProperties[$name])) {
             $value = $this->additionalProperties[$name];
@@ -428,11 +426,10 @@ class FieldModel extends Model implements JsonSerializable
 
     /**
      * @param string $name
-     * @param mixed  $value
      *
      * @return $this
      */
-    public function setAdditionalProperty($name, $value): static
+    public function setAdditionalProperty($name, mixed $value)
     {
         $props = $this->additionalProperties ?: [];
 
@@ -521,11 +518,10 @@ class FieldModel extends Model implements JsonSerializable
 
     /**
      * @param string $name
-     * @param mixed  $value
      *
      * @return mixed
      */
-    private function getCleanedPropertyValue($name, $value)
+    private function getCleanedPropertyValue($name, mixed $value)
     {
         static $customTypes = [
             'generatePlaceholder' => 'bool',

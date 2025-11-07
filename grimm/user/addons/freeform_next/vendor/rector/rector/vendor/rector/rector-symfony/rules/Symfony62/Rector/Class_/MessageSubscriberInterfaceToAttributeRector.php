@@ -3,24 +3,24 @@
 declare (strict_types=1);
 namespace Rector\Symfony\Symfony62\Rector\Class_;
 
-use PhpParser\Node;
-use PhpParser\Node\Expr;
-use PhpParser\Node\Expr\Array_;
-use PhpParser\Node\Expr\ClassConstFetch;
 use PhpParser\Node\Expr\Yield_;
-use PhpParser\Node\Identifier;
+use PhpParser\Node\Expr\ClassConstFetch;
+use PhpParser\Node\Expr\Array_;
 use PhpParser\Node\Name;
+use PhpParser\Node\Expr\ArrayItem;
+use PhpParser\Node\Expr;
+use PhpParser\Node\Identifier;
+use PhpParser\Node;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Expression;
+use Rector\Core\Rector\AbstractRector;
+use Rector\Core\ValueObject\MethodName;
+use Rector\Core\ValueObject\PhpVersionFeature;
 use Rector\NodeTypeResolver\Node\AttributeKey;
-use Rector\PhpParser\Node\Value\ValueResolver;
-use Rector\Rector\AbstractRector;
 use Rector\Symfony\Helper\MessengerHelper;
 use Rector\Symfony\NodeAnalyzer\ClassAnalyzer;
 use Rector\Symfony\NodeManipulator\ClassManipulator;
-use Rector\ValueObject\MethodName;
-use Rector\ValueObject\PhpVersionFeature;
 use Rector\VersionBonding\Contract\MinPhpVersionInterface;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
@@ -31,28 +31,32 @@ final class MessageSubscriberInterfaceToAttributeRector extends AbstractRector i
 {
     /**
      * @readonly
+     * @var \Rector\Symfony\Helper\MessengerHelper
      */
-    private MessengerHelper $messengerHelper;
+    private $messengerHelper;
     /**
      * @readonly
+     * @var \Rector\Symfony\NodeManipulator\ClassManipulator
      */
-    private ClassManipulator $classManipulator;
+    private $classManipulator;
     /**
      * @readonly
+     * @var \Rector\Symfony\NodeAnalyzer\ClassAnalyzer
      */
-    private ClassAnalyzer $classAnalyzer;
+    private $classAnalyzer;
     /**
-     * @readonly
+     * @var \PhpParser\Node\Stmt\Class_
      */
-    private ValueResolver $valueResolver;
-    private Class_ $subscriberClass;
-    private string $newInvokeMethodName;
-    public function __construct(MessengerHelper $messengerHelper, ClassManipulator $classManipulator, ClassAnalyzer $classAnalyzer, ValueResolver $valueResolver)
+    private $subscriberClass;
+    /**
+     * @var string
+     */
+    private $newInvokeMethodName;
+    public function __construct(MessengerHelper $messengerHelper, ClassManipulator $classManipulator, ClassAnalyzer $classAnalyzer)
     {
         $this->messengerHelper = $messengerHelper;
         $this->classManipulator = $classManipulator;
         $this->classAnalyzer = $classAnalyzer;
-        $this->valueResolver = $valueResolver;
     }
     public function provideMinPhpVersion() : int
     {
@@ -130,7 +134,7 @@ CODE_SAMPLE
             return null;
         }
         $stmts = (array) $getHandledMessagesClassMethod->stmts;
-        if ($stmts === []) {
+        if ([] === $stmts) {
             return null;
         }
         if ($stmts[0] instanceof Expression && $stmts[0]->expr instanceof Yield_) {
@@ -175,12 +179,12 @@ CODE_SAMPLE
     private function parseArguments(Array_ $array, string &$method) : array
     {
         foreach ($array->items as $item) {
-            if (!$item->value instanceof Expr) {
+            if (!$item instanceof ArrayItem || !$item->key instanceof Expr || !$item->value instanceof Expr) {
                 continue;
             }
             $key = (string) $this->valueResolver->getValue($item->key);
             $value = $this->valueResolver->getValue($item->value);
-            if ($key === 'method') {
+            if ('method' === $key) {
                 $method = $value;
                 continue;
             }
@@ -197,7 +201,7 @@ CODE_SAMPLE
         if (!$classMethod instanceof ClassMethod) {
             return;
         }
-        if ($classMethodName === MethodName::INVOKE) {
+        if (MethodName::INVOKE === $classMethodName) {
             $this->renameInvoke($classMethod);
         }
         $this->messengerHelper->addAttribute($classMethod, $arguments);

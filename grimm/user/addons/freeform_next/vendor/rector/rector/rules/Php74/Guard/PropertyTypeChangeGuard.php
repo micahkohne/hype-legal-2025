@@ -5,28 +5,32 @@ namespace Rector\Php74\Guard;
 
 use PhpParser\Node\Stmt\Property;
 use PHPStan\Reflection\ClassReflection;
-use Rector\NodeAnalyzer\PropertyAnalyzer;
-use Rector\NodeManipulator\PropertyManipulator;
+use Rector\Core\NodeAnalyzer\PropertyAnalyzer;
+use Rector\Core\NodeManipulator\PropertyManipulator;
 use Rector\NodeNameResolver\NodeNameResolver;
 use Rector\Privatization\Guard\ParentPropertyLookupGuard;
 final class PropertyTypeChangeGuard
 {
     /**
      * @readonly
+     * @var \Rector\NodeNameResolver\NodeNameResolver
      */
-    private NodeNameResolver $nodeNameResolver;
+    private $nodeNameResolver;
     /**
      * @readonly
+     * @var \Rector\Core\NodeAnalyzer\PropertyAnalyzer
      */
-    private PropertyAnalyzer $propertyAnalyzer;
+    private $propertyAnalyzer;
     /**
      * @readonly
+     * @var \Rector\Core\NodeManipulator\PropertyManipulator
      */
-    private PropertyManipulator $propertyManipulator;
+    private $propertyManipulator;
     /**
      * @readonly
+     * @var \Rector\Privatization\Guard\ParentPropertyLookupGuard
      */
-    private ParentPropertyLookupGuard $parentPropertyLookupGuard;
+    private $parentPropertyLookupGuard;
     public function __construct(NodeNameResolver $nodeNameResolver, PropertyAnalyzer $propertyAnalyzer, PropertyManipulator $propertyManipulator, ParentPropertyLookupGuard $parentPropertyLookupGuard)
     {
         $this->nodeNameResolver = $nodeNameResolver;
@@ -47,7 +51,7 @@ final class PropertyTypeChangeGuard
             return \false;
         }
         $propertyName = $this->nodeNameResolver->getName($property);
-        if ($this->propertyManipulator->hasTraitWithSamePropertyOrWritten($classReflection, $propertyName)) {
+        if ($this->propertyManipulator->isUsedByTrait($classReflection, $propertyName)) {
             return \false;
         }
         if ($this->propertyAnalyzer->hasForbiddenType($property)) {

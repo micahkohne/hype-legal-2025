@@ -9,10 +9,10 @@ use PhpParser\Node\Expr\BinaryOp\BooleanAnd;
 use PhpParser\Node\Expr\BinaryOp\BooleanOr;
 use PhpParser\Node\Stmt\If_;
 use PhpParser\Node\Stmt\Return_;
-use Rector\Contract\PhpParser\Node\StmtsAwareInterface;
-use Rector\NodeAnalyzer\CallAnalyzer;
-use Rector\PhpParser\Node\AssignAndBinaryMap;
-use Rector\Rector\AbstractRector;
+use Rector\Core\Contract\PhpParser\Node\StmtsAwareInterface;
+use Rector\Core\NodeAnalyzer\CallAnalyzer;
+use Rector\Core\PhpParser\Node\AssignAndBinaryMap;
+use Rector\Core\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -22,12 +22,14 @@ final class ReturnBinaryOrToEarlyReturnRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\Core\PhpParser\Node\AssignAndBinaryMap
      */
-    private AssignAndBinaryMap $assignAndBinaryMap;
+    private $assignAndBinaryMap;
     /**
      * @readonly
+     * @var \Rector\Core\NodeAnalyzer\CallAnalyzer
      */
-    private CallAnalyzer $callAnalyzer;
+    private $callAnalyzer;
     public function __construct(AssignAndBinaryMap $assignAndBinaryMap, CallAnalyzer $callAnalyzer)
     {
         $this->assignAndBinaryMap = $assignAndBinaryMap;
@@ -35,7 +37,7 @@ final class ReturnBinaryOrToEarlyReturnRector extends AbstractRector
     }
     public function getRuleDefinition() : RuleDefinition
     {
-        return new RuleDefinition('Change single return of `||` to early returns', [new CodeSample(<<<'CODE_SAMPLE'
+        return new RuleDefinition('Changes Single return of || to early returns', [new CodeSample(<<<'CODE_SAMPLE'
 class SomeClass
 {
     public function accept()

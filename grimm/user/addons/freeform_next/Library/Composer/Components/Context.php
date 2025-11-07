@@ -17,7 +17,7 @@ use Solspace\Addons\FreeformNext\Library\Exceptions\Composer\ComposerException;
 
 class Context implements JsonSerializable
 {
-    private readonly int $page;
+    private int $page;
 
     /** @var string */
     private $hash;
@@ -25,7 +25,6 @@ class Context implements JsonSerializable
     /**
      * Context constructor.
      *
-     * @param array $contextData
      *
      * @throws ComposerException
      */

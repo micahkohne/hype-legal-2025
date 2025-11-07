@@ -32,11 +32,11 @@ use Solspace\Addons\FreeformNext\Services\SettingsService;
 
 class Composer
 {
-    const KEY_COMPOSER   = 'composer';
-    const KEY_FORM       = 'form';
-    const KEY_PROPERTIES = 'properties';
-    const KEY_LAYOUT     = 'layout';
-    const KEY_CONTEXT    = 'context';
+    public const KEY_COMPOSER   = 'composer';
+    public const KEY_FORM       = 'form';
+    public const KEY_PROPERTIES = 'properties';
+    public const KEY_LAYOUT     = 'layout';
+    public const KEY_CONTEXT    = 'context';
 
     private Form $form;
 
@@ -48,33 +48,23 @@ class Composer
      * Composer constructor.
      *
      * @param array                       $composerState
-     * @param FormAttributes              $formAttributes
-     * @param FormHandlerInterface        $formHandler
-     * @param FieldHandlerInterface       $fieldHandler
-     * @param SubmissionHandlerInterface  $submissionHandler
-     * @param MailHandlerInterface        $mailHandler
-     * @param FileUploadHandlerInterface  $fileUploadHandler
-     * @param MailingListHandlerInterface $mailingListHandler
-     * @param CRMHandlerInterface         $crmHandler
-     * @param StatusHandlerInterface      $statusHandler
-     * @param TranslatorInterface         $translator
      * @param ComposerState|null          $customComposerState
      *
      * @throws ComposerException
      */
     public function __construct(
-        private readonly FormHandlerInterface $formHandler,
-        private readonly FieldHandlerInterface $fieldHandler,
-        private readonly SubmissionHandlerInterface $submissionHandler,
-        private readonly MailHandlerInterface $mailHandler,
-        private readonly FileUploadHandlerInterface $fileUploadHandler,
-        private readonly MailingListHandlerInterface $mailingListHandler,
-        private readonly CRMHandlerInterface $crmHandler,
-        private readonly StatusHandlerInterface $statusHandler,
-        private readonly TranslatorInterface $translator,
-        private readonly ?array $composerState = null,
+        private FormHandlerInterface $formHandler,
+        private FieldHandlerInterface $fieldHandler,
+        private SubmissionHandlerInterface $submissionHandler,
+        private MailHandlerInterface $mailHandler,
+        private FileUploadHandlerInterface $fileUploadHandler,
+        private MailingListHandlerInterface $mailingListHandler,
+        private CRMHandlerInterface $crmHandler,
+        private StatusHandlerInterface $statusHandler,
+        private TranslatorInterface $translator,
+        private ?array $composerState = null,
         ?FormAttributes $formAttributes = null,
-        private readonly ?ComposerState $customComposerState = null
+        private ?ComposerState $customComposerState = null
     ) {
         $this->validateComposerData($formAttributes);
     }
@@ -117,11 +107,10 @@ class Composer
     /**
      * Validates all components and hydrates respective objects
      *
-     * @param FormAttributes $formAttributes
      *
      * @throws ComposerException
      */
-    private function validateComposerData(FormAttributes $formAttributes): void
+    private function validateComposerData(FormAttributes $formAttributes)
     {
         $composerState = $this->composerState;
 

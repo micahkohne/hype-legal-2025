@@ -15,10 +15,9 @@ use PhpParser\Node\Expr\PropertyFetch;
 use PhpParser\Node\Expr\StaticPropertyFetch;
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Stmt\Expression;
+use Rector\Core\Rector\AbstractRector;
 use Rector\NodeFactory\NamedVariableFactory;
 use Rector\NodeTypeResolver\Node\AttributeKey;
-use Rector\PhpParser\Node\BetterNodeFinder;
-use Rector\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -30,16 +29,12 @@ final class DowngradeArbitraryExpressionsSupportRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\NodeFactory\NamedVariableFactory
      */
-    private NamedVariableFactory $namedVariableFactory;
-    /**
-     * @readonly
-     */
-    private BetterNodeFinder $betterNodeFinder;
-    public function __construct(NamedVariableFactory $namedVariableFactory, BetterNodeFinder $betterNodeFinder)
+    private $namedVariableFactory;
+    public function __construct(NamedVariableFactory $namedVariableFactory)
     {
         $this->namedVariableFactory = $namedVariableFactory;
-        $this->betterNodeFinder = $betterNodeFinder;
     }
     public function getRuleDefinition() : RuleDefinition
     {
@@ -69,9 +64,9 @@ CODE_SAMPLE
     }
     /**
      * @param Expression $node
-     * @return Expression[]|null
+     * @return Node\Stmt[]|null|Expression
      */
-    public function refactor(Node $node) : ?array
+    public function refactor(Node $node)
     {
         /** @var Assign[] $assigns */
         $assigns = $this->betterNodeFinder->findInstancesOf($node, [Assign::class]);
@@ -100,20 +95,20 @@ CODE_SAMPLE
         while ($previousTokenPos >= 0) {
             $token = $oldTokens[$previousTokenPos] ?? null;
             --$previousTokenPos;
-            if ((string) $token === '(') {
-                return \true;
+            if (!isset($token[0])) {
+                return $token === '(';
             }
-            if (!\in_array((string) $token, [\T_COMMENT, \T_WHITESPACE], \true)) {
-                continue;
+            if (!\in_array($token[0], [\T_COMMENT, \T_WHITESPACE], \true)) {
+                return $token === '(';
             }
         }
         return \false;
     }
     /**
      * @param Assign[] $assigns
-     * @return Expression[]|null
+     * @return Node\Stmt[]|null
      */
-    private function refactorAssign(array $assigns, Expression $expression) : ?array
+    private function refactorAssign($assigns, Expression $expression) : ?array
     {
         foreach ($assigns as $assign) {
             if (!$assign->expr instanceof New_ && !$assign->expr instanceof Instanceof_) {
@@ -146,7 +141,7 @@ CODE_SAMPLE
         return null;
     }
     /**
-     * @return Expression[]|null
+     * @return Node\Stmt[]|null
      */
     private function refactorInstanceof(Instanceof_ $instanceof, Expression $expression) : ?array
     {

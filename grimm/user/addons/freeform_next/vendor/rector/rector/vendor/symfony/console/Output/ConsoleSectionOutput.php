@@ -8,22 +8,37 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-namespace RectorPrefix202507\Symfony\Component\Console\Output;
+namespace RectorPrefix202308\Symfony\Component\Console\Output;
 
-use RectorPrefix202507\Symfony\Component\Console\Formatter\OutputFormatterInterface;
-use RectorPrefix202507\Symfony\Component\Console\Helper\Helper;
-use RectorPrefix202507\Symfony\Component\Console\Terminal;
+use RectorPrefix202308\Symfony\Component\Console\Formatter\OutputFormatterInterface;
+use RectorPrefix202308\Symfony\Component\Console\Helper\Helper;
+use RectorPrefix202308\Symfony\Component\Console\Terminal;
 /**
  * @author Pierre du Plessis <pdples@gmail.com>
  * @author Gabriel Ostrolucký <gabriel.ostrolucky@gmail.com>
  */
 class ConsoleSectionOutput extends StreamOutput
 {
-    private array $content = [];
-    private int $lines = 0;
-    private array $sections;
-    private Terminal $terminal;
-    private int $maxHeight = 0;
+    /**
+     * @var mixed[]
+     */
+    private $content = [];
+    /**
+     * @var int
+     */
+    private $lines = 0;
+    /**
+     * @var mixed[]
+     */
+    private $sections;
+    /**
+     * @var \Symfony\Component\Console\Terminal
+     */
+    private $terminal;
+    /**
+     * @var int
+     */
+    private $maxHeight = 0;
     /**
      * @param resource               $stream
      * @param ConsoleSectionOutput[] $sections
@@ -44,9 +59,8 @@ class ConsoleSectionOutput extends StreamOutput
     public function setMaxHeight(int $maxHeight) : void
     {
         // when changing max height, clear output of current section and redraw again with the new height
-        $previousMaxHeight = $this->maxHeight;
+        $existingContent = $this->popStreamContentUntilCurrentSection($this->maxHeight ? \min($this->maxHeight, $this->lines) : $this->lines);
         $this->maxHeight = $maxHeight;
-        $existingContent = $this->popStreamContentUntilCurrentSection($previousMaxHeight ? \min($previousMaxHeight, $this->lines) : $this->lines);
         parent::doWrite($this->getVisibleContent(), \false);
         parent::doWrite($existingContent, \false);
     }
@@ -57,7 +71,7 @@ class ConsoleSectionOutput extends StreamOutput
      *
      * @return void
      */
-    public function clear(?int $lines = null)
+    public function clear(int $lines = null)
     {
         if (empty($this->content) || !$this->isDecorated()) {
             return;
@@ -106,7 +120,8 @@ class ConsoleSectionOutput extends StreamOutput
             // re-add the line break (that has been removed in the above `explode()` for
             // - every line that is not the last line
             // - if $newline is required, also add it to the last line
-            if ($i < $count || $newline) {
+            // - if it's not new line, but input ending with `\PHP_EOL`
+            if ($i < $count || $newline || \substr_compare($input, \PHP_EOL, -\strlen(\PHP_EOL)) === 0) {
                 $lineContent .= \PHP_EOL;
             }
             // skip line if there is no text (or newline for that matter)
@@ -144,11 +159,6 @@ class ConsoleSectionOutput extends StreamOutput
      */
     protected function doWrite(string $message, bool $newline)
     {
-        // Simulate newline behavior for consistent output formatting, avoiding extra logic
-        if (!$newline && \substr_compare($message, \PHP_EOL, -\strlen(\PHP_EOL)) === 0) {
-            $message = \substr($message, 0, -\strlen(\PHP_EOL));
-            $newline = \true;
-        }
         if (!$this->isDecorated()) {
             parent::doWrite($message, $newline);
             return;
@@ -184,7 +194,7 @@ class ConsoleSectionOutput extends StreamOutput
             if ($section === $this) {
                 break;
             }
-            $numberOfLinesToClear += $section->maxHeight ? \min($section->lines, $section->maxHeight) : $section->lines;
+            $numberOfLinesToClear += $section->lines;
             if ('' !== ($sectionContent = $section->getVisibleContent())) {
                 if (\substr_compare($sectionContent, \PHP_EOL, -\strlen(\PHP_EOL)) !== 0) {
                     $sectionContent .= \PHP_EOL;

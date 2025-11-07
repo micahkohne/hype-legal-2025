@@ -8,27 +8,31 @@ use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\NodeTraverser;
 use PhpParser\NodeVisitor\NameResolver;
 use PHPStan\Reflection\ReflectionProvider;
+use Rector\Core\PhpParser\Node\BetterNodeFinder;
+use Rector\Core\PhpParser\Parser\RectorParser;
 use Rector\NodeNameResolver\NodeNameResolver;
-use Rector\PhpParser\Node\BetterNodeFinder;
-use Rector\PhpParser\Parser\RectorParser;
 final class BundleClassResolver
 {
     /**
      * @readonly
+     * @var \Rector\Core\PhpParser\Node\BetterNodeFinder
      */
-    private BetterNodeFinder $betterNodeFinder;
+    private $betterNodeFinder;
     /**
      * @readonly
+     * @var \Rector\NodeNameResolver\NodeNameResolver
      */
-    private NodeNameResolver $nodeNameResolver;
+    private $nodeNameResolver;
     /**
      * @readonly
+     * @var \Rector\Core\PhpParser\Parser\RectorParser
      */
-    private RectorParser $rectorParser;
+    private $rectorParser;
     /**
      * @readonly
+     * @var \PHPStan\Reflection\ReflectionProvider
      */
-    private ReflectionProvider $reflectionProvider;
+    private $reflectionProvider;
     public function __construct(BetterNodeFinder $betterNodeFinder, NodeNameResolver $nodeNameResolver, RectorParser $rectorParser, ReflectionProvider $reflectionProvider)
     {
         $this->betterNodeFinder = $betterNodeFinder;

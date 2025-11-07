@@ -5,33 +5,24 @@ namespace Rector\Transform\Rector\String_;
 
 use PhpParser\Node;
 use PhpParser\Node\Scalar\String_;
-use Rector\Contract\Rector\ConfigurableRectorInterface;
-use Rector\PhpParser\Node\Value\ValueResolver;
-use Rector\Rector\AbstractRector;
+use Rector\Core\Contract\Rector\ConfigurableRectorInterface;
+use Rector\Core\Rector\AbstractRector;
 use Rector\Transform\ValueObject\StringToClassConstant;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\ConfiguredCodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
-use RectorPrefix202507\Webmozart\Assert\Assert;
+use RectorPrefix202308\Webmozart\Assert\Assert;
 /**
  * @see \Rector\Tests\Transform\Rector\String_\StringToClassConstantRector\StringToClassConstantRectorTest
  */
 final class StringToClassConstantRector extends AbstractRector implements ConfigurableRectorInterface
 {
     /**
-     * @readonly
-     */
-    private ValueResolver $valueResolver;
-    /**
      * @var StringToClassConstant[]
      */
-    private array $stringsToClassConstants = [];
-    public function __construct(ValueResolver $valueResolver)
-    {
-        $this->valueResolver = $valueResolver;
-    }
+    private $stringsToClassConstants = [];
     public function getRuleDefinition() : RuleDefinition
     {
-        return new RuleDefinition('Change strings to specific constants', [new ConfiguredCodeSample(<<<'CODE_SAMPLE'
+        return new RuleDefinition('Changes strings to specific constants', [new ConfiguredCodeSample(<<<'CODE_SAMPLE'
 final class SomeSubscriber
 {
     public static function getSubscribedEvents()
@@ -69,7 +60,7 @@ CODE_SAMPLE
             }
             return $this->nodeFactory->createClassConstFetch($stringToClassConstant->getClass(), $stringToClassConstant->getConstant());
         }
-        return null;
+        return $node;
     }
     /**
      * @param mixed[] $configuration

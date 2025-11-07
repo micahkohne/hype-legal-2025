@@ -4,30 +4,26 @@ declare (strict_types=1);
 namespace PhpParser\Node\Stmt;
 
 use PhpParser\Node;
-use Rector\Contract\PhpParser\Node\StmtsAwareInterface;
+use Rector\Core\Contract\PhpParser\Node\StmtsAwareInterface;
 class If_ extends Node\Stmt implements StmtsAwareInterface
 {
     /** @var Node\Expr Condition expression */
-    public Node\Expr $cond;
+    public $cond;
     /** @var Node\Stmt[] Statements */
-    public array $stmts;
+    public $stmts;
     /** @var ElseIf_[] Elseif clauses */
-    public array $elseifs;
+    public $elseifs;
     /** @var null|Else_ Else clause */
-    public ?\PhpParser\Node\Stmt\Else_ $else;
+    public $else;
     /**
      * Constructs an if node.
      *
-     * @param Node\Expr $cond Condition
-     * @param array{
-     *     stmts?: Node\Stmt[],
-     *     elseifs?: ElseIf_[],
-     *     else?: Else_|null,
-     * } $subNodes Array of the following optional subnodes:
-     *             'stmts'   => array(): Statements
-     *             'elseifs' => array(): Elseif clauses
-     *             'else'    => null   : Else clause
-     * @param array<string, mixed> $attributes Additional attributes
+     * @param Node\Expr $cond       Condition
+     * @param array     $subNodes   Array of the following optional subnodes:
+     *                              'stmts'   => array(): Statements
+     *                              'elseifs' => array(): Elseif clauses
+     *                              'else'    => null   : Else clause
+     * @param array     $attributes Additional attributes
      */
     public function __construct(Node\Expr $cond, array $subNodes = [], array $attributes = [])
     {

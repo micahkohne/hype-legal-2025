@@ -6,10 +6,9 @@ namespace Rector\PHPUnit\PHPUnit80\Rector\MethodCall;
 use PhpParser\Node;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\StaticCall;
-use Rector\PhpParser\Node\Value\ValueResolver;
+use Rector\Core\Rector\AbstractRector;
 use Rector\PHPUnit\NodeAnalyzer\TestsNodeAnalyzer;
 use Rector\PHPUnit\NodeFactory\AssertCallFactory;
-use Rector\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -23,21 +22,18 @@ final class AssertEqualsParameterToSpecificMethodsTypeRector extends AbstractRec
 {
     /**
      * @readonly
+     * @var \Rector\PHPUnit\NodeFactory\AssertCallFactory
      */
-    private AssertCallFactory $assertCallFactory;
+    private $assertCallFactory;
     /**
      * @readonly
+     * @var \Rector\PHPUnit\NodeAnalyzer\TestsNodeAnalyzer
      */
-    private TestsNodeAnalyzer $testsNodeAnalyzer;
-    /**
-     * @readonly
-     */
-    private ValueResolver $valueResolver;
-    public function __construct(AssertCallFactory $assertCallFactory, TestsNodeAnalyzer $testsNodeAnalyzer, ValueResolver $valueResolver)
+    private $testsNodeAnalyzer;
+    public function __construct(AssertCallFactory $assertCallFactory, TestsNodeAnalyzer $testsNodeAnalyzer)
     {
         $this->assertCallFactory = $assertCallFactory;
         $this->testsNodeAnalyzer = $testsNodeAnalyzer;
-        $this->valueResolver = $valueResolver;
     }
     public function getRuleDefinition() : RuleDefinition
     {

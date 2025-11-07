@@ -5,28 +5,40 @@ namespace Rector\Naming\ValueObject;
 
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\FunctionLike;
-final class ParamRename
+use PhpParser\Node\Param;
+use Rector\Naming\Contract\RenameParamValueObjectInterface;
+final class ParamRename implements RenameParamValueObjectInterface
 {
     /**
      * @readonly
+     * @var string
      */
-    private string $currentName;
+    private $currentName;
     /**
      * @readonly
+     * @var string
      */
-    private string $expectedName;
+    private $expectedName;
     /**
      * @readonly
+     * @var \PhpParser\Node\Param
      */
-    private Variable $variable;
+    private $param;
     /**
      * @readonly
+     * @var \PhpParser\Node\Expr\Variable
      */
-    private FunctionLike $functionLike;
-    public function __construct(string $currentName, string $expectedName, Variable $variable, FunctionLike $functionLike)
+    private $variable;
+    /**
+     * @readonly
+     * @var \PhpParser\Node\FunctionLike
+     */
+    private $functionLike;
+    public function __construct(string $currentName, string $expectedName, Param $param, Variable $variable, FunctionLike $functionLike)
     {
         $this->currentName = $currentName;
         $this->expectedName = $expectedName;
+        $this->param = $param;
         $this->variable = $variable;
         $this->functionLike = $functionLike;
     }
@@ -41,6 +53,10 @@ final class ParamRename
     public function getFunctionLike() : FunctionLike
     {
         return $this->functionLike;
+    }
+    public function getParam() : Param
+    {
+        return $this->param;
     }
     public function getVariable() : Variable
     {

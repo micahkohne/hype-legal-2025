@@ -9,9 +9,10 @@ use function implode;
 class DoctrineAnnotation implements Node
 {
     use NodeAttributes;
-    public string $name;
+    /** @var string */
+    public $name;
     /** @var list<DoctrineArgument> */
-    public array $arguments;
+    public $arguments;
     /**
      * @param list<DoctrineArgument> $arguments
      */

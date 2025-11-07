@@ -11,33 +11,38 @@ use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\Instanceof_;
 use PhpParser\Node\Name;
 use PhpParser\Node\Name\FullyQualified;
+use Rector\Core\PhpParser\Comparing\NodeComparator;
+use Rector\Core\PhpParser\Node\BetterNodeFinder;
+use Rector\Core\PhpParser\Node\NodeFactory;
 use Rector\NodeNameResolver\NodeNameResolver;
 use Rector\PhpDocParser\NodeTraverser\SimpleCallableNodeTraverser;
-use Rector\PhpParser\Comparing\NodeComparator;
-use Rector\PhpParser\Node\BetterNodeFinder;
-use Rector\PhpParser\Node\NodeFactory;
 final class ObjectToResourceReturn
 {
     /**
      * @readonly
+     * @var \Rector\NodeNameResolver\NodeNameResolver
      */
-    private NodeNameResolver $nodeNameResolver;
+    private $nodeNameResolver;
     /**
      * @readonly
+     * @var \Rector\Core\PhpParser\Node\NodeFactory
      */
-    private NodeFactory $nodeFactory;
+    private $nodeFactory;
     /**
      * @readonly
+     * @var \Rector\Core\PhpParser\Node\BetterNodeFinder
      */
-    private BetterNodeFinder $betterNodeFinder;
+    private $betterNodeFinder;
     /**
      * @readonly
+     * @var \Rector\PhpDocParser\NodeTraverser\SimpleCallableNodeTraverser
      */
-    private SimpleCallableNodeTraverser $simpleCallableNodeTraverser;
+    private $simpleCallableNodeTraverser;
     /**
      * @readonly
+     * @var \Rector\Core\PhpParser\Comparing\NodeComparator
      */
-    private NodeComparator $nodeComparator;
+    private $nodeComparator;
     /**
      * @var string
      */

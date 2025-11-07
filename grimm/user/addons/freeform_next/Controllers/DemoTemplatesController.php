@@ -2,7 +2,7 @@
 
 namespace Solspace\Addons\FreeformNext\Controllers;
 
-use ExpressionEngine\Library\CP\Table;
+use EllisLab\ExpressionEngine\Library\CP\Table;
 use Solspace\Addons\FreeformNext\Library\Codepack\Codepack;
 use Solspace\Addons\FreeformNext\Library\Codepack\Exceptions\CodepackException;
 use Solspace\Addons\FreeformNext\Library\Codepack\Exceptions\FileObject\FileObjectException;
@@ -14,7 +14,7 @@ use Solspace\Addons\FreeformNext\Utilities\ControlPanel\View;
 
 class DemoTemplatesController extends Controller
 {
-    const FLASH_VAR_KEY = 'codepack_prefix';
+    public const FLASH_VAR_KEY = 'codepack_prefix';
 
     /**
      * Show CodePack contents
@@ -108,7 +108,7 @@ class DemoTemplatesController extends Controller
         $codepack = $this->getCodepack();
         $prefix   = ee()->input->post('prefix');
 
-        $prefix = trim((string) preg_replace('/[^a-zA-Z_0-9\/]/', '', (string) $prefix));
+        $prefix = trim(preg_replace('/[^a-zA-Z_0-9\/]/', '', $prefix));
 
         if (empty($prefix)) {
             return new RedirectView($this->getLink('settings/demo_templates/'));
@@ -148,9 +148,7 @@ class DemoTemplatesController extends Controller
     }
 
     /**
-     * @param Codepack $codepack
      * @param string   $prefix
-     *
      * @return array
      */
     private function getPostInstallTable(Codepack $codepack, $prefix)

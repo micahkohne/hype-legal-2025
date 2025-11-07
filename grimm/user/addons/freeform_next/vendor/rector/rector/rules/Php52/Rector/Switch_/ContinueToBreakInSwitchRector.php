@@ -5,49 +5,31 @@ namespace Rector\Php52\Rector\Switch_;
 
 use PhpParser\Node;
 use PhpParser\Node\Expr;
-use PhpParser\Node\Expr\Closure;
 use PhpParser\Node\Expr\Variable;
-use PhpParser\Node\Scalar\Int_;
-use PhpParser\Node\Stmt;
+use PhpParser\Node\Scalar\LNumber;
 use PhpParser\Node\Stmt\Break_;
-use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\Continue_;
-use PhpParser\Node\Stmt\Do_;
-use PhpParser\Node\Stmt\For_;
-use PhpParser\Node\Stmt\Foreach_;
-use PhpParser\Node\Stmt\Function_;
 use PhpParser\Node\Stmt\Switch_;
-use PhpParser\Node\Stmt\While_;
-use PhpParser\NodeVisitor;
 use PHPStan\Type\Constant\ConstantIntegerType;
-use Rector\Contract\PhpParser\Node\StmtsAwareInterface;
-use Rector\PhpParser\Node\Value\ValueResolver;
-use Rector\Rector\AbstractRector;
-use Rector\ValueObject\PhpVersionFeature;
+use PHPStan\Type\ConstantType;
+use Rector\Core\Rector\AbstractRector;
+use Rector\Core\ValueObject\PhpVersionFeature;
 use Rector\VersionBonding\Contract\MinPhpVersionInterface;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
+ * @changelog https://stackoverflow.com/a/12349889/1348344
  * @see \Rector\Tests\Php52\Rector\Switch_\ContinueToBreakInSwitchRector\ContinueToBreakInSwitchRectorTest
  */
 final class ContinueToBreakInSwitchRector extends AbstractRector implements MinPhpVersionInterface
 {
-    /**
-     * @readonly
-     */
-    private ValueResolver $valueResolver;
-    private bool $hasChanged = \false;
-    public function __construct(ValueResolver $valueResolver)
-    {
-        $this->valueResolver = $valueResolver;
-    }
     public function provideMinPhpVersion() : int
     {
         return PhpVersionFeature::CONTINUE_TO_BREAK;
     }
     public function getRuleDefinition() : RuleDefinition
     {
-        return new RuleDefinition('Use `break` instead of `continue` in switch statements', [new CodeSample(<<<'CODE_SAMPLE'
+        return new RuleDefinition('Use break instead of continue in switch statements', [new CodeSample(<<<'CODE_SAMPLE'
 function some_run($value)
 {
     switch ($value) {
@@ -87,50 +69,42 @@ CODE_SAMPLE
      */
     public function refactor(Node $node) : ?Switch_
     {
-        $this->hasChanged = \false;
+        $hasChanged = \false;
         foreach ($node->cases as $case) {
-            $this->processContinueStatement($case);
+            foreach ($case->stmts as $key => $caseStmt) {
+                if (!$caseStmt instanceof Continue_) {
+                    continue;
+                }
+                $newStmt = $this->processContinueStatement($caseStmt);
+                if ($newStmt instanceof Continue_) {
+                    continue;
+                }
+                $case->stmts[$key] = $newStmt;
+                $hasChanged = \true;
+            }
         }
-        if (!$this->hasChanged) {
+        if (!$hasChanged) {
             return null;
         }
         return $node;
     }
     /**
-     * @param \PhpParser\Node\Stmt|\Rector\Contract\PhpParser\Node\StmtsAwareInterface $stmt
+     * @return \PhpParser\Node\Stmt\Break_|\PhpParser\Node\Stmt\Continue_
      */
-    private function processContinueStatement($stmt) : void
+    private function processContinueStatement(Continue_ $continue)
     {
-        $this->traverseNodesWithCallable($stmt, function (Node $subNode) {
-            if ($subNode instanceof Class_ || $subNode instanceof Function_ || $subNode instanceof Closure) {
-                return NodeVisitor::DONT_TRAVERSE_CURRENT_AND_CHILDREN;
-            }
-            // continue is belong to loop
-            if ($subNode instanceof Foreach_ || $subNode instanceof While_ || $subNode instanceof Do_ || $subNode instanceof For_) {
-                return NodeVisitor::DONT_TRAVERSE_CURRENT_AND_CHILDREN;
-            }
-            if (!$subNode instanceof Continue_) {
-                return null;
-            }
-            if (!$subNode->num instanceof Expr) {
-                $this->hasChanged = \true;
+        if (!$continue->num instanceof Expr) {
+            return new Break_();
+        }
+        if ($continue->num instanceof LNumber) {
+            $continueNumber = $this->valueResolver->getValue($continue->num);
+            if ($continueNumber <= 1) {
                 return new Break_();
             }
-            if ($subNode->num instanceof Int_) {
-                $continueNumber = $this->valueResolver->getValue($subNode->num);
-                if ($continueNumber <= 1) {
-                    $this->hasChanged = \true;
-                    return new Break_();
-                }
-            } elseif ($subNode->num instanceof Variable) {
-                $processVariableNum = $this->processVariableNum($subNode, $subNode->num);
-                if ($processVariableNum instanceof Break_) {
-                    $this->hasChanged = \true;
-                    return $processVariableNum;
-                }
-            }
-            return null;
-        });
+        } elseif ($continue->num instanceof Variable) {
+            return $this->processVariableNum($continue, $continue->num);
+        }
+        return $continue;
     }
     /**
      * @return \PhpParser\Node\Stmt\Continue_|\PhpParser\Node\Stmt\Break_
@@ -138,7 +112,7 @@ CODE_SAMPLE
     private function processVariableNum(Continue_ $continue, Variable $numVariable)
     {
         $staticType = $this->getType($numVariable);
-        if (!$staticType->isConstantValue()->yes()) {
+        if (!$staticType instanceof ConstantType) {
             return $continue;
         }
         if (!$staticType instanceof ConstantIntegerType) {

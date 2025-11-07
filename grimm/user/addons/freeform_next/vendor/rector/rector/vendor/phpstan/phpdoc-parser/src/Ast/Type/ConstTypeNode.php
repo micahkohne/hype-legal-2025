@@ -8,7 +8,8 @@ use PHPStan\PhpDocParser\Ast\NodeAttributes;
 class ConstTypeNode implements \PHPStan\PhpDocParser\Ast\Type\TypeNode
 {
     use NodeAttributes;
-    public ConstExprNode $constExpr;
+    /** @var ConstExprNode */
+    public $constExpr;
     public function __construct(ConstExprNode $constExpr)
     {
         $this->constExpr = $constExpr;

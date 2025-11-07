@@ -8,13 +8,13 @@ use PhpParser\Node\Name;
 use PhpParser\Node\Name\FullyQualified;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\TraitUse;
-use Rector\Contract\Rector\ConfigurableRectorInterface;
-use Rector\NodeAnalyzer\ClassAnalyzer;
-use Rector\Rector\AbstractRector;
+use Rector\Core\Contract\Rector\ConfigurableRectorInterface;
+use Rector\Core\NodeAnalyzer\ClassAnalyzer;
+use Rector\Core\Rector\AbstractRector;
 use Rector\Transform\ValueObject\ParentClassToTraits;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\ConfiguredCodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
-use RectorPrefix202507\Webmozart\Assert\Assert;
+use RectorPrefix202308\Webmozart\Assert\Assert;
 /**
  * Can handle cases like:
  * - https://doc.nette.org/en/2.4/migration-2-4#toc-nette-smartobject
@@ -26,19 +26,20 @@ final class ParentClassToTraitsRector extends AbstractRector implements Configur
 {
     /**
      * @readonly
+     * @var \Rector\Core\NodeAnalyzer\ClassAnalyzer
      */
-    private ClassAnalyzer $classAnalyzer;
+    private $classAnalyzer;
     /**
      * @var ParentClassToTraits[]
      */
-    private array $parentClassToTraits = [];
+    private $parentClassToTraits = [];
     public function __construct(ClassAnalyzer $classAnalyzer)
     {
         $this->classAnalyzer = $classAnalyzer;
     }
     public function getRuleDefinition() : RuleDefinition
     {
-        return new RuleDefinition('Replace parent class to specific traits', [new ConfiguredCodeSample(<<<'CODE_SAMPLE'
+        return new RuleDefinition('Replaces parent class to specific traits', [new ConfiguredCodeSample(<<<'CODE_SAMPLE'
 class SomeClass extends Nette\Object
 {
 }

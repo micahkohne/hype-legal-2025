@@ -3,16 +3,18 @@
 declare (strict_types=1);
 namespace Rector\Symfony\ValueObject;
 
-final class ClassNameAndFilePath
+class ClassNameAndFilePath
 {
     /**
      * @readonly
+     * @var string
      */
-    private string $className;
+    private $className;
     /**
      * @readonly
+     * @var string
      */
-    private string $filePath;
+    private $filePath;
     public function __construct(string $className, string $filePath)
     {
         $this->className = $className;

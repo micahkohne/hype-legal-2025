@@ -4,28 +4,38 @@ declare (strict_types=1);
 namespace Rector\Symfony\Annotation;
 
 use PhpParser\Node\Stmt\Class_;
-use Rector\Doctrine\NodeAnalyzer\AttrinationFinder;
+use PhpParser\Node\Stmt\ClassMethod;
+use Rector\BetterPhpDocParser\PhpDoc\DoctrineAnnotationTagValueNode;
+use Rector\BetterPhpDocParser\PhpDocInfo\PhpDocInfo;
+use Rector\BetterPhpDocParser\PhpDocInfo\PhpDocInfoFactory;
 use Rector\Symfony\Enum\SymfonyAnnotation;
 final class AnnotationAnalyzer
 {
     /**
      * @readonly
+     * @var \Rector\BetterPhpDocParser\PhpDocInfo\PhpDocInfoFactory
      */
-    private AttrinationFinder $attrinationFinder;
-    public function __construct(AttrinationFinder $attrinationFinder)
+    private $phpDocInfoFactory;
+    public function __construct(PhpDocInfoFactory $phpDocInfoFactory)
     {
-        $this->attrinationFinder = $attrinationFinder;
+        $this->phpDocInfoFactory = $phpDocInfoFactory;
     }
     public function hasClassMethodWithTemplateAnnotation(Class_ $class) : bool
     {
-        if ($this->attrinationFinder->hasByOne($class, SymfonyAnnotation::TEMPLATE)) {
-            return \true;
-        }
         foreach ($class->getMethods() as $classMethod) {
-            if ($this->attrinationFinder->hasByOne($classMethod, SymfonyAnnotation::TEMPLATE)) {
+            $templateDoctrineAnnotationTagValueNode = $this->getDoctrineAnnotationTagValueNode($classMethod, SymfonyAnnotation::TEMPLATE);
+            if ($templateDoctrineAnnotationTagValueNode instanceof DoctrineAnnotationTagValueNode) {
                 return \true;
             }
         }
         return \false;
+    }
+    public function getDoctrineAnnotationTagValueNode(ClassMethod $classMethod, string $annotationClass) : ?DoctrineAnnotationTagValueNode
+    {
+        $phpDocInfo = $this->phpDocInfoFactory->createFromNode($classMethod);
+        if (!$phpDocInfo instanceof PhpDocInfo) {
+            return null;
+        }
+        return $phpDocInfo->getByAnnotationClass($annotationClass);
     }
 }

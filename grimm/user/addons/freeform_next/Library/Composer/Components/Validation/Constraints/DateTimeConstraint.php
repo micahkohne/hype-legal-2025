@@ -7,7 +7,7 @@ use Solspace\Addons\FreeformNext\Library\Composer\Components\Validation\Errors\C
 
 class DateTimeConstraint implements ConstraintInterface
 {
-    const PATTERN_MATCH_FORMAT = '/^((?:[Yy])|(?:[mn])|(?:[dj]))(.*?)((?:[Yy])|(?:[mn])|(?:[dj]))(.*?)((?:[Yy])|(?:[mn])|(?:[dj]))$/';
+    public const PATTERN_MATCH_FORMAT = '/^((?:[Yy])|(?:[mn])|(?:[dj]))(.*?)((?:[Yy])|(?:[mn])|(?:[dj]))(.*?)((?:[Yy])|(?:[mn])|(?:[dj]))$/';
 
     /**
      * DateConstraint constructor.

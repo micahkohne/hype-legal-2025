@@ -4,30 +4,34 @@ declare (strict_types=1);
 namespace Rector\Transform\ValueObject;
 
 use PHPStan\Type\ObjectType;
-use Rector\Validation\RectorAssert;
+use Rector\Core\Validation\RectorAssert;
 final class PropertyFetchToMethodCall
 {
     /**
      * @readonly
+     * @var string
      */
-    private string $oldType;
+    private $oldType;
     /**
      * @readonly
+     * @var string
      */
-    private string $oldProperty;
+    private $oldProperty;
     /**
      * @readonly
+     * @var string
      */
-    private string $newGetMethod;
+    private $newGetMethod;
     /**
      * @readonly
+     * @var string|null
      */
-    private ?string $newSetMethod = null;
+    private $newSetMethod;
     /**
      * @var mixed[]
      * @readonly
      */
-    private array $newGetArguments = [];
+    private $newGetArguments = [];
     /**
      * @param mixed[] $newGetArguments
      */

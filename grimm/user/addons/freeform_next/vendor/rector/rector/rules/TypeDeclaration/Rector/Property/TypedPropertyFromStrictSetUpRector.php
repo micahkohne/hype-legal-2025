@@ -6,19 +6,11 @@ namespace Rector\TypeDeclaration\Rector\Property;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassMethod;
-use PHPStan\PhpDocParser\Ast\PhpDoc\VarTagValueNode;
-use PHPStan\PhpDocParser\Ast\Type\IntersectionTypeNode;
-use PHPStan\Type\ObjectType;
-use Rector\BetterPhpDocParser\PhpDocInfo\PhpDocInfoFactory;
-use Rector\BetterPhpDocParser\ValueObject\Type\FullyQualifiedIdentifierTypeNode;
-use Rector\Comments\NodeDocBlock\DocBlockUpdater;
-use Rector\Enum\ClassName;
+use Rector\Core\Rector\AbstractRector;
+use Rector\Core\ValueObject\MethodName;
+use Rector\Core\ValueObject\PhpVersionFeature;
 use Rector\PHPStanStaticTypeMapper\Enum\TypeKind;
-use Rector\Rector\AbstractRector;
-use Rector\StaticTypeMapper\StaticTypeMapper;
 use Rector\TypeDeclaration\TypeInferer\PropertyTypeInferer\TrustedClassMethodPropertyTypeInferer;
-use Rector\ValueObject\MethodName;
-use Rector\ValueObject\PhpVersionFeature;
 use Rector\VersionBonding\Contract\MinPhpVersionInterface;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
@@ -29,26 +21,12 @@ final class TypedPropertyFromStrictSetUpRector extends AbstractRector implements
 {
     /**
      * @readonly
+     * @var \Rector\TypeDeclaration\TypeInferer\PropertyTypeInferer\TrustedClassMethodPropertyTypeInferer
      */
-    private TrustedClassMethodPropertyTypeInferer $trustedClassMethodPropertyTypeInferer;
-    /**
-     * @readonly
-     */
-    private StaticTypeMapper $staticTypeMapper;
-    /**
-     * @readonly
-     */
-    private PhpDocInfoFactory $phpDocInfoFactory;
-    /**
-     * @readonly
-     */
-    private DocBlockUpdater $docBlockUpdater;
-    public function __construct(TrustedClassMethodPropertyTypeInferer $trustedClassMethodPropertyTypeInferer, StaticTypeMapper $staticTypeMapper, PhpDocInfoFactory $phpDocInfoFactory, DocBlockUpdater $docBlockUpdater)
+    private $trustedClassMethodPropertyTypeInferer;
+    public function __construct(TrustedClassMethodPropertyTypeInferer $trustedClassMethodPropertyTypeInferer)
     {
         $this->trustedClassMethodPropertyTypeInferer = $trustedClassMethodPropertyTypeInferer;
-        $this->staticTypeMapper = $staticTypeMapper;
-        $this->phpDocInfoFactory = $phpDocInfoFactory;
-        $this->docBlockUpdater = $docBlockUpdater;
     }
     public function getRuleDefinition() : RuleDefinition
     {
@@ -110,15 +88,6 @@ CODE_SAMPLE
             $propertyTypeNode = $this->staticTypeMapper->mapPHPStanTypeToPhpParserNode($propertyType, TypeKind::PROPERTY);
             if (!$propertyTypeNode instanceof Node) {
                 continue;
-            }
-            if ($propertyType instanceof ObjectType && $propertyType->getClassName() === ClassName::MOCK_OBJECT) {
-                $phpDocInfo = $this->phpDocInfoFactory->createFromNodeOrEmpty($property);
-                $varTag = $phpDocInfo->getVarTagValueNode();
-                $varType = $phpDocInfo->getVarType();
-                if ($varTag instanceof VarTagValueNode && $varType instanceof ObjectType && $varType->getClassName() !== ClassName::MOCK_OBJECT) {
-                    $varTag->type = new IntersectionTypeNode([new FullyQualifiedIdentifierTypeNode($propertyType->getClassName()), new FullyQualifiedIdentifierTypeNode($varType->getClassName())]);
-                    $this->docBlockUpdater->updateRefactoredNodeWithPhpDocInfo($property);
-                }
             }
             $property->type = $propertyTypeNode;
             $hasChanged = \true;

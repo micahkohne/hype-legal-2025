@@ -7,38 +7,34 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Param;
 use PhpParser\Node\Stmt\ClassMethod;
+use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ClassReflection;
-use Rector\Enum\ObjectReference;
+use Rector\Core\Enum\ObjectReference;
+use Rector\Core\Rector\AbstractScopeAwareRector;
+use Rector\Core\Reflection\ReflectionResolver;
 use Rector\NodeTypeResolver\Node\AttributeKey;
-use Rector\PhpParser\Node\BetterNodeFinder;
-use Rector\PHPStan\ScopeFetcher;
-use Rector\Rector\AbstractRector;
-use Rector\Reflection\ReflectionResolver;
 use Rector\TypeDeclaration\NodeAnalyzer\CallerParamMatcher;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
  * @see \Rector\Tests\TypeDeclaration\Rector\ClassMethod\ParamTypeByParentCallTypeRector\ParamTypeByParentCallTypeRectorTest
  */
-final class ParamTypeByParentCallTypeRector extends AbstractRector
+final class ParamTypeByParentCallTypeRector extends AbstractScopeAwareRector
 {
     /**
      * @readonly
+     * @var \Rector\TypeDeclaration\NodeAnalyzer\CallerParamMatcher
      */
-    private CallerParamMatcher $callerParamMatcher;
+    private $callerParamMatcher;
     /**
      * @readonly
+     * @var \Rector\Core\Reflection\ReflectionResolver
      */
-    private ReflectionResolver $reflectionResolver;
-    /**
-     * @readonly
-     */
-    private BetterNodeFinder $betterNodeFinder;
-    public function __construct(CallerParamMatcher $callerParamMatcher, ReflectionResolver $reflectionResolver, BetterNodeFinder $betterNodeFinder)
+    private $reflectionResolver;
+    public function __construct(CallerParamMatcher $callerParamMatcher, ReflectionResolver $reflectionResolver)
     {
         $this->callerParamMatcher = $callerParamMatcher;
         $this->reflectionResolver = $reflectionResolver;
-        $this->betterNodeFinder = $betterNodeFinder;
     }
     public function getRuleDefinition() : RuleDefinition
     {
@@ -86,7 +82,7 @@ CODE_SAMPLE
     /**
      * @param ClassMethod $node
      */
-    public function refactor(Node $node) : ?Node
+    public function refactorWithScope(Node $node, Scope $scope) : ?Node
     {
         if ($this->shouldSkip($node)) {
             return null;
@@ -96,7 +92,6 @@ CODE_SAMPLE
             return null;
         }
         $hasChanged = \false;
-        $scope = ScopeFetcher::fetch($node);
         foreach ($node->params as $param) {
             // already has type, skip
             if ($param->type !== null) {
@@ -106,7 +101,7 @@ CODE_SAMPLE
             if (!$parentParam instanceof Param) {
                 continue;
             }
-            if (!$parentParam->type instanceof Node) {
+            if ($parentParam->type === null) {
                 continue;
             }
             // mimic type

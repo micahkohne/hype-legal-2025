@@ -1,7 +1,7 @@
 <?php
 
 declare (strict_types=1);
-namespace Rector\NodeManipulator;
+namespace Rector\Core\NodeManipulator;
 
 use PhpParser\Node\FunctionLike;
 use Rector\NodeNameResolver\NodeNameResolver;
@@ -9,8 +9,9 @@ final class FunctionLikeManipulator
 {
     /**
      * @readonly
+     * @var \Rector\NodeNameResolver\NodeNameResolver
      */
-    private NodeNameResolver $nodeNameResolver;
+    private $nodeNameResolver;
     public function __construct(NodeNameResolver $nodeNameResolver)
     {
         $this->nodeNameResolver = $nodeNameResolver;

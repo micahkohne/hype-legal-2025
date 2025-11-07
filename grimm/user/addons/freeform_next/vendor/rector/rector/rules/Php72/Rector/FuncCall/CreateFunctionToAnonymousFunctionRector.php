@@ -12,36 +12,41 @@ use PhpParser\Node\Expr\Closure;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Name;
 use PhpParser\Node\Param;
-use PhpParser\Node\Scalar\InterpolatedString;
+use PhpParser\Node\Scalar\Encapsed;
 use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\Expression;
-use Rector\Exception\ShouldNotHappenException;
-use Rector\Php\ReservedKeywordAnalyzer;
+use Rector\Core\Exception\ShouldNotHappenException;
+use Rector\Core\Php\ReservedKeywordAnalyzer;
+use Rector\Core\PhpParser\Parser\InlineCodeParser;
+use Rector\Core\Rector\AbstractRector;
+use Rector\Core\ValueObject\PhpVersionFeature;
 use Rector\Php72\NodeFactory\AnonymousFunctionFactory;
-use Rector\PhpParser\Parser\InlineCodeParser;
-use Rector\Rector\AbstractRector;
-use Rector\ValueObject\PhpVersionFeature;
 use Rector\VersionBonding\Contract\MinPhpVersionInterface;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
+ * @changelog https://stackoverflow.com/q/48161526/1348344 http://php.net/manual/en/migration72.deprecated.php#migration72.deprecated.create_function-function
+ *
  * @see \Rector\Tests\Php72\Rector\FuncCall\CreateFunctionToAnonymousFunctionRector\CreateFunctionToAnonymousFunctionRectorTest
  */
 final class CreateFunctionToAnonymousFunctionRector extends AbstractRector implements MinPhpVersionInterface
 {
     /**
      * @readonly
+     * @var \Rector\Core\PhpParser\Parser\InlineCodeParser
      */
-    private InlineCodeParser $inlineCodeParser;
+    private $inlineCodeParser;
     /**
      * @readonly
+     * @var \Rector\Php72\NodeFactory\AnonymousFunctionFactory
      */
-    private AnonymousFunctionFactory $anonymousFunctionFactory;
+    private $anonymousFunctionFactory;
     /**
      * @readonly
+     * @var \Rector\Core\Php\ReservedKeywordAnalyzer
      */
-    private ReservedKeywordAnalyzer $reservedKeywordAnalyzer;
+    private $reservedKeywordAnalyzer;
     public function __construct(InlineCodeParser $inlineCodeParser, AnonymousFunctionFactory $anonymousFunctionFactory, ReservedKeywordAnalyzer $reservedKeywordAnalyzer)
     {
         $this->inlineCodeParser = $inlineCodeParser;
@@ -121,7 +126,7 @@ CODE_SAMPLE
     {
         $content = $this->inlineCodeParser->stringify($expr);
         $content = '<?php $value = function(' . $content . ') {};';
-        $nodes = $this->inlineCodeParser->parseString($content);
+        $nodes = $this->inlineCodeParser->parse($content);
         /** @var Expression $expression */
         $expression = $nodes[0];
         /** @var Assign $assign */
@@ -137,12 +142,12 @@ CODE_SAMPLE
      */
     private function parseStringToBody(Expr $expr) : array
     {
-        if (!$expr instanceof String_ && !$expr instanceof InterpolatedString && !$expr instanceof Concat) {
+        if (!$expr instanceof String_ && !$expr instanceof Encapsed && !$expr instanceof Concat) {
             // special case of code elsewhere
             return [$this->createEval($expr)];
         }
-        $content = $this->inlineCodeParser->stringify($expr);
-        return $this->inlineCodeParser->parseString($content);
+        $expr = $this->inlineCodeParser->stringify($expr);
+        return $this->inlineCodeParser->parse($expr);
     }
     private function createEval(Expr $expr) : Expression
     {

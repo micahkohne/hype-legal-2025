@@ -6,7 +6,7 @@ namespace PhpParser;
 /**
  * @codeCoverageIgnore
  */
-abstract class NodeVisitorAbstract implements \PhpParser\NodeVisitor
+class NodeVisitorAbstract implements \PhpParser\NodeVisitor
 {
     public function beforeTraverse(array $nodes)
     {

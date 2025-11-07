@@ -8,12 +8,10 @@ use Solspace\Addons\FreeformNext\Library\Composer\Components\Validation\Errors\C
 class Validator
 {
     /**
-     * @param AbstractField $field
-     * @param mixed         $value
      *
      * @return ConstraintViolationList
      */
-    public function validate(AbstractField $field, $value): ConstraintViolationList
+    public function validate(AbstractField $field, mixed $value): ConstraintViolationList
     {
         $violationList = new ConstraintViolationList();
 

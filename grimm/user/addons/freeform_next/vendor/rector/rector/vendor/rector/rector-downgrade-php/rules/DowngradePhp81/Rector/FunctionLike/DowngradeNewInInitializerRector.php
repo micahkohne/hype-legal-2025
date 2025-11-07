@@ -26,11 +26,10 @@ use PhpParser\Node\Stmt\Expression;
 use PhpParser\Node\Stmt\Function_;
 use PhpParser\Node\Stmt\Return_;
 use PhpParser\Node\UnionType;
-use Rector\Exception\ShouldNotHappenException;
+use Rector\Core\Exception\ShouldNotHappenException;
+use Rector\Core\Rector\AbstractRector;
+use Rector\Core\ValueObject\MethodName;
 use Rector\Php72\NodeFactory\AnonymousFunctionFactory;
-use Rector\PhpParser\Node\BetterNodeFinder;
-use Rector\Rector\AbstractRector;
-use Rector\ValueObject\MethodName;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -42,16 +41,12 @@ final class DowngradeNewInInitializerRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\Php72\NodeFactory\AnonymousFunctionFactory
      */
-    private AnonymousFunctionFactory $anonymousFunctionFactory;
-    /**
-     * @readonly
-     */
-    private BetterNodeFinder $betterNodeFinder;
-    public function __construct(AnonymousFunctionFactory $anonymousFunctionFactory, BetterNodeFinder $betterNodeFinder)
+    private $anonymousFunctionFactory;
+    public function __construct(AnonymousFunctionFactory $anonymousFunctionFactory)
     {
         $this->anonymousFunctionFactory = $anonymousFunctionFactory;
-        $this->betterNodeFinder = $betterNodeFinder;
     }
     public function getRuleDefinition() : RuleDefinition
     {
@@ -154,17 +149,10 @@ CODE_SAMPLE
             } else {
                 $assign = new AssignCoalesce($param->var, $default);
             }
-            // recheck after
-            if ($isConstructor && $param->type !== null) {
-                $param->type = $this->ensureNullableType($param->type);
-            }
             $stmts[] = new Expression($assign);
             $param->default = $this->nodeFactory->createNull();
         }
-        if ($functionLike->stmts === null) {
-            return $functionLike;
-        }
-        $functionLike->stmts ??= [];
+        $functionLike->stmts = $functionLike->stmts ?? [];
         $functionLike->stmts = \array_merge($stmts, $functionLike->stmts);
         return $functionLike;
     }
@@ -181,17 +169,23 @@ CODE_SAMPLE
             return new NullableType($type);
         }
         if ($type instanceof UnionType) {
-            foreach ($type->types as $typeChild) {
-                if (!$typeChild instanceof Identifier) {
-                    continue;
-                }
-                if ($typeChild->toLowerString() === 'null') {
-                    return $type;
-                }
+            if (!$this->hasNull($type)) {
+                $type->types[] = new Name('null');
             }
-            $type->types[] = new Identifier('null');
             return $type;
         }
         throw new ShouldNotHappenException();
+    }
+    private function hasNull(UnionType $unionType) : bool
+    {
+        foreach ($unionType->types as $type) {
+            if (!$type instanceof Identifier) {
+                continue;
+            }
+            if ($type->toLowerString() === 'null') {
+                return \true;
+            }
+        }
+        return \false;
     }
 }

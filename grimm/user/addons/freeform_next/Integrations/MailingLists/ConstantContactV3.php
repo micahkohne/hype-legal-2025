@@ -11,7 +11,6 @@
 
 namespace Solspace\Addons\FreeformNext\Integrations\MailingLists;
 
-use Override;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\BadResponseException;
 use GuzzleHttp\Exception\GuzzleException;
@@ -23,13 +22,12 @@ use Solspace\Addons\FreeformNext\Library\Integrations\TokenRefreshInterface;
 
 class ConstantContactV3 extends MailingListOAuthConnector implements TokenRefreshInterface
 {
-    const TITLE = "Constant Contact (v3)";
-    const LOG_CATEGORY = "ConstantContact_v3";
+    public const TITLE = "Constant Contact (v3)";
+    public const LOG_CATEGORY = "ConstantContact_v3";
 
     /**
      * @return string
      */
-    #[Override]
     public function getServiceProvider(): string
     {
         return "Constant Contact";
@@ -39,7 +37,7 @@ class ConstantContactV3 extends MailingListOAuthConnector implements TokenRefres
      * @return bool
      * @throws GuzzleException
      */
-    public function checkConnection()
+    public function checkConnection(): bool
     {
         try {
             $client = new Client();
@@ -79,8 +77,7 @@ class ConstantContactV3 extends MailingListOAuthConnector implements TokenRefres
     /**
      * @return void
      */
-    #[Override]
-    public function initiateAuthentication(): never
+    public function initiateAuthentication(): void
     {
         $data = [
             "response_type" => "code",
@@ -141,7 +138,7 @@ class ConstantContactV3 extends MailingListOAuthConnector implements TokenRefres
             }
 
             $email = reset($emails);
-            $email = strtolower((string) $email);
+            $email = strtolower($email);
 
             $data = array_merge(
                 [
@@ -246,7 +243,7 @@ class ConstantContactV3 extends MailingListOAuthConnector implements TokenRefres
      * @return FieldObject[]
      * @throws IntegrationException|GuzzleException
      */
-    public function fetchFields($listId): array
+    public function fetchFields($listId)
     {
         try {
             $client = new Client();

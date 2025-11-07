@@ -12,33 +12,30 @@ use PhpParser\Node\Expr\Ternary;
 use PhpParser\Node\Stmt\Else_;
 use PhpParser\Node\Stmt\If_;
 use PhpParser\Node\Stmt\Return_;
-use Rector\Contract\PhpParser\Node\StmtsAwareInterface;
+use Rector\Core\Contract\PhpParser\Node\StmtsAwareInterface;
+use Rector\Core\Rector\AbstractRector;
+use Rector\Core\ValueObject\PhpVersionFeature;
 use Rector\Php70\Enum\BattleshipCompareOrder;
 use Rector\Php70\NodeAnalyzer\BattleshipTernaryAnalyzer;
 use Rector\Php70\ValueObject\ComparedExprs;
-use Rector\PhpParser\Node\Value\ValueResolver;
-use Rector\Rector\AbstractRector;
-use Rector\ValueObject\PhpVersionFeature;
 use Rector\VersionBonding\Contract\MinPhpVersionInterface;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
+ * @changelog https://wiki.php.net/rfc/combined-comparison-operator https://3v4l.org/LPbA0
+ *
  * @see \Rector\Tests\Php70\Rector\If_\IfToSpaceshipRector\IfToSpaceshipRectorTest
  */
 final class IfToSpaceshipRector extends AbstractRector implements MinPhpVersionInterface
 {
     /**
      * @readonly
+     * @var \Rector\Php70\NodeAnalyzer\BattleshipTernaryAnalyzer
      */
-    private BattleshipTernaryAnalyzer $battleshipTernaryAnalyzer;
-    /**
-     * @readonly
-     */
-    private ValueResolver $valueResolver;
-    public function __construct(BattleshipTernaryAnalyzer $battleshipTernaryAnalyzer, ValueResolver $valueResolver)
+    private $battleshipTernaryAnalyzer;
+    public function __construct(BattleshipTernaryAnalyzer $battleshipTernaryAnalyzer)
     {
         $this->battleshipTernaryAnalyzer = $battleshipTernaryAnalyzer;
-        $this->valueResolver = $valueResolver;
     }
     public function getRuleDefinition() : RuleDefinition
     {
@@ -83,7 +80,7 @@ CODE_SAMPLE
             if (!$stmt->expr instanceof Ternary) {
                 continue;
             }
-            // preceded by if
+            // preceeded by if
             $prevStmt = $node->stmts[$key - 1] ?? null;
             if (!$prevStmt instanceof If_) {
                 continue;

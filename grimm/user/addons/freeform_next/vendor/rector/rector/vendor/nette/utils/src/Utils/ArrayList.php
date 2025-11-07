@@ -5,9 +5,9 @@
  * Copyright (c) 2004 David Grudl (https://davidgrudl.com)
  */
 declare (strict_types=1);
-namespace RectorPrefix202507\Nette\Utils;
+namespace RectorPrefix202308\Nette\Utils;
 
-use RectorPrefix202507\Nette;
+use RectorPrefix202308\Nette;
 /**
  * Provides the base class for a generic list (items can be accessed by index).
  * @template T
@@ -17,7 +17,8 @@ use RectorPrefix202507\Nette;
 class ArrayList implements \ArrayAccess, \Countable, \IteratorAggregate
 {
     use Nette\SmartObject;
-    private array $list = [];
+    /** @var mixed[] */
+    private $list = [];
     /**
      * Transforms array to ArrayList.
      * @param  list<T>  $array
@@ -34,13 +35,11 @@ class ArrayList implements \ArrayAccess, \Countable, \IteratorAggregate
     }
     /**
      * Returns an iterator over all items.
-     * @return \Iterator<int, T>
+     * @return \ArrayIterator<int, T>
      */
-    public function &getIterator() : \Iterator
+    public function getIterator() : \ArrayIterator
     {
-        foreach ($this->list as &$item) {
-            (yield $item);
-        }
+        return new \ArrayIterator($this->list);
     }
     /**
      * Returns items count.

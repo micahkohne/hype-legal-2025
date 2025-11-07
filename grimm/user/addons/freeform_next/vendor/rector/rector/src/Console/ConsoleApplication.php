@@ -1,20 +1,21 @@
 <?php
 
 declare (strict_types=1);
-namespace Rector\Console;
+namespace Rector\Core\Console;
 
-use RectorPrefix202507\Composer\XdebugHandler\XdebugHandler;
-use Rector\Application\VersionResolver;
+use RectorPrefix202308\Composer\XdebugHandler\XdebugHandler;
 use Rector\ChangesReporting\Output\ConsoleOutputFormatter;
-use Rector\Configuration\Option;
-use Rector\Util\Reflection\PrivatesAccessor;
-use RectorPrefix202507\Symfony\Component\Console\Application;
-use RectorPrefix202507\Symfony\Component\Console\Command\Command;
-use RectorPrefix202507\Symfony\Component\Console\Input\InputDefinition;
-use RectorPrefix202507\Symfony\Component\Console\Input\InputInterface;
-use RectorPrefix202507\Symfony\Component\Console\Input\InputOption;
-use RectorPrefix202507\Symfony\Component\Console\Output\OutputInterface;
-use RectorPrefix202507\Webmozart\Assert\Assert;
+use Rector\Core\Application\VersionResolver;
+use Rector\Core\Configuration\Option;
+use Rector\Core\Util\Reflection\PrivatesAccessor;
+use RectorPrefix202308\Symfony\Component\Console\Application;
+use RectorPrefix202308\Symfony\Component\Console\Command\Command;
+use RectorPrefix202308\Symfony\Component\Console\Input\InputDefinition;
+use RectorPrefix202308\Symfony\Component\Console\Input\InputInterface;
+use RectorPrefix202308\Symfony\Component\Console\Input\InputOption;
+use RectorPrefix202308\Symfony\Component\Console\Output\OutputInterface;
+use RectorPrefix202308\Symfony\Component\DependencyInjection\Argument\RewindableGenerator;
+use RectorPrefix202308\Webmozart\Assert\Assert;
 final class ConsoleApplication extends Application
 {
     /**
@@ -22,23 +23,33 @@ final class ConsoleApplication extends Application
      */
     private const NAME = 'Rector';
     /**
-     * @param Command[] $commands
+     * @param RewindableGenerator<int, Command>|Command[] $commands
      */
-    public function __construct(array $commands)
+    public function __construct(iterable $commands)
     {
         parent::__construct(self::NAME, VersionResolver::PACKAGE_VERSION);
+        if ($commands instanceof RewindableGenerator) {
+            $commands = \iterator_to_array($commands->getIterator());
+        }
         Assert::notEmpty($commands);
         Assert::allIsInstanceOf($commands, Command::class);
         $this->addCommands($commands);
+        // remove unused commands
+        $privatesAccessor = new PrivatesAccessor();
+        $privatesAccessor->propertyClosure($this, 'commands', static function (array $commands) : array {
+            unset($commands['completion']);
+            unset($commands['help']);
+            return $commands;
+        });
         // run this command, if no command name is provided
         $this->setDefaultCommand('process');
     }
     public function doRun(InputInterface $input, OutputInterface $output) : int
     {
+        // @fixes https://github.com/rectorphp/rector/issues/2205
         $isXdebugAllowed = $input->hasParameterOption('--xdebug');
         if (!$isXdebugAllowed) {
             $xdebugHandler = new XdebugHandler('rector');
-            $xdebugHandler->setPersistent();
             $xdebugHandler->check();
             unset($xdebugHandler);
         }
@@ -50,18 +61,6 @@ final class ConsoleApplication extends Application
         }
         if ($shouldFollowByNewline) {
             $output->write(\PHP_EOL);
-        }
-        $commandName = $input->getFirstArgument();
-        // if paths exist or if the command name is not the first argument but with --option, eg:
-        // bin/rector src
-        // bin/rector --only "RemovePhpVersionIdCheckRector"
-        // file_exists() can check directory and file
-        if (\is_string($commandName) && (\file_exists($commandName) || isset($_SERVER['argv'][1]) && $commandName !== $_SERVER['argv'][1] && $input->hasParameterOption($_SERVER['argv'][1]))) {
-            // prepend command name if implicit
-            $privatesAccessor = new PrivatesAccessor();
-            $tokens = $privatesAccessor->getPrivateProperty($input, 'tokens');
-            $tokens = \array_merge(['process'], $tokens);
-            $privatesAccessor->setPrivateProperty($input, 'tokens', $tokens);
         }
         return parent::doRun($input, $output);
     }

@@ -17,49 +17,46 @@ use PhpParser\Node\Identifier;
 use PhpParser\Node\Stmt\Property;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ClassReflection;
+use PHPStan\Type\ArrayType;
 use PHPStan\Type\MixedType;
-use PHPStan\Type\Type;
-use Rector\NodeAnalyzer\ExprAnalyzer;
-use Rector\Php\ReservedKeywordAnalyzer;
-use Rector\PhpParser\AstResolver;
-use Rector\PHPStan\ScopeFetcher;
-use Rector\Rector\AbstractRector;
-use Rector\Reflection\ReflectionResolver;
+use Rector\Core\NodeAnalyzer\ExprAnalyzer;
+use Rector\Core\PhpParser\AstResolver;
+use Rector\Core\Rector\AbstractScopeAwareRector;
+use Rector\Core\Reflection\ReflectionResolver;
 use Rector\TypeDeclaration\TypeInferer\PropertyTypeInferer\AllAssignNodePropertyTypeInferer;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
- * @see \Rector\Tests\CodeQuality\Rector\Empty_\SimplifyEmptyCheckOnEmptyArrayRector\SimplifyEmptyCheckOnEmptyArrayRectorTest
+ * @see \Rector\Tests\CodeQuality\Rector\Empty_\SimplifyEmptyCheckOnEmptyArrayRectorTest\SimplifyEmptyCheckOnEmptyArrayRectorTest
  */
-final class SimplifyEmptyCheckOnEmptyArrayRector extends AbstractRector
+final class SimplifyEmptyCheckOnEmptyArrayRector extends AbstractScopeAwareRector
 {
     /**
      * @readonly
+     * @var \Rector\Core\NodeAnalyzer\ExprAnalyzer
      */
-    private ExprAnalyzer $exprAnalyzer;
+    private $exprAnalyzer;
     /**
      * @readonly
+     * @var \Rector\Core\Reflection\ReflectionResolver
      */
-    private ReflectionResolver $reflectionResolver;
+    private $reflectionResolver;
     /**
      * @readonly
+     * @var \Rector\Core\PhpParser\AstResolver
      */
-    private AstResolver $astResolver;
+    private $astResolver;
     /**
      * @readonly
+     * @var \Rector\TypeDeclaration\TypeInferer\PropertyTypeInferer\AllAssignNodePropertyTypeInferer
      */
-    private AllAssignNodePropertyTypeInferer $allAssignNodePropertyTypeInferer;
-    /**
-     * @readonly
-     */
-    private ReservedKeywordAnalyzer $reservedKeywordAnalyzer;
-    public function __construct(ExprAnalyzer $exprAnalyzer, ReflectionResolver $reflectionResolver, AstResolver $astResolver, AllAssignNodePropertyTypeInferer $allAssignNodePropertyTypeInferer, ReservedKeywordAnalyzer $reservedKeywordAnalyzer)
+    private $allAssignNodePropertyTypeInferer;
+    public function __construct(ExprAnalyzer $exprAnalyzer, ReflectionResolver $reflectionResolver, AstResolver $astResolver, AllAssignNodePropertyTypeInferer $allAssignNodePropertyTypeInferer)
     {
         $this->exprAnalyzer = $exprAnalyzer;
         $this->reflectionResolver = $reflectionResolver;
         $this->astResolver = $astResolver;
         $this->allAssignNodePropertyTypeInferer = $allAssignNodePropertyTypeInferer;
-        $this->reservedKeywordAnalyzer = $reservedKeywordAnalyzer;
     }
     public function getRuleDefinition() : RuleDefinition
     {
@@ -87,9 +84,8 @@ CODE_SAMPLE
     /**
      * @param Empty_|BooleanNot $node $node
      */
-    public function refactor(Node $node) : ?Node
+    public function refactorWithScope(Node $node, Scope $scope) : ?Node
     {
-        $scope = ScopeFetcher::fetch($node);
         if ($node instanceof BooleanNot) {
             if ($node->expr instanceof Empty_ && $this->isAllowedExpr($node->expr->expr, $scope)) {
                 return new NotIdentical($node->expr->expr, new Array_());
@@ -101,20 +97,13 @@ CODE_SAMPLE
         }
         return new Identical($node->expr, new Array_());
     }
-    private function isAllowedVariable(Variable $variable) : bool
-    {
-        if (\is_string($variable->name) && $this->reservedKeywordAnalyzer->isNativeVariable($variable->name)) {
-            return \false;
-        }
-        return !$this->exprAnalyzer->isNonTypedFromParam($variable);
-    }
     private function isAllowedExpr(Expr $expr, Scope $scope) : bool
     {
-        if (!$scope->getType($expr)->isArray()->yes()) {
+        if (!$scope->getType($expr) instanceof ArrayType) {
             return \false;
         }
         if ($expr instanceof Variable) {
-            return $this->isAllowedVariable($expr);
+            return !$this->exprAnalyzer->isNonTypedFromParam($expr);
         }
         if (!$expr instanceof PropertyFetch && !$expr instanceof StaticPropertyFetch) {
             return \false;
@@ -122,7 +111,7 @@ CODE_SAMPLE
         if (!$expr->name instanceof Identifier) {
             return \false;
         }
-        $classReflection = $this->reflectionResolver->resolveClassReflectionSourceObject($expr);
+        $classReflection = $this->reflectionResolver->resolveClassReflection($expr);
         if (!$classReflection instanceof ClassReflection) {
             return \false;
         }
@@ -133,7 +122,7 @@ CODE_SAMPLE
         $phpPropertyReflection = $classReflection->getNativeProperty($propertyName);
         $nativeType = $phpPropertyReflection->getNativeType();
         if (!$nativeType instanceof MixedType) {
-            return $nativeType->isArray()->yes();
+            return $nativeType instanceof ArrayType;
         }
         $property = $this->astResolver->resolvePropertyFromPropertyReflection($phpPropertyReflection);
         /**
@@ -145,10 +134,7 @@ CODE_SAMPLE
         if (!$property instanceof Property) {
             return \false;
         }
-        $type = $this->allAssignNodePropertyTypeInferer->inferProperty($property, $classReflection, $this->file);
-        if (!$type instanceof Type) {
-            return \false;
-        }
-        return $type->isArray()->yes();
+        $type = $this->allAssignNodePropertyTypeInferer->inferProperty($property, $classReflection);
+        return $type instanceof ArrayType;
     }
 }

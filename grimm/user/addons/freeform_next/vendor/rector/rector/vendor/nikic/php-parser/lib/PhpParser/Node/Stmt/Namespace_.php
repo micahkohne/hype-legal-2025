@@ -4,24 +4,24 @@ declare (strict_types=1);
 namespace PhpParser\Node\Stmt;
 
 use PhpParser\Node;
-use Rector\Contract\PhpParser\Node\StmtsAwareInterface;
+use Rector\Core\Contract\PhpParser\Node\StmtsAwareInterface;
 class Namespace_ extends Node\Stmt implements StmtsAwareInterface
 {
     /* For use in the "kind" attribute */
-    public const KIND_SEMICOLON = 1;
-    public const KIND_BRACED = 2;
+    const KIND_SEMICOLON = 1;
+    const KIND_BRACED = 2;
     /** @var null|Node\Name Name */
-    public ?Node\Name $name;
+    public $name;
     /** @var Node\Stmt[] Statements */
     public $stmts;
     /**
      * Constructs a namespace node.
      *
-     * @param null|Node\Name $name Name
-     * @param null|Node\Stmt[] $stmts Statements
-     * @param array<string, mixed> $attributes Additional attributes
+     * @param null|Node\Name   $name       Name
+     * @param null|Node\Stmt[] $stmts      Statements
+     * @param array            $attributes Additional attributes
      */
-    public function __construct(?Node\Name $name = null, ?array $stmts = [], array $attributes = [])
+    public function __construct(Node\Name $name = null, $stmts = [], array $attributes = [])
     {
         $this->attributes = $attributes;
         $this->name = $name;

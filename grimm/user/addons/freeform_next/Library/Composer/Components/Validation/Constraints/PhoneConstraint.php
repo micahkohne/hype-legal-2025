@@ -22,7 +22,7 @@ class PhoneConstraint implements ConstraintInterface
      * @param string $message
      * @param string $pattern
      */
-    public function __construct(private $message = 'Invalid phone number', $pattern = null)
+    public function __construct(private $message = 'Invalid phone number', ?string $pattern = null)
     {
         $this->pattern = !empty($pattern) ? $pattern : null;
     }
@@ -38,14 +38,14 @@ class PhoneConstraint implements ConstraintInterface
         if (null !== $pattern) {
             $compiledPattern = $pattern;
             $compiledPattern = preg_replace('/([\[\](){}$+_\-+])/', '\\\\$1', $compiledPattern);
-            preg_match_all('/(x+)/i', (string) $compiledPattern, $matches);
+            preg_match_all('/(x+)/i', $compiledPattern, $matches);
 
             if (isset($matches[1])) {
                 foreach ($matches[1] as $match) {
                     $compiledPattern = preg_replace(
                         '/' . $match . '/',
                         '[0-9]{' . strlen($match) . '}',
-                        (string) $compiledPattern,
+                        $compiledPattern,
                         1
                     );
                 }
@@ -53,14 +53,14 @@ class PhoneConstraint implements ConstraintInterface
 
             $compiledPattern = '/^' . $compiledPattern . '$/';
 
-            if (!preg_match($compiledPattern, (string) $value)) {
+            if (!preg_match($compiledPattern, $value)) {
                 $violationList->addError($this->message);
             }
 
             return $violationList;
         }
 
-        if (!preg_match('/^\+?[0-9\- ,.\(\)]+$/', (string) $value)) {
+        if (!preg_match('/^\+?[0-9\- ,.\(\)]+$/', $value)) {
             $violationList->addError('Phone number is invalid.');
         }
 

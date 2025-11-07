@@ -8,15 +8,12 @@ use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassMethod;
 use PHPStan\PhpDocParser\Ast\PhpDoc\GenericTagValueNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocTagNode;
-use PHPStan\Reflection\ReflectionProvider;
 use Rector\BetterPhpDocParser\PhpDocInfo\PhpDocInfo;
-use Rector\BetterPhpDocParser\PhpDocInfo\PhpDocInfoFactory;
 use Rector\BetterPhpDocParser\PhpDocManipulator\PhpDocTagRemover;
-use Rector\Comments\NodeDocBlock\DocBlockUpdater;
+use Rector\Core\Rector\AbstractRector;
+use Rector\Core\ValueObject\PhpVersionFeature;
 use Rector\PhpAttribute\NodeFactory\PhpAttributeGroupFactory;
 use Rector\PHPUnit\NodeAnalyzer\TestsNodeAnalyzer;
-use Rector\Rector\AbstractRector;
-use Rector\ValueObject\PhpVersionFeature;
 use Rector\VersionBonding\Contract\MinPhpVersionInterface;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
@@ -27,40 +24,24 @@ final class DependsAnnotationWithValueToAttributeRector extends AbstractRector i
 {
     /**
      * @readonly
+     * @var \Rector\PHPUnit\NodeAnalyzer\TestsNodeAnalyzer
      */
-    private TestsNodeAnalyzer $testsNodeAnalyzer;
+    private $testsNodeAnalyzer;
     /**
      * @readonly
+     * @var \Rector\PhpAttribute\NodeFactory\PhpAttributeGroupFactory
      */
-    private PhpAttributeGroupFactory $phpAttributeGroupFactory;
+    private $phpAttributeGroupFactory;
     /**
      * @readonly
+     * @var \Rector\BetterPhpDocParser\PhpDocManipulator\PhpDocTagRemover
      */
-    private PhpDocTagRemover $phpDocTagRemover;
-    /**
-     * @readonly
-     */
-    private DocBlockUpdater $docBlockUpdater;
-    /**
-     * @readonly
-     */
-    private PhpDocInfoFactory $phpDocInfoFactory;
-    /**
-     * @readonly
-     */
-    private ReflectionProvider $reflectionProvider;
-    /**
-     * @var string
-     */
-    private const DEPENDS_ATTRIBUTE = 'PHPUnit\\Framework\\Attributes\\Depends';
-    public function __construct(TestsNodeAnalyzer $testsNodeAnalyzer, PhpAttributeGroupFactory $phpAttributeGroupFactory, PhpDocTagRemover $phpDocTagRemover, DocBlockUpdater $docBlockUpdater, PhpDocInfoFactory $phpDocInfoFactory, ReflectionProvider $reflectionProvider)
+    private $phpDocTagRemover;
+    public function __construct(TestsNodeAnalyzer $testsNodeAnalyzer, PhpAttributeGroupFactory $phpAttributeGroupFactory, PhpDocTagRemover $phpDocTagRemover)
     {
         $this->testsNodeAnalyzer = $testsNodeAnalyzer;
         $this->phpAttributeGroupFactory = $phpAttributeGroupFactory;
         $this->phpDocTagRemover = $phpDocTagRemover;
-        $this->docBlockUpdater = $docBlockUpdater;
-        $this->phpDocInfoFactory = $phpDocInfoFactory;
-        $this->reflectionProvider = $reflectionProvider;
     }
     public function getRuleDefinition() : RuleDefinition
     {
@@ -70,9 +51,10 @@ use PHPUnit\Framework\TestCase;
 final class SomeTest extends TestCase
 {
     public function testOne() {}
-
+    public function testTwo() {}
     /**
      * @depends testOne
+     * @depends testTwo
      */
     public function testThree(): void
     {
@@ -85,8 +67,9 @@ use PHPUnit\Framework\TestCase;
 final class SomeTest extends TestCase
 {
     public function testOne() {}
-
+    public function testTwo() {}
     #[\PHPUnit\Framework\Attributes\Depends('testOne')]
+    #[\PHPUnit\Framework\Attributes\Depends('testTwo')]
     public function testThree(): void
     {
     }
@@ -113,9 +96,6 @@ CODE_SAMPLE
         if (!$this->testsNodeAnalyzer->isInTestClass($node)) {
             return null;
         }
-        if (!$this->reflectionProvider->hasClass(self::DEPENDS_ATTRIBUTE)) {
-            return null;
-        }
         $hasChanged = \false;
         foreach ($node->getMethods() as $classMethod) {
             $phpDocInfo = $this->phpDocInfoFactory->createFromNode($classMethod);
@@ -134,7 +114,6 @@ CODE_SAMPLE
                 $classMethod->attrGroups[] = $attributeGroup;
                 // cleanup
                 $this->phpDocTagRemover->removeTagValueFromNode($phpDocInfo, $desiredTagValueNode);
-                $this->docBlockUpdater->updateRefactoredNodeWithPhpDocInfo($classMethod);
                 $hasChanged = \true;
             }
         }
@@ -165,7 +144,7 @@ CODE_SAMPLE
     {
         // process depends other ClassMethod
         $attributeValue = $this->resolveDependsClassMethod($currentClass, $currentMethodName, $originalAttributeValue);
-        $attributeName = self::DEPENDS_ATTRIBUTE;
+        $attributeName = 'PHPUnit\\Framework\\Attributes\\Depends';
         if (!\is_string($attributeValue)) {
             // other: depends other Class_
             $attributeValue = $this->resolveDependsClass($originalAttributeValue);

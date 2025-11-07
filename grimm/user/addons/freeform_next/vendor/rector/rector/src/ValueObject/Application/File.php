@@ -1,49 +1,55 @@
 <?php
 
 declare (strict_types=1);
-namespace Rector\ValueObject\Application;
+namespace Rector\Core\ValueObject\Application;
 
-use PhpParser\Node;
 use PhpParser\Node\Stmt;
-use PhpParser\Node\Stmt\InlineHTML;
-use PhpParser\NodeFinder;
-use PhpParser\Token;
 use Rector\ChangesReporting\ValueObject\RectorWithLineChange;
-use Rector\Exception\ShouldNotHappenException;
-use Rector\ValueObject\Reporting\FileDiff;
+use Rector\Core\Exception\ShouldNotHappenException;
+use Rector\Core\ValueObject\Reporting\FileDiff;
+/**
+ * @see \Rector\Core\ValueObjectFactory\Application\FileFactory
+ */
 final class File
 {
     /**
      * @readonly
+     * @var string
      */
-    private string $filePath;
-    private string $fileContent;
-    private bool $hasChanged = \false;
+    private $filePath;
+    /**
+     * @var string
+     */
+    private $fileContent;
+    /**
+     * @var bool
+     */
+    private $hasChanged = \false;
     /**
      * @readonly
+     * @var string
      */
-    private string $originalFileContent;
-    private ?FileDiff $fileDiff = null;
+    private $originalFileContent;
     /**
-     * @var Node[]
+     * @var \Rector\Core\ValueObject\Reporting\FileDiff|null
      */
-    private array $oldStmts = [];
+    private $fileDiff;
     /**
-     * @var Node[]
+     * @var Stmt[]
      */
-    private array $newStmts = [];
+    private $oldStmts = [];
     /**
-     * @var array<int, Token>
+     * @var Stmt[]
      */
-    private array $oldTokens = [];
+    private $newStmts = [];
+    /**
+     * @var mixed[]
+     */
+    private $oldTokens = [];
     /**
      * @var RectorWithLineChange[]
      */
-    private array $rectorWithLineChanges = [];
-    /**
-     * Cached result per file
-     */
-    private ?bool $containsHtml = null;
+    private $rectorWithLineChanges = [];
     public function __construct(string $filePath, string $fileContent)
     {
         $this->filePath = $filePath;
@@ -89,7 +95,7 @@ final class File
     /**
      * @param Stmt[] $newStmts
      * @param Stmt[] $oldStmts
-     * @param array<int, Token> $oldTokens
+     * @param mixed[] $oldTokens
      */
     public function hydrateStmtsAndTokens(array $newStmts, array $oldStmts, array $oldTokens) : void
     {
@@ -115,14 +121,14 @@ final class File
         return $this->newStmts;
     }
     /**
-     * @return array<int, Token>
+     * @return mixed[]
      */
     public function getOldTokens() : array
     {
         return $this->oldTokens;
     }
     /**
-     * @param Node[] $newStmts
+     * @param Stmt[] $newStmts
      */
     public function changeNewStmts(array $newStmts) : void
     {
@@ -138,14 +144,5 @@ final class File
     public function getRectorWithLineChanges() : array
     {
         return $this->rectorWithLineChanges;
-    }
-    public function containsHTML() : bool
-    {
-        if ($this->containsHtml !== null) {
-            return $this->containsHtml;
-        }
-        $nodeFinder = new NodeFinder();
-        $this->containsHtml = (bool) $nodeFinder->findFirstInstanceOf($this->oldStmts, InlineHTML::class);
-        return $this->containsHtml;
     }
 }

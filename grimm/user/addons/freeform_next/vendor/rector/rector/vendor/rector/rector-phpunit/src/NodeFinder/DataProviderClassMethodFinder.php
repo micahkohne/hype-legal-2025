@@ -11,28 +11,33 @@ use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassMethod;
 use PHPStan\PhpDocParser\Ast\PhpDoc\GenericTagValueNode;
 use PHPStan\Reflection\ClassReflection;
+use RectorPrefix202308\PHPUnit\Framework\Attributes\DataProvider;
 use Rector\BetterPhpDocParser\PhpDocInfo\PhpDocInfoFactory;
+use Rector\Core\PhpParser\AstResolver;
+use Rector\Core\Reflection\ReflectionResolver;
 use Rector\NodeNameResolver\NodeNameResolver;
-use Rector\PhpParser\AstResolver;
-use Rector\Reflection\ReflectionResolver;
 final class DataProviderClassMethodFinder
 {
     /**
      * @readonly
+     * @var \Rector\BetterPhpDocParser\PhpDocInfo\PhpDocInfoFactory
      */
-    private PhpDocInfoFactory $phpDocInfoFactory;
+    private $phpDocInfoFactory;
     /**
      * @readonly
+     * @var \Rector\Core\Reflection\ReflectionResolver
      */
-    private ReflectionResolver $reflectionResolver;
+    private $reflectionResolver;
     /**
      * @readonly
+     * @var \Rector\Core\PhpParser\AstResolver
      */
-    private AstResolver $astResolver;
+    private $astResolver;
     /**
      * @readonly
+     * @var \Rector\NodeNameResolver\NodeNameResolver
      */
-    private NodeNameResolver $nodeNameResolver;
+    private $nodeNameResolver;
     public function __construct(PhpDocInfoFactory $phpDocInfoFactory, ReflectionResolver $reflectionResolver, AstResolver $astResolver, NodeNameResolver $nodeNameResolver)
     {
         $this->phpDocInfoFactory = $phpDocInfoFactory;
@@ -67,7 +72,7 @@ final class DataProviderClassMethodFinder
      */
     public function findDataProviderNamesForClassMethod(ClassMethod $classMethod) : array
     {
-        $dataProviderAttributes = $this->findAttributesByClass($classMethod, 'PHPUnit\\Framework\\Attributes\\DataProvider');
+        $dataProviderAttributes = $this->findAttributesByClass($classMethod, DataProvider::class);
         if ($dataProviderAttributes !== []) {
             return $this->resolveAttributeMethodNames($dataProviderAttributes);
         }

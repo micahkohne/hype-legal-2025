@@ -18,39 +18,45 @@ use Rector\BetterPhpDocParser\PhpDoc\DoctrineAnnotationTagValueNode;
 use Rector\BetterPhpDocParser\PhpDoc\StringNode;
 use Rector\BetterPhpDocParser\PhpDocInfo\PhpDocInfo;
 use Rector\BetterPhpDocParser\PhpDocInfo\PhpDocInfoFactory;
-use Rector\Doctrine\Enum\MappingClass;
 use Rector\Doctrine\NodeAnalyzer\AttributeFinder;
 use Rector\NodeTypeResolver\PHPStan\Type\TypeFactory;
 final class ColumnPropertyTypeResolver
 {
     /**
      * @readonly
+     * @var \Rector\BetterPhpDocParser\PhpDocInfo\PhpDocInfoFactory
      */
-    private PhpDocInfoFactory $phpDocInfoFactory;
+    private $phpDocInfoFactory;
     /**
      * @readonly
+     * @var \Rector\NodeTypeResolver\PHPStan\Type\TypeFactory
      */
-    private TypeFactory $typeFactory;
+    private $typeFactory;
     /**
      * @readonly
+     * @var \Rector\Doctrine\NodeAnalyzer\AttributeFinder
      */
-    private AttributeFinder $attributeFinder;
+    private $attributeFinder;
     /**
      * @var array<string, Type>
      * @readonly
      */
-    private array $doctrineTypeToScalarType;
+    private $doctrineTypeToScalarType;
     /**
      * @var string
      */
     private const DATE_TIME_INTERFACE = 'DateTimeInterface';
     /**
+     * @var string
+     */
+    private const COLUMN_CLASS = 'Doctrine\\ORM\\Mapping\\Column';
+    /**
      * @param array<string, Type> $doctrineTypeToScalarType
      * @see https://www.doctrine-project.org/projects/doctrine-orm/en/2.6/reference/basic-mapping.html#doctrine-mapping-types
      */
-    public function __construct(PhpDocInfoFactory $phpDocInfoFactory, TypeFactory $typeFactory, AttributeFinder $attributeFinder, ?array $doctrineTypeToScalarType = null)
+    public function __construct(PhpDocInfoFactory $phpDocInfoFactory, TypeFactory $typeFactory, AttributeFinder $attributeFinder, array $doctrineTypeToScalarType = null)
     {
-        $doctrineTypeToScalarType ??= [
+        $doctrineTypeToScalarType = $doctrineTypeToScalarType ?? [
             'tinyint' => new BooleanType(),
             'boolean' => new BooleanType(),
             // integers
@@ -73,10 +79,10 @@ final class ColumnPropertyTypeResolver
             'varchar' => new StringType(),
             'string' => new StringType(),
             'char' => new StringType(),
-            'longblob' => new MixedType(),
-            'blob' => new MixedType(),
-            'mediumblob' => new MixedType(),
-            'tinyblob' => new MixedType(),
+            'longblob' => new StringType(),
+            'blob' => new StringType(),
+            'mediumblob' => new StringType(),
+            'tinyblob' => new StringType(),
             'binary' => new StringType(),
             'varbinary' => new StringType(),
             'set' => new StringType(),
@@ -94,7 +100,7 @@ final class ColumnPropertyTypeResolver
     }
     public function resolve(Property $property, bool $isNullable) : ?Type
     {
-        $expr = $this->attributeFinder->findAttributeByClassArgByName($property, MappingClass::COLUMN, 'type');
+        $expr = $this->attributeFinder->findAttributeByClassArgByName($property, self::COLUMN_CLASS, 'type');
         if ($expr instanceof String_) {
             return $this->createPHPStanTypeFromDoctrineStringType($expr->value, $isNullable);
         }
@@ -103,7 +109,7 @@ final class ColumnPropertyTypeResolver
     }
     private function resolveFromPhpDocInfo(PhpDocInfo $phpDocInfo, bool $isNullable) : ?\PHPStan\Type\Type
     {
-        $doctrineAnnotationTagValueNode = $phpDocInfo->findOneByAnnotationClass(MappingClass::COLUMN);
+        $doctrineAnnotationTagValueNode = $phpDocInfo->findOneByAnnotationClass(self::COLUMN_CLASS);
         if (!$doctrineAnnotationTagValueNode instanceof DoctrineAnnotationTagValueNode) {
             return null;
         }

@@ -25,9 +25,6 @@ class ComposerFieldFactory
     private static string $proFieldNamespace     = 'Solspace\Addons\FreeformNext\Library\Pro\Fields';
 
     /**
-     * @param Form             $form
-     * @param FieldProperties  $properties
-     * @param FormValueContext $formValueContext
      * @param int              $pageIndex
      *
      * @return AbstractField

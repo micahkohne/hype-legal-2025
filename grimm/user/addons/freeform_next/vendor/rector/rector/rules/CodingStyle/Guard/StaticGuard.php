@@ -9,18 +9,20 @@ use PhpParser\Node\Expr\Closure;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Expr\Variable;
 use PHPStan\Reflection\MethodReflection;
-use Rector\PhpParser\Node\BetterNodeFinder;
-use Rector\Reflection\ReflectionResolver;
+use Rector\Core\PhpParser\Node\BetterNodeFinder;
+use Rector\Core\Reflection\ReflectionResolver;
 final class StaticGuard
 {
     /**
      * @readonly
+     * @var \Rector\Core\PhpParser\Node\BetterNodeFinder
      */
-    private BetterNodeFinder $betterNodeFinder;
+    private $betterNodeFinder;
     /**
      * @readonly
+     * @var \Rector\Core\Reflection\ReflectionResolver
      */
-    private ReflectionResolver $reflectionResolver;
+    private $reflectionResolver;
     public function __construct(BetterNodeFinder $betterNodeFinder, ReflectionResolver $reflectionResolver)
     {
         $this->betterNodeFinder = $betterNodeFinder;

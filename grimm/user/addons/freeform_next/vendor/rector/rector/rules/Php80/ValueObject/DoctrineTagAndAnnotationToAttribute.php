@@ -8,12 +8,14 @@ final class DoctrineTagAndAnnotationToAttribute
 {
     /**
      * @readonly
+     * @var \Rector\BetterPhpDocParser\PhpDoc\DoctrineAnnotationTagValueNode
      */
-    private DoctrineAnnotationTagValueNode $doctrineAnnotationTagValueNode;
+    private $doctrineAnnotationTagValueNode;
     /**
      * @readonly
+     * @var \Rector\Php80\ValueObject\AnnotationToAttribute
      */
-    private \Rector\Php80\ValueObject\AnnotationToAttribute $annotationToAttribute;
+    private $annotationToAttribute;
     public function __construct(DoctrineAnnotationTagValueNode $doctrineAnnotationTagValueNode, \Rector\Php80\ValueObject\AnnotationToAttribute $annotationToAttribute)
     {
         $this->doctrineAnnotationTagValueNode = $doctrineAnnotationTagValueNode;

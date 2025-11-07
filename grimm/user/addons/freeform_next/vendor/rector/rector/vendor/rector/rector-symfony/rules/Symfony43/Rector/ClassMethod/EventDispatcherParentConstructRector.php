@@ -7,27 +7,17 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Expression;
-use PHPStan\Reflection\ClassReflection;
-use Rector\Enum\ObjectReference;
-use Rector\PhpParser\Node\BetterNodeFinder;
-use Rector\PHPStan\ScopeFetcher;
-use Rector\Rector\AbstractRector;
-use Rector\ValueObject\MethodName;
+use PHPStan\Analyser\Scope;
+use Rector\Core\Enum\ObjectReference;
+use Rector\Core\Rector\AbstractScopeAwareRector;
+use Rector\Core\ValueObject\MethodName;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
  * @see \Rector\Symfony\Tests\Symfony43\Rector\ClassMethod\EventDispatcherParentConstructRector\EventDispatcherParentConstructRectorTest
  */
-final class EventDispatcherParentConstructRector extends AbstractRector
+final class EventDispatcherParentConstructRector extends AbstractScopeAwareRector
 {
-    /**
-     * @readonly
-     */
-    private BetterNodeFinder $betterNodeFinder;
-    public function __construct(BetterNodeFinder $betterNodeFinder)
-    {
-        $this->betterNodeFinder = $betterNodeFinder;
-    }
     public function getRuleDefinition() : RuleDefinition
     {
         return new RuleDefinition('Removes parent construct method call in EventDispatcher class', [new CodeSample(<<<'CODE_SAMPLE'
@@ -66,9 +56,8 @@ CODE_SAMPLE
     /**
      * @param ClassMethod $node
      */
-    public function refactor(Node $node) : ?Node
+    public function refactorWithScope(Node $node, Scope $scope) : ?Node
     {
-        $scope = ScopeFetcher::fetch($node);
         if (!$scope->isInClass()) {
             return null;
         }
@@ -76,10 +65,7 @@ CODE_SAMPLE
             return null;
         }
         $classReflection = $scope->getClassReflection();
-        if (!$classReflection->is('Symfony\\Contracts\\EventDispatcher\\EventDispatcherInterface')) {
-            return null;
-        }
-        if (!$classReflection->getParentClass() instanceof ClassReflection) {
+        if (!$classReflection->isSubclassOf('Symfony\\Contracts\\EventDispatcher\\EventDispatcherInterface')) {
             return null;
         }
         if ($this->hasParentCallOfMethod($node, MethodName::CONSTRUCT)) {

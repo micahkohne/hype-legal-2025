@@ -11,7 +11,6 @@
 
 namespace Solspace\Addons\FreeformNext\Integrations\MailingLists;
 
-use Override;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\BadResponseException;
 use Solspace\Addons\FreeformNext\Library\Exceptions\Integrations\IntegrationException;
@@ -23,13 +22,13 @@ use Solspace\Addons\FreeformNext\Library\Integrations\SettingBlueprint;
 
 class Dotmailer extends AbstractMailingListIntegration
 {
-    const TITLE        = 'Dotmailer';
-    const LOG_CATEGORY = 'Dotmailer';
+    public const TITLE        = 'Dotmailer';
+    public const LOG_CATEGORY = 'Dotmailer';
 
-    const SETTING_USER_EMAIL    = 'user_email';
-    const SETTING_USER_PASS     = 'user_pass';
-    const SETTING_DOUBLE_OPT_IN = 'double_opt_in';
-    const SETTING_ENDPOINT      = 'endpoint';
+    public const SETTING_USER_EMAIL    = 'user_email';
+    public const SETTING_USER_PASS     = 'user_pass';
+    public const SETTING_DOUBLE_OPT_IN = 'double_opt_in';
+    public const SETTING_ENDPOINT      = 'endpoint';
 
     /**
      * Returns a list of additional settings for this integration
@@ -37,7 +36,6 @@ class Dotmailer extends AbstractMailingListIntegration
      *
      * @return SettingBlueprint[]
      */
-    #[Override]
     public static function getSettingBlueprints(): array
     {
         return [
@@ -156,7 +154,7 @@ class Dotmailer extends AbstractMailingListIntegration
     /**
      * A method that initiates the authentication
      */
-    public function initiateAuthentication()
+    public function initiateAuthentication(): void
     {
     }
 
@@ -269,7 +267,7 @@ class Dotmailer extends AbstractMailingListIntegration
      *
      * @return FieldObject[]
      */
-    protected function fetchFields($listId): array
+    protected function fetchFields($listId)
     {
         $client = new Client();
 
@@ -327,7 +325,7 @@ class Dotmailer extends AbstractMailingListIntegration
      */
     protected function getApiRootUrl(): string
     {
-        return rtrim((string) $this->getSetting(self::SETTING_ENDPOINT) ?: '', '/') . '/v2/';
+        return rtrim($this->getSetting(self::SETTING_ENDPOINT) ?: '', '/') . '/v2/';
     }
 
     /**

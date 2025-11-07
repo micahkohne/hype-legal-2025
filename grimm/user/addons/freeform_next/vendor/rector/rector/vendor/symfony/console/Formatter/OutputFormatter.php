@@ -8,10 +8,9 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-namespace RectorPrefix202507\Symfony\Component\Console\Formatter;
+namespace RectorPrefix202308\Symfony\Component\Console\Formatter;
 
-use RectorPrefix202507\Symfony\Component\Console\Exception\InvalidArgumentException;
-use function RectorPrefix202507\Symfony\Component\String\b;
+use RectorPrefix202308\Symfony\Component\Console\Exception\InvalidArgumentException;
 /**
  * Formatter class for console output.
  *
@@ -20,9 +19,18 @@ use function RectorPrefix202507\Symfony\Component\String\b;
  */
 class OutputFormatter implements WrappableOutputFormatterInterface
 {
-    private bool $decorated;
-    private array $styles = [];
-    private OutputFormatterStyleStack $styleStack;
+    /**
+     * @var bool
+     */
+    private $decorated;
+    /**
+     * @var mixed[]
+     */
+    private $styles = [];
+    /**
+     * @var \Symfony\Component\Console\Formatter\OutputFormatterStyleStack
+     */
+    private $styleStack;
     public function __clone()
     {
         $this->styleStack = clone $this->styleStack;
@@ -205,7 +213,7 @@ class OutputFormatter implements WrappableOutputFormatterInterface
             $prefix = '';
         }
         \preg_match('~(\\n)$~', $text, $matches);
-        $text = $prefix . $this->addLineBreaks($text, $width);
+        $text = $prefix . \preg_replace('~([^\\n]{' . $width . '})\\ *~', "\$1\n", $text);
         $text = \rtrim($text, "\n") . ($matches[1] ?? '');
         if (!$currentLineLength && '' !== $current && \substr_compare($current, "\n", -\strlen("\n")) !== 0) {
             $text = "\n" . $text;
@@ -223,10 +231,5 @@ class OutputFormatter implements WrappableOutputFormatterInterface
             }
         }
         return \implode("\n", $lines);
-    }
-    private function addLineBreaks(string $text, int $width) : string
-    {
-        $encoding = \mb_detect_encoding($text, null, \true) ?: 'UTF-8';
-        return b($text)->toCodePointString($encoding)->wordwrap($width, "\n", \true)->toByteString($encoding);
     }
 }

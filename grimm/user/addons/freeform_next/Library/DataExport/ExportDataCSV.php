@@ -33,6 +33,6 @@ class ExportDataCSV extends ExportData
 
     public function sendHttpHeaders(): void {
         header('Content-type: text/csv');
-        header('Content-Disposition: attachment; filename=' .basename((string) $this->filename));
+        header('Content-Disposition: attachment; filename=' .basename($this->filename));
     }
 }

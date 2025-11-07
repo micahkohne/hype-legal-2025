@@ -9,9 +9,10 @@ use function trim;
 class UsesTagValueNode implements \PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocTagValueNode
 {
     use NodeAttributes;
-    public GenericTypeNode $type;
+    /** @var GenericTypeNode */
+    public $type;
     /** @var string (may be empty) */
-    public string $description;
+    public $description;
     public function __construct(GenericTypeNode $type, string $description)
     {
         $this->type = $type;

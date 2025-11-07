@@ -5,7 +5,6 @@ namespace Rector\TypeDeclaration\Rector\While_;
 
 use PhpParser\Node;
 use PhpParser\Node\Expr;
-use PhpParser\Node\Expr\Assign;
 use PhpParser\Node\Expr\BinaryOp\NotIdentical;
 use PhpParser\Node\Expr\Instanceof_;
 use PhpParser\Node\Name\FullyQualified;
@@ -13,8 +12,7 @@ use PhpParser\Node\Stmt\Do_;
 use PhpParser\Node\Stmt\While_;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
-use Rector\PhpParser\Node\Value\ValueResolver;
-use Rector\Rector\AbstractRector;
+use Rector\Core\Rector\AbstractRector;
 use Rector\TypeDeclaration\TypeAnalyzer\NullableTypeAnalyzer;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
@@ -25,16 +23,12 @@ final class WhileNullableToInstanceofRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\TypeDeclaration\TypeAnalyzer\NullableTypeAnalyzer
      */
-    private NullableTypeAnalyzer $nullableTypeAnalyzer;
-    /**
-     * @readonly
-     */
-    private ValueResolver $valueResolver;
-    public function __construct(NullableTypeAnalyzer $nullableTypeAnalyzer, ValueResolver $valueResolver)
+    private $nullableTypeAnalyzer;
+    public function __construct(NullableTypeAnalyzer $nullableTypeAnalyzer)
     {
         $this->nullableTypeAnalyzer = $nullableTypeAnalyzer;
-        $this->valueResolver = $valueResolver;
     }
     public function getRuleDefinition() : RuleDefinition
     {
@@ -74,9 +68,6 @@ CODE_SAMPLE
      */
     public function refactor(Node $node) : ?Node
     {
-        if ($node->cond instanceof Assign) {
-            return null;
-        }
         if ($node->cond instanceof NotIdentical) {
             return $this->refactorNotIdentical($node, $node->cond);
         }

@@ -6,9 +6,8 @@ namespace Rector\Symfony\CodeQuality\Rector\ClassMethod;
 use PhpParser\Node;
 use PhpParser\Node\Param;
 use PhpParser\Node\Stmt\ClassMethod;
+use Rector\Core\Rector\AbstractRector;
 use Rector\PHPStanStaticTypeMapper\Enum\TypeKind;
-use Rector\Rector\AbstractRector;
-use Rector\StaticTypeMapper\StaticTypeMapper;
 use Rector\Symfony\NodeAnalyzer\RouteRequiredParamNameToTypesResolver;
 use Rector\Symfony\TypeAnalyzer\ControllerAnalyzer;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
@@ -20,21 +19,18 @@ final class ParamTypeFromRouteRequiredRegexRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\Symfony\TypeAnalyzer\ControllerAnalyzer
      */
-    private ControllerAnalyzer $controllerAnalyzer;
+    private $controllerAnalyzer;
     /**
      * @readonly
+     * @var \Rector\Symfony\NodeAnalyzer\RouteRequiredParamNameToTypesResolver
      */
-    private RouteRequiredParamNameToTypesResolver $routeRequiredParamNameToTypesResolver;
-    /**
-     * @readonly
-     */
-    private StaticTypeMapper $staticTypeMapper;
-    public function __construct(ControllerAnalyzer $controllerAnalyzer, RouteRequiredParamNameToTypesResolver $routeRequiredParamNameToTypesResolver, StaticTypeMapper $staticTypeMapper)
+    private $routeRequiredParamNameToTypesResolver;
+    public function __construct(ControllerAnalyzer $controllerAnalyzer, RouteRequiredParamNameToTypesResolver $routeRequiredParamNameToTypesResolver)
     {
         $this->controllerAnalyzer = $controllerAnalyzer;
         $this->routeRequiredParamNameToTypesResolver = $routeRequiredParamNameToTypesResolver;
-        $this->staticTypeMapper = $staticTypeMapper;
     }
     public function getRuleDefinition() : RuleDefinition
     {
@@ -100,7 +96,7 @@ CODE_SAMPLE
             if (!$param instanceof Param) {
                 continue;
             }
-            if ($param->type instanceof Node) {
+            if ($param->type !== null) {
                 continue;
             }
             $param->type = $this->staticTypeMapper->mapPHPStanTypeToPhpParserNode($paramType, TypeKind::PARAM);

@@ -9,9 +9,8 @@ use PhpParser\Node\Expr\BinaryOp;
 use PhpParser\Node\Expr\BooleanNot;
 use PhpParser\Node\Expr\Cast\Bool_;
 use PhpParser\Node\Expr\Ternary;
-use Rector\PhpParser\Node\AssignAndBinaryMap;
-use Rector\PhpParser\Node\Value\ValueResolver;
-use Rector\Rector\AbstractRector;
+use Rector\Core\PhpParser\Node\AssignAndBinaryMap;
+use Rector\Core\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -21,16 +20,12 @@ final class UnnecessaryTernaryExpressionRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\Core\PhpParser\Node\AssignAndBinaryMap
      */
-    private AssignAndBinaryMap $assignAndBinaryMap;
-    /**
-     * @readonly
-     */
-    private ValueResolver $valueResolver;
-    public function __construct(AssignAndBinaryMap $assignAndBinaryMap, ValueResolver $valueResolver)
+    private $assignAndBinaryMap;
+    public function __construct(AssignAndBinaryMap $assignAndBinaryMap)
     {
         $this->assignAndBinaryMap = $assignAndBinaryMap;
-        $this->valueResolver = $valueResolver;
     }
     public function getRuleDefinition() : RuleDefinition
     {

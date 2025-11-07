@@ -4,21 +4,24 @@ declare (strict_types=1);
 namespace Rector\Transform\ValueObject;
 
 use PHPStan\Type\ObjectType;
-use Rector\Validation\RectorAssert;
+use Rector\Core\Validation\RectorAssert;
 final class PropertyAssignToMethodCall
 {
     /**
      * @readonly
+     * @var string
      */
-    private string $class;
+    private $class;
     /**
      * @readonly
+     * @var string
      */
-    private string $oldPropertyName;
+    private $oldPropertyName;
     /**
      * @readonly
+     * @var string
      */
-    private string $newMethodName;
+    private $newMethodName;
     public function __construct(string $class, string $oldPropertyName, string $newMethodName)
     {
         $this->class = $class;

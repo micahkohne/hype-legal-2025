@@ -9,9 +9,10 @@ use function trim;
 class DoctrineTagValueNode implements PhpDocTagValueNode
 {
     use NodeAttributes;
-    public \PHPStan\PhpDocParser\Ast\PhpDoc\Doctrine\DoctrineAnnotation $annotation;
+    /** @var DoctrineAnnotation */
+    public $annotation;
     /** @var string (may be empty) */
-    public string $description;
+    public $description;
     public function __construct(\PHPStan\PhpDocParser\Ast\PhpDoc\Doctrine\DoctrineAnnotation $annotation, string $description)
     {
         $this->annotation = $annotation;

@@ -1,45 +1,47 @@
 <?php
 
 declare (strict_types=1);
-namespace Rector\ValueObject;
+namespace Rector\Core\ValueObject;
 
 use Rector\ChangesReporting\Output\ConsoleOutputFormatter;
-use Rector\Configuration\Option;
-use Rector\Configuration\Parameter\SimpleParameterProvider;
-use Rector\ValueObject\Configuration\LevelOverflow;
-use RectorPrefix202507\Webmozart\Assert\Assert;
+use RectorPrefix202308\Webmozart\Assert\Assert;
 final class Configuration
 {
     /**
      * @readonly
+     * @var bool
      */
-    private bool $isDryRun = \false;
+    private $isDryRun = \false;
     /**
      * @readonly
+     * @var bool
      */
-    private bool $showProgressBar = \true;
+    private $showProgressBar = \true;
     /**
      * @readonly
+     * @var bool
      */
-    private bool $shouldClearCache = \false;
+    private $shouldClearCache = \false;
     /**
      * @readonly
+     * @var string
      */
-    private string $outputFormat = ConsoleOutputFormatter::NAME;
+    private $outputFormat = ConsoleOutputFormatter::NAME;
     /**
      * @var string[]
      * @readonly
      */
-    private array $fileExtensions = ['php'];
+    private $fileExtensions = ['php'];
     /**
      * @var string[]
      * @readonly
      */
-    private array $paths = [];
+    private $paths = [];
     /**
      * @readonly
+     * @var bool
      */
-    private bool $showDiffs = \true;
+    private $showDiffs = \true;
     /**
      * @readonly
      * @var string|null
@@ -52,46 +54,19 @@ final class Configuration
     private $parallelIdentifier = null;
     /**
      * @readonly
+     * @var bool
      */
-    private bool $isParallel = \false;
+    private $isParallel = \false;
     /**
      * @readonly
      * @var string|null
      */
     private $memoryLimit = null;
     /**
-     * @readonly
-     */
-    private bool $isDebug = \false;
-    /**
-     * @readonly
-     */
-    private bool $reportingWithRealPath = \false;
-    /**
-     * @readonly
-     */
-    private ?string $onlyRule = null;
-    /**
-     * @readonly
-     */
-    private ?string $onlySuffix = null;
-    /**
-     * @var LevelOverflow[]
-     * @readonly
-     */
-    private array $levelOverflows = [];
-    /**
-     * @var positive-int|null
-     * @readonly
-     */
-    private ?int $kaizenStepCount = null;
-    /**
      * @param string[] $fileExtensions
      * @param string[] $paths
-     * @param LevelOverflow[] $levelOverflows
-     * @param positive-int|null $kaizenStepCount
      */
-    public function __construct(bool $isDryRun = \false, bool $showProgressBar = \true, bool $shouldClearCache = \false, string $outputFormat = ConsoleOutputFormatter::NAME, array $fileExtensions = ['php'], array $paths = [], bool $showDiffs = \true, ?string $parallelPort = null, ?string $parallelIdentifier = null, bool $isParallel = \false, ?string $memoryLimit = null, bool $isDebug = \false, bool $reportingWithRealPath = \false, ?string $onlyRule = null, ?string $onlySuffix = null, array $levelOverflows = [], ?int $kaizenStepCount = null)
+    public function __construct(bool $isDryRun = \false, bool $showProgressBar = \true, bool $shouldClearCache = \false, string $outputFormat = ConsoleOutputFormatter::NAME, array $fileExtensions = ['php'], array $paths = [], bool $showDiffs = \true, ?string $parallelPort = null, ?string $parallelIdentifier = null, bool $isParallel = \false, ?string $memoryLimit = null)
     {
         $this->isDryRun = $isDryRun;
         $this->showProgressBar = $showProgressBar;
@@ -104,15 +79,6 @@ final class Configuration
         $this->parallelIdentifier = $parallelIdentifier;
         $this->isParallel = $isParallel;
         $this->memoryLimit = $memoryLimit;
-        $this->isDebug = $isDebug;
-        $this->reportingWithRealPath = $reportingWithRealPath;
-        $this->onlyRule = $onlyRule;
-        $this->onlySuffix = $onlySuffix;
-        $this->levelOverflows = $levelOverflows;
-        $this->kaizenStepCount = $kaizenStepCount;
-        if (\is_int($kaizenStepCount)) {
-            Assert::positiveInteger($kaizenStepCount, 'Change "--kaizen" value to a positive integer');
-        }
     }
     public function isDryRun() : bool
     {
@@ -133,10 +99,6 @@ final class Configuration
     {
         Assert::notEmpty($this->fileExtensions);
         return $this->fileExtensions;
-    }
-    public function getOnlyRule() : ?string
-    {
-        return $this->onlyRule;
     }
     /**
      * @return string[]
@@ -168,46 +130,5 @@ final class Configuration
     public function getMemoryLimit() : ?string
     {
         return $this->memoryLimit;
-    }
-    public function isDebug() : bool
-    {
-        return $this->isDebug;
-    }
-    public function isReportingWithRealPath() : bool
-    {
-        return $this->reportingWithRealPath;
-    }
-    public function getOnlySuffix() : ?string
-    {
-        return $this->onlySuffix;
-    }
-    /**
-     * @return LevelOverflow[]
-     */
-    public function getLevelOverflows() : array
-    {
-        return $this->levelOverflows;
-    }
-    /**
-     * @return string[]
-     */
-    public function getBothSetAndRulesDuplicatedRegistrations() : array
-    {
-        $rootStandaloneRegisteredRules = SimpleParameterProvider::provideArrayParameter(Option::ROOT_STANDALONE_REGISTERED_RULES);
-        $setRegisteredRules = SimpleParameterProvider::provideArrayParameter(Option::SET_REGISTERED_RULES);
-        $ruleDuplicatedRegistrations = \array_intersect($rootStandaloneRegisteredRules, $setRegisteredRules);
-        return \array_unique($ruleDuplicatedRegistrations);
-    }
-    /**
-     * @return positive-int
-     */
-    public function getKaizenStepCount() : int
-    {
-        Assert::notNull($this->kaizenStepCount);
-        return $this->kaizenStepCount;
-    }
-    public function isKaizenEnabled() : bool
-    {
-        return $this->kaizenStepCount !== null;
     }
 }

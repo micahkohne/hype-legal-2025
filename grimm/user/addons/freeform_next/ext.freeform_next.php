@@ -15,7 +15,7 @@ use Solspace\Addons\FreeformNext\Services\RecaptchaService;
 use Solspace\Addons\FreeformNext\Services\SettingsService;
 use Solspace\Addons\FreeformNext\Utilities\AddonInfo;
 
-require_once version_compare(PHP_VERSION, '8.0.0') < 0 ? __DIR__ . '/php7/vendor/autoload.php' : __DIR__ . '/vendor/autoload.php';
+require_once __DIR__ . '/vendor/autoload.php';
 
 /**
  * Freeform for ExpressionEngine
@@ -28,6 +28,9 @@ require_once version_compare(PHP_VERSION, '8.0.0') < 0 ? __DIR__ . '/php7/vendor
  */
 class Freeform_next_ext
 {
+    /**
+     * @var string
+     */
     public $version = '1.0.0';
 
     public function __construct()
@@ -35,9 +38,6 @@ class Freeform_next_ext
         $this->version = AddonInfo::getInstance()->getVersion();
     }
 
-    /**
-     * @param AbstractField $field
-     */
     public function validateRecaptchaFields(AbstractField $field)
     {
         $settingsModel = $this->getSettingsService()->getSettingsModel();
@@ -95,44 +95,26 @@ class Freeform_next_ext
         }
     }
 
-    /**
-     * @param Form $form
-     */
     public function validateRecaptcha(Form $form): void
     {
         $this->getRecaptchaService()->validateFormRecaptcha($form);
     }
 
-    /**
-     * @param Form             $form
-     * @param FormRenderObject $renderObject
-     */
     public function addRecaptchaInputToForm(Form $form, FormRenderObject $renderObject): void
     {
         $this->getRecaptchaService()->addRecaptchaInputToForm($renderObject);
     }
 
-    /**
-     * @param Form             $form
-     * @param FormRenderObject $renderObject
-     */
     public function addRecaptchaJavascriptToForm(Form $form, FormRenderObject $renderObject): void
     {
         $this->getRecaptchaService()->addRecaptchaJavascriptToForm($renderObject);
     }
 
-    /**
-     * @param Form $form
-     */
     public function validateHoneypot(Form $form): void
     {
         $this->getHoneypotService()->validateFormHoneypot($form);
     }
 
-    /**
-     * @param Form             $form
-     * @param FormRenderObject $renderObject
-     */
     public function addHoneypotInputToForm(Form $form, FormRenderObject $renderObject): void
     {
     	if($this->getSettingsService()->getSettingsModel()->isSpamProtectionEnabled())
@@ -141,19 +123,11 @@ class Freeform_next_ext
 		}
     }
 
-    /**
-     * @param Form             $form
-     * @param FormRenderObject $renderObject
-     */
     public function addHoneypotJavascriptToForm(Form $form, FormRenderObject $renderObject): void
     {
         $this->getHoneypotService()->addFormJavascript($renderObject);
     }
 
-    /**
-     * @param Form             $form
-     * @param FormRenderObject $renderObject
-     */
     public function addDateTimeJavascript(Form $form, FormRenderObject $renderObject): void
     {
         if ($form->getLayout()->hasDatepickerEnabledFields()) {
@@ -175,10 +149,6 @@ class Freeform_next_ext
         }
     }
 
-    /**
-     * @param Form             $form
-     * @param FormRenderObject $renderObject
-     */
     public function addTableJavascript(Form $form, FormRenderObject $renderObject): void
     {
         if ($form->getLayout()->hasTableFields()) {
@@ -193,10 +163,6 @@ class Freeform_next_ext
         }
     }
 
-    /**
-     * @param Form             $form
-     * @param FormRenderObject $renderObject
-     */
     public function addFormDisabledJavascript(Form $form, FormRenderObject $renderObject): void
     {
         if ($this->getSettingsService()->isFormSubmitDisable()) {
@@ -212,10 +178,6 @@ class Freeform_next_ext
         }
     }
 
-    /**
-     * @param Form             $form
-     * @param FormRenderObject $renderObject
-     */
     public function addFormAnchorJavascript(Form $form, FormRenderObject $renderObject): void
     {
         $autoScroll = $this->getSettingsService()->getSettingsModel()->isAutoScrollToErrors();

@@ -6,8 +6,8 @@ use Solspace\Addons\FreeformNext\Utilities\Extension;
 
 abstract class FreeformIntegrationExtension extends Extension
 {
-    const REGISTER_TYPES_METHOD      = 'registerIntegrations';
-    const HOOK_REGISTER_INTEGRATIONS = 'freeform_next.registerIntegrations';
+    public const REGISTER_TYPES_METHOD      = 'registerIntegrations';
+    public const HOOK_REGISTER_INTEGRATIONS = 'freeform_next.registerIntegrations';
 
     public $version = '1.0.0';
 

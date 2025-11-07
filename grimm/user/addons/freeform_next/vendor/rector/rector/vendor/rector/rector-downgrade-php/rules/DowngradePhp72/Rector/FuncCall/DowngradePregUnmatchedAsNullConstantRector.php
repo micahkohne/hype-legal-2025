@@ -13,16 +13,15 @@ use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Param;
-use PhpParser\Node\Scalar\Int_;
+use PhpParser\Node\Scalar\LNumber;
 use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\ClassConst;
 use PhpParser\Node\Stmt\Expression;
 use PhpParser\Node\Stmt\If_;
+use Rector\Core\Rector\AbstractRector;
 use Rector\DowngradePhp72\NodeAnalyzer\RegexFuncAnalyzer;
 use Rector\DowngradePhp72\NodeManipulator\BitwiseFlagCleaner;
-use Rector\PhpParser\Node\BetterNodeFinder;
-use Rector\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -32,26 +31,23 @@ final class DowngradePregUnmatchedAsNullConstantRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\DowngradePhp72\NodeManipulator\BitwiseFlagCleaner
      */
-    private BitwiseFlagCleaner $bitwiseFlagCleaner;
+    private $bitwiseFlagCleaner;
     /**
      * @readonly
+     * @var \Rector\DowngradePhp72\NodeAnalyzer\RegexFuncAnalyzer
      */
-    private RegexFuncAnalyzer $regexFuncAnalyzer;
-    /**
-     * @readonly
-     */
-    private BetterNodeFinder $betterNodeFinder;
+    private $regexFuncAnalyzer;
     /**
      * @see https://www.php.net/manual/en/function.preg-match.php
      * @var string
      */
     private const UNMATCHED_NULL_FLAG = 'PREG_UNMATCHED_AS_NULL';
-    public function __construct(BitwiseFlagCleaner $bitwiseFlagCleaner, RegexFuncAnalyzer $regexFuncAnalyzer, BetterNodeFinder $betterNodeFinder)
+    public function __construct(BitwiseFlagCleaner $bitwiseFlagCleaner, RegexFuncAnalyzer $regexFuncAnalyzer)
     {
         $this->bitwiseFlagCleaner = $bitwiseFlagCleaner;
         $this->regexFuncAnalyzer = $regexFuncAnalyzer;
-        $this->betterNodeFinder = $betterNodeFinder;
     }
     /**
      * @return array<class-string<Node>>
@@ -135,7 +131,7 @@ CODE_SAMPLE
             if (!$this->isName($singleClassConst->value, self::UNMATCHED_NULL_FLAG)) {
                 continue;
             }
-            $classConst->consts[$key]->value = new Int_(512);
+            $classConst->consts[$key]->value = new LNumber(512);
             return $classConst;
         }
         return null;

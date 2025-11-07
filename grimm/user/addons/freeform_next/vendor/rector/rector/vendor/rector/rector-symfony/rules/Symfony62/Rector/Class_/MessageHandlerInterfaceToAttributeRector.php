@@ -5,14 +5,13 @@ namespace Rector\Symfony\Symfony62\Rector\Class_;
 
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Class_;
-use PHPStan\Reflection\ReflectionProvider;
-use PHPStan\Type\ObjectType;
+use Rector\Core\Rector\AbstractRector;
+use Rector\Core\ValueObject\PhpVersionFeature;
 use Rector\Php80\NodeAnalyzer\PhpAttributeAnalyzer;
-use Rector\Rector\AbstractRector;
 use Rector\Symfony\Helper\MessengerHelper;
+use Rector\Symfony\NodeAnalyzer\ClassAnalyzer;
 use Rector\Symfony\NodeManipulator\ClassManipulator;
 use Rector\Symfony\ValueObject\ServiceDefinition;
-use Rector\ValueObject\PhpVersionFeature;
 use Rector\VersionBonding\Contract\MinPhpVersionInterface;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
@@ -23,26 +22,30 @@ final class MessageHandlerInterfaceToAttributeRector extends AbstractRector impl
 {
     /**
      * @readonly
+     * @var \Rector\Symfony\Helper\MessengerHelper
      */
-    private MessengerHelper $messengerHelper;
+    private $messengerHelper;
     /**
      * @readonly
+     * @var \Rector\Symfony\NodeManipulator\ClassManipulator
      */
-    private ClassManipulator $classManipulator;
+    private $classManipulator;
     /**
      * @readonly
+     * @var \Rector\Symfony\NodeAnalyzer\ClassAnalyzer
      */
-    private PhpAttributeAnalyzer $phpAttributeAnalyzer;
+    private $classAnalyzer;
     /**
      * @readonly
+     * @var \Rector\Php80\NodeAnalyzer\PhpAttributeAnalyzer
      */
-    private ReflectionProvider $reflectionProvider;
-    public function __construct(MessengerHelper $messengerHelper, ClassManipulator $classManipulator, PhpAttributeAnalyzer $phpAttributeAnalyzer, ReflectionProvider $reflectionProvider)
+    private $phpAttributeAnalyzer;
+    public function __construct(MessengerHelper $messengerHelper, ClassManipulator $classManipulator, ClassAnalyzer $classAnalyzer, PhpAttributeAnalyzer $phpAttributeAnalyzer)
     {
         $this->messengerHelper = $messengerHelper;
         $this->classManipulator = $classManipulator;
+        $this->classAnalyzer = $classAnalyzer;
         $this->phpAttributeAnalyzer = $phpAttributeAnalyzer;
-        $this->reflectionProvider = $reflectionProvider;
     }
     public function provideMinPhpVersion() : int
     {
@@ -87,15 +90,10 @@ CODE_SAMPLE
      */
     public function refactor(Node $node) : ?Node
     {
-        if (!$this->reflectionProvider->hasClass(MessengerHelper::AS_MESSAGE_HANDLER_ATTRIBUTE)) {
-            return null;
-        }
         if ($this->phpAttributeAnalyzer->hasPhpAttribute($node, MessengerHelper::AS_MESSAGE_HANDLER_ATTRIBUTE)) {
             return null;
         }
-        $classType = $this->getType($node);
-        $messageHandlerObjectType = new ObjectType(MessengerHelper::MESSAGE_HANDLER_INTERFACE);
-        if (!$messageHandlerObjectType->isSuperTypeOf($classType)->yes()) {
+        if (!$this->classAnalyzer->hasImplements($node, MessengerHelper::MESSAGE_HANDLER_INTERFACE)) {
             $handlers = $this->messengerHelper->getHandlersFromServices();
             if ($handlers === []) {
                 return null;
@@ -103,30 +101,21 @@ CODE_SAMPLE
             return $this->checkForServices($node, $handlers);
         }
         $this->classManipulator->removeImplements($node, [MessengerHelper::MESSAGE_HANDLER_INTERFACE]);
-        // no need to add the attribute
-        if ($node->isAbstract()) {
-            return $node;
-        }
         return $this->messengerHelper->addAttribute($node);
     }
     /**
      * @param ServiceDefinition[] $handlers
      */
-    private function checkForServices(Class_ $class, array $handlers) : ?Class_
+    private function checkForServices(Class_ $class, array $handlers) : Class_
     {
-        $hasChanged = \false;
         foreach ($handlers as $handler) {
             if ($this->isName($class, $handler->getClass() ?? $handler->getId())) {
                 $options = $this->messengerHelper->extractOptionsFromServiceDefinition($handler);
                 if (!isset($options['method']) || $options['method'] === '__invoke') {
                     $this->messengerHelper->addAttribute($class, $options);
-                    $hasChanged = \true;
                 }
             }
         }
-        if ($hasChanged) {
-            return $class;
-        }
-        return null;
+        return $class;
     }
 }

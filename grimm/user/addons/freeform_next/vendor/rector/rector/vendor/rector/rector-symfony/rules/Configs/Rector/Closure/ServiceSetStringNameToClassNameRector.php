@@ -6,7 +6,7 @@ namespace Rector\Symfony\Configs\Rector\Closure;
 use PhpParser\Node;
 use PhpParser\Node\Expr\Closure;
 use PhpParser\Node\Scalar\String_;
-use Rector\Rector\AbstractRector;
+use Rector\Core\Rector\AbstractRector;
 use Rector\Symfony\DataProvider\ServiceNameToTypeUniqueProvider;
 use Rector\Symfony\NodeAnalyzer\SymfonyPhpClosureDetector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
@@ -18,12 +18,14 @@ final class ServiceSetStringNameToClassNameRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\Symfony\NodeAnalyzer\SymfonyPhpClosureDetector
      */
-    private SymfonyPhpClosureDetector $symfonyPhpClosureDetector;
+    private $symfonyPhpClosureDetector;
     /**
      * @readonly
+     * @var \Rector\Symfony\DataProvider\ServiceNameToTypeUniqueProvider
      */
-    private ServiceNameToTypeUniqueProvider $serviceNameToTypeUniqueProvider;
+    private $serviceNameToTypeUniqueProvider;
     public function __construct(SymfonyPhpClosureDetector $symfonyPhpClosureDetector, ServiceNameToTypeUniqueProvider $serviceNameToTypeUniqueProvider)
     {
         $this->symfonyPhpClosureDetector = $symfonyPhpClosureDetector;
@@ -63,12 +65,13 @@ CODE_SAMPLE
      */
     public function refactor(Node $node) : ?Node
     {
+        $hasChanged = \false;
         if (!$this->symfonyPhpClosureDetector->detect($node)) {
             return null;
         }
         $serviceNamesToType = $this->serviceNameToTypeUniqueProvider->provide();
         $hasChanged = \false;
-        $this->traverseNodesWithCallable($node->stmts, function (Node $node) use($serviceNamesToType, &$hasChanged) : ?String_ {
+        $this->traverseNodesWithCallable($node->stmts, function (Node $node) use($serviceNamesToType, &$hasChanged) {
             if (!$node instanceof String_) {
                 return null;
             }

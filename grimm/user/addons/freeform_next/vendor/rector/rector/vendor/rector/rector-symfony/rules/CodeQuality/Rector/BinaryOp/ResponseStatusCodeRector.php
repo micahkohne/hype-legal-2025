@@ -9,10 +9,9 @@ use PhpParser\Node\Expr\CallLike;
 use PhpParser\Node\Expr\ClassConstFetch;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\New_;
-use PhpParser\Node\Scalar\Int_;
+use PhpParser\Node\Scalar\LNumber;
 use PHPStan\Type\ObjectType;
-use Rector\Rector\AbstractRector;
-use Rector\Symfony\CodeQuality\Enum\ResponseClass;
+use Rector\Core\Rector\AbstractRector;
 use Rector\Symfony\NodeAnalyzer\LiteralCallLikeConstFetchReplacer;
 use Rector\Symfony\TypeAnalyzer\ControllerAnalyzer;
 use Rector\Symfony\ValueObject\ConstantMap\SymfonyResponseConstantMap;
@@ -25,21 +24,24 @@ final class ResponseStatusCodeRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\Symfony\TypeAnalyzer\ControllerAnalyzer
      */
-    private ControllerAnalyzer $controllerAnalyzer;
+    private $controllerAnalyzer;
     /**
      * @readonly
+     * @var \Rector\Symfony\NodeAnalyzer\LiteralCallLikeConstFetchReplacer
      */
-    private LiteralCallLikeConstFetchReplacer $literalCallLikeConstFetchReplacer;
+    private $literalCallLikeConstFetchReplacer;
     /**
      * @readonly
+     * @var \PHPStan\Type\ObjectType
      */
-    private ObjectType $responseObjectType;
+    private $responseObjectType;
     public function __construct(ControllerAnalyzer $controllerAnalyzer, LiteralCallLikeConstFetchReplacer $literalCallLikeConstFetchReplacer)
     {
         $this->controllerAnalyzer = $controllerAnalyzer;
         $this->literalCallLikeConstFetchReplacer = $literalCallLikeConstFetchReplacer;
-        $this->responseObjectType = new ObjectType(ResponseClass::BASIC);
+        $this->responseObjectType = new ObjectType('Symfony\\Component\\HttpFoundation\\Response');
     }
     public function getRuleDefinition() : RuleDefinition
     {
@@ -97,34 +99,30 @@ CODE_SAMPLE
     }
     private function processMethodCall(MethodCall $methodCall) : ?\PhpParser\Node\Expr\CallLike
     {
-        $methodCallName = $this->getName($methodCall->name);
-        if (!\is_string($methodCallName)) {
-            return null;
-        }
-        if (\strncmp($methodCallName, 'assert', \strlen('assert')) === 0) {
+        if ($this->isName($methodCall->name, 'assert*')) {
             return $this->processAssertMethodCall($methodCall);
         }
-        if ($methodCallName === 'redirect') {
+        if ($this->isName($methodCall->name, 'redirect')) {
             return $this->processRedirectMethodCall($methodCall);
         }
-        if ($methodCallName !== 'setStatusCode') {
+        if (!$this->isName($methodCall->name, 'setStatusCode')) {
             return null;
         }
         if (!$this->isObjectType($methodCall->var, $this->responseObjectType)) {
             return null;
         }
-        return $this->literalCallLikeConstFetchReplacer->replaceArgOnPosition($methodCall, 0, ResponseClass::BASIC, SymfonyResponseConstantMap::CODE_TO_CONST);
+        return $this->literalCallLikeConstFetchReplacer->replaceArgOnPosition($methodCall, 0, 'Symfony\\Component\\HttpFoundation\\Response', SymfonyResponseConstantMap::CODE_TO_CONST);
     }
     private function processBinaryOp(BinaryOp $binaryOp) : ?BinaryOp
     {
         if (!$this->isGetStatusMethod($binaryOp->left) && !$this->isGetStatusMethod($binaryOp->right)) {
             return null;
         }
-        if ($binaryOp->right instanceof Int_ && $this->isGetStatusMethod($binaryOp->left)) {
+        if ($binaryOp->right instanceof LNumber && $this->isGetStatusMethod($binaryOp->left)) {
             $binaryOp->right = $this->convertNumberToConstant($binaryOp->right);
             return $binaryOp;
         }
-        if ($binaryOp->left instanceof Int_ && $this->isGetStatusMethod($binaryOp->right)) {
+        if ($binaryOp->left instanceof LNumber && $this->isGetStatusMethod($binaryOp->right)) {
             $binaryOp->left = $this->convertNumberToConstant($binaryOp->left);
             return $binaryOp;
         }
@@ -141,14 +139,14 @@ CODE_SAMPLE
         return $this->isObjectType($node->var, $this->responseObjectType);
     }
     /**
-     * @return \PhpParser\Node\Expr\ClassConstFetch|\PhpParser\Node\Scalar\Int_
+     * @return \PhpParser\Node\Expr\ClassConstFetch|\PhpParser\Node\Scalar\LNumber
      */
-    private function convertNumberToConstant(Int_ $int)
+    private function convertNumberToConstant(LNumber $lNumber)
     {
-        if (!isset(SymfonyResponseConstantMap::CODE_TO_CONST[$int->value])) {
-            return $int;
+        if (!isset(SymfonyResponseConstantMap::CODE_TO_CONST[$lNumber->value])) {
+            return $lNumber;
         }
-        return $this->nodeFactory->createClassConstFetch($this->responseObjectType->getClassName(), SymfonyResponseConstantMap::CODE_TO_CONST[$int->value]);
+        return $this->nodeFactory->createClassConstFetch($this->responseObjectType->getClassName(), SymfonyResponseConstantMap::CODE_TO_CONST[$lNumber->value]);
     }
     private function processAssertMethodCall(MethodCall $methodCall) : ?\PhpParser\Node\Expr\MethodCall
     {
@@ -160,20 +158,20 @@ CODE_SAMPLE
         if (!$this->isGetStatusMethod($secondArg->value)) {
             return null;
         }
-        return $this->literalCallLikeConstFetchReplacer->replaceArgOnPosition($methodCall, 0, ResponseClass::BASIC, SymfonyResponseConstantMap::CODE_TO_CONST);
+        return $this->literalCallLikeConstFetchReplacer->replaceArgOnPosition($methodCall, 0, 'Symfony\\Component\\HttpFoundation\\Response', SymfonyResponseConstantMap::CODE_TO_CONST);
     }
     private function processRedirectMethodCall(MethodCall $methodCall) : ?\PhpParser\Node\Expr\MethodCall
     {
         if (!$this->controllerAnalyzer->isController($methodCall->var)) {
             return null;
         }
-        return $this->literalCallLikeConstFetchReplacer->replaceArgOnPosition($methodCall, 1, ResponseClass::BASIC, SymfonyResponseConstantMap::CODE_TO_CONST);
+        return $this->literalCallLikeConstFetchReplacer->replaceArgOnPosition($methodCall, 1, 'Symfony\\Component\\HttpFoundation\\Response', SymfonyResponseConstantMap::CODE_TO_CONST);
     }
     private function processNew(New_ $new) : ?\PhpParser\Node\Expr\New_
     {
         if (!$this->isObjectType($new->class, $this->responseObjectType)) {
             return null;
         }
-        return $this->literalCallLikeConstFetchReplacer->replaceArgOnPosition($new, 1, ResponseClass::BASIC, SymfonyResponseConstantMap::CODE_TO_CONST);
+        return $this->literalCallLikeConstFetchReplacer->replaceArgOnPosition($new, 1, 'Symfony\\Component\\HttpFoundation\\Response', SymfonyResponseConstantMap::CODE_TO_CONST);
     }
 }

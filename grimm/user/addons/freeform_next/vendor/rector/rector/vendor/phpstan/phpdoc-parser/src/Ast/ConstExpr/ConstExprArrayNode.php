@@ -9,7 +9,7 @@ class ConstExprArrayNode implements \PHPStan\PhpDocParser\Ast\ConstExpr\ConstExp
 {
     use NodeAttributes;
     /** @var ConstExprArrayItemNode[] */
-    public array $items;
+    public $items;
     /**
      * @param ConstExprArrayItemNode[] $items
      */

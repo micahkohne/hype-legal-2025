@@ -1,12 +1,12 @@
 <?php
 
 declare (strict_types=1);
-namespace RectorPrefix202507\Symplify\EasyParallel\CommandLine;
+namespace RectorPrefix202308\Symplify\EasyParallel\CommandLine;
 
-use RectorPrefix202507\Symfony\Component\Console\Command\Command;
-use RectorPrefix202507\Symfony\Component\Console\Input\InputInterface;
-use RectorPrefix202507\Symplify\EasyParallel\Exception\ParallelShouldNotHappenException;
-use RectorPrefix202507\Symplify\EasyParallel\Reflection\CommandFromReflectionFactory;
+use RectorPrefix202308\Symfony\Component\Console\Command\Command;
+use RectorPrefix202308\Symfony\Component\Console\Input\InputInterface;
+use RectorPrefix202308\Symplify\EasyParallel\Exception\ParallelShouldNotHappenException;
+use RectorPrefix202308\Symplify\EasyParallel\Reflection\CommandFromReflectionFactory;
 /**
  * @api
  * @see \Symplify\EasyParallel\Tests\CommandLine\WorkerCommandLineFactoryTest
@@ -25,8 +25,9 @@ final class WorkerCommandLineFactory
     private const EXCLUDED_OPTION_NAMES = ['output-format'];
     /**
      * @readonly
+     * @var \Symplify\EasyParallel\Reflection\CommandFromReflectionFactory
      */
-    private CommandFromReflectionFactory $commandFromReflectionFactory;
+    private $commandFromReflectionFactory;
     public function __construct()
     {
         $this->commandFromReflectionFactory = new CommandFromReflectionFactory();

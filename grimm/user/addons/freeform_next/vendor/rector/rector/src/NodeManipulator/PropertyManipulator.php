@@ -1,9 +1,9 @@
 <?php
 
 declare (strict_types=1);
-namespace Rector\NodeManipulator;
+namespace Rector\Core\NodeManipulator;
 
-use RectorPrefix202507\Doctrine\ORM\Mapping\Table;
+use RectorPrefix202308\Doctrine\ORM\Mapping\Table;
 use PhpParser\Node;
 use PhpParser\Node\Expr\PropertyFetch;
 use PhpParser\Node\Expr\StaticPropertyFetch;
@@ -17,19 +17,17 @@ use PHPStan\Reflection\ClassReflection;
 use PHPStan\Type\ObjectType;
 use Rector\BetterPhpDocParser\PhpDocInfo\PhpDocInfo;
 use Rector\BetterPhpDocParser\PhpDocInfo\PhpDocInfoFactory;
-use Rector\Enum\ClassName;
-use Rector\NodeAnalyzer\PropertyFetchAnalyzer;
+use Rector\Core\NodeAnalyzer\PropertyFetchAnalyzer;
+use Rector\Core\PhpParser\AstResolver;
+use Rector\Core\PhpParser\Node\BetterNodeFinder;
+use Rector\Core\PhpParser\NodeFinder\PropertyFetchFinder;
+use Rector\Core\ValueObject\MethodName;
 use Rector\NodeNameResolver\NodeNameResolver;
-use Rector\NodeNestingScope\ContextAnalyzer;
 use Rector\NodeTypeResolver\Node\AttributeKey;
 use Rector\NodeTypeResolver\NodeTypeResolver;
 use Rector\Php80\NodeAnalyzer\PhpAttributeAnalyzer;
 use Rector\Php80\NodeAnalyzer\PromotedPropertyResolver;
-use Rector\PhpParser\AstResolver;
-use Rector\PhpParser\Node\BetterNodeFinder;
-use Rector\PhpParser\NodeFinder\PropertyFetchFinder;
 use Rector\TypeDeclaration\AlreadyAssignDetector\ConstructorAssignDetector;
-use Rector\ValueObject\MethodName;
 /**
  * For inspiration to improve this service,
  * @see examples of variable modifications in https://wiki.php.net/rfc/readonly_properties_v2#proposal
@@ -38,54 +36,66 @@ final class PropertyManipulator
 {
     /**
      * @readonly
+     * @var \Rector\Core\NodeManipulator\AssignManipulator
      */
-    private BetterNodeFinder $betterNodeFinder;
+    private $assignManipulator;
     /**
      * @readonly
+     * @var \Rector\Core\PhpParser\Node\BetterNodeFinder
      */
-    private PhpDocInfoFactory $phpDocInfoFactory;
+    private $betterNodeFinder;
     /**
      * @readonly
+     * @var \Rector\BetterPhpDocParser\PhpDocInfo\PhpDocInfoFactory
      */
-    private PropertyFetchFinder $propertyFetchFinder;
+    private $phpDocInfoFactory;
     /**
      * @readonly
+     * @var \Rector\Core\PhpParser\NodeFinder\PropertyFetchFinder
      */
-    private NodeNameResolver $nodeNameResolver;
+    private $propertyFetchFinder;
     /**
      * @readonly
+     * @var \Rector\NodeNameResolver\NodeNameResolver
      */
-    private PhpAttributeAnalyzer $phpAttributeAnalyzer;
+    private $nodeNameResolver;
     /**
      * @readonly
+     * @var \Rector\Php80\NodeAnalyzer\PhpAttributeAnalyzer
      */
-    private NodeTypeResolver $nodeTypeResolver;
+    private $phpAttributeAnalyzer;
     /**
      * @readonly
+     * @var \Rector\NodeTypeResolver\NodeTypeResolver
      */
-    private PromotedPropertyResolver $promotedPropertyResolver;
+    private $nodeTypeResolver;
     /**
      * @readonly
+     * @var \Rector\Php80\NodeAnalyzer\PromotedPropertyResolver
      */
-    private ConstructorAssignDetector $constructorAssignDetector;
+    private $promotedPropertyResolver;
     /**
      * @readonly
+     * @var \Rector\TypeDeclaration\AlreadyAssignDetector\ConstructorAssignDetector
      */
-    private AstResolver $astResolver;
+    private $constructorAssignDetector;
     /**
      * @readonly
+     * @var \Rector\Core\PhpParser\AstResolver
      */
-    private PropertyFetchAnalyzer $propertyFetchAnalyzer;
+    private $astResolver;
     /**
      * @readonly
+     * @var \Rector\Core\NodeAnalyzer\PropertyFetchAnalyzer
      */
-    private ContextAnalyzer $contextAnalyzer;
+    private $propertyFetchAnalyzer;
     /**
      * @var string[]|class-string<Table>[]
      */
-    private const ALLOWED_NOT_READONLY_CLASS_ANNOTATIONS = ['ApiPlatform\\Core\\Annotation\\ApiResource', 'ApiPlatform\\Metadata\\ApiResource', 'Doctrine\\ORM\\Mapping\\Entity', 'Doctrine\\ORM\\Mapping\\Table', 'Doctrine\\ORM\\Mapping\\MappedSuperclass', 'Doctrine\\ORM\\Mapping\\Embeddable', 'Doctrine\\ODM\\MongoDB\\Mapping\\Annotations\\Document', 'Doctrine\\ODM\\MongoDB\\Mapping\\Annotations\\EmbeddedDocument'];
-    public function __construct(BetterNodeFinder $betterNodeFinder, PhpDocInfoFactory $phpDocInfoFactory, PropertyFetchFinder $propertyFetchFinder, NodeNameResolver $nodeNameResolver, PhpAttributeAnalyzer $phpAttributeAnalyzer, NodeTypeResolver $nodeTypeResolver, PromotedPropertyResolver $promotedPropertyResolver, ConstructorAssignDetector $constructorAssignDetector, AstResolver $astResolver, PropertyFetchAnalyzer $propertyFetchAnalyzer, ContextAnalyzer $contextAnalyzer)
+    private const DOCTRINE_PROPERTY_ANNOTATIONS = ['Doctrine\\ORM\\Mapping\\Entity', 'Doctrine\\ORM\\Mapping\\Table', 'Doctrine\\ORM\\Mapping\\MappedSuperclass'];
+    public function __construct(\Rector\Core\NodeManipulator\AssignManipulator $assignManipulator, BetterNodeFinder $betterNodeFinder, PhpDocInfoFactory $phpDocInfoFactory, PropertyFetchFinder $propertyFetchFinder, NodeNameResolver $nodeNameResolver, PhpAttributeAnalyzer $phpAttributeAnalyzer, NodeTypeResolver $nodeTypeResolver, PromotedPropertyResolver $promotedPropertyResolver, ConstructorAssignDetector $constructorAssignDetector, AstResolver $astResolver, PropertyFetchAnalyzer $propertyFetchAnalyzer)
     {
+        $this->assignManipulator = $assignManipulator;
         $this->betterNodeFinder = $betterNodeFinder;
         $this->phpDocInfoFactory = $phpDocInfoFactory;
         $this->propertyFetchFinder = $propertyFetchFinder;
@@ -96,7 +106,6 @@ final class PropertyManipulator
         $this->constructorAssignDetector = $constructorAssignDetector;
         $this->astResolver = $astResolver;
         $this->propertyFetchAnalyzer = $propertyFetchAnalyzer;
-        $this->contextAnalyzer = $contextAnalyzer;
     }
     /**
      * @param \PhpParser\Node\Stmt\Property|\PhpParser\Node\Param $propertyOrParam
@@ -107,13 +116,10 @@ final class PropertyManipulator
         if ($this->hasAllowedNotReadonlyAnnotationOrAttribute($phpDocInfo, $class)) {
             return \true;
         }
-        if ($this->phpAttributeAnalyzer->hasPhpAttribute($propertyOrParam, ClassName::JMS_TYPE)) {
-            return \true;
-        }
         $propertyFetches = $this->propertyFetchFinder->findPrivatePropertyFetches($class, $propertyOrParam, $scope);
         $classMethod = $class->getMethod(MethodName::CONSTRUCT);
         foreach ($propertyFetches as $propertyFetch) {
-            if ($this->contextAnalyzer->isChangeableContext($propertyFetch)) {
+            if ($this->isChangeableContext($propertyFetch)) {
                 return \true;
             }
             // skip for constructor? it is allowed to set value in constructor method
@@ -121,7 +127,7 @@ final class PropertyManipulator
             if ($this->isPropertyAssignedOnlyInConstructor($class, $propertyName, $propertyFetch, $classMethod)) {
                 continue;
             }
-            if ($this->contextAnalyzer->isLeftPartOfAssign($propertyFetch)) {
+            if ($this->assignManipulator->isLeftPartOfAssign($propertyFetch)) {
                 return \true;
             }
             if ($propertyFetch->getAttribute(AttributeKey::IS_UNSET_VAR) === \true) {
@@ -165,23 +171,6 @@ final class PropertyManipulator
         }
         return \false;
     }
-    public function hasTraitWithSamePropertyOrWritten(ClassReflection $classReflection, string $propertyName) : bool
-    {
-        foreach ($classReflection->getTraits() as $traitUse) {
-            if ($traitUse->hasProperty($propertyName)) {
-                return \true;
-            }
-            $trait = $this->astResolver->resolveClassFromClassReflection($traitUse);
-            if (!$trait instanceof Trait_) {
-                continue;
-            }
-            // is property written to
-            if ($this->propertyFetchAnalyzer->containsWrittenPropertyFetchName($trait, $propertyName)) {
-                return \true;
-            }
-        }
-        return \false;
-    }
     /**
      * @param \PhpParser\Node\Expr\StaticPropertyFetch|\PhpParser\Node\Expr\PropertyFetch $propertyFetch
      */
@@ -190,18 +179,33 @@ final class PropertyManipulator
         if (!$classMethod instanceof ClassMethod) {
             return \false;
         }
-        $node = $this->betterNodeFinder->findFirst((array) $classMethod->stmts, static fn(Node $subNode): bool => ($subNode instanceof PropertyFetch || $subNode instanceof StaticPropertyFetch) && $subNode === $propertyFetch);
+        $node = $this->betterNodeFinder->findFirst((array) $classMethod->stmts, static function (Node $subNode) use($propertyFetch) : bool {
+            return ($subNode instanceof PropertyFetch || $subNode instanceof StaticPropertyFetch) && $subNode === $propertyFetch;
+        });
         // there is property unset in Test class, so only check on __construct
         if (!$node instanceof Node) {
             return \false;
         }
         return $this->constructorAssignDetector->isPropertyAssigned($class, $propertyName);
     }
-    private function hasAllowedNotReadonlyAnnotationOrAttribute(PhpDocInfo $phpDocInfo, Class_ $class) : bool
+    /**
+     * @param \PhpParser\Node\Expr\PropertyFetch|\PhpParser\Node\Expr\StaticPropertyFetch $propertyFetch
+     */
+    private function isChangeableContext($propertyFetch) : bool
     {
-        if ($phpDocInfo->hasByAnnotationClasses(self::ALLOWED_NOT_READONLY_CLASS_ANNOTATIONS)) {
+        if ($propertyFetch->getAttribute(AttributeKey::IS_UNSET_VAR, \false)) {
             return \true;
         }
-        return $this->phpAttributeAnalyzer->hasPhpAttributes($class, self::ALLOWED_NOT_READONLY_CLASS_ANNOTATIONS);
+        if ($propertyFetch->getAttribute(AttributeKey::INSIDE_ARRAY_DIM_FETCH, \false)) {
+            return \true;
+        }
+        return $propertyFetch->getAttribute(AttributeKey::IS_USED_AS_ARG_BY_REF_VALUE, \false) === \true;
+    }
+    private function hasAllowedNotReadonlyAnnotationOrAttribute(PhpDocInfo $phpDocInfo, Class_ $class) : bool
+    {
+        if ($phpDocInfo->hasByAnnotationClasses(self::DOCTRINE_PROPERTY_ANNOTATIONS)) {
+            return \true;
+        }
+        return $this->phpAttributeAnalyzer->hasPhpAttributes($class, self::DOCTRINE_PROPERTY_ANNOTATIONS);
     }
 }

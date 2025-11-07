@@ -10,11 +10,12 @@ final class ClassMethodAndAnnotation
      * @var string[]
      * @readonly
      */
-    private array $possibleMethodNames;
+    private $possibleMethodNames;
     /**
      * @readonly
+     * @var \Rector\BetterPhpDocParser\PhpDoc\DoctrineAnnotationTagValueNode
      */
-    private DoctrineAnnotationTagValueNode $doctrineAnnotationTagValueNode;
+    private $doctrineAnnotationTagValueNode;
     /**
      * @param string[] $possibleMethodNames
      */

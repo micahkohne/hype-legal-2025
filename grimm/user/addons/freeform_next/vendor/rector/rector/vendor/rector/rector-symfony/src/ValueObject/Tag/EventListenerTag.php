@@ -8,13 +8,19 @@ final class EventListenerTag implements TagInterface
 {
     /**
      * @readonly
+     * @var string
      */
-    private string $event;
-    private string $method;
+    private $event;
     /**
      * @readonly
+     * @var string
      */
-    private int $priority;
+    private $method;
+    /**
+     * @readonly
+     * @var int
+     */
+    private $priority;
     public function __construct(string $event, string $method, int $priority)
     {
         $this->event = $event;
@@ -43,9 +49,5 @@ final class EventListenerTag implements TagInterface
     public function getData() : array
     {
         return ['method' => $this->method, 'priority' => $this->priority, 'event' => $this->event];
-    }
-    public function changeMethod(string $methodName) : void
-    {
-        $this->method = $methodName;
     }
 }

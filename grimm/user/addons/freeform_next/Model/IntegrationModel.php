@@ -3,7 +3,7 @@
 namespace Solspace\Addons\FreeformNext\Model;
 
 use DateTime;
-use ExpressionEngine\Service\Model\Model;
+use EllisLab\ExpressionEngine\Service\Model\Model;
 use Solspace\Addons\FreeformNext\Library\Configuration\EEPluginConfiguration;
 use Solspace\Addons\FreeformNext\Library\Exceptions\Integrations\IntegrationException;
 use Solspace\Addons\FreeformNext\Library\Integrations\AbstractIntegration;
@@ -33,11 +33,11 @@ class IntegrationModel extends Model implements IntegrationStorageInterface
 {
     use TimestampableTrait;
 
-    const MODEL = 'freeform_next:IntegrationModel';
-    const TABLE = 'freeform_next_integrations';
+    public const MODEL = 'freeform_next:IntegrationModel';
+    public const TABLE = 'freeform_next_integrations';
 
-    const TYPE_MAILING_LIST = 'mailing_list';
-    const TYPE_CRM          = 'crm';
+    public const TYPE_MAILING_LIST = 'mailing_list';
+    public const TYPE_CRM          = 'crm';
 
     protected static $_primary_key = 'id';
     protected static $_table_name  = self::TABLE;

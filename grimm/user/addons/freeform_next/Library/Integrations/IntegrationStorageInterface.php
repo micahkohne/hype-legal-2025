@@ -22,8 +22,6 @@ interface IntegrationStorageInterface
 
     /**
      * Update the settings that are to be stored
-     *
-     * @param array $settings
      */
     public function updateSettings(array $settings = []);
 }

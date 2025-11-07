@@ -8,9 +8,9 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-namespace RectorPrefix202507\Symfony\Component\Process\Pipes;
+namespace RectorPrefix202308\Symfony\Component\Process\Pipes;
 
-use RectorPrefix202507\Symfony\Component\Process\Process;
+use RectorPrefix202308\Symfony\Component\Process\Process;
 /**
  * UnixPipes implementation uses unix pipes as handles.
  *
@@ -20,9 +20,9 @@ use RectorPrefix202507\Symfony\Component\Process\Process;
  */
 class UnixPipes extends AbstractPipes
 {
-    private ?bool $ttyMode;
-    private bool $ptyMode;
-    private bool $haveReadSupport;
+    private $ttyMode;
+    private $ptyMode;
+    private $haveReadSupport;
     /**
      * @param mixed $input
      */
@@ -37,7 +37,7 @@ class UnixPipes extends AbstractPipes
     {
         throw new \BadMethodCallException('Cannot serialize ' . __CLASS__);
     }
-    public function __wakeup() : void
+    public function __wakeup()
     {
         throw new \BadMethodCallException('Cannot unserialize ' . __CLASS__);
     }
@@ -55,7 +55,7 @@ class UnixPipes extends AbstractPipes
             return [['file', '/dev/tty', 'r'], ['file', '/dev/tty', 'w'], ['file', '/dev/tty', 'w']];
         }
         if ($this->ptyMode && Process::isPtySupported()) {
-            return [['pty'], ['pty'], ['pipe', 'w']];
+            return [['pty'], ['pty'], ['pty']];
         }
         return [
             ['pipe', 'r'],

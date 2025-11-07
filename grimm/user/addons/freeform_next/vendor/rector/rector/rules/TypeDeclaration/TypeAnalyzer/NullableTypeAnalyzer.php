@@ -11,15 +11,16 @@ final class NullableTypeAnalyzer
 {
     /**
      * @readonly
+     * @var \Rector\NodeTypeResolver\NodeTypeResolver
      */
-    private NodeTypeResolver $nodeTypeResolver;
+    private $nodeTypeResolver;
     public function __construct(NodeTypeResolver $nodeTypeResolver)
     {
         $this->nodeTypeResolver = $nodeTypeResolver;
     }
     public function resolveNullableObjectType(Expr $expr) : ?\PHPStan\Type\ObjectType
     {
-        $exprType = $this->nodeTypeResolver->getNativeType($expr);
+        $exprType = $this->nodeTypeResolver->getType($expr);
         $baseType = TypeCombinator::removeNull($exprType);
         if (!$baseType instanceof ObjectType) {
             return null;

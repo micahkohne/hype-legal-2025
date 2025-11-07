@@ -11,7 +11,6 @@
 
 namespace Solspace\Addons\FreeformNext\Integrations\CRM;
 
-use Override;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\BadResponseException;
 use Solspace\Addons\FreeformNext\Library\Exceptions\Integrations\IntegrationException;
@@ -23,10 +22,10 @@ use Solspace\Addons\FreeformNext\Library\Logging\LoggerInterface;
 
 class Insightly extends AbstractCRMIntegration
 {
-    const SETTING_API_KEY = 'api_key';
+    public const SETTING_API_KEY = 'api_key';
 
-    const TITLE        = 'Insightly';
-    const LOG_CATEGORY = 'Insightly';
+    public const TITLE        = 'Insightly';
+    public const LOG_CATEGORY = 'Insightly';
 
     /**
      * Returns a list of additional settings for this integration
@@ -34,7 +33,6 @@ class Insightly extends AbstractCRMIntegration
      *
      * @return SettingBlueprint[]
      */
-    #[Override]
     public static function getSettingBlueprints(): array
     {
         return [
@@ -55,7 +53,7 @@ class Insightly extends AbstractCRMIntegration
      *
      * @return bool
      */
-    public function pushObject(array $keyValueList, $formFields = NULL): bool
+    public function pushObject(array $keyValueList, ?array$formFields = NULL): bool
     {
         $client = new Client();
 		$response = $client->get($this->getEndpoint('/Leads'), [
@@ -100,7 +98,7 @@ class Insightly extends AbstractCRMIntegration
      *
      * @return FieldObject[]
      */
-    public function fetchFields(): array
+    public function fetchFields()
     {
         $fieldList = [
             new FieldObject('SALUTATION', 'Salutation', FieldObject::TYPE_STRING),
@@ -133,7 +131,7 @@ class Insightly extends AbstractCRMIntegration
 
         $response = $request->send();
 
-        $data = json_decode((string) $response->getBody(true), false);
+        $data = json_decode($response->getBody(true), false);
         foreach ($data as $field) {
             if (!$field->EDITABLE) {
                 continue;
@@ -191,7 +189,7 @@ class Insightly extends AbstractCRMIntegration
     /**
      * A method that initiates the authentication
      */
-    public function initiateAuthentication()
+    public function initiateAuthentication(): void
     {
     }
 

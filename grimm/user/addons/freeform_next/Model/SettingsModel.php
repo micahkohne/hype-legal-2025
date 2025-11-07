@@ -11,7 +11,7 @@
 
 namespace Solspace\Addons\FreeformNext\Model;
 
-use ExpressionEngine\Service\Model\Model;
+use EllisLab\ExpressionEngine\Service\Model\Model;
 use Solspace\Addons\FreeformNext\Library\Exceptions\FreeformException;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Finder\SplFileInfo;
@@ -41,35 +41,35 @@ use Symfony\Component\Finder\SplFileInfo;
  */
 class SettingsModel extends Model
 {
-    const MODEL = 'freeform_next:SettingsModel';
-    const TABLE = 'freeform_next_settings';
+    public const MODEL = 'freeform_next:SettingsModel';
+    public const TABLE = 'freeform_next_settings';
 
-    const NOTIFICATION_CREATION_METHOD_DATABASE = 'db';
-    const NOTIFICATION_CREATION_METHOD_TEMPLATE = 'template';
+    public const NOTIFICATION_CREATION_METHOD_DATABASE = 'db';
+    public const NOTIFICATION_CREATION_METHOD_TEMPLATE = 'template';
 
-    const FIELD_DISPLAY_ORDER_TYPE = 'type';
-    const FIELD_DISPLAY_ORDER_NAME = 'name';
+    public const FIELD_DISPLAY_ORDER_TYPE = 'type';
+    public const FIELD_DISPLAY_ORDER_NAME = 'name';
 
-    const DEFAULT_SPAM_PROTECTION_ENABLED         = true;
-    const DEFAULT_SPAM_BLOCK_LIKE_SUCCESSFUL_POST = false;
-    const DEFAULT_SHOW_TUTORIAL                   = true;
-    const DEFAULT_FIELD_DISPLAY_ORDER             = self::FIELD_DISPLAY_ORDER_TYPE;
-    const DEFAULT_FORMATTING_TEMPLATE_PATH        = null;
-    const DEFAULT_NOTIFICATION_TEMPLATE_PATH      = null;
-    const DEFAULT_NOTIFICATION_CREATION_METHOD    = self::NOTIFICATION_CREATION_METHOD_DATABASE;
-    const DEFAULT_LICENSE                         = null;
-    const DEFAULT_DEFAULT_TEMPLATES               = true;
-    const DEFAULT_REMOVE_NEWLINES                 = false;
-    const DEFAULT_FORM_SUBMIT_DISABLE             = true;
-    const DEFAULT_AUTO_SCROLL_TO_ERRORS           = true;
-    const DEFAULT_RECAPTCHA_ENABLED               = false;
-    const DEFAULT_RECAPTCHA_TYPE                  = null;
-    const DEFAULT_RECAPTCHA_KEY                   = null;
-    const DEFAULT_RECAPTCHA_SECRET                = null;
-    const DEFAULT_RECAPTCHA_SCORE_THRESHOLD       = '0.5';
+    public const DEFAULT_SPAM_PROTECTION_ENABLED         = true;
+    public const DEFAULT_SPAM_BLOCK_LIKE_SUCCESSFUL_POST = false;
+    public const DEFAULT_SHOW_TUTORIAL                   = true;
+    public const DEFAULT_FIELD_DISPLAY_ORDER             = self::FIELD_DISPLAY_ORDER_TYPE;
+    public const DEFAULT_FORMATTING_TEMPLATE_PATH        = null;
+    public const DEFAULT_NOTIFICATION_TEMPLATE_PATH      = null;
+    public const DEFAULT_NOTIFICATION_CREATION_METHOD    = self::NOTIFICATION_CREATION_METHOD_DATABASE;
+    public const DEFAULT_LICENSE                         = null;
+    public const DEFAULT_DEFAULT_TEMPLATES               = true;
+    public const DEFAULT_REMOVE_NEWLINES                 = false;
+    public const DEFAULT_FORM_SUBMIT_DISABLE             = true;
+    public const DEFAULT_AUTO_SCROLL_TO_ERRORS           = true;
+    public const DEFAULT_RECAPTCHA_ENABLED               = false;
+    public const DEFAULT_RECAPTCHA_TYPE                  = null;
+    public const DEFAULT_RECAPTCHA_KEY                   = null;
+    public const DEFAULT_RECAPTCHA_SECRET                = null;
+    public const DEFAULT_RECAPTCHA_SCORE_THRESHOLD       = '0.5';
 
-    const SESSION_STORAGE_SESSION  = 'session';
-    const SESSION_STORAGE_DATABASE = 'db';
+    public const SESSION_STORAGE_SESSION  = 'session';
+    public const SESSION_STORAGE_DATABASE = 'db';
 
     protected static $_primary_key = 'id';
     protected static $_table_name  = self::TABLE;
@@ -137,7 +137,7 @@ class SettingsModel extends Model
      *
      * @return null|string
      */
-    public function getAbsoluteFormTemplateDirectory(): ?string
+    public function getAbsoluteFormTemplateDirectory()
     {
         if ($this->formattingTemplatePath) {
             $absolutePath = $this->getAbsolutePath($this->formattingTemplatePath);
@@ -153,7 +153,7 @@ class SettingsModel extends Model
      *
      * @return null|string
      */
-    public function getAbsoluteEmailTemplateDirectory(): ?string
+    public function getAbsoluteEmailTemplateDirectory()
     {
         if ($this->notificationTemplatePath) {
             $absolutePath = $this->getAbsolutePath($this->notificationTemplatePath);
@@ -172,7 +172,7 @@ class SettingsModel extends Model
      * @return string
      * @throws FreeformException
      */
-    public function getDemoTemplateContent($name = 'flexbox'): string|false
+    public function getDemoTemplateContent($name = 'flexbox'): string|bool
     {
         $path = PATH_THIRD . "freeform_next/Templates/form/$name.html";
         if (!file_exists($path)) {
@@ -185,7 +185,7 @@ class SettingsModel extends Model
     /**
      * @return array|bool
      */
-    public function listTemplatesInFormTemplateDirectory(): array
+    public function listTemplatesInFormTemplateDirectory()
     {
         $templateDirectoryPath = $this->getAbsoluteFormTemplateDirectory();
 
@@ -208,7 +208,7 @@ class SettingsModel extends Model
     /**
      * @return array|bool
      */
-    public function listTemplatesInEmailTemplateDirectory(): array
+    public function listTemplatesInEmailTemplateDirectory()
     {
         $templateDirectoryPath = $this->getAbsoluteEmailTemplateDirectory();
 
@@ -234,7 +234,7 @@ class SettingsModel extends Model
      * @return string
      * @throws FreeformException
      */
-    public function getEmailTemplateContent(): string|false
+    public function getEmailTemplateContent(): string|bool
     {
         $path = PATH_THIRD . 'freeform_next/Templates/notifications/default.html';
         if (!file_exists($path)) {
@@ -411,7 +411,7 @@ class SettingsModel extends Model
      *
      * @return string
      */
-    private function getAbsolutePath(string $path): string
+    private function getAbsolutePath($path)
     {
         $isAbsolute = $this->isFolderAbsolute($path);
 
@@ -423,7 +423,7 @@ class SettingsModel extends Model
      *
      * @return bool
      */
-    private function isFolderAbsolute(string $path): int|false
+    private function isFolderAbsolute($path): int|bool
     {
         return preg_match("/^(?:\/|\\\\|\w\:\\\\).*$/", $path);
     }

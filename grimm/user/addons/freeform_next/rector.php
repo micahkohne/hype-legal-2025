@@ -1,38 +1,38 @@
 <?php
 
-declare(strict_types=1);
-
 use Rector\Config\RectorConfig;
-use Rector\Php84\Rector\MethodCall\NewMethodCallWithoutParenthesesRector;
+use Rector\Core\ValueObject\PhpVersion;
+use Rector\Php71\Rector\BinaryOp\BinaryOpBetweenNumberAndStringRector;
+use Rector\Php71\Rector\FuncCall\RemoveExtraParametersRector;
+use Rector\Php73\Rector\ConstFetch\SensitiveConstantNameRector;
 use Rector\Set\ValueObject\LevelSetList;
+use Rector\Php73\Rector\FuncCall\JsonThrowOnErrorRector;
 use Rector\Set\ValueObject\SetList;
-use Rector\ValueObject\PhpVersion;
 
 return static function (RectorConfig $config): void {
-    $config->bootstrapFiles([
-        __DIR__ . '/stubs.php'
-    ]);
+    $config->bootstrapFiles([__DIR__ . '/stubs.php']);
 
-    $config->autoloadPaths([
-        __DIR__ . '/../../../ee/vendor/autoload.php',
-    ]);
+    $config->paths([__DIR__]);
 
-    // Limit scope to the add-on
-    $config->paths([
-        __DIR__,
-    ]);
+    $config->phpVersion(PhpVersion::PHP_80);
 
-    // Skip third-party & legacy entry points
-    $config->skip([
-        __DIR__ . '/php7',
-        __DIR__ . '/vendor',
-        NewMethodCallWithoutParenthesesRector::class,
-    ]);
-
-    $config->phpVersion(PhpVersion::PHP_84);
     $config->sets([
-        LevelSetList::UP_TO_PHP_84,
+        LevelSetList::UP_TO_PHP_80,
         SetList::TYPE_DECLARATION,
+    ]);
+
+    $config->skip([
+        __DIR__ . '/codepack',
+        __DIR__ . '/javascript',
+        __DIR__ . '/language',
+        __DIR__ . '/logs',
+        __DIR__ . '/Templates',
+        __DIR__ . '/vendor',
+        __DIR__ . '/View',
+        JsonThrowOnErrorRector::class,
+        SensitiveConstantNameRector::class,
+        BinaryOpBetweenNumberAndStringRector::class,
+        RemoveExtraParametersRector::class,
     ]);
 
     $config->importNames();

@@ -9,12 +9,10 @@ use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Name\FullyQualified;
-use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassMethod;
-use PHPStan\Type\ObjectType;
-use Rector\Exception\NotImplementedYetException;
+use Rector\Core\Exception\NotImplementedYetException;
+use Rector\Core\Rector\AbstractRector;
 use Rector\NodeTypeResolver\Node\AttributeKey;
-use Rector\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -63,21 +61,17 @@ CODE_SAMPLE
      */
     public function getNodeTypes() : array
     {
-        return [Class_::class];
+        return [ClassMethod::class];
     }
     /**
-     * @param Class_ $node
+     * @param ClassMethod $node
      */
     public function refactor(Node $node) : ?Node
     {
-        if (!$this->isObjectType($node, new ObjectType('Symfony\\Component\\HttpKernel\\Kernel'))) {
+        if (!$this->isName($node, 'configureRoutes')) {
             return null;
         }
-        $configureRoutesClassMethod = $node->getMethod('configureRoutes');
-        if (!$configureRoutesClassMethod instanceof ClassMethod) {
-            return null;
-        }
-        $firstParam = $configureRoutesClassMethod->params[0];
+        $firstParam = $node->params[0];
         if ($firstParam->type === null) {
             return null;
         }
@@ -85,9 +79,9 @@ CODE_SAMPLE
             return null;
         }
         $firstParam->type = new FullyQualified('Symfony\\Component\\Routing\\Loader\\Configurator\\RoutingConfigurator');
-        $configureRoutesClassMethod->name = new Identifier('configureRouting');
-        $configureRoutesClassMethod->returnType = new Identifier('void');
-        $this->traverseNodesWithCallable((array) $configureRoutesClassMethod->stmts, function (Node $node) : ?MethodCall {
+        $node->name = new Identifier('configureRouting');
+        $node->returnType = new Identifier('void');
+        $this->traverseNodesWithCallable((array) $node->stmts, function (Node $node) : ?MethodCall {
             if (!$node instanceof MethodCall) {
                 return null;
             }

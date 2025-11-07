@@ -1,21 +1,23 @@
 <?php
 
 declare (strict_types=1);
-namespace Rector\PhpParser\Comparing;
+namespace Rector\Core\PhpParser\Comparing;
 
 use PhpParser\Node;
 use Rector\Comments\CommentRemover;
-use Rector\PhpParser\Printer\BetterStandardPrinter;
+use Rector\Core\PhpParser\Printer\BetterStandardPrinter;
 final class NodeComparator
 {
     /**
      * @readonly
+     * @var \Rector\Comments\CommentRemover
      */
-    private CommentRemover $commentRemover;
+    private $commentRemover;
     /**
      * @readonly
+     * @var \Rector\Core\PhpParser\Printer\BetterStandardPrinter
      */
-    private BetterStandardPrinter $betterStandardPrinter;
+    private $betterStandardPrinter;
     public function __construct(CommentRemover $commentRemover, BetterStandardPrinter $betterStandardPrinter)
     {
         $this->commentRemover = $commentRemover;
@@ -23,7 +25,7 @@ final class NodeComparator
     }
     /**
      * Removes all comments from both nodes
-     * @param Node|Node[]|null $node
+     * @param \PhpParser\Node|mixed[]|null $node
      */
     public function printWithoutComments($node) : string
     {
@@ -32,8 +34,8 @@ final class NodeComparator
         return \trim($content);
     }
     /**
-     * @param Node|Node[]|null $firstNode
-     * @param Node|Node[]|null $secondNode
+     * @param \PhpParser\Node|mixed[]|null $firstNode
+     * @param \PhpParser\Node|mixed[]|null $secondNode
      */
     public function areNodesEqual($firstNode, $secondNode) : bool
     {

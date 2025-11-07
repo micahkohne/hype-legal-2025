@@ -33,8 +33,6 @@ class ControlPanelView
     }
 
     /**
-     * @param View $view
-     *
      * @return array
      */
     protected final function renderView(View $view): array
@@ -83,11 +81,9 @@ class ControlPanelView
     }
 
     /**
-     * @param string $target
-     *
      * @return mixed
      */
-    protected function getLink(string $target)
+    protected function getLink(string $target): object
     {
         return ee('CP/URL', 'addons/settings/freeform_next/' . $target);
     }

@@ -12,7 +12,6 @@
 namespace Solspace\Addons\FreeformNext\Library\Session;
 
 use DateTime;
-
 class DbSession implements SessionInterface
 {
     /**
@@ -21,7 +20,7 @@ class DbSession implements SessionInterface
      *
      * @return mixed
      */
-    public function get($key, $defaultValue = null)
+    public function get($key, mixed $defaultValue = null)
     {
         if (null === $key) {
             return $defaultValue;
@@ -48,11 +47,11 @@ class DbSession implements SessionInterface
      *
      * @return $this
      */
-    public function set($key, $value): static
+    public function set($key, $value)
     {
         $valueExists = $this->getQueryInstance($key)->num_rows() > 0;
         $sessionId   = $this->getSessionId();
-        $date        = new DateTime()->format('Y-m-d H:i:s');
+        $date        = (new DateTime())->format('Y-m-d H:i:s');
 
         if ($valueExists) {
             ee()->db
@@ -126,7 +125,7 @@ class DbSession implements SessionInterface
     /**
      * @return string
      */
-    private function getSessionId(): string|false
+    private function getSessionId(): string|bool
     {
         return session_id();
     }

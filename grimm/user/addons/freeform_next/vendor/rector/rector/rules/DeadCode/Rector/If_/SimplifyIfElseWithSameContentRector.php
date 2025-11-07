@@ -7,10 +7,9 @@ use PhpParser\Node;
 use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\Else_;
 use PhpParser\Node\Stmt\If_;
-use PhpParser\NodeVisitor;
-use Rector\Exception\ShouldNotHappenException;
-use Rector\PhpParser\Printer\BetterStandardPrinter;
-use Rector\Rector\AbstractRector;
+use Rector\Core\Exception\ShouldNotHappenException;
+use Rector\Core\PhpParser\Printer\BetterStandardPrinter;
+use Rector\Core\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -20,8 +19,9 @@ final class SimplifyIfElseWithSameContentRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\Core\PhpParser\Printer\BetterStandardPrinter
      */
-    private BetterStandardPrinter $betterStandardPrinter;
+    private $betterStandardPrinter;
     public function __construct(BetterStandardPrinter $betterStandardPrinter)
     {
         $this->betterStandardPrinter = $betterStandardPrinter;
@@ -61,18 +61,15 @@ CODE_SAMPLE
     }
     /**
      * @param If_ $node
-     * @return Stmt[]|null|int
+     * @return Stmt[]|null
      */
-    public function refactor(Node $node)
+    public function refactor(Node $node) : ?array
     {
         if (!$node->else instanceof Else_) {
             return null;
         }
         if (!$this->isIfWithConstantReturns($node)) {
             return null;
-        }
-        if ($node->stmts === []) {
-            return NodeVisitor::REMOVE_NODE;
         }
         return $node->stmts;
     }

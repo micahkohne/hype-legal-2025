@@ -5,17 +5,8 @@ namespace Rector\CodingStyle\Application;
 
 use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\Use_;
-use Rector\Renaming\Collector\RenamedNameCollector;
 final class UseImportsRemover
 {
-    /**
-     * @readonly
-     */
-    private RenamedNameCollector $renamedNameCollector;
-    public function __construct(RenamedNameCollector $renamedNameCollector)
-    {
-        $this->renamedNameCollector = $renamedNameCollector;
-    }
     /**
      * @param Stmt[] $stmts
      * @param string[] $removedUses
@@ -23,7 +14,6 @@ final class UseImportsRemover
      */
     public function removeImportsFromStmts(array $stmts, array $removedUses) : array
     {
-        $hasRemoved = \false;
         foreach ($stmts as $key => $stmt) {
             if (!$stmt instanceof Use_) {
                 continue;
@@ -32,10 +22,9 @@ final class UseImportsRemover
             // remove empty uses
             if ($stmt->uses === []) {
                 unset($stmts[$key]);
-                $hasRemoved = \true;
             }
         }
-        return $hasRemoved ? \array_values($stmts) : $stmts;
+        return $stmts;
     }
     /**
      * @param string[] $removedUses
@@ -44,13 +33,9 @@ final class UseImportsRemover
     {
         foreach ($use->uses as $usesKey => $useUse) {
             $useName = $useUse->name->toString();
-            if (!\in_array($useName, $removedUses, \true)) {
-                continue;
+            if (\in_array($useName, $removedUses, \true)) {
+                unset($use->uses[$usesKey]);
             }
-            if (!$this->renamedNameCollector->has($useName)) {
-                continue;
-            }
-            unset($use->uses[$usesKey]);
         }
         return $use;
     }

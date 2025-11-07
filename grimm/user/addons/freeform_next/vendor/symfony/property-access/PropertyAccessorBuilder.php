@@ -22,12 +22,25 @@ use Symfony\Component\PropertyInfo\PropertyWriteInfoExtractorInterface;
  */
 class PropertyAccessorBuilder
 {
-    private int $magicMethods = PropertyAccessor::MAGIC_GET | PropertyAccessor::MAGIC_SET;
-    private bool $throwExceptionOnInvalidIndex = false;
-    private bool $throwExceptionOnInvalidPropertyPath = true;
-    private ?CacheItemPoolInterface $cacheItemPool = null;
-    private ?PropertyReadInfoExtractorInterface $readInfoExtractor = null;
-    private ?PropertyWriteInfoExtractorInterface $writeInfoExtractor = null;
+    /** @var int */
+    private $magicMethods = PropertyAccessor::MAGIC_GET | PropertyAccessor::MAGIC_SET;
+    private $throwExceptionOnInvalidIndex = false;
+    private $throwExceptionOnInvalidPropertyPath = true;
+
+    /**
+     * @var CacheItemPoolInterface|null
+     */
+    private $cacheItemPool;
+
+    /**
+     * @var PropertyReadInfoExtractorInterface|null
+     */
+    private $readInfoExtractor;
+
+    /**
+     * @var PropertyWriteInfoExtractorInterface|null
+     */
+    private $writeInfoExtractor;
 
     /**
      * Enables the use of all magic methods by the PropertyAccessor.
@@ -226,11 +239,8 @@ class PropertyAccessorBuilder
      *
      * @return $this
      */
-    public function setCacheItemPool(?CacheItemPoolInterface $cacheItemPool = null): static
+    public function setCacheItemPool(CacheItemPoolInterface $cacheItemPool = null): static
     {
-        if (1 > \func_num_args()) {
-            trigger_deprecation('symfony/property-access', '6.2', 'Calling "%s()" without any arguments is deprecated, pass null explicitly instead.', __METHOD__);
-        }
         $this->cacheItemPool = $cacheItemPool;
 
         return $this;

@@ -10,17 +10,11 @@ use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Return_;
 use PHPStan\PhpDocParser\Ast\PhpDoc\ReturnTagValueNode;
-use PHPStan\Type\Generic\GenericObjectType;
-use Rector\BetterPhpDocParser\PhpDocInfo\PhpDocInfoFactory;
-use Rector\BetterPhpDocParser\PhpDocManipulator\PhpDocTypeChanger;
-use Rector\Comments\NodeDocBlock\DocBlockUpdater;
-use Rector\DeadCode\NodeAnalyzer\IsClassMethodUsedAnalyzer;
+use Rector\Core\PhpParser\NodeTransformer;
+use Rector\Core\Rector\AbstractRector;
 use Rector\NodeTypeResolver\Node\AttributeKey;
-use Rector\PhpParser\NodeTransformer;
-use Rector\PHPStan\ScopeFetcher;
 use Rector\PHPUnit\NodeAnalyzer\TestsNodeAnalyzer;
 use Rector\PHPUnit\NodeFinder\DataProviderClassMethodFinder;
-use Rector\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -33,41 +27,24 @@ final class YieldDataProviderRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\Core\PhpParser\NodeTransformer
      */
-    private NodeTransformer $nodeTransformer;
+    private $nodeTransformer;
     /**
      * @readonly
+     * @var \Rector\PHPUnit\NodeAnalyzer\TestsNodeAnalyzer
      */
-    private TestsNodeAnalyzer $testsNodeAnalyzer;
+    private $testsNodeAnalyzer;
     /**
      * @readonly
+     * @var \Rector\PHPUnit\NodeFinder\DataProviderClassMethodFinder
      */
-    private DataProviderClassMethodFinder $dataProviderClassMethodFinder;
-    /**
-     * @readonly
-     */
-    private PhpDocInfoFactory $phpDocInfoFactory;
-    /**
-     * @readonly
-     */
-    private IsClassMethodUsedAnalyzer $isClassMethodUsedAnalyzer;
-    /**
-     * @readonly
-     */
-    private PhpDocTypeChanger $phpDocTypeChanger;
-    /**
-     * @readonly
-     */
-    private DocBlockUpdater $docBlockUpdater;
-    public function __construct(NodeTransformer $nodeTransformer, TestsNodeAnalyzer $testsNodeAnalyzer, DataProviderClassMethodFinder $dataProviderClassMethodFinder, PhpDocInfoFactory $phpDocInfoFactory, IsClassMethodUsedAnalyzer $isClassMethodUsedAnalyzer, PhpDocTypeChanger $phpDocTypeChanger, DocBlockUpdater $docBlockUpdater)
+    private $dataProviderClassMethodFinder;
+    public function __construct(NodeTransformer $nodeTransformer, TestsNodeAnalyzer $testsNodeAnalyzer, DataProviderClassMethodFinder $dataProviderClassMethodFinder)
     {
         $this->nodeTransformer = $nodeTransformer;
         $this->testsNodeAnalyzer = $testsNodeAnalyzer;
         $this->dataProviderClassMethodFinder = $dataProviderClassMethodFinder;
-        $this->phpDocInfoFactory = $phpDocInfoFactory;
-        $this->isClassMethodUsedAnalyzer = $isClassMethodUsedAnalyzer;
-        $this->phpDocTypeChanger = $phpDocTypeChanger;
-        $this->docBlockUpdater = $docBlockUpdater;
     }
     public function getRuleDefinition() : RuleDefinition
     {
@@ -107,7 +84,7 @@ CODE_SAMPLE
     /**
      * @param Class_ $node
      */
-    public function refactor(Node $node) : ?Class_
+    public function refactor(Node $node) : ?Node
     {
         if (!$this->testsNodeAnalyzer->isInTestClass($node)) {
             return null;
@@ -117,10 +94,6 @@ CODE_SAMPLE
         foreach ($dataProviderClassMethods as $dataProviderClassMethod) {
             $array = $this->collectReturnArrayNodesFromClassMethod($dataProviderClassMethod);
             if (!$array instanceof Array_) {
-                continue;
-            }
-            $scope = ScopeFetcher::fetch($node);
-            if ($this->isClassMethodUsedAnalyzer->isClassMethodUsed($node, $dataProviderClassMethod, $scope)) {
                 continue;
             }
             $this->transformArrayToYieldsOnMethodNode($dataProviderClassMethod, $array);
@@ -169,16 +142,6 @@ CODE_SAMPLE
     private function removeReturnTag(ClassMethod $classMethod) : void
     {
         $phpDocInfo = $this->phpDocInfoFactory->createFromNodeOrEmpty($classMethod);
-        if (!$phpDocInfo->getReturnTagValue() instanceof ReturnTagValueNode) {
-            return;
-        }
-        if ($phpDocInfo->getReturnType()->isArray()->yes()) {
-            $keyType = $phpDocInfo->getReturnType()->getIterableKeyType();
-            $itemType = $phpDocInfo->getReturnType()->getIterableValueType();
-            $this->phpDocTypeChanger->changeReturnType($classMethod, $phpDocInfo, new GenericObjectType('Iterator', [$keyType, $itemType]));
-        } else {
-            $phpDocInfo->removeByType(ReturnTagValueNode::class);
-            $this->docBlockUpdater->updateRefactoredNodeWithPhpDocInfo($classMethod);
-        }
+        $phpDocInfo->removeByType(ReturnTagValueNode::class);
     }
 }

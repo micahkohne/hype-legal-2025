@@ -9,7 +9,7 @@ abstract class MagicConst extends Scalar
     /**
      * Constructs a magic constant node.
      *
-     * @param array<string, mixed> $attributes Additional attributes
+     * @param array $attributes Additional attributes
      */
     public function __construct(array $attributes = [])
     {

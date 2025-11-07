@@ -11,7 +11,6 @@
 
 namespace Solspace\Addons\FreeformNext\Library\Composer\Components\Fields;
 
-use Override;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\AbstractField;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Fields\Interfaces\FileUploadInterface;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Fields\Interfaces\MultipleValueInterface;
@@ -21,8 +20,8 @@ use Solspace\Addons\FreeformNext\Library\Exceptions\FieldExceptions\FileUploadEx
 
 class FileUploadField extends AbstractField implements MultipleValueInterface, FileUploadInterface
 {
-    const DEFAULT_MAX_FILESIZE_KB = 2048;
-    const DEFAULT_FILE_COUNT      = 1;
+    public const DEFAULT_MAX_FILESIZE_KB = 2048;
+    public const DEFAULT_FILE_COUNT      = 1;
 
     use MultipleValueTrait;
     use FileUploadTrait;
@@ -52,7 +51,6 @@ class FileUploadField extends AbstractField implements MultipleValueInterface, F
      *
      * @return string
      */
-    #[Override]
     public function getValueAsString($optionsAsValues = true): string
     {
         return implode('|', $this->getValue());
@@ -125,7 +123,6 @@ class FileUploadField extends AbstractField implements MultipleValueInterface, F
      *
      * @return array
      */
-    #[Override]
     protected function validate()
     {
         $uploadErrors = [];
@@ -133,7 +130,7 @@ class FileUploadField extends AbstractField implements MultipleValueInterface, F
         if (!array_key_exists($this->handle, self::$filesUploaded)) {
             $exists = isset($_FILES[$this->handle]) && !empty($_FILES[$this->handle]['name']);
             if ($exists && $_FILES[$this->handle]['name'][0]) {
-                $fileCount = count($_FILES[$this->handle]['name']);
+                $fileCount = is_countable($_FILES[$this->handle]['name']) ? count($_FILES[$this->handle]['name']) : 0;
 
                 if ($fileCount > $this->getFileCount()) {
                     $uploadErrors[] = $this->translate(
@@ -143,7 +140,7 @@ class FileUploadField extends AbstractField implements MultipleValueInterface, F
                 }
 
                 foreach ($_FILES[$this->handle]['name'] as $index => $name) {
-                    $extension       = pathinfo((string) $name, PATHINFO_EXTENSION);
+                    $extension       = pathinfo($name, PATHINFO_EXTENSION);
                     $validExtensions = $this->getValidExtensions();
 
                     if (empty($_FILES[$this->handle]['tmp_name'][$index])) {
@@ -254,7 +251,7 @@ class FileUploadField extends AbstractField implements MultipleValueInterface, F
      *
      * @return array
      */
-    private function getValidExtensions(): array
+    private function getValidExtensions()
     {
         $allFileKinds = $this->getForm()->getFileUploadHandler()->getFileKinds();
 

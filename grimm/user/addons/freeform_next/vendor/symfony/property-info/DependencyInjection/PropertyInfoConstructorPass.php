@@ -25,7 +25,10 @@ final class PropertyInfoConstructorPass implements CompilerPassInterface
 {
     use PriorityTaggedServiceTrait;
 
-    public function process(ContainerBuilder $container): void
+    /**
+     * {@inheritdoc}
+     */
+    public function process(ContainerBuilder $container)
     {
         if (!$container->hasDefinition('property_info.constructor_extractor')) {
             return;

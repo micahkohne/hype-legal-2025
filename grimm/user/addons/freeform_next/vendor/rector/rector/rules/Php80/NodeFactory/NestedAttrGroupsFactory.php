@@ -11,8 +11,9 @@ final class NestedAttrGroupsFactory
 {
     /**
      * @readonly
+     * @var \Rector\PhpAttribute\NodeFactory\PhpNestedAttributeGroupFactory
      */
-    private PhpNestedAttributeGroupFactory $phpNestedAttributeGroupFactory;
+    private $phpNestedAttributeGroupFactory;
     public function __construct(PhpNestedAttributeGroupFactory $phpNestedAttributeGroupFactory)
     {
         $this->phpNestedAttributeGroupFactory = $phpNestedAttributeGroupFactory;
@@ -36,6 +37,6 @@ final class NestedAttrGroupsFactory
             $nestedAttributeGroups = $this->phpNestedAttributeGroupFactory->createNested($doctrineAnnotationTagValueNode, $nestedDoctrineTagAndAnnotationToAttribute->getNestedAnnotationToAttribute());
             $attributeGroups = \array_merge($attributeGroups, $nestedAttributeGroups);
         }
-        return \array_unique($attributeGroups, \SORT_REGULAR);
+        return $attributeGroups;
     }
 }

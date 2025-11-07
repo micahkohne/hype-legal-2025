@@ -10,24 +10,27 @@ use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Param;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\If_;
-use PhpParser\NodeVisitor;
+use PhpParser\NodeTraverser;
+use Rector\Core\PhpParser\Node\BetterNodeFinder;
 use Rector\NodeNameResolver\NodeNameResolver;
 use Rector\PhpDocParser\NodeTraverser\SimpleCallableNodeTraverser;
-use Rector\PhpParser\Node\BetterNodeFinder;
 final class ParamTypeAddGuard
 {
     /**
      * @readonly
+     * @var \Rector\NodeNameResolver\NodeNameResolver
      */
-    private NodeNameResolver $nodeNameResolver;
+    private $nodeNameResolver;
     /**
      * @readonly
+     * @var \Rector\PhpDocParser\NodeTraverser\SimpleCallableNodeTraverser
      */
-    private SimpleCallableNodeTraverser $simpleCallableNodeTraverser;
+    private $simpleCallableNodeTraverser;
     /**
      * @readonly
+     * @var \Rector\Core\PhpParser\Node\BetterNodeFinder
      */
-    private BetterNodeFinder $betterNodeFinder;
+    private $betterNodeFinder;
     public function __construct(NodeNameResolver $nodeNameResolver, SimpleCallableNodeTraverser $simpleCallableNodeTraverser, BetterNodeFinder $betterNodeFinder)
     {
         $this->nodeNameResolver = $nodeNameResolver;
@@ -44,15 +47,19 @@ final class ParamTypeAddGuard
         $this->simpleCallableNodeTraverser->traverseNodesWithCallable((array) $classMethod->stmts, function (Node $subNode) use(&$isLegal, $paramName) : ?int {
             if ($subNode instanceof Assign && $subNode->var instanceof Variable && $this->nodeNameResolver->isName($subNode->var, $paramName)) {
                 $isLegal = \false;
-                return NodeVisitor::STOP_TRAVERSAL;
+                return NodeTraverser::STOP_TRAVERSAL;
             }
-            if ($subNode instanceof If_ && (bool) $this->betterNodeFinder->findFirst($subNode->cond, fn(Node $node): bool => $node instanceof Variable && $this->nodeNameResolver->isName($node, $paramName))) {
+            if ($subNode instanceof If_ && (bool) $this->betterNodeFinder->findFirst($subNode->cond, function (Node $node) use($paramName) : bool {
+                return $node instanceof Variable && $this->nodeNameResolver->isName($node, $paramName);
+            })) {
                 $isLegal = \false;
-                return NodeVisitor::STOP_TRAVERSAL;
+                return NodeTraverser::STOP_TRAVERSAL;
             }
-            if ($subNode instanceof Ternary && (bool) $this->betterNodeFinder->findFirst($subNode, fn(Node $node): bool => $node instanceof Variable && $this->nodeNameResolver->isName($node, $paramName))) {
+            if ($subNode instanceof Ternary && (bool) $this->betterNodeFinder->findFirst($subNode, function (Node $node) use($paramName) : bool {
+                return $node instanceof Variable && $this->nodeNameResolver->isName($node, $paramName);
+            })) {
                 $isLegal = \false;
-                return NodeVisitor::STOP_TRAVERSAL;
+                return NodeTraverser::STOP_TRAVERSAL;
             }
             return null;
         });

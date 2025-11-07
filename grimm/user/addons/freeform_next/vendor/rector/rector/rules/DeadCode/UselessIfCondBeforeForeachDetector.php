@@ -12,13 +12,14 @@ use PhpParser\Node\Expr\Empty_;
 use PhpParser\Node\Stmt\If_;
 use PhpParser\Node\Stmt\Return_;
 use PHPStan\Analyser\Scope;
-use Rector\PhpParser\Comparing\NodeComparator;
+use Rector\Core\PhpParser\Comparing\NodeComparator;
 final class UselessIfCondBeforeForeachDetector
 {
     /**
      * @readonly
+     * @var \Rector\Core\PhpParser\Comparing\NodeComparator
      */
-    private NodeComparator $nodeComparator;
+    private $nodeComparator;
     public function __construct(NodeComparator $nodeComparator)
     {
         $this->nodeComparator = $nodeComparator;

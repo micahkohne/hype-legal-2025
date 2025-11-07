@@ -1,56 +1,49 @@
 <?php
 
 declare (strict_types=1);
-namespace Rector\ValueObject;
+namespace Rector\Core\ValueObject;
 
-use Rector\ValueObject\Error\SystemError;
-use Rector\ValueObject\Reporting\FileDiff;
-use RectorPrefix202507\Webmozart\Assert\Assert;
+use Rector\Core\ValueObject\Error\SystemError;
+use Rector\Core\ValueObject\Reporting\FileDiff;
+use RectorPrefix202308\Webmozart\Assert\Assert;
+/**
+ * @see \Rector\Core\ValueObjectFactory\ProcessResultFactory
+ */
 final class ProcessResult
 {
     /**
      * @var SystemError[]
+     * @readonly
      */
-    private array $systemErrors;
+    private $systemErrors;
     /**
      * @var FileDiff[]
      * @readonly
      */
-    private array $fileDiffs;
+    private $fileDiffs;
     /**
-     * @param SystemError[] $systemErrors
      * @param FileDiff[] $fileDiffs
+     * @param SystemError[] $systemErrors
      */
     public function __construct(array $systemErrors, array $fileDiffs)
     {
         $this->systemErrors = $systemErrors;
         $this->fileDiffs = $fileDiffs;
-        Assert::allIsInstanceOf($systemErrors, SystemError::class);
-        Assert::allIsInstanceOf($fileDiffs, FileDiff::class);
-    }
-    /**
-     * @return SystemError[]
-     */
-    public function getSystemErrors() : array
-    {
-        return $this->systemErrors;
+        Assert::allIsAOf($fileDiffs, FileDiff::class);
+        Assert::allIsAOf($systemErrors, SystemError::class);
     }
     /**
      * @return FileDiff[]
      */
-    public function getFileDiffs(bool $onlyWithChanges = \true) : array
+    public function getFileDiffs() : array
     {
-        if ($onlyWithChanges) {
-            return \array_filter($this->fileDiffs, fn(FileDiff $fileDiff): bool => $fileDiff->getDiff() !== '');
-        }
         return $this->fileDiffs;
     }
     /**
-     * @param SystemError[] $systemErrors
+     * @return SystemError[]
      */
-    public function addSystemErrors(array $systemErrors) : void
+    public function getErrors() : array
     {
-        Assert::allIsInstanceOf($systemErrors, SystemError::class);
-        $this->systemErrors = \array_merge($this->systemErrors, $systemErrors);
+        return $this->systemErrors;
     }
 }

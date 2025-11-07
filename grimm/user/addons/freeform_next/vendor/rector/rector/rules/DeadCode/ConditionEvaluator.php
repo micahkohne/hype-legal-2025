@@ -7,17 +7,18 @@ use PhpParser\Node\Expr\BinaryOp\Equal;
 use PhpParser\Node\Expr\BinaryOp\Identical;
 use PhpParser\Node\Expr\BinaryOp\NotEqual;
 use PhpParser\Node\Expr\BinaryOp\NotIdentical;
+use Rector\Core\Exception\ShouldNotHappenException;
+use Rector\Core\Php\PhpVersionProvider;
 use Rector\DeadCode\Contract\ConditionInterface;
 use Rector\DeadCode\ValueObject\BinaryToVersionCompareCondition;
 use Rector\DeadCode\ValueObject\VersionCompareCondition;
-use Rector\Exception\ShouldNotHappenException;
-use Rector\Php\PhpVersionProvider;
 final class ConditionEvaluator
 {
     /**
      * @readonly
+     * @var \Rector\Core\Php\PhpVersionProvider
      */
-    private PhpVersionProvider $phpVersionProvider;
+    private $phpVersionProvider;
     public function __construct(PhpVersionProvider $phpVersionProvider)
     {
         $this->phpVersionProvider = $phpVersionProvider;

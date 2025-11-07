@@ -9,14 +9,14 @@ use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Foreach_;
 use PhpParser\Node\Stmt\Function_;
-use PhpParser\NodeVisitor;
+use PhpParser\NodeTraverser;
+use Rector\Core\Rector\AbstractRector;
 use Rector\Naming\Guard\BreakingVariableRenameGuard;
 use Rector\Naming\Matcher\ForeachMatcher;
 use Rector\Naming\Naming\ExpectedNameResolver;
 use Rector\Naming\NamingConvention\NamingConventionAnalyzer;
 use Rector\Naming\ValueObject\VariableAndCallForeach;
 use Rector\Naming\VariableRenamer;
-use Rector\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -26,28 +26,29 @@ final class RenameForeachValueVariableToMatchMethodCallReturnTypeRector extends 
 {
     /**
      * @readonly
+     * @var \Rector\Naming\Guard\BreakingVariableRenameGuard
      */
-    private BreakingVariableRenameGuard $breakingVariableRenameGuard;
+    private $breakingVariableRenameGuard;
     /**
      * @readonly
+     * @var \Rector\Naming\Naming\ExpectedNameResolver
      */
-    private ExpectedNameResolver $expectedNameResolver;
+    private $expectedNameResolver;
     /**
      * @readonly
+     * @var \Rector\Naming\NamingConvention\NamingConventionAnalyzer
      */
-    private NamingConventionAnalyzer $namingConventionAnalyzer;
+    private $namingConventionAnalyzer;
     /**
      * @readonly
+     * @var \Rector\Naming\VariableRenamer
      */
-    private VariableRenamer $variableRenamer;
+    private $variableRenamer;
     /**
      * @readonly
+     * @var \Rector\Naming\Matcher\ForeachMatcher
      */
-    private ForeachMatcher $foreachMatcher;
-    /**
-     * @var string[]
-     */
-    private const UNREADABLE_GENERIC_NAMES = ['traversable', 'iterable', 'generator', 'rewindableGenerator'];
+    private $foreachMatcher;
     public function __construct(BreakingVariableRenameGuard $breakingVariableRenameGuard, ExpectedNameResolver $expectedNameResolver, NamingConventionAnalyzer $namingConventionAnalyzer, VariableRenamer $variableRenamer, ForeachMatcher $foreachMatcher)
     {
         $this->breakingVariableRenameGuard = $breakingVariableRenameGuard;
@@ -102,7 +103,7 @@ CODE_SAMPLE
         $hasRenamed = \false;
         $this->traverseNodesWithCallable($node->stmts, function (Node $subNode) use($node, &$hasRenamed) : ?int {
             if ($subNode instanceof Class_ || $subNode instanceof Closure || $subNode instanceof Function_) {
-                return NodeVisitor::DONT_TRAVERSE_CURRENT_AND_CHILDREN;
+                return NodeTraverser::DONT_TRAVERSE_CURRENT_AND_CHILDREN;
             }
             if (!$subNode instanceof Foreach_) {
                 return null;
@@ -136,9 +137,6 @@ CODE_SAMPLE
     }
     private function shouldSkip(VariableAndCallForeach $variableAndCallForeach, string $expectedName) : bool
     {
-        if (\in_array($expectedName, self::UNREADABLE_GENERIC_NAMES, \true)) {
-            return \true;
-        }
         if ($this->namingConventionAnalyzer->isCallMatchingVariableName($variableAndCallForeach->getCall(), $variableAndCallForeach->getVariableName(), $expectedName)) {
             return \true;
         }

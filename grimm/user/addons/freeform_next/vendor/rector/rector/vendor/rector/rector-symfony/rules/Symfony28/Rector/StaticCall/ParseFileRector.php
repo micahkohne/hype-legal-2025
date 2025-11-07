@@ -3,17 +3,17 @@
 declare (strict_types=1);
 namespace Rector\Symfony\Symfony28\Rector\StaticCall;
 
-use RectorPrefix202507\Nette\Utils\Strings;
+use RectorPrefix202308\Nette\Utils\Strings;
 use PhpParser\Node;
 use PhpParser\Node\Arg;
 use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Analyser\Scope;
 use PHPStan\Type\Constant\ConstantStringType;
 use PHPStan\Type\ObjectType;
+use Rector\Core\PhpParser\Printer\BetterStandardPrinter;
+use Rector\Core\Rector\AbstractRector;
+use Rector\Core\Util\StringUtils;
 use Rector\NodeTypeResolver\Node\AttributeKey;
-use Rector\PhpParser\Printer\BetterStandardPrinter;
-use Rector\Rector\AbstractRector;
-use Rector\Util\StringUtils;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -23,8 +23,9 @@ final class ParseFileRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\Core\PhpParser\Printer\BetterStandardPrinter
      */
-    private BetterStandardPrinter $betterStandardPrinter;
+    private $betterStandardPrinter;
     /**
      * @var string
      * @changelog https://regex101.com/r/ZaY42i/1

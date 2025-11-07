@@ -11,10 +11,8 @@ class FormRenderObject
 
     /**
      * FormRenderEvent constructor.
-     *
-     * @param Form $form
      */
-    public function __construct(private readonly Form $form)
+    public function __construct(private Form $form)
     {
         $this->outputChunks = [];
     }
@@ -40,7 +38,7 @@ class FormRenderObject
      *
      * @return FormRenderObject
      */
-    public function appendToOutput($value): static
+    public function appendToOutput($value)
     {
         $this->outputChunks[] = $value;
 
@@ -52,7 +50,7 @@ class FormRenderObject
      *
      * @return FormRenderObject
      */
-    public function appendJsToOutput($value): static
+    public function appendJsToOutput($value)
     {
         $this->outputChunks[] = "<script>$value</script>";
 
@@ -64,7 +62,7 @@ class FormRenderObject
      *
      * @return FormRenderObject
      */
-    public function appendCssToOutput($value): static
+    public function appendCssToOutput($value)
     {
         $this->outputChunks[] = "<style>$value</style>";
 

@@ -7,7 +7,7 @@ use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\BinaryOp\Concat;
 use PhpParser\Node\Expr\Cast\String_;
-use Rector\Rector\AbstractRector;
+use Rector\Core\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -18,7 +18,7 @@ final class RemoveConcatAutocastRector extends AbstractRector
     public function getRuleDefinition() : RuleDefinition
     {
         return new RuleDefinition('Remove (string) casting when it comes to concat, that does this by default', [new CodeSample(<<<'CODE_SAMPLE'
-class SomeConcatenatingClass
+class SomeConcatingClass
 {
     public function run($value)
     {
@@ -27,7 +27,7 @@ class SomeConcatenatingClass
 }
 CODE_SAMPLE
 , <<<'CODE_SAMPLE'
-class SomeConcatenatingClass
+class SomeConcatingClass
 {
     public function run($value)
     {

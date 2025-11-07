@@ -8,8 +8,9 @@ class ConstFetchNode implements \PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprNod
 {
     use NodeAttributes;
     /** @var string class name for class constants or empty string for non-class constants */
-    public string $className;
-    public string $name;
+    public $className;
+    /** @var string */
+    public $name;
     public function __construct(string $className, string $name)
     {
         $this->className = $className;

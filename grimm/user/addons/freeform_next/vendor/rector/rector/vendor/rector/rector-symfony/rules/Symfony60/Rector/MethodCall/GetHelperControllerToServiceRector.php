@@ -10,10 +10,10 @@ use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Stmt\Class_;
 use PHPStan\Type\ObjectType;
+use Rector\Core\NodeManipulator\ClassDependencyManipulator;
+use Rector\Core\Rector\AbstractRector;
 use Rector\Naming\Naming\PropertyNaming;
-use Rector\NodeManipulator\ClassDependencyManipulator;
 use Rector\PostRector\ValueObject\PropertyMetadata;
-use Rector\Rector\AbstractRector;
 use Rector\Symfony\TypeAnalyzer\ControllerAnalyzer;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
@@ -27,16 +27,19 @@ final class GetHelperControllerToServiceRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\Symfony\TypeAnalyzer\ControllerAnalyzer
      */
-    private ControllerAnalyzer $controllerAnalyzer;
+    private $controllerAnalyzer;
     /**
      * @readonly
+     * @var \Rector\Core\NodeManipulator\ClassDependencyManipulator
      */
-    private ClassDependencyManipulator $classDependencyManipulator;
+    private $classDependencyManipulator;
     /**
      * @readonly
+     * @var \Rector\Naming\Naming\PropertyNaming
      */
-    private PropertyNaming $propertyNaming;
+    private $propertyNaming;
     public function __construct(ControllerAnalyzer $controllerAnalyzer, ClassDependencyManipulator $classDependencyManipulator, PropertyNaming $propertyNaming)
     {
         $this->controllerAnalyzer = $controllerAnalyzer;

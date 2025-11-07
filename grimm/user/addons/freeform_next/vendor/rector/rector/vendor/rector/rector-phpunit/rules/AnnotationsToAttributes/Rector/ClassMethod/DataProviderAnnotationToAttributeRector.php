@@ -9,16 +9,13 @@ use PhpParser\Node\Stmt\ClassMethod;
 use PHPStan\PhpDocParser\Ast\PhpDoc\GenericTagValueNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocTagNode;
 use PHPStan\Reflection\ClassReflection;
-use PHPStan\Reflection\ReflectionProvider;
 use Rector\BetterPhpDocParser\PhpDocInfo\PhpDocInfo;
-use Rector\BetterPhpDocParser\PhpDocInfo\PhpDocInfoFactory;
 use Rector\BetterPhpDocParser\PhpDocManipulator\PhpDocTagRemover;
-use Rector\Comments\NodeDocBlock\DocBlockUpdater;
+use Rector\Core\Rector\AbstractRector;
+use Rector\Core\Reflection\ReflectionResolver;
+use Rector\Core\ValueObject\PhpVersionFeature;
 use Rector\PhpAttribute\NodeFactory\PhpAttributeGroupFactory;
 use Rector\PHPUnit\NodeAnalyzer\TestsNodeAnalyzer;
-use Rector\Rector\AbstractRector;
-use Rector\Reflection\ReflectionResolver;
-use Rector\ValueObject\PhpVersion;
 use Rector\VersionBonding\Contract\MinPhpVersionInterface;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
@@ -29,45 +26,30 @@ final class DataProviderAnnotationToAttributeRector extends AbstractRector imple
 {
     /**
      * @readonly
+     * @var \Rector\PHPUnit\NodeAnalyzer\TestsNodeAnalyzer
      */
-    private TestsNodeAnalyzer $testsNodeAnalyzer;
+    private $testsNodeAnalyzer;
     /**
      * @readonly
+     * @var \Rector\PhpAttribute\NodeFactory\PhpAttributeGroupFactory
      */
-    private PhpAttributeGroupFactory $phpAttributeGroupFactory;
+    private $phpAttributeGroupFactory;
     /**
      * @readonly
+     * @var \Rector\BetterPhpDocParser\PhpDocManipulator\PhpDocTagRemover
      */
-    private PhpDocTagRemover $phpDocTagRemover;
+    private $phpDocTagRemover;
     /**
      * @readonly
+     * @var \Rector\Core\Reflection\ReflectionResolver
      */
-    private ReflectionResolver $reflectionResolver;
-    /**
-     * @readonly
-     */
-    private DocBlockUpdater $docBlockUpdater;
-    /**
-     * @readonly
-     */
-    private PhpDocInfoFactory $phpDocInfoFactory;
-    /**
-     * @readonly
-     */
-    private ReflectionProvider $reflectionProvider;
-    /**
-     * @var string
-     */
-    private const DATA_PROVIDER_CLASS = 'PHPUnit\\Framework\\Attributes\\DataProvider';
-    public function __construct(TestsNodeAnalyzer $testsNodeAnalyzer, PhpAttributeGroupFactory $phpAttributeGroupFactory, PhpDocTagRemover $phpDocTagRemover, ReflectionResolver $reflectionResolver, DocBlockUpdater $docBlockUpdater, PhpDocInfoFactory $phpDocInfoFactory, ReflectionProvider $reflectionProvider)
+    private $reflectionResolver;
+    public function __construct(TestsNodeAnalyzer $testsNodeAnalyzer, PhpAttributeGroupFactory $phpAttributeGroupFactory, PhpDocTagRemover $phpDocTagRemover, ReflectionResolver $reflectionResolver)
     {
         $this->testsNodeAnalyzer = $testsNodeAnalyzer;
         $this->phpAttributeGroupFactory = $phpAttributeGroupFactory;
         $this->phpDocTagRemover = $phpDocTagRemover;
         $this->reflectionResolver = $reflectionResolver;
-        $this->docBlockUpdater = $docBlockUpdater;
-        $this->phpDocInfoFactory = $phpDocInfoFactory;
-        $this->reflectionProvider = $reflectionProvider;
     }
     public function getRuleDefinition() : RuleDefinition
     {
@@ -89,7 +71,7 @@ use PHPUnit\Framework\TestCase;
 
 final class SomeTest extends TestCase
 {
-    #[\PHPUnit\Framework\Attributes\DataProvider('someMethod')]
+    #[\PHPUnit\Framework\Attributes\DataProvider('test')]
     public function test(): void
     {
     }
@@ -106,13 +88,7 @@ CODE_SAMPLE
     }
     public function provideMinPhpVersion() : int
     {
-        /**
-         * This rule just work for phpunit 10,
-         * And as php 8.1 is the min version supported by phpunit 10, then we decided to let this version as minimum.
-         *
-         * You can see more detail in this issue: https://github.com/rectorphp/rector-phpunit/issues/272
-         */
-        return PhpVersion::PHP_81;
+        return PhpVersionFeature::ATTRIBUTES;
     }
     /**
      * @param ClassMethod $node
@@ -120,9 +96,6 @@ CODE_SAMPLE
     public function refactor(Node $node) : ?Node
     {
         if (!$this->testsNodeAnalyzer->isInTestClass($node)) {
-            return null;
-        }
-        if (!$this->reflectionProvider->hasClass(self::DATA_PROVIDER_CLASS)) {
             return null;
         }
         $phpDocInfo = $this->phpDocInfoFactory->createFromNode($node);
@@ -146,11 +119,13 @@ CODE_SAMPLE
                 continue;
             }
             $originalAttributeValue = $desiredTagValueNode->value->value;
-            $node->attrGroups[] = $this->createAttributeGroup(\strtok($originalAttributeValue, " \t\n\r\x00\v"));
+            $node->attrGroups[] = $this->createAttributeGroup($originalAttributeValue);
             // cleanup
             $this->phpDocTagRemover->removeTagValueFromNode($phpDocInfo, $desiredTagValueNode);
         }
-        $this->docBlockUpdater->updateRefactoredNodeWithPhpDocInfo($node);
+        if (!$phpDocInfo->hasChanged()) {
+            return null;
+        }
         return $node;
     }
     private function createAttributeGroup(string $originalAttributeValue) : AttributeGroup
@@ -166,6 +141,6 @@ CODE_SAMPLE
             }
             return $this->phpAttributeGroupFactory->createFromClassWithItems('PHPUnit\\Framework\\Attributes\\DataProviderExternal', [$className . '::class', $methodName]);
         }
-        return $this->phpAttributeGroupFactory->createFromClassWithItems(self::DATA_PROVIDER_CLASS, [$methodName]);
+        return $this->phpAttributeGroupFactory->createFromClassWithItems('PHPUnit\\Framework\\Attributes\\DataProvider', [$methodName]);
     }
 }

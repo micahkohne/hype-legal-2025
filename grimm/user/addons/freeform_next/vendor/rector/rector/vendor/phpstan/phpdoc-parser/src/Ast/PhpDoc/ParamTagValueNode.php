@@ -9,13 +9,17 @@ use function trim;
 class ParamTagValueNode implements \PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocTagValueNode
 {
     use NodeAttributes;
-    public TypeNode $type;
-    public bool $isReference;
-    public bool $isVariadic;
-    public string $parameterName;
+    /** @var TypeNode */
+    public $type;
+    /** @var bool */
+    public $isReference;
+    /** @var bool */
+    public $isVariadic;
+    /** @var string */
+    public $parameterName;
     /** @var string (may be empty) */
-    public string $description;
-    public function __construct(TypeNode $type, bool $isVariadic, string $parameterName, string $description, bool $isReference)
+    public $description;
+    public function __construct(TypeNode $type, bool $isVariadic, string $parameterName, string $description, bool $isReference = \false)
     {
         $this->type = $type;
         $this->isReference = $isReference;

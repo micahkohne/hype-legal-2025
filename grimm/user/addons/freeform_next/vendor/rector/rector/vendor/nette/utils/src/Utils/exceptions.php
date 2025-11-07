@@ -5,34 +5,35 @@
  * Copyright (c) 2004 David Grudl (https://davidgrudl.com)
  */
 declare (strict_types=1);
-namespace RectorPrefix202507\Nette\Utils;
+namespace RectorPrefix202308\Nette\Utils;
 
 /**
- * An error occurred while working with the image.
+ * The exception that is thrown when an image error occurs.
  */
 class ImageException extends \Exception
 {
 }
 /**
- * The image file is invalid or in an unsupported format.
+ * The exception that indicates invalid image file.
  */
 class UnknownImageFileException extends ImageException
 {
 }
 /**
- * JSON encoding or decoding failed.
+ * The exception that indicates error of JSON encoding/decoding.
  */
-class JsonException extends \JsonException
+class JsonException extends \Exception
 {
 }
 /**
- * Regular expression pattern or execution failed.
+ * The exception that indicates error of the last Regexp execution.
  */
 class RegexpException extends \Exception
 {
+    public const MESSAGES = [\PREG_INTERNAL_ERROR => 'Internal error', \PREG_BACKTRACK_LIMIT_ERROR => 'Backtrack limit was exhausted', \PREG_RECURSION_LIMIT_ERROR => 'Recursion limit was exhausted', \PREG_BAD_UTF8_ERROR => 'Malformed UTF-8 data', \PREG_BAD_UTF8_OFFSET_ERROR => 'Offset didn\'t correspond to the begin of a valid UTF-8 code point', 6 => 'Failed due to limited JIT stack space'];
 }
 /**
- * Type validation failed. The value doesn't match the expected type constraints.
+ * The exception that indicates assertion error.
  */
 class AssertionException extends \Exception
 {

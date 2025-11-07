@@ -3,62 +3,37 @@
 declare (strict_types=1);
 namespace Rector\CodeQuality\NodeFactory;
 
-use PhpParser\Modifiers;
-use PhpParser\Node;
-use PhpParser\Node\PropertyItem;
+use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\Property;
-use Rector\CodeQuality\ValueObject\DefinedPropertyWithType;
-use Rector\Php\PhpVersionProvider;
-use Rector\PHPStanStaticTypeMapper\Enum\TypeKind;
-use Rector\StaticTypeMapper\StaticTypeMapper;
-use Rector\ValueObject\MethodName;
-use Rector\ValueObject\PhpVersionFeature;
+use PhpParser\Node\Stmt\PropertyProperty;
+use PHPStan\Type\Type;
 final class MissingPropertiesFactory
 {
     /**
      * @readonly
+     * @var \Rector\CodeQuality\NodeFactory\PropertyTypeDecorator
      */
-    private \Rector\CodeQuality\NodeFactory\PropertyTypeDecorator $propertyTypeDecorator;
-    /**
-     * @readonly
-     */
-    private PhpVersionProvider $phpVersionProvider;
-    /**
-     * @readonly
-     */
-    private StaticTypeMapper $staticTypeMapper;
-    public function __construct(\Rector\CodeQuality\NodeFactory\PropertyTypeDecorator $propertyTypeDecorator, PhpVersionProvider $phpVersionProvider, StaticTypeMapper $staticTypeMapper)
+    private $propertyTypeDecorator;
+    public function __construct(\Rector\CodeQuality\NodeFactory\PropertyTypeDecorator $propertyTypeDecorator)
     {
         $this->propertyTypeDecorator = $propertyTypeDecorator;
-        $this->phpVersionProvider = $phpVersionProvider;
-        $this->staticTypeMapper = $staticTypeMapper;
     }
     /**
-     * @param DefinedPropertyWithType[] $definedPropertiesWithType
+     * @param array<string, Type> $fetchedLocalPropertyNameToTypes
+     * @param string[] $propertyNamesToComplete
      * @return Property[]
      */
-    public function create(array $definedPropertiesWithType) : array
+    public function create(array $fetchedLocalPropertyNameToTypes, array $propertyNamesToComplete) : array
     {
         $newProperties = [];
-        foreach ($definedPropertiesWithType as $definedPropertyWithType) {
-            $visibilityModifier = $this->isFromAlwaysDefinedMethod($definedPropertyWithType) ? Modifiers::PRIVATE : Modifiers::PUBLIC;
-            $property = new Property($visibilityModifier, [new PropertyItem($definedPropertyWithType->getName())]);
-            if ($this->isFromAlwaysDefinedMethod($definedPropertyWithType) && $this->phpVersionProvider->isAtLeastPhpVersion(PhpVersionFeature::TYPED_PROPERTIES)) {
-                $propertyType = $this->staticTypeMapper->mapPHPStanTypeToPhpParserNode($definedPropertyWithType->getType(), TypeKind::PROPERTY);
-                if ($propertyType instanceof Node) {
-                    $property->type = $propertyType;
-                    $newProperties[] = $property;
-                    continue;
-                }
+        foreach ($fetchedLocalPropertyNameToTypes as $propertyName => $propertyType) {
+            if (!\in_array($propertyName, $propertyNamesToComplete, \true)) {
+                continue;
             }
-            // fallback to docblock
-            $this->propertyTypeDecorator->decorateProperty($property, $definedPropertyWithType->getType());
+            $property = new Property(Class_::MODIFIER_PUBLIC, [new PropertyProperty($propertyName)]);
+            $this->propertyTypeDecorator->decorateProperty($property, $propertyType);
             $newProperties[] = $property;
         }
         return $newProperties;
-    }
-    private function isFromAlwaysDefinedMethod(DefinedPropertyWithType $definedPropertyWithType) : bool
-    {
-        return \in_array($definedPropertyWithType->getDefinedInMethodName(), [MethodName::CONSTRUCT, MethodName::SET_UP], \true);
     }
 }

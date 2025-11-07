@@ -9,30 +9,25 @@ use PhpParser\Node\Expr\BinaryOp\GreaterOrEqual;
 use PhpParser\Node\Expr\BinaryOp\Smaller;
 use PhpParser\Node\Expr\BinaryOp\SmallerOrEqual;
 use PhpParser\Node\Expr\FuncCall;
-use PhpParser\Node\Scalar\Int_;
-use PHPStan\Type\NeverType;
+use PhpParser\Node\Scalar\LNumber;
+use Rector\Core\PhpParser\Comparing\NodeComparator;
 use Rector\NodeNameResolver\NodeNameResolver;
-use Rector\NodeTypeResolver\NodeTypeResolver;
-use Rector\PhpParser\Comparing\NodeComparator;
 final class CountManipulator
 {
     /**
      * @readonly
+     * @var \Rector\NodeNameResolver\NodeNameResolver
      */
-    private NodeNameResolver $nodeNameResolver;
+    private $nodeNameResolver;
     /**
      * @readonly
+     * @var \Rector\Core\PhpParser\Comparing\NodeComparator
      */
-    private NodeComparator $nodeComparator;
-    /**
-     * @readonly
-     */
-    private NodeTypeResolver $nodeTypeResolver;
-    public function __construct(NodeNameResolver $nodeNameResolver, NodeComparator $nodeComparator, NodeTypeResolver $nodeTypeResolver)
+    private $nodeComparator;
+    public function __construct(NodeNameResolver $nodeNameResolver, NodeComparator $nodeComparator)
     {
         $this->nodeNameResolver = $nodeNameResolver;
         $this->nodeComparator = $nodeComparator;
-        $this->nodeTypeResolver = $nodeTypeResolver;
     }
     public function isCounterHigherThanOne(Expr $firstExpr, Expr $secondExpr) : bool
     {
@@ -84,7 +79,7 @@ final class CountManipulator
     }
     private function isNumber(Expr $expr, int $value) : bool
     {
-        if (!$expr instanceof Int_) {
+        if (!$expr instanceof LNumber) {
             return \false;
         }
         return $expr->value === $value;
@@ -104,13 +99,6 @@ final class CountManipulator
             return \false;
         }
         $countedExpr = $node->getArgs()[0]->value;
-        if ($this->nodeComparator->areNodesEqual($countedExpr, $expr)) {
-            $exprType = $this->nodeTypeResolver->getNativeType($expr);
-            if (!$exprType->isArray()->yes()) {
-                return $exprType instanceof NeverType;
-            }
-            return \true;
-        }
-        return \false;
+        return $this->nodeComparator->areNodesEqual($countedExpr, $expr);
     }
 }

@@ -5,12 +5,9 @@ namespace Rector\TypeDeclaration\Rector\ArrowFunction;
 
 use PhpParser\Node;
 use PhpParser\Node\Expr\ArrowFunction;
-use PHPStan\Type\MixedType;
-use PHPStan\Type\NullType;
+use Rector\Core\Rector\AbstractRector;
+use Rector\Core\ValueObject\PhpVersionFeature;
 use Rector\PHPStanStaticTypeMapper\Enum\TypeKind;
-use Rector\Rector\AbstractRector;
-use Rector\StaticTypeMapper\StaticTypeMapper;
-use Rector\ValueObject\PhpVersionFeature;
 use Rector\VersionBonding\Contract\MinPhpVersionInterface;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
@@ -19,14 +16,6 @@ use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
  */
 final class AddArrowFunctionReturnTypeRector extends AbstractRector implements MinPhpVersionInterface
 {
-    /**
-     * @readonly
-     */
-    private StaticTypeMapper $staticTypeMapper;
-    public function __construct(StaticTypeMapper $staticTypeMapper)
-    {
-        $this->staticTypeMapper = $staticTypeMapper;
-    }
     public function getRuleDefinition() : RuleDefinition
     {
         return new RuleDefinition('Add known return type to arrow function', [new CodeSample(<<<'CODE_SAMPLE'
@@ -49,20 +38,15 @@ CODE_SAMPLE
      */
     public function refactor(Node $node) : ?Node
     {
-        if ($node->returnType instanceof Node) {
+        if ($node->returnType !== null) {
             return null;
         }
         $type = $this->nodeTypeResolver->getNativeType($node->expr);
-        // not valid to add explicit type in PHP
         if ($type->isVoid()->yes()) {
             return null;
         }
-        $docblockType = $this->getType($node->expr);
-        if ($type instanceof MixedType && $docblockType instanceof NullType) {
-            return null;
-        }
         $returnTypeNode = $this->staticTypeMapper->mapPHPStanTypeToPhpParserNode($type, TypeKind::RETURN);
-        if (!$returnTypeNode instanceof Node) {
+        if ($returnTypeNode === null) {
             return null;
         }
         $node->returnType = $returnTypeNode;

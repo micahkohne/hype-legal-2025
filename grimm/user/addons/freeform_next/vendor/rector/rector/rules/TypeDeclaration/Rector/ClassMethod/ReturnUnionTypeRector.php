@@ -4,27 +4,45 @@ declare (strict_types=1);
 namespace Rector\TypeDeclaration\Rector\ClassMethod;
 
 use PhpParser\Node;
+use PhpParser\Node\Expr\Closure;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Function_;
-use Rector\PHPStan\ScopeFetcher;
-use Rector\Rector\AbstractRector;
-use Rector\TypeDeclaration\NodeManipulator\AddUnionReturnType;
-use Rector\ValueObject\PhpVersionFeature;
+use PHPStan\Analyser\Scope;
+use PHPStan\Type\UnionType;
+use Rector\Core\Rector\AbstractScopeAwareRector;
+use Rector\Core\ValueObject\PhpVersionFeature;
+use Rector\PHPStanStaticTypeMapper\Enum\TypeKind;
+use Rector\PHPStanStaticTypeMapper\TypeMapper\UnionTypeMapper;
+use Rector\TypeDeclaration\TypeInferer\ReturnTypeInferer;
+use Rector\VendorLocker\NodeVendorLocker\ClassMethodReturnTypeOverrideGuard;
 use Rector\VersionBonding\Contract\MinPhpVersionInterface;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
  * @see \Rector\Tests\TypeDeclaration\Rector\ClassMethod\ReturnUnionTypeRector\ReturnUnionTypeRectorTest
  */
-final class ReturnUnionTypeRector extends AbstractRector implements MinPhpVersionInterface
+final class ReturnUnionTypeRector extends AbstractScopeAwareRector implements MinPhpVersionInterface
 {
     /**
      * @readonly
+     * @var \Rector\TypeDeclaration\TypeInferer\ReturnTypeInferer
      */
-    private AddUnionReturnType $addUnionReturnType;
-    public function __construct(AddUnionReturnType $addUnionReturnType)
+    private $returnTypeInferer;
+    /**
+     * @readonly
+     * @var \Rector\VendorLocker\NodeVendorLocker\ClassMethodReturnTypeOverrideGuard
+     */
+    private $classMethodReturnTypeOverrideGuard;
+    /**
+     * @readonly
+     * @var \Rector\PHPStanStaticTypeMapper\TypeMapper\UnionTypeMapper
+     */
+    private $unionTypeMapper;
+    public function __construct(ReturnTypeInferer $returnTypeInferer, ClassMethodReturnTypeOverrideGuard $classMethodReturnTypeOverrideGuard, UnionTypeMapper $unionTypeMapper)
     {
-        $this->addUnionReturnType = $addUnionReturnType;
+        $this->returnTypeInferer = $returnTypeInferer;
+        $this->classMethodReturnTypeOverrideGuard = $classMethodReturnTypeOverrideGuard;
+        $this->unionTypeMapper = $unionTypeMapper;
     }
     public function getRuleDefinition() : RuleDefinition
     {
@@ -69,18 +87,35 @@ CODE_SAMPLE
      */
     public function getNodeTypes() : array
     {
-        return [ClassMethod::class, Function_::class];
+        return [ClassMethod::class, Function_::class, Closure::class];
     }
     public function provideMinPhpVersion() : int
     {
-        return PhpVersionFeature::UNION_TYPES;
+        return PhpVersionFeature::NULLABLE_TYPE;
     }
     /**
-     * @param ClassMethod|Function_ $node
+     * @param ClassMethod|Function_|Closure $node
      */
-    public function refactor(Node $node) : ?Node
+    public function refactorWithScope(Node $node, Scope $scope) : ?Node
     {
-        $scope = ScopeFetcher::fetch($node);
-        return $this->addUnionReturnType->add($node, $scope);
+        if ($node->stmts === null) {
+            return null;
+        }
+        if ($node->returnType instanceof Node) {
+            return null;
+        }
+        if ($node instanceof ClassMethod && $this->classMethodReturnTypeOverrideGuard->shouldSkipClassMethod($node, $scope)) {
+            return null;
+        }
+        $inferReturnType = $this->returnTypeInferer->inferFunctionLike($node);
+        if (!$inferReturnType instanceof UnionType) {
+            return null;
+        }
+        $returnType = $this->unionTypeMapper->mapToPhpParserNode($inferReturnType, TypeKind::RETURN);
+        if (!$returnType instanceof Node) {
+            return null;
+        }
+        $node->returnType = $returnType;
+        return $node;
     }
 }

@@ -13,14 +13,13 @@ use PhpParser\Node\Stmt\Expression;
 use PhpParser\Node\Stmt\Return_;
 use PhpParser\Node\Stmt\Switch_;
 use PHPStan\Analyser\Scope;
-use Rector\Contract\PhpParser\Node\StmtsAwareInterface;
-use Rector\Exception\ShouldNotHappenException;
+use Rector\Core\Contract\PhpParser\Node\StmtsAwareInterface;
+use Rector\Core\Exception\ShouldNotHappenException;
+use Rector\Core\PhpParser\Parser\InlineCodeParser;
+use Rector\Core\Rector\AbstractScopeAwareRector;
 use Rector\Naming\Naming\VariableNaming;
 use Rector\NodeAnalyzer\ExprInTopStmtMatcher;
 use Rector\NodeTypeResolver\Node\AttributeKey;
-use Rector\PhpParser\Parser\InlineCodeParser;
-use Rector\PHPStan\ScopeFetcher;
-use Rector\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -28,21 +27,27 @@ use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
  *
  * @see \Rector\Tests\DowngradePhp72\Rector\FuncCall\DowngradeStreamIsattyRector\DowngradeStreamIsattyRectorTest
  */
-final class DowngradeStreamIsattyRector extends AbstractRector
+final class DowngradeStreamIsattyRector extends AbstractScopeAwareRector
 {
     /**
      * @readonly
+     * @var \Rector\Core\PhpParser\Parser\InlineCodeParser
      */
-    private InlineCodeParser $inlineCodeParser;
+    private $inlineCodeParser;
     /**
      * @readonly
+     * @var \Rector\Naming\Naming\VariableNaming
      */
-    private VariableNaming $variableNaming;
+    private $variableNaming;
     /**
      * @readonly
+     * @var \Rector\NodeAnalyzer\ExprInTopStmtMatcher
      */
-    private ExprInTopStmtMatcher $exprInTopStmtMatcher;
-    private ?Closure $cachedClosure = null;
+    private $exprInTopStmtMatcher;
+    /**
+     * @var \PhpParser\Node\Expr\Closure|null
+     */
+    private $cachedClosure;
     public function __construct(InlineCodeParser $inlineCodeParser, VariableNaming $variableNaming, ExprInTopStmtMatcher $exprInTopStmtMatcher)
     {
         $this->inlineCodeParser = $inlineCodeParser;
@@ -101,7 +106,7 @@ CODE_SAMPLE
      * @param StmtsAwareInterface|Switch_|Return_|Expression|Echo_ $node
      * @return Node[]|null
      */
-    public function refactor(Node $node) : ?array
+    public function refactorWithScope(Node $node, Scope $scope) : ?array
     {
         $expr = $this->exprInTopStmtMatcher->match($node, function (Node $subNode) : bool {
             if (!$subNode instanceof FuncCall) {
@@ -121,7 +126,6 @@ CODE_SAMPLE
             return null;
         }
         $function = $this->createClosure();
-        $scope = ScopeFetcher::fetch($node);
         $variable = new Variable($this->variableNaming->createCountedValueName('streamIsatty', $scope));
         $assign = new Assign($variable, $function);
         $expr->name = $variable;
@@ -132,7 +136,7 @@ CODE_SAMPLE
         if ($this->cachedClosure instanceof Closure) {
             return clone $this->cachedClosure;
         }
-        $stmts = $this->inlineCodeParser->parseFile(__DIR__ . '/../../snippet/isatty_closure.php.inc');
+        $stmts = $this->inlineCodeParser->parse(__DIR__ . '/../../snippet/isatty_closure.php.inc');
         /** @var Expression $expression */
         $expression = $stmts[0];
         $expr = $expression->expr;

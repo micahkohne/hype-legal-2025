@@ -12,7 +12,6 @@
 namespace Solspace\Addons\FreeformNext\Library\Helpers;
 
 use RuntimeException;
-
 /**
  * Http utility functions.
  *

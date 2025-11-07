@@ -10,11 +10,10 @@ use PhpParser\Node\Expr\BinaryOp\BooleanOr;
 use PhpParser\Node\Expr\BinaryOp\Identical;
 use PhpParser\Node\Expr\BinaryOp\NotIdentical;
 use PhpParser\Node\Expr\BooleanNot;
-use Rector\NodeManipulator\BinaryOpManipulator;
+use Rector\Core\NodeManipulator\BinaryOpManipulator;
+use Rector\Core\PhpParser\Node\AssignAndBinaryMap;
+use Rector\Core\Rector\AbstractRector;
 use Rector\Php71\ValueObject\TwoNodeMatch;
-use Rector\PhpParser\Node\AssignAndBinaryMap;
-use Rector\PhpParser\Node\Value\ValueResolver;
-use Rector\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -24,21 +23,18 @@ final class SimplifyConditionsRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\Core\PhpParser\Node\AssignAndBinaryMap
      */
-    private AssignAndBinaryMap $assignAndBinaryMap;
+    private $assignAndBinaryMap;
     /**
      * @readonly
+     * @var \Rector\Core\NodeManipulator\BinaryOpManipulator
      */
-    private BinaryOpManipulator $binaryOpManipulator;
-    /**
-     * @readonly
-     */
-    private ValueResolver $valueResolver;
-    public function __construct(AssignAndBinaryMap $assignAndBinaryMap, BinaryOpManipulator $binaryOpManipulator, ValueResolver $valueResolver)
+    private $binaryOpManipulator;
+    public function __construct(AssignAndBinaryMap $assignAndBinaryMap, BinaryOpManipulator $binaryOpManipulator)
     {
         $this->assignAndBinaryMap = $assignAndBinaryMap;
         $this->binaryOpManipulator = $binaryOpManipulator;
-        $this->valueResolver = $valueResolver;
     }
     public function getRuleDefinition() : RuleDefinition
     {
@@ -73,7 +69,11 @@ final class SimplifyConditionsRector extends AbstractRector
     }
     private function processIdenticalAndNotIdentical(Identical $identical) : ?Node
     {
-        $twoNodeMatch = $this->binaryOpManipulator->matchFirstAndSecondConditionNode($identical, static fn(Node $node): bool => $node instanceof Identical || $node instanceof NotIdentical, fn(Node $node): bool => $node instanceof Expr && $this->valueResolver->isTrueOrFalse($node));
+        $twoNodeMatch = $this->binaryOpManipulator->matchFirstAndSecondConditionNode($identical, static function (Node $node) : bool {
+            return $node instanceof Identical || $node instanceof NotIdentical;
+        }, function (Node $node) : bool {
+            return $node instanceof Expr && $this->valueResolver->isTrueOrFalse($node);
+        });
         if (!$twoNodeMatch instanceof TwoNodeMatch) {
             return $twoNodeMatch;
         }

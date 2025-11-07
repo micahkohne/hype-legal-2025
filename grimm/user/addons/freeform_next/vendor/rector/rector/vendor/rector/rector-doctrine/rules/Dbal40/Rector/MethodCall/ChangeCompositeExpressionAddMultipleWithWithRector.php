@@ -4,10 +4,11 @@ declare (strict_types=1);
 namespace Rector\Doctrine\Dbal40\Rector\MethodCall;
 
 use PhpParser\Node;
+use PhpParser\Node\Expr\ArrayItem;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Identifier;
 use PHPStan\Type\ObjectType;
-use Rector\Rector\AbstractRector;
+use Rector\Core\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -69,7 +70,7 @@ CODE_SAMPLE
         }
         $node->name = new Identifier('with');
         $firstArg = $node->getArgs()[0];
-        $firstArg->unpack = \true;
+        $firstArg->value = new ArrayItem($firstArg->value, null, \false, [], \true);
         return $node;
     }
 }

@@ -5,33 +5,35 @@ namespace Rector\DeadCode\Rector\Assign;
 
 use PhpParser\Node;
 use PhpParser\Node\Expr\Assign;
+use PhpParser\Node\Expr\Closure;
 use PhpParser\Node\Expr\PropertyFetch;
 use PhpParser\Node\Expr\StaticPropertyFetch;
 use PhpParser\Node\Expr\Variable;
+use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Expression;
-use Rector\Contract\PhpParser\Node\StmtsAwareInterface;
+use PhpParser\Node\Stmt\Foreach_;
+use PhpParser\Node\Stmt\Function_;
+use PhpParser\Node\Stmt\If_;
+use PhpParser\Node\Stmt\Namespace_;
+use PHPStan\Analyser\Scope;
+use Rector\Core\PhpParser\Node\CustomNode\FileWithoutNamespace;
+use Rector\Core\Rector\AbstractScopeAwareRector;
 use Rector\DeadCode\SideEffect\SideEffectNodeDetector;
-use Rector\PhpParser\Node\BetterNodeFinder;
-use Rector\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
  * @see \Rector\Tests\DeadCode\Rector\Assign\RemoveDoubleAssignRector\RemoveDoubleAssignRectorTest
  */
-final class RemoveDoubleAssignRector extends AbstractRector
+final class RemoveDoubleAssignRector extends AbstractScopeAwareRector
 {
     /**
      * @readonly
+     * @var \Rector\DeadCode\SideEffect\SideEffectNodeDetector
      */
-    private SideEffectNodeDetector $sideEffectNodeDetector;
-    /**
-     * @readonly
-     */
-    private BetterNodeFinder $betterNodeFinder;
-    public function __construct(SideEffectNodeDetector $sideEffectNodeDetector, BetterNodeFinder $betterNodeFinder)
+    private $sideEffectNodeDetector;
+    public function __construct(SideEffectNodeDetector $sideEffectNodeDetector)
     {
         $this->sideEffectNodeDetector = $sideEffectNodeDetector;
-        $this->betterNodeFinder = $betterNodeFinder;
     }
     public function getRuleDefinition() : RuleDefinition
     {
@@ -46,12 +48,12 @@ CODE_SAMPLE
      */
     public function getNodeTypes() : array
     {
-        return [StmtsAwareInterface::class];
+        return [Foreach_::class, FileWithoutNamespace::class, ClassMethod::class, Function_::class, Closure::class, If_::class, Namespace_::class];
     }
     /**
-     * @param StmtsAwareInterface $node
+     * @param Foreach_|FileWithoutNamespace|If_|Namespace_|ClassMethod|Function_|Closure $node
      */
-    public function refactor(Node $node) : ?Node
+    public function refactorWithScope(Node $node, Scope $scope) : ?Node
     {
         $stmts = $node->stmts;
         if ($stmts === null) {
@@ -85,17 +87,13 @@ CODE_SAMPLE
             }
             // detect call expression has side effect
             // no calls on right, could hide e.g. array_pop()|array_shift()
-            if ($this->sideEffectNodeDetector->detectCallExpr($stmt->expr->expr)) {
-                continue;
-            }
-            // next stmts can have side effect as well
-            if (($nextAssign->var instanceof PropertyFetch || $nextAssign->var instanceof StaticPropertyFetch) && $this->sideEffectNodeDetector->detectCallExpr($nextAssign->expr)) {
+            if ($this->sideEffectNodeDetector->detectCallExpr($stmt->expr->expr, $scope)) {
                 continue;
             }
             if (!$stmt->expr->var instanceof Variable && !$stmt->expr->var instanceof PropertyFetch && !$stmt->expr->var instanceof StaticPropertyFetch) {
                 continue;
             }
-            // remove current Stmt if will be overridden in next stmt
+            // remove current Stmt if will be overriden in next stmt
             unset($node->stmts[$key]);
             $hasChanged = \true;
         }
@@ -106,6 +104,8 @@ CODE_SAMPLE
     }
     private function isSelfReferencing(Assign $assign) : bool
     {
-        return (bool) $this->betterNodeFinder->findFirst($assign->expr, fn(Node $subNode): bool => $this->nodeComparator->areNodesEqual($assign->var, $subNode));
+        return (bool) $this->betterNodeFinder->findFirst($assign->expr, function (Node $subNode) use($assign) : bool {
+            return $this->nodeComparator->areNodesEqual($assign->var, $subNode);
+        });
     }
 }

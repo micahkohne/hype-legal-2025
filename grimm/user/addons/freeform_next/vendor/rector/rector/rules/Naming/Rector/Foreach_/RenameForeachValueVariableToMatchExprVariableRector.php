@@ -6,12 +6,11 @@ namespace Rector\Naming\Rector\Foreach_;
 use PhpParser\Node;
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Stmt\Foreach_;
-use Rector\Contract\PhpParser\Node\StmtsAwareInterface;
+use Rector\Core\Contract\PhpParser\Node\StmtsAwareInterface;
+use Rector\Core\NodeAnalyzer\PropertyFetchAnalyzer;
+use Rector\Core\NodeManipulator\StmtsManipulator;
+use Rector\Core\Rector\AbstractRector;
 use Rector\Naming\ExpectedNameResolver\InflectorSingularResolver;
-use Rector\NodeAnalyzer\PropertyFetchAnalyzer;
-use Rector\NodeManipulator\StmtsManipulator;
-use Rector\PhpParser\Node\BetterNodeFinder;
-use Rector\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -21,30 +20,28 @@ final class RenameForeachValueVariableToMatchExprVariableRector extends Abstract
 {
     /**
      * @readonly
+     * @var \Rector\Naming\ExpectedNameResolver\InflectorSingularResolver
      */
-    private InflectorSingularResolver $inflectorSingularResolver;
+    private $inflectorSingularResolver;
     /**
      * @readonly
+     * @var \Rector\Core\NodeAnalyzer\PropertyFetchAnalyzer
      */
-    private PropertyFetchAnalyzer $propertyFetchAnalyzer;
+    private $propertyFetchAnalyzer;
     /**
      * @readonly
+     * @var \Rector\Core\NodeManipulator\StmtsManipulator
      */
-    private StmtsManipulator $stmtsManipulator;
-    /**
-     * @readonly
-     */
-    private BetterNodeFinder $betterNodeFinder;
-    public function __construct(InflectorSingularResolver $inflectorSingularResolver, PropertyFetchAnalyzer $propertyFetchAnalyzer, StmtsManipulator $stmtsManipulator, BetterNodeFinder $betterNodeFinder)
+    private $stmtsManipulator;
+    public function __construct(InflectorSingularResolver $inflectorSingularResolver, PropertyFetchAnalyzer $propertyFetchAnalyzer, StmtsManipulator $stmtsManipulator)
     {
         $this->inflectorSingularResolver = $inflectorSingularResolver;
         $this->propertyFetchAnalyzer = $propertyFetchAnalyzer;
         $this->stmtsManipulator = $stmtsManipulator;
-        $this->betterNodeFinder = $betterNodeFinder;
     }
     public function getRuleDefinition() : RuleDefinition
     {
-        return new RuleDefinition('Rename value variable name in foreach loop to match expression variable', [new CodeSample(<<<'CODE_SAMPLE'
+        return new RuleDefinition('Renames value variable name in foreach loop to match expression variable', [new CodeSample(<<<'CODE_SAMPLE'
 class SomeClass
 {
     public function run()

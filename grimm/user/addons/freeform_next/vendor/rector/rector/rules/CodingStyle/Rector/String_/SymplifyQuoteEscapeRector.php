@@ -5,9 +5,9 @@ namespace Rector\CodingStyle\Rector\String_;
 
 use PhpParser\Node;
 use PhpParser\Node\Scalar\String_;
+use Rector\Core\Rector\AbstractRector;
+use Rector\Core\Util\StringUtils;
 use Rector\NodeTypeResolver\Node\AttributeKey;
-use Rector\Rector\AbstractRector;
-use Rector\Util\StringUtils;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -26,7 +26,10 @@ final class SymplifyQuoteEscapeRector extends AbstractRector
      * @see https://regex101.com/r/lGUhRb/1
      */
     private const HAS_NON_PRINTABLE_CHARS = '#[\\x00-\\x1F\\x80-\\xFF]#';
-    private bool $hasChanged = \false;
+    /**
+     * @var bool
+     */
+    private $hasChanged = \false;
     public function getRuleDefinition() : RuleDefinition
     {
         return new RuleDefinition('Prefer quote that are not inside the string', [new CodeSample(<<<'CODE_SAMPLE'

@@ -5,30 +5,22 @@ namespace Rector\TypeDeclaration\Rector\Property;
 
 use PhpParser\Node;
 use PhpParser\Node\Expr;
-use PhpParser\Node\NullableType;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\Property;
-use PhpParser\Node\UnionType as NodeUnionType;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
-use Rector\BetterPhpDocParser\PhpDocInfo\PhpDocInfoFactory;
-use Rector\Contract\Rector\ConfigurableRectorInterface;
+use Rector\Core\Contract\Rector\ConfigurableRectorInterface;
+use Rector\Core\Rector\AbstractRector;
+use Rector\Core\Reflection\ReflectionResolver;
+use Rector\Core\ValueObject\PhpVersionFeature;
 use Rector\DeadCode\PhpDoc\TagRemover\VarTagRemover;
-use Rector\Doctrine\CodeQuality\Enum\CollectionMapping;
-use Rector\Doctrine\Enum\MappingClass;
-use Rector\Doctrine\NodeAnalyzer\AttrinationFinder;
 use Rector\Php74\Guard\MakePropertyTypedGuard;
-use Rector\PhpParser\Node\Value\ValueResolver;
 use Rector\PHPStanStaticTypeMapper\Enum\TypeKind;
-use Rector\Rector\AbstractRector;
-use Rector\Reflection\ReflectionResolver;
-use Rector\StaticTypeMapper\StaticTypeMapper;
 use Rector\TypeDeclaration\NodeTypeAnalyzer\PropertyTypeDecorator;
 use Rector\TypeDeclaration\TypeInferer\PropertyTypeInferer\AllAssignNodePropertyTypeInferer;
-use Rector\ValueObject\PhpVersionFeature;
 use Rector\VersionBonding\Contract\MinPhpVersionInterface;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\ConfiguredCodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
@@ -39,40 +31,29 @@ final class TypedPropertyFromAssignsRector extends AbstractRector implements Min
 {
     /**
      * @readonly
+     * @var \Rector\TypeDeclaration\TypeInferer\PropertyTypeInferer\AllAssignNodePropertyTypeInferer
      */
-    private AllAssignNodePropertyTypeInferer $allAssignNodePropertyTypeInferer;
+    private $allAssignNodePropertyTypeInferer;
     /**
      * @readonly
+     * @var \Rector\TypeDeclaration\NodeTypeAnalyzer\PropertyTypeDecorator
      */
-    private PropertyTypeDecorator $propertyTypeDecorator;
+    private $propertyTypeDecorator;
     /**
      * @readonly
+     * @var \Rector\DeadCode\PhpDoc\TagRemover\VarTagRemover
      */
-    private VarTagRemover $varTagRemover;
+    private $varTagRemover;
     /**
      * @readonly
+     * @var \Rector\Php74\Guard\MakePropertyTypedGuard
      */
-    private MakePropertyTypedGuard $makePropertyTypedGuard;
+    private $makePropertyTypedGuard;
     /**
      * @readonly
+     * @var \Rector\Core\Reflection\ReflectionResolver
      */
-    private ReflectionResolver $reflectionResolver;
-    /**
-     * @readonly
-     */
-    private PhpDocInfoFactory $phpDocInfoFactory;
-    /**
-     * @readonly
-     */
-    private ValueResolver $valueResolver;
-    /**
-     * @readonly
-     */
-    private StaticTypeMapper $staticTypeMapper;
-    /**
-     * @readonly
-     */
-    private AttrinationFinder $attrinationFinder;
+    private $reflectionResolver;
     /**
      * @api
      * @var string
@@ -85,19 +66,16 @@ final class TypedPropertyFromAssignsRector extends AbstractRector implements Min
      *  - protected modifier property on final class without extends or has extends but property and/or its usage only in current class
      *
      * Set to true will allow change other modifiers as well as far as not forbidden, eg: callable type, null type, etc.
+     * @var bool
      */
-    private bool $inlinePublic = \false;
-    public function __construct(AllAssignNodePropertyTypeInferer $allAssignNodePropertyTypeInferer, PropertyTypeDecorator $propertyTypeDecorator, VarTagRemover $varTagRemover, MakePropertyTypedGuard $makePropertyTypedGuard, ReflectionResolver $reflectionResolver, PhpDocInfoFactory $phpDocInfoFactory, ValueResolver $valueResolver, StaticTypeMapper $staticTypeMapper, AttrinationFinder $attrinationFinder)
+    private $inlinePublic = \false;
+    public function __construct(AllAssignNodePropertyTypeInferer $allAssignNodePropertyTypeInferer, PropertyTypeDecorator $propertyTypeDecorator, VarTagRemover $varTagRemover, MakePropertyTypedGuard $makePropertyTypedGuard, ReflectionResolver $reflectionResolver)
     {
         $this->allAssignNodePropertyTypeInferer = $allAssignNodePropertyTypeInferer;
         $this->propertyTypeDecorator = $propertyTypeDecorator;
         $this->varTagRemover = $varTagRemover;
         $this->makePropertyTypedGuard = $makePropertyTypedGuard;
         $this->reflectionResolver = $reflectionResolver;
-        $this->phpDocInfoFactory = $phpDocInfoFactory;
-        $this->valueResolver = $valueResolver;
-        $this->staticTypeMapper = $staticTypeMapper;
-        $this->attrinationFinder = $attrinationFinder;
     }
     public function configure(array $configuration) : void
     {
@@ -141,7 +119,7 @@ CODE_SAMPLE
         return PhpVersionFeature::TYPED_PROPERTIES;
     }
     /**
-     * @param Class_ $node
+     * @param Node\Stmt\Class_ $node
      */
     public function refactor(Node $node) : ?Node
     {
@@ -150,9 +128,6 @@ CODE_SAMPLE
         foreach ($node->getProperties() as $property) {
             // non-private property can be anything with not inline public configured
             if (!$property->isPrivate() && !$this->inlinePublic) {
-                continue;
-            }
-            if ($this->isDoctrineMappedProperty($property)) {
                 continue;
             }
             if (!$classReflection instanceof ClassReflection) {
@@ -164,7 +139,7 @@ CODE_SAMPLE
             if (!$this->makePropertyTypedGuard->isLegal($property, $classReflection, $this->inlinePublic)) {
                 continue;
             }
-            $inferredType = $this->allAssignNodePropertyTypeInferer->inferProperty($property, $classReflection, $this->file);
+            $inferredType = $this->allAssignNodePropertyTypeInferer->inferProperty($property, $classReflection);
             if (!$inferredType instanceof Type) {
                 continue;
             }
@@ -173,12 +148,12 @@ CODE_SAMPLE
             }
             $inferredType = $this->decorateTypeWithNullableIfDefaultPropertyNull($property, $inferredType);
             $typeNode = $this->staticTypeMapper->mapPHPStanTypeToPhpParserNode($inferredType, TypeKind::PROPERTY);
-            if (!$typeNode instanceof Node) {
+            if ($typeNode === null) {
                 continue;
             }
             $hasChanged = \true;
             $phpDocInfo = $this->phpDocInfoFactory->createFromNodeOrEmpty($property);
-            if ($inferredType instanceof UnionType && ($typeNode instanceof NodeUnionType || $typeNode instanceof NullableType)) {
+            if ($inferredType instanceof UnionType) {
                 $this->propertyTypeDecorator->decoratePropertyUnionType($inferredType, $typeNode, $property, $phpDocInfo, \false);
             } else {
                 $property->type = $typeNode;
@@ -206,13 +181,5 @@ CODE_SAMPLE
             return $inferredType;
         }
         return TypeCombinator::addNull($inferredType);
-    }
-    /**
-     * Doctrine properties are handled in doctrine rules
-     */
-    private function isDoctrineMappedProperty(Property $property) : bool
-    {
-        $mappingClasses = \array_merge(CollectionMapping::TO_MANY_CLASSES, CollectionMapping::TO_ONE_CLASSES, [MappingClass::COLUMN]);
-        return $this->attrinationFinder->hasByMany($property, $mappingClasses);
     }
 }

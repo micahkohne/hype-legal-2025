@@ -12,7 +12,7 @@
 namespace Solspace\Addons\FreeformNext\Controllers;
 
 use Exception;
-use ExpressionEngine\Library\CP\Table;
+use EllisLab\ExpressionEngine\Library\CP\Table;
 use ExpressionEngine\Service\Validation\Result;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\FieldInterface;
 use Solspace\Addons\FreeformNext\Library\Exceptions\FieldExceptions\FieldException;
@@ -78,7 +78,7 @@ class FieldController extends Controller
                     'name'  => 'id_list[]',
                     'value' => $field->id,
                     'data'  => [
-                        'confirm' => lang('Field') . ': <b>' . htmlentities((string) $field->label, ENT_QUOTES) . '</b>',
+                        'confirm' => lang('Field') . ': <b>' . htmlentities($field->label, ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401, 'UTF-8') . '</b>',
                     ],
                 ],
             ];
@@ -105,13 +105,13 @@ class FieldController extends Controller
     }
 
     /**
-     * @param null|int|string   $id
-     * @param ?Result           $validation
+     * @param int|null    $id
+     * @param Result|null $validation
      *
      * @return CpView
      * @throws FieldException
      */
-    public function edit(null|int|string $id, ?Result $validation = null): RedirectView|CpView
+    public function edit($id, ?Result $validation = null): RedirectView|CpView
     {
         $canAccessFields = $this->getPermissionsService()->canAccessFields(ee()->session->userdata('group_id'));
 
@@ -229,7 +229,7 @@ class FieldController extends Controller
      *
      * @return FieldModel
      */
-    public function save($fieldId = null)
+    public function save(null|string|int $fieldId = null)
     {
         $field = FieldRepository::getInstance()->getOrCreateField($fieldId);
 
@@ -399,11 +399,9 @@ class FieldController extends Controller
     }
 
     /**
-     * @param FieldModel $model
-     *
      * @return array
      */
-    private function getFieldSettingsByType(FieldModel $model): array
+    private function getFieldSettingsByType(FieldModel $model)
     {
         $fileKinds         = [];
         $fileKindsOriginal = $this->getFileService()->getFileKinds();
@@ -1112,12 +1110,9 @@ class FieldController extends Controller
     }
 
     /**
-     * @param FieldModel $model
-     * @param string     $template
-     *
      * @return string
      */
-    private function getFieldHtml(FieldModel $model, string $template, string $type): string|false
+    private function getFieldHtml(FieldModel $model, string $template, string $type): string|bool
     {
         $singleValue = $type !== FieldInterface::TYPE_CHECKBOX_GROUP;
 

@@ -51,8 +51,6 @@ class FormTransformer implements Transformer
     }
 
     /**
-     * @param Form $form
-     *
      * @return array
      */
     private function getErrors(Form $form): array
@@ -66,10 +64,7 @@ class FormTransformer implements Transformer
     }
 
     /**
-     * @param Form   $form
-     * @param string $prefix
      * @param bool   $skipHelperFields
-     *
      * @return array
      */
     private function getFields(Form $form, string $prefix = 'field:', $skipHelperFields = false): array

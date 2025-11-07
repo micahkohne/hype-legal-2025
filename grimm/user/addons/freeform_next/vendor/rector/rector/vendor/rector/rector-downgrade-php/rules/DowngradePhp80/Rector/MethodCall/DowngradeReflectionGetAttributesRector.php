@@ -12,7 +12,7 @@ use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\Ternary;
 use PhpParser\Node\Scalar\String_;
 use PHPStan\Type\ObjectType;
-use Rector\Rector\AbstractRector;
+use Rector\Core\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -49,8 +49,9 @@ CODE_SAMPLE
     }
     /**
      * @param Ternary|MethodCall $node
+     * @return \PhpParser\Node\Expr\Ternary|null|int
      */
-    public function refactor(Node $node) : ?\PhpParser\Node\Expr\Ternary
+    public function refactor(Node $node)
     {
         if ($node instanceof Ternary) {
             if ($node->if instanceof Expr && $node->cond instanceof FuncCall && $this->isName($node->cond, 'method_exists')) {

@@ -5,13 +5,14 @@ namespace Rector\Symfony\NodeAnalyzer;
 
 use PhpParser\Node;
 use PHPStan\Reflection\ClassReflection;
-use Rector\Reflection\ReflectionResolver;
+use Rector\Core\Reflection\ReflectionResolver;
 final class SymfonyTestCaseAnalyzer
 {
     /**
      * @readonly
+     * @var \Rector\Core\Reflection\ReflectionResolver
      */
-    private ReflectionResolver $reflectionResolver;
+    private $reflectionResolver;
     public function __construct(ReflectionResolver $reflectionResolver)
     {
         $this->reflectionResolver = $reflectionResolver;
@@ -22,17 +23,14 @@ final class SymfonyTestCaseAnalyzer
         if (!$classReflection instanceof ClassReflection) {
             return \false;
         }
-        return $classReflection->is('Symfony\\Bundle\\FrameworkBundle\\Test\\WebTestCase');
+        return $classReflection->isSubclassOf('Symfony\\Bundle\\FrameworkBundle\\Test\\WebTestCase');
     }
-    /**
-     * @api
-     */
     public function isInKernelTestCase(Node $node) : bool
     {
         $classReflection = $this->reflectionResolver->resolveClassReflection($node);
         if (!$classReflection instanceof ClassReflection) {
             return \false;
         }
-        return $classReflection->is('Symfony\\Bundle\\FrameworkBundle\\Test\\KernelTestCase');
+        return $classReflection->isSubclassOf('Symfony\\Bundle\\FrameworkBundle\\Test\\KernelTestCase');
     }
 }

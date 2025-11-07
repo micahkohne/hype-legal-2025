@@ -9,14 +9,13 @@ use Solspace\Addons\FreeformNext\Utilities\AddonInfo;
 class UpdateService
 {
     /** @var PluginUpdate[] */
-    private static $feed;
+    private static ?array $feed = null;
 
-    private readonly string $jsonUrl;
+    private string $jsonUrl;
 
-    private readonly string $jsonPath;
+    private string $jsonPath;
 
-    /** @var AddonInfo */
-    private $addonInfo;
+    private AddonInfo $addonInfo;
 
     private bool $writeToCache;
 

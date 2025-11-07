@@ -9,34 +9,24 @@ use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
-use PhpParser\Node\Scalar\Int_;
-use Rector\Contract\PhpParser\Node\StmtsAwareInterface;
-use Rector\PhpParser\Node\BetterNodeFinder;
-use Rector\PhpParser\Node\Value\ValueResolver;
-use Rector\Rector\AbstractRector;
-use Rector\ValueObject\PhpVersionFeature;
+use PhpParser\Node\Scalar\LNumber;
+use Rector\Core\Contract\PhpParser\Node\StmtsAwareInterface;
+use Rector\Core\Rector\AbstractRector;
+use Rector\Core\ValueObject\PhpVersionFeature;
 use Rector\VersionBonding\Contract\MinPhpVersionInterface;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
+ * @changelog http://wiki.php.net/rfc/json_throw_on_error
+ * @changelog https://3v4l.org/5HMVE
  * @see \Rector\Tests\Php73\Rector\FuncCall\JsonThrowOnErrorRector\JsonThrowOnErrorRectorTest
  */
 final class JsonThrowOnErrorRector extends AbstractRector implements MinPhpVersionInterface
 {
     /**
-     * @readonly
+     * @var bool
      */
-    private ValueResolver $valueResolver;
-    /**
-     * @readonly
-     */
-    private BetterNodeFinder $betterNodeFinder;
-    private bool $hasChanged = \false;
-    public function __construct(ValueResolver $valueResolver, BetterNodeFinder $betterNodeFinder)
-    {
-        $this->valueResolver = $valueResolver;
-        $this->betterNodeFinder = $betterNodeFinder;
-    }
+    private $hasChanged = \false;
     public function getRuleDefinition() : RuleDefinition
     {
         return new RuleDefinition('Adds JSON_THROW_ON_ERROR to json_encode() and json_decode() to throw JsonException on error', [new CodeSample(<<<'CODE_SAMPLE'
@@ -62,7 +52,9 @@ CODE_SAMPLE
     public function refactor(Node $node) : ?Node
     {
         // if found, skip it :)
-        $hasJsonErrorFuncCall = (bool) $this->betterNodeFinder->findFirst($node, fn(Node $node): bool => $this->isNames($node, ['json_last_error', 'json_last_error_msg']));
+        $hasJsonErrorFuncCall = (bool) $this->betterNodeFinder->findFirst($node, function (Node $node) : bool {
+            return $this->isNames($node, ['json_last_error', 'json_last_error_msg']);
+        });
         if ($hasJsonErrorFuncCall) {
             return null;
         }
@@ -96,7 +88,7 @@ CODE_SAMPLE
         if ($funcCall->isFirstClassCallable()) {
             return \true;
         }
-        if ($funcCall->args === []) {
+        if ($funcCall->args === null) {
             return \true;
         }
         foreach ($funcCall->args as $arg) {
@@ -128,7 +120,7 @@ CODE_SAMPLE
             $funcCall->args[1] = new Arg($this->nodeFactory->createNull());
         }
         if (!isset($funcCall->args[2])) {
-            $funcCall->args[2] = new Arg(new Int_(512));
+            $funcCall->args[2] = new Arg(new LNumber(512));
         }
         $this->hasChanged = \true;
         $funcCall->args[3] = new Arg($this->createConstFetch('JSON_THROW_ON_ERROR'));

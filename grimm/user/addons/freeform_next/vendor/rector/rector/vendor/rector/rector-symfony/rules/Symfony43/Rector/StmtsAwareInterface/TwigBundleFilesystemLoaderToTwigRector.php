@@ -11,8 +11,8 @@ use PhpParser\Node\Expr\New_;
 use PhpParser\Node\Name\FullyQualified;
 use PhpParser\Node\Stmt\Expression;
 use PHPStan\Type\ObjectType;
-use Rector\Contract\PhpParser\Node\StmtsAwareInterface;
-use Rector\Rector\AbstractRector;
+use Rector\Core\Contract\PhpParser\Node\StmtsAwareInterface;
+use Rector\Core\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -87,7 +87,11 @@ CODE_SAMPLE
                 continue;
             }
             $new = $assign->expr;
-            if (!$this->isObjectType($new, new ObjectType('Symfony\\Bundle\\TwigBundle\\Loader\\FilesystemLoader'))) {
+            $newType = $this->getType($new);
+            if (!$newType instanceof ObjectType) {
+                continue;
+            }
+            if (!$newType->isInstanceOf('Symfony\\Bundle\\TwigBundle\\Loader\\FilesystemLoader')->yes()) {
                 continue;
             }
             return $new;

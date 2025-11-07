@@ -26,7 +26,7 @@ class FileDownloadView extends View implements RenderlessViewInterface
     /**
      * @return array
      */
-    public function compile(): never
+    public function compile(): void
     {
         $fileName = sprintf('"%s"', addcslashes(($this->fileName), '"\\'));
         $size     = strlen($this->content);

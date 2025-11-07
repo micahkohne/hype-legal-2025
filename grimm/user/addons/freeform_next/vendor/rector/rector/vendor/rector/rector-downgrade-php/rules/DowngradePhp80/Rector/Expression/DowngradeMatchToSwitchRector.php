@@ -5,11 +5,9 @@ namespace Rector\DowngradePhp80\Rector\Expression;
 
 use PhpParser\Node;
 use PhpParser\Node\Arg;
-use PhpParser\Node\ArrayItem;
-use PhpParser\Node\Expr;
+use PhpParser\Node\Expr\ArrayItem;
 use PhpParser\Node\Expr\ArrowFunction;
 use PhpParser\Node\Expr\Assign;
-use PhpParser\Node\Expr\BinaryOp;
 use PhpParser\Node\Expr\CallLike;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\Match_;
@@ -26,12 +24,11 @@ use PhpParser\Node\Stmt\Echo_;
 use PhpParser\Node\Stmt\Expression;
 use PhpParser\Node\Stmt\Return_;
 use PhpParser\Node\Stmt\Switch_;
-use PhpParser\NodeVisitor;
+use PhpParser\NodeTraverser;
 use PHPStan\Analyser\Scope;
+use Rector\Core\Rector\AbstractScopeAwareRector;
 use Rector\NodeTypeResolver\Node\AttributeKey;
 use Rector\Php72\NodeFactory\AnonymousFunctionFactory;
-use Rector\PHPStan\ScopeFetcher;
-use Rector\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -39,12 +36,13 @@ use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
  *
  * @see \Rector\Tests\DowngradePhp80\Rector\Expression\DowngradeMatchToSwitchRector\DowngradeMatchToSwitchRectorTest
  */
-final class DowngradeMatchToSwitchRector extends AbstractRector
+final class DowngradeMatchToSwitchRector extends AbstractScopeAwareRector
 {
     /**
      * @readonly
+     * @var \Rector\Php72\NodeFactory\AnonymousFunctionFactory
      */
-    private AnonymousFunctionFactory $anonymousFunctionFactory;
+    private $anonymousFunctionFactory;
     public function __construct(AnonymousFunctionFactory $anonymousFunctionFactory)
     {
         $this->anonymousFunctionFactory = $anonymousFunctionFactory;
@@ -96,58 +94,57 @@ CODE_SAMPLE
     /**
      * @param Echo_|Expression|Return_ $node
      */
-    public function refactor(Node $node) : ?Node
+    public function refactorWithScope(Node $node, Scope $scope) : ?Node
     {
         /** @var Match_|null $match */
         $match = null;
         $hasChanged = \false;
-        $scope = ScopeFetcher::fetch($node);
         $this->traverseNodesWithCallable($node, function (Node $subNode) use($node, &$match, &$hasChanged, $scope) {
-            if (($subNode instanceof ArrayItem || $subNode instanceof Arg) && $subNode->value instanceof Match_ && $this->isEqualScope($subNode->value, $scope)) {
+            if ($subNode instanceof ArrayItem && $subNode->value instanceof Match_ && $this->isEqualScope($subNode->value, $scope)) {
                 $switchCases = $this->createSwitchCasesFromMatchArms($node, $subNode->value, \true);
                 $switch = new Switch_($subNode->value->cond, $switchCases);
                 $subNode->value = new FuncCall($this->anonymousFunctionFactory->create([], [$switch], null));
                 $hasChanged = \true;
-                return NodeVisitor::DONT_TRAVERSE_CURRENT_AND_CHILDREN;
+                return NodeTraverser::DONT_TRAVERSE_CURRENT_AND_CHILDREN;
             }
             if ($subNode instanceof Arg && $subNode->value instanceof ArrowFunction && $subNode->value->expr instanceof Match_) {
                 $refactoredNode = $this->refactorInArrowFunction($subNode, $subNode->value, $subNode->value->expr);
                 if ($refactoredNode instanceof Node) {
                     $hasChanged = \true;
                 }
-                return NodeVisitor::DONT_TRAVERSE_CURRENT_AND_CHILDREN;
+                return NodeTraverser::DONT_TRAVERSE_CURRENT_AND_CHILDREN;
             }
             if ($subNode instanceof Assign && $subNode->expr instanceof ArrowFunction && $subNode->expr->expr instanceof Match_) {
                 $refactoredNode = $this->refactorInArrowFunction($subNode, $subNode->expr, $subNode->expr->expr);
                 if ($refactoredNode instanceof Node) {
                     $hasChanged = \true;
                 }
-                return NodeVisitor::DONT_TRAVERSE_CURRENT_AND_CHILDREN;
+                return NodeTraverser::DONT_TRAVERSE_CURRENT_AND_CHILDREN;
             }
             if ($subNode instanceof Expression && $subNode->expr instanceof ArrowFunction && $subNode->expr->expr instanceof Match_) {
                 $refactoredNode = $this->refactorInArrowFunction($subNode, $subNode->expr, $subNode->expr->expr);
                 if ($refactoredNode instanceof Node) {
                     $hasChanged = \true;
                 }
-                return NodeVisitor::DONT_TRAVERSE_CURRENT_AND_CHILDREN;
+                return NodeTraverser::DONT_TRAVERSE_CURRENT_AND_CHILDREN;
             }
             if ($subNode instanceof Return_ && $subNode->expr instanceof ArrowFunction && $subNode->expr->expr instanceof Match_) {
                 $refactoredNode = $this->refactorInArrowFunction($subNode, $subNode->expr, $subNode->expr->expr);
                 if ($refactoredNode instanceof Node) {
                     $hasChanged = \true;
                 }
-                return NodeVisitor::DONT_TRAVERSE_CURRENT_AND_CHILDREN;
+                return NodeTraverser::DONT_TRAVERSE_CURRENT_AND_CHILDREN;
             }
             if ($subNode instanceof FuncCall && $subNode->name instanceof ArrowFunction && $subNode->name->expr instanceof Match_) {
                 $refactoredNode = $this->refactorInArrowFunction($subNode, $subNode->name, $subNode->name->expr);
                 if ($refactoredNode instanceof Node) {
                     $hasChanged = \true;
                 }
-                return NodeVisitor::DONT_TRAVERSE_CURRENT_AND_CHILDREN;
+                return NodeTraverser::DONT_TRAVERSE_CURRENT_AND_CHILDREN;
             }
             if ($subNode instanceof Match_) {
                 $match = $subNode;
-                return NodeVisitor::STOP_TRAVERSAL;
+                return NodeTraverser::STOP_TRAVERSAL;
             }
         });
         if ($hasChanged) {
@@ -156,7 +153,6 @@ CODE_SAMPLE
         if (!$match instanceof Match_) {
             return null;
         }
-        $scope = ScopeFetcher::fetch($node);
         if (!$this->isEqualScope($match, $scope)) {
             return null;
         }
@@ -239,11 +235,7 @@ CODE_SAMPLE
         } elseif ($matchArm->body instanceof Throw_) {
             $stmts[] = new Expression($matchArm->body);
         } elseif ($node instanceof Return_) {
-            if ($node->expr instanceof BinaryOp) {
-                $stmts[] = $this->replicateBinaryOp($node->expr, $matchArm->body);
-            } else {
-                $stmts[] = new Return_($matchArm->body);
-            }
+            $stmts[] = new Return_($matchArm->body);
         } elseif ($node instanceof Echo_) {
             $stmts[] = new Echo_([$matchArm->body]);
             $stmts[] = new Break_();
@@ -261,17 +253,5 @@ CODE_SAMPLE
             $stmts[] = new Break_();
         }
         return $stmts;
-    }
-    private function replicateBinaryOp(BinaryOp $binaryOp, Expr $expr) : Return_
-    {
-        $newExpr = clone $binaryOp;
-        // remove the match statement from the binary operation
-        $this->traverseNodesWithCallable($newExpr, static function (Node $node) use($expr) : ?Expr {
-            if ($node instanceof Match_) {
-                return $expr;
-            }
-            return null;
-        });
-        return new Return_($newExpr);
     }
 }

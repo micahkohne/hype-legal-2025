@@ -17,9 +17,8 @@ interface ObscureValueInterface
      * Return the real value of this field
      * Instead of the obscured one
      *
-     * @param mixed $obscuredValue
      *
      * @return mixed
      */
-    public function getActualValue($obscuredValue);
+    public function getActualValue(mixed $obscuredValue);
 }

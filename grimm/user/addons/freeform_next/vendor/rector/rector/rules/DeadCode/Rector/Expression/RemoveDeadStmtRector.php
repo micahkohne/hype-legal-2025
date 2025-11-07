@@ -8,14 +8,13 @@ use PhpParser\Node\Expr\PropertyFetch;
 use PhpParser\Node\Expr\StaticPropertyFetch;
 use PhpParser\Node\Stmt\Expression;
 use PhpParser\Node\Stmt\Nop;
-use PhpParser\NodeVisitor;
+use PhpParser\NodeTraverser;
 use PHPStan\Reflection\Php\PhpPropertyReflection;
-use Rector\BetterPhpDocParser\PhpDocInfo\PhpDocInfoFactory;
+use Rector\Core\NodeAnalyzer\PropertyFetchAnalyzer;
+use Rector\Core\Rector\AbstractRector;
+use Rector\Core\Reflection\ReflectionResolver;
 use Rector\DeadCode\NodeManipulator\LivingCodeManipulator;
-use Rector\NodeAnalyzer\PropertyFetchAnalyzer;
 use Rector\NodeTypeResolver\Node\AttributeKey;
-use Rector\Rector\AbstractRector;
-use Rector\Reflection\ReflectionResolver;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -25,30 +24,28 @@ final class RemoveDeadStmtRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\DeadCode\NodeManipulator\LivingCodeManipulator
      */
-    private LivingCodeManipulator $livingCodeManipulator;
+    private $livingCodeManipulator;
     /**
      * @readonly
+     * @var \Rector\Core\NodeAnalyzer\PropertyFetchAnalyzer
      */
-    private PropertyFetchAnalyzer $propertyFetchAnalyzer;
+    private $propertyFetchAnalyzer;
     /**
      * @readonly
+     * @var \Rector\Core\Reflection\ReflectionResolver
      */
-    private ReflectionResolver $reflectionResolver;
-    /**
-     * @readonly
-     */
-    private PhpDocInfoFactory $phpDocInfoFactory;
-    public function __construct(LivingCodeManipulator $livingCodeManipulator, PropertyFetchAnalyzer $propertyFetchAnalyzer, ReflectionResolver $reflectionResolver, PhpDocInfoFactory $phpDocInfoFactory)
+    private $reflectionResolver;
+    public function __construct(LivingCodeManipulator $livingCodeManipulator, PropertyFetchAnalyzer $propertyFetchAnalyzer, ReflectionResolver $reflectionResolver)
     {
         $this->livingCodeManipulator = $livingCodeManipulator;
         $this->propertyFetchAnalyzer = $propertyFetchAnalyzer;
         $this->reflectionResolver = $reflectionResolver;
-        $this->phpDocInfoFactory = $phpDocInfoFactory;
     }
     public function getRuleDefinition() : RuleDefinition
     {
-        return new RuleDefinition('Remove dead code statements', [new CodeSample(<<<'CODE_SAMPLE'
+        return new RuleDefinition('Removes dead code statements', [new CodeSample(<<<'CODE_SAMPLE'
 $value = 5;
 $value;
 CODE_SAMPLE
@@ -80,13 +77,12 @@ CODE_SAMPLE
         if ($livingCode === [$node->expr]) {
             return null;
         }
-        $newNode = clone $node;
-        $newNode->expr = \array_shift($livingCode);
+        $node->expr = \array_shift($livingCode);
         $newNodes = [];
         foreach ($livingCode as $singleLivingCode) {
             $newNodes[] = new Expression($singleLivingCode);
         }
-        $newNodes[] = $newNode;
+        $newNodes[] = $node;
         return $newNodes;
     }
     private function hasGetMagic(Expression $expression) : bool
@@ -114,6 +110,6 @@ CODE_SAMPLE
             $nop->setAttribute(AttributeKey::PHP_DOC_INFO, $phpDocInfo);
             return $nop;
         }
-        return NodeVisitor::REMOVE_NODE;
+        return NodeTraverser::REMOVE_NODE;
     }
 }

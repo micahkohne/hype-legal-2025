@@ -8,19 +8,21 @@ use PhpParser\Node\Identifier;
 use PhpParser\Node\Name\FullyQualified;
 use PhpParser\Node\Param;
 use PhpParser\Node\Stmt\ClassMethod;
-use Rector\Php\PhpVersionProvider;
-use Rector\PhpParser\Node\NodeFactory;
-use Rector\ValueObject\PhpVersionFeature;
+use Rector\Core\Php\PhpVersionProvider;
+use Rector\Core\PhpParser\Node\NodeFactory;
+use Rector\Core\ValueObject\PhpVersionFeature;
 final class BareLogoutClassMethodFactory
 {
     /**
      * @readonly
+     * @var \Rector\Core\PhpParser\Node\NodeFactory
      */
-    private NodeFactory $nodeFactory;
+    private $nodeFactory;
     /**
      * @readonly
+     * @var \Rector\Core\Php\PhpVersionProvider
      */
-    private PhpVersionProvider $phpVersionProvider;
+    private $phpVersionProvider;
     public function __construct(NodeFactory $nodeFactory, PhpVersionProvider $phpVersionProvider)
     {
         $this->nodeFactory = $nodeFactory;

@@ -13,7 +13,7 @@ use PhpParser\Node\Param;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Property;
-use PhpParser\NodeVisitor;
+use PhpParser\NodeTraverser;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\ArrayType;
 use PHPStan\Type\MixedType;
@@ -21,8 +21,8 @@ use PHPStan\Type\NullType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
-use Rector\NodeAnalyzer\ParamAnalyzer;
-use Rector\NodeManipulator\ClassMethodPropertyFetchManipulator;
+use Rector\Core\NodeAnalyzer\ParamAnalyzer;
+use Rector\Core\NodeManipulator\ClassMethodPropertyFetchManipulator;
 use Rector\NodeNameResolver\NodeNameResolver;
 use Rector\NodeTypeResolver\Node\AttributeKey;
 use Rector\NodeTypeResolver\NodeTypeResolver;
@@ -40,44 +40,54 @@ final class TrustedClassMethodPropertyTypeInferer
 {
     /**
      * @readonly
+     * @var \Rector\Core\NodeManipulator\ClassMethodPropertyFetchManipulator
      */
-    private ClassMethodPropertyFetchManipulator $classMethodPropertyFetchManipulator;
+    private $classMethodPropertyFetchManipulator;
     /**
      * @readonly
+     * @var \PHPStan\Reflection\ReflectionProvider
      */
-    private ReflectionProvider $reflectionProvider;
+    private $reflectionProvider;
     /**
      * @readonly
+     * @var \Rector\NodeNameResolver\NodeNameResolver
      */
-    private NodeNameResolver $nodeNameResolver;
+    private $nodeNameResolver;
     /**
      * @readonly
+     * @var \Rector\PhpDocParser\NodeTraverser\SimpleCallableNodeTraverser
      */
-    private SimpleCallableNodeTraverser $simpleCallableNodeTraverser;
+    private $simpleCallableNodeTraverser;
     /**
      * @readonly
+     * @var \Rector\NodeTypeResolver\PHPStan\Type\TypeFactory
      */
-    private TypeFactory $typeFactory;
+    private $typeFactory;
     /**
      * @readonly
+     * @var \Rector\StaticTypeMapper\StaticTypeMapper
      */
-    private StaticTypeMapper $staticTypeMapper;
+    private $staticTypeMapper;
     /**
      * @readonly
+     * @var \Rector\NodeTypeResolver\NodeTypeResolver
      */
-    private NodeTypeResolver $nodeTypeResolver;
+    private $nodeTypeResolver;
     /**
      * @readonly
+     * @var \Rector\Core\NodeAnalyzer\ParamAnalyzer
      */
-    private ParamAnalyzer $paramAnalyzer;
+    private $paramAnalyzer;
     /**
      * @readonly
+     * @var \Rector\TypeDeclaration\TypeInferer\AssignToPropertyTypeInferer
      */
-    private AssignToPropertyTypeInferer $assignToPropertyTypeInferer;
+    private $assignToPropertyTypeInferer;
     /**
      * @readonly
+     * @var \Rector\NodeTypeResolver\TypeComparator\TypeComparator
      */
-    private TypeComparator $typeComparator;
+    private $typeComparator;
     public function __construct(ClassMethodPropertyFetchManipulator $classMethodPropertyFetchManipulator, ReflectionProvider $reflectionProvider, NodeNameResolver $nodeNameResolver, SimpleCallableNodeTraverser $simpleCallableNodeTraverser, TypeFactory $typeFactory, StaticTypeMapper $staticTypeMapper, NodeTypeResolver $nodeTypeResolver, ParamAnalyzer $paramAnalyzer, AssignToPropertyTypeInferer $assignToPropertyTypeInferer, TypeComparator $typeComparator)
     {
         $this->classMethodPropertyFetchManipulator = $classMethodPropertyFetchManipulator;
@@ -104,7 +114,7 @@ final class TrustedClassMethodPropertyTypeInferer
         $assignedExprs = $this->classMethodPropertyFetchManipulator->findAssignsToPropertyName($classMethod, $propertyName);
         $resolvedTypes = [];
         foreach ($assignedExprs as $assignedExpr) {
-            $resolvedTypes[] = $this->nodeTypeResolver->getNativeType($assignedExpr);
+            $resolvedTypes[] = $this->nodeTypeResolver->getType($assignedExpr);
         }
         if ($resolvedTypes === []) {
             return new MixedType();
@@ -143,7 +153,7 @@ final class TrustedClassMethodPropertyTypeInferer
     }
     private function resolveParamTypeToPHPStanType(Param $param) : Type
     {
-        if (!$param->type instanceof Node) {
+        if ($param->type === null) {
             return new MixedType();
         }
         if ($this->paramAnalyzer->isNullable($param)) {
@@ -174,7 +184,7 @@ final class TrustedClassMethodPropertyTypeInferer
                 return null;
             }
             $paramStaticType = $this->nodeTypeResolver->getType($node);
-            return NodeVisitor::STOP_TRAVERSAL;
+            return NodeTraverser::STOP_TRAVERSAL;
         });
         return $paramStaticType;
     }
@@ -185,7 +195,7 @@ final class TrustedClassMethodPropertyTypeInferer
         }
         if ($param->default instanceof Expr) {
             $defaultValueStaticType = $this->nodeTypeResolver->getType($param->default);
-            if ($defaultValueStaticType->isNull()->yes()) {
+            if ($defaultValueStaticType instanceof NullType) {
                 return \true;
             }
         }
@@ -193,7 +203,7 @@ final class TrustedClassMethodPropertyTypeInferer
     }
     private function resolveFullyQualifiedOrAliasedObjectType(Param $param) : ?Type
     {
-        if (!$param->type instanceof Node) {
+        if ($param->type === null) {
             return null;
         }
         $fullyQualifiedName = $this->nodeNameResolver->getName($param->type);
@@ -217,7 +227,7 @@ final class TrustedClassMethodPropertyTypeInferer
     }
     private function resolveTypeFromParam(Param $param, ClassMethod $classMethod, string $propertyName, Property $property, Class_ $class) : Type
     {
-        if (!$param->type instanceof Node) {
+        if ($param->type === null) {
             return new MixedType();
         }
         $resolvedType = $this->resolveFromParamType($param, $classMethod, $propertyName);

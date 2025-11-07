@@ -5,9 +5,9 @@
  * Copyright (c) 2004 David Grudl (https://davidgrudl.com)
  */
 declare (strict_types=1);
-namespace RectorPrefix202507\Nette\Utils;
+namespace RectorPrefix202308\Nette\Utils;
 
-use RectorPrefix202507\Nette;
+use RectorPrefix202308\Nette;
 /**
  * DateTime.
  */
@@ -28,9 +28,9 @@ class DateTime extends \DateTime implements \JsonSerializable
     public const YEAR = 31557600;
     /**
      * Creates a DateTime object from a string, UNIX timestamp, or other DateTimeInterface object.
-     * @throws \Exception if the date and time are not valid.
-     * @param string|int|\DateTimeInterface|null $time
+     * @param  string|int|\DateTimeInterface  $time
      * @return static
+     * @throws \Exception if the date and time are not valid.
      */
     public static function from($time)
     {
@@ -40,7 +40,7 @@ class DateTime extends \DateTime implements \JsonSerializable
             if ($time <= self::YEAR) {
                 $time += \time();
             }
-            return (new static())->setTimestamp((int) $time);
+            return (new static('@' . $time))->setTimezone(new \DateTimeZone(\date_default_timezone_get()));
         } else {
             // textual or null
             return new static((string) $time);
@@ -48,8 +48,8 @@ class DateTime extends \DateTime implements \JsonSerializable
     }
     /**
      * Creates DateTime object.
-     * @throws Nette\InvalidArgumentException if the date and time are not valid.
      * @return static
+     * @throws Nette\InvalidArgumentException if the date and time are not valid.
      */
     public static function fromParts(int $year, int $month, int $day, int $hour = 0, int $minute = 0, float $second = 0.0)
     {
@@ -60,78 +60,24 @@ class DateTime extends \DateTime implements \JsonSerializable
         return new static($s);
     }
     /**
-     * Returns a new DateTime object formatted according to the specified format.
-     * @param string|\DateTimeZone|null $timezone
+     * Returns new DateTime object formatted according to the specified format.
+     * @param  string  $format  The format the $time parameter should be in
+     * @param  string  $time
+     * @param  string|\DateTimeZone  $timezone (default timezone is used if null is passed)
      * @return static|false
      */
-    public static function createFromFormat(string $format, string $datetime, $timezone = null)
+    #[\ReturnTypeWillChange]
+    public static function createFromFormat($format, $time, $timezone = null)
     {
         if ($timezone === null) {
             $timezone = new \DateTimeZone(\date_default_timezone_get());
         } elseif (\is_string($timezone)) {
             $timezone = new \DateTimeZone($timezone);
+        } elseif (!$timezone instanceof \DateTimeZone) {
+            throw new Nette\InvalidArgumentException('Invalid timezone given');
         }
-        $date = parent::createFromFormat($format, $datetime, $timezone);
+        $date = parent::createFromFormat($format, $time, $timezone);
         return $date ? static::from($date) : \false;
-    }
-    public function __construct(string $datetime = 'now', ?\DateTimeZone $timezone = null)
-    {
-        $this->apply($datetime, $timezone, \true);
-    }
-    /**
-     * @return static
-     */
-    public function modify(string $modifier)
-    {
-        $this->apply($modifier);
-        return $this;
-    }
-    /**
-     * @return static
-     */
-    public function setDate(int $year, int $month, int $day)
-    {
-        if (!\checkdate($month, $day, $year)) {
-            \trigger_error(\sprintf(self::class . ': The date %04d-%02d-%02d is not valid.', $year, $month, $day), \E_USER_WARNING);
-        }
-        return parent::setDate($year, $month, $day);
-    }
-    /**
-     * @return static
-     */
-    public function setTime(int $hour, int $minute, int $second = 0, int $microsecond = 0)
-    {
-        if ($hour < 0 || $hour > 23 || $minute < 0 || $minute > 59 || $second < 0 || $second >= 60 || $microsecond < 0 || $microsecond >= 1000000) {
-            \trigger_error(\sprintf(self::class . ': The time %02d:%02d:%08.5F is not valid.', $hour, $minute, $second + $microsecond / 1000000), \E_USER_WARNING);
-        }
-        return parent::setTime($hour, $minute, $second, $microsecond);
-    }
-    /**
-     * Converts a relative time string (e.g. '10 minut') to seconds.
-     */
-    public static function relativeToSeconds(string $relativeTime) : int
-    {
-        return (new \DateTimeImmutable('1970-01-01 ' . $relativeTime, new \DateTimeZone('UTC')))->getTimestamp();
-    }
-    private function apply(string $datetime, $timezone = null, bool $ctr = \false) : void
-    {
-        $relPart = '';
-        $absPart = \preg_replace_callback('/[+-]?\\s*\\d+\\s+((microsecond|millisecond|[mµu]sec)s?|[mµ]s|sec(ond)?s?|min(ute)?s?|hours?)\\b/iu', function ($m) use(&$relPart) {
-            $relPart .= $m[0] . ' ';
-            return '';
-        }, $datetime);
-        if ($ctr) {
-            parent::__construct($absPart, $timezone);
-            $this->handleErrors($datetime);
-        } elseif (\trim($absPart)) {
-            parent::modify($absPart) && $this->handleErrors($datetime);
-        }
-        if ($relPart) {
-            $timezone ??= $this->getTimezone();
-            $this->setTimezone(new \DateTimeZone('UTC'));
-            parent::modify($relPart) && $this->handleErrors($datetime);
-            $this->setTimezone($timezone);
-        }
     }
     /**
      * Returns JSON representation in ISO 8601 (used by JavaScript).
@@ -148,20 +94,12 @@ class DateTime extends \DateTime implements \JsonSerializable
         return $this->format('Y-m-d H:i:s');
     }
     /**
-     * You'd better use: (clone $dt)->modify(...)
+     * Creates a copy with a modified time.
      * @return static
      */
     public function modifyClone(string $modify = '')
     {
         $dolly = clone $this;
         return $modify ? $dolly->modify($modify) : $dolly;
-    }
-    private function handleErrors(string $value) : void
-    {
-        $errors = self::getLastErrors();
-        $errors = \array_merge($errors['errors'] ?? [], $errors['warnings'] ?? []);
-        if ($errors) {
-            \trigger_error(self::class . ': ' . \implode(', ', $errors) . " '{$value}'", \E_USER_WARNING);
-        }
     }
 }

@@ -6,8 +6,8 @@ namespace Rector\Symfony\Symfony61\Rector\StaticPropertyFetch;
 use PhpParser\Node;
 use PhpParser\Node\Expr\StaticPropertyFetch;
 use PHPStan\Reflection\ClassReflection;
-use Rector\Rector\AbstractRector;
-use Rector\Reflection\ReflectionResolver;
+use Rector\Core\Rector\AbstractRector;
+use Rector\Core\Reflection\ReflectionResolver;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -20,8 +20,9 @@ final class ErrorNamesPropertyToConstantRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\Core\Reflection\ReflectionResolver
      */
-    private ReflectionResolver $reflectionResolver;
+    private $reflectionResolver;
     public function __construct(ReflectionResolver $reflectionResolver)
     {
         $this->reflectionResolver = $reflectionResolver;
@@ -64,10 +65,10 @@ CODE_SAMPLE
         if (!$classReflection instanceof ClassReflection) {
             return null;
         }
-        if (!$classReflection->is('Symfony\\Component\\Validator\\Constraint')) {
+        if (!$classReflection->isSubclassOf('Symfony\\Component\\Validator\\Constraint')) {
             return null;
         }
-        if (!$this->isName($node->name, 'errorNames')) {
+        if (!$this->nodeNameResolver->isName($node->name, 'errorNames')) {
             return null;
         }
         $parentClass = $classReflection->getParentClass();

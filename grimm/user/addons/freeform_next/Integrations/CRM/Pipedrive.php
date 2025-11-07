@@ -11,7 +11,6 @@
 
 namespace Solspace\Addons\FreeformNext\Integrations\CRM;
 
-use Override;
 use Exception;
 use Psr\Http\Message\ResponseInterface;
 use GuzzleHttp\Client;
@@ -25,9 +24,9 @@ use Solspace\Addons\FreeformNext\Library\Logging\LoggerInterface;
 
 class Pipedrive extends AbstractCRMIntegration
 {
-    const SETTING_API_TOKEN = 'api_token';
-    const TITLE             = 'Pipedrive';
-    const LOG_CATEGORY      = 'Pipedrive';
+    public const SETTING_API_TOKEN = 'api_token';
+    public const TITLE             = 'Pipedrive';
+    public const LOG_CATEGORY      = 'Pipedrive';
 
     /**
      * Returns a list of additional settings for this integration
@@ -35,7 +34,6 @@ class Pipedrive extends AbstractCRMIntegration
      *
      * @return SettingBlueprint[]
      */
-    #[Override]
     public static function getSettingBlueprints(): array
     {
         return [
@@ -56,7 +54,7 @@ class Pipedrive extends AbstractCRMIntegration
      *
      * @return bool
      */
-    public function pushObject(array $keyValueList, $formFields = NULL): bool
+    public function pushObject(array $keyValueList, ?array$formFields = NULL): bool
     {
         $client = new Client();
 
@@ -113,7 +111,7 @@ class Pipedrive extends AbstractCRMIntegration
                 $request->setBody(json_encode($personFields));
                 $response = $request->send();
 
-                $json = json_decode((string) $response->getBody(true));
+                $json = json_decode($response->getBody(true));
                 if (isset($json->data->id)) {
                     $personId = $json->data->id;
                 }
@@ -142,7 +140,7 @@ class Pipedrive extends AbstractCRMIntegration
             $request->setBody(json_encode($dealFields));
             $response = $request->send();
 
-            $json   = json_decode((string) $response->getBody(true), false);
+            $json   = json_decode($response->getBody(true), false);
             $dealId = $json->data->id;
         } catch (BadResponseException $e) {
             $responseBody = $e->getResponse()->getBody(true);
@@ -232,7 +230,7 @@ class Pipedrive extends AbstractCRMIntegration
      *
      * @return FieldObject[]
      */
-    public function fetchFields(): array
+    public function fetchFields()
     {
         $endpoints = [
             'prsn' => 'personFields',
@@ -302,7 +300,7 @@ class Pipedrive extends AbstractCRMIntegration
                 }
 
                 if (
-                    preg_match('/[a-z0-9]{40}/i', (string) $fieldInfo->key)
+                    preg_match('/[a-z0-9]{40}/i', $fieldInfo->key)
                     || \in_array($fieldInfo->key, $allowedFields, true)
                 ) {
                     $fieldList[] = new FieldObject(
@@ -340,7 +338,7 @@ class Pipedrive extends AbstractCRMIntegration
     /**
      * A method that initiates the authentication
      */
-    public function initiateAuthentication()
+    public function initiateAuthentication(): void
     {
     }
 
@@ -356,7 +354,6 @@ class Pipedrive extends AbstractCRMIntegration
 
     /**
      * @param       $endpoint
-     * @param array $queryOptions
      *
      * @return ResponseInterface
      */

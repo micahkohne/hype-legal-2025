@@ -4,22 +4,22 @@ namespace Solspace\Addons\FreeformNext\Library\Composer\Components\Fields\Interf
 
 interface ExternalOptionsInterface extends OptionsInterface
 {
-    const SOURCE_CUSTOM     = 'custom';
-    const SOURCE_ENTRIES    = 'entries';
-    const SOURCE_CATEGORIES = 'categories';
-    const SOURCE_MEMBERS    = 'members';
-    const SOURCE_PREDEFINED = 'predefined';
+    public const SOURCE_CUSTOM     = 'custom';
+    public const SOURCE_ENTRIES    = 'entries';
+    public const SOURCE_CATEGORIES = 'categories';
+    public const SOURCE_MEMBERS    = 'members';
+    public const SOURCE_PREDEFINED = 'predefined';
 
-    const PREDEFINED_DAYS               = 'days';
-    const PREDEFINED_DAYS_OF_WEEK       = 'days_of_week';
-    const PREDEFINED_MONTHS             = 'months';
-    const PREDEFINED_NUMBERS            = 'numbers';
-    const PREDEFINED_YEARS              = 'years';
-    const PREDEFINED_PROVINCES          = 'provinces';
-    const PREDEFINED_STATES             = 'states';
-    const PREDEFINED_STATES_TERRITORIES = 'states_territories';
-    const PREDEFINED_COUNTRIES          = 'countries';
-    const PREDEFINED_LANGUAGES          = 'languages';
+    public const PREDEFINED_DAYS               = 'days';
+    public const PREDEFINED_DAYS_OF_WEEK       = 'days_of_week';
+    public const PREDEFINED_MONTHS             = 'months';
+    public const PREDEFINED_NUMBERS            = 'numbers';
+    public const PREDEFINED_YEARS              = 'years';
+    public const PREDEFINED_PROVINCES          = 'provinces';
+    public const PREDEFINED_STATES             = 'states';
+    public const PREDEFINED_STATES_TERRITORIES = 'states_territories';
+    public const PREDEFINED_COUNTRIES          = 'countries';
+    public const PREDEFINED_LANGUAGES          = 'languages';
 
     /**
      * Returns the option source

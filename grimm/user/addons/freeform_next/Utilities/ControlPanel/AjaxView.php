@@ -32,7 +32,7 @@ class AjaxView extends View
     /**
      * @return array
      */
-    public function compile(): array
+    public function compile()
     {
         $returnData = $this->variables;
 
@@ -51,9 +51,6 @@ class AjaxView extends View
         return !empty($this->errors);
     }
 
-    /**
-     * @param array $variables
-     */
     public function setVariables(array $variables): void
     {
         $this->variables = $variables;
@@ -61,11 +58,10 @@ class AjaxView extends View
 
     /**
      * @param string $key
-     * @param mixed  $value
      *
      * @return $this
      */
-    public function addVariable($key, $value): static
+    public function addVariable($key, mixed $value)
     {
         $this->variables[$key] = $value;
 
@@ -73,11 +69,9 @@ class AjaxView extends View
     }
 
     /**
-     * @param array $variables
-     *
      * @return $this
      */
-    public function addVariables(array $variables): static
+    public function addVariables(array $variables)
     {
         $this->variables = array_merge($this->variables, $variables);
 
@@ -89,7 +83,7 @@ class AjaxView extends View
      *
      * @return $this
      */
-    public function addError($message): static
+    public function addError($message)
     {
         if ($message === null) {
             return $this;
@@ -105,11 +99,9 @@ class AjaxView extends View
     }
 
     /**
-     * @param array $messages
-     *
      * @return $this
      */
-    public function addErrors(array $messages): static
+    public function addErrors(array $messages)
     {
         foreach ($messages as $message) {
             $this->addError($message);

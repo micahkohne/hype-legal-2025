@@ -11,7 +11,7 @@
 
 namespace Solspace\Addons\FreeformNext\Controllers;
 
-use ExpressionEngine\Library\CP\Table;
+use EllisLab\ExpressionEngine\Library\CP\Table;
 use ExpressionEngine\Service\Validation\Result;
 use Solspace\Addons\FreeformNext\Library\Exceptions\FreeformException;
 use Solspace\Addons\FreeformNext\Library\Helpers\ExtensionHelper;
@@ -70,8 +70,8 @@ class NotificationController extends Controller
                 'value' => $notification->id,
                 'data'  => [
                     'confirm' => lang('Notification') . ': <b>' . htmlentities(
-                            (string) $notification->name,
-                            ENT_QUOTES
+                            $notification->name,
+                            ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401, 'UTF-8'
                         ) . '</b>',
                 ],
             ];
@@ -143,13 +143,12 @@ class NotificationController extends Controller
     }
 
     /**
-     * @param null|int|string   $notificationId
-     * @param ?Result           $validation
+     * @param Result|null $validation
      *
      * @return CpView
      * @throws FreeformException
      */
-    public function edit(null|int|string $notificationId, ?Result $validation = null): RedirectView|CpView
+    public function edit(string $notificationId, ?Result $validation = null): RedirectView|CpView
     {
         $canAccessNotifications = $this->getPermissionsService()->canAccessNotifications(ee()->session->userdata('group_id'));
 
@@ -379,12 +378,9 @@ class NotificationController extends Controller
     }
 
     /**
-     * @param NotificationModel $model
-     * @param string            $template
-     *
      * @return string
      */
-    private function getFieldHtml(NotificationModel $model, string $template): string|false
+    private function getFieldHtml(NotificationModel $model, string $template): string|bool
     {
         ob_start();
         include PATH_THIRD . "freeform_next/Templates/notifications/{$template}.php";

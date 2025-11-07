@@ -1,167 +1,88 @@
 <?php
 
 declare (strict_types=1);
-namespace Rector\FileSystem;
+namespace Rector\Core\FileSystem;
 
-use RectorPrefix202507\Nette\Utils\FileSystem;
-use Rector\Caching\Detector\ChangedFilesDetector;
 use Rector\Caching\UnchangedFilesFilter;
-use Rector\Configuration\Option;
-use Rector\Configuration\Parameter\SimpleParameterProvider;
-use Rector\Skipper\Skipper\PathSkipper;
-use Rector\ValueObject\Configuration;
-use RectorPrefix202507\Symfony\Component\Finder\Finder;
+use Rector\Core\Util\StringUtils;
+use Rector\Skipper\SkipCriteriaResolver\SkippedPathsResolver;
+use RectorPrefix202308\Symfony\Component\Finder\Finder;
+use RectorPrefix202308\Symfony\Component\Finder\SplFileInfo;
 /**
- * @see \Rector\Tests\FileSystem\FilesFinder\FilesFinderTest
+ * @see \Rector\Core\Tests\FileSystem\FilesFinder\FilesFinderTest
  */
 final class FilesFinder
 {
     /**
      * @readonly
+     * @var \Rector\Core\FileSystem\FilesystemTweaker
      */
-    private \Rector\FileSystem\FilesystemTweaker $filesystemTweaker;
+    private $filesystemTweaker;
     /**
      * @readonly
+     * @var \Rector\Skipper\SkipCriteriaResolver\SkippedPathsResolver
      */
-    private UnchangedFilesFilter $unchangedFilesFilter;
+    private $skippedPathsResolver;
     /**
      * @readonly
+     * @var \Rector\Caching\UnchangedFilesFilter
      */
-    private \Rector\FileSystem\FileAndDirectoryFilter $fileAndDirectoryFilter;
+    private $unchangedFilesFilter;
     /**
      * @readonly
+     * @var \Rector\Core\FileSystem\FileAndDirectoryFilter
      */
-    private PathSkipper $pathSkipper;
-    /**
-     * @readonly
-     */
-    private \Rector\FileSystem\FilePathHelper $filePathHelper;
-    /**
-     * @readonly
-     */
-    private ChangedFilesDetector $changedFilesDetector;
-    public function __construct(\Rector\FileSystem\FilesystemTweaker $filesystemTweaker, UnchangedFilesFilter $unchangedFilesFilter, \Rector\FileSystem\FileAndDirectoryFilter $fileAndDirectoryFilter, PathSkipper $pathSkipper, \Rector\FileSystem\FilePathHelper $filePathHelper, ChangedFilesDetector $changedFilesDetector)
+    private $fileAndDirectoryFilter;
+    public function __construct(\Rector\Core\FileSystem\FilesystemTweaker $filesystemTweaker, SkippedPathsResolver $skippedPathsResolver, UnchangedFilesFilter $unchangedFilesFilter, \Rector\Core\FileSystem\FileAndDirectoryFilter $fileAndDirectoryFilter)
     {
         $this->filesystemTweaker = $filesystemTweaker;
+        $this->skippedPathsResolver = $skippedPathsResolver;
         $this->unchangedFilesFilter = $unchangedFilesFilter;
         $this->fileAndDirectoryFilter = $fileAndDirectoryFilter;
-        $this->pathSkipper = $pathSkipper;
-        $this->filePathHelper = $filePathHelper;
-        $this->changedFilesDetector = $changedFilesDetector;
     }
     /**
      * @param string[] $source
      * @param string[] $suffixes
      * @return string[]
      */
-    public function findInDirectoriesAndFiles(array $source, array $suffixes = [], bool $sortByName = \true, ?string $onlySuffix = null, bool $isKaizenEnabled = \false) : array
+    public function findInDirectoriesAndFiles(array $source, array $suffixes = [], bool $sortByName = \true) : array
     {
         $filesAndDirectories = $this->filesystemTweaker->resolveWithFnmatch($source);
-        // filtering files in files collection
-        $filteredFilePaths = $this->fileAndDirectoryFilter->filterFiles($filesAndDirectories);
-        $filteredFilePaths = \array_filter($filteredFilePaths, fn(string $filePath): bool => !$this->pathSkipper->shouldSkip($filePath));
-        // fallback append `.php` to be used for both $filteredFilePaths and $filteredFilePathsInDirectories
-        $hasOnlySuffix = $onlySuffix !== null && $onlySuffix !== '';
-        if ($hasOnlySuffix && \substr_compare($onlySuffix, '.php', -\strlen('.php')) !== 0) {
-            $onlySuffix .= '.php';
-        }
-        // filter files by specific suffix
-        if ($hasOnlySuffix) {
-            /** @var string $onlySuffix */
-            $fileWithSuffixFilter = static fn(string $filePath): bool => \substr_compare($filePath, $onlySuffix, -\strlen($onlySuffix)) === 0;
-        } elseif ($suffixes !== []) {
-            $fileWithSuffixFilter = static function (string $filePath) use($suffixes) : bool {
-                $filePathExtension = \pathinfo($filePath, \PATHINFO_EXTENSION);
-                return \in_array($filePathExtension, $suffixes, \true);
-            };
-        } else {
-            $fileWithSuffixFilter = fn(): bool => \true;
-        }
-        $filteredFilePaths = \array_filter($filteredFilePaths, $fileWithSuffixFilter === null ? fn($value, $key): bool => !empty($value) : $fileWithSuffixFilter, $fileWithSuffixFilter === null ? \ARRAY_FILTER_USE_BOTH : 0);
-        // add file without extension after file extension filter
-        $filteredFilePaths = \array_merge($filteredFilePaths, SimpleParameterProvider::provideArrayParameter(Option::FILES_WITHOUT_EXTENSION));
-        $filteredFilePaths = \array_filter($filteredFilePaths, function (string $file) : bool {
-            if ($this->isStartWithShortPHPTag(FileSystem::read($file))) {
-                SimpleParameterProvider::addParameter(Option::SKIPPED_START_WITH_SHORT_OPEN_TAG_FILES, $this->filePathHelper->relativePath($file));
-                return \false;
-            }
-            return \true;
-        });
-        // filtering files in directories collection
+        $filePaths = $this->fileAndDirectoryFilter->filterFiles($filesAndDirectories);
         $directories = $this->fileAndDirectoryFilter->filterDirectories($filesAndDirectories);
-        $filteredFilePathsInDirectories = $this->findInDirectories($directories, $suffixes, $hasOnlySuffix, $onlySuffix, $sortByName);
-        $filePaths = \array_merge($filteredFilePaths, $filteredFilePathsInDirectories);
-        $toBeChangedFiles = $this->unchangedFilesFilter->filterFilePaths($filePaths);
-        // no files to be changed, early return empty
-        if ($toBeChangedFiles === []) {
-            return [];
-        }
-        if ($isKaizenEnabled) {
-            // enforce clear cache, because there is probably another files that
-            // incrementally need to apply change on kaizen run
-            $this->changedFilesDetector->clear();
-            return \array_unique($filePaths);
-        }
-        return $toBeChangedFiles;
-    }
-    /**
-     * @param string[] $paths
-     * @return string[]
-     */
-    public function findFilesInPaths(array $paths, Configuration $configuration) : array
-    {
-        if ($configuration->shouldClearCache()) {
-            $this->changedFilesDetector->clear();
-        }
-        return $this->findInDirectoriesAndFiles($paths, $configuration->getFileExtensions(), \true, $configuration->getOnlySuffix(), $configuration->isKaizenEnabled());
-    }
-    /**
-     * Exclude short "<?=" tags as lead to invalid changes
-     */
-    private function isStartWithShortPHPTag(string $fileContent) : bool
-    {
-        return \strncmp(\ltrim($fileContent), '<?=', \strlen('<?=')) === 0;
+        $currentAndDependentFilePaths = $this->unchangedFilesFilter->filterFileInfos($filePaths);
+        return \array_merge($currentAndDependentFilePaths, $this->findInDirectories($directories, $suffixes, $sortByName));
     }
     /**
      * @param string[] $directories
      * @param string[] $suffixes
      * @return string[]
      */
-    private function findInDirectories(array $directories, array $suffixes, bool $hasOnlySuffix, ?string $onlySuffix = null, bool $sortByName = \true) : array
+    private function findInDirectories(array $directories, array $suffixes, bool $sortByName = \true) : array
     {
         if ($directories === []) {
             return [];
         }
         $finder = Finder::create()->files()->size('> 0')->in($directories);
-        // filter files by specific suffix
-        if ($hasOnlySuffix) {
-            $finder->name('*' . $onlySuffix);
-        } elseif ($suffixes !== []) {
-            $suffixesPattern = $this->normalizeSuffixesToPattern($suffixes);
-            $finder->name($suffixesPattern);
-        }
         if ($sortByName) {
             $finder->sortByName();
         }
+        if ($suffixes !== []) {
+            $suffixesPattern = $this->normalizeSuffixesToPattern($suffixes);
+            $finder->name($suffixesPattern);
+        }
+        $this->addFilterWithExcludedPaths($finder);
         $filePaths = [];
         foreach ($finder as $fileInfo) {
             // getRealPath() function will return false when it checks broken symlinks.
             // So we should check if this file exists or we got broken symlink
             /** @var string|false $path */
             $path = $fileInfo->getRealPath();
-            if ($path === \false) {
-                continue;
+            if ($path !== \false) {
+                $filePaths[] = $path;
             }
-            if ($this->pathSkipper->shouldSkip($path)) {
-                continue;
-            }
-            if ($this->isStartWithShortPHPTag($fileInfo->getContents())) {
-                SimpleParameterProvider::addParameter(Option::SKIPPED_START_WITH_SHORT_OPEN_TAG_FILES, $this->filePathHelper->relativePath($path));
-                continue;
-            }
-            $filePaths[] = $path;
         }
-        return $filePaths;
+        return $this->unchangedFilesFilter->filterFileInfos($filePaths);
     }
     /**
      * @param string[] $suffixes
@@ -170,5 +91,50 @@ final class FilesFinder
     {
         $suffixesPattern = \implode('|', $suffixes);
         return '#\\.(' . $suffixesPattern . ')$#';
+    }
+    private function addFilterWithExcludedPaths(Finder $finder) : void
+    {
+        $excludePaths = $this->skippedPathsResolver->resolve();
+        if ($excludePaths === []) {
+            return;
+        }
+        $finder->filter(function (SplFileInfo $splFileInfo) use($excludePaths) : bool {
+            /** @var string|false $realPath */
+            $realPath = $splFileInfo->getRealPath();
+            if ($realPath === \false) {
+                // dead symlink
+                return \false;
+            }
+            // make the path work accross different OSes
+            $realPath = \str_replace('\\', '/', $realPath);
+            // return false to remove file
+            foreach ($excludePaths as $excludePath) {
+                // make the path work accross different OSes
+                $excludePath = \str_replace('\\', '/', $excludePath);
+                if (\fnmatch($this->normalizeForFnmatch($excludePath), $realPath)) {
+                    return \false;
+                }
+                if (\strpos($excludePath, '**') !== \false) {
+                    // prevent matching a fnmatch pattern as a regex
+                    // which is a waste of resources
+                    continue;
+                }
+                if (StringUtils::isMatch($realPath, '#' . \preg_quote($excludePath, '#') . '#')) {
+                    return \false;
+                }
+            }
+            return \true;
+        });
+    }
+    /**
+     * "value*" → "*value*"
+     * "*value" → "*value*"
+     */
+    private function normalizeForFnmatch(string $path) : string
+    {
+        if (\substr_compare($path, '*', -\strlen('*')) === 0 || \strncmp($path, '*', \strlen('*')) === 0) {
+            return '*' . \trim($path, '*') . '*';
+        }
+        return $path;
     }
 }

@@ -8,10 +8,10 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-namespace RectorPrefix202507\Symfony\Component\Console\Input;
+namespace RectorPrefix202308\Symfony\Component\Console\Input;
 
-use RectorPrefix202507\Symfony\Component\Console\Exception\InvalidArgumentException;
-use RectorPrefix202507\Symfony\Component\Console\Exception\InvalidOptionException;
+use RectorPrefix202308\Symfony\Component\Console\Exception\InvalidArgumentException;
+use RectorPrefix202308\Symfony\Component\Console\Exception\InvalidOptionException;
 /**
  * ArrayInput represents an input provided as an array.
  *
@@ -23,8 +23,11 @@ use RectorPrefix202507\Symfony\Component\Console\Exception\InvalidOptionExceptio
  */
 class ArrayInput extends Input
 {
-    private array $parameters;
-    public function __construct(array $parameters, ?InputDefinition $definition = null)
+    /**
+     * @var mixed[]
+     */
+    private $parameters;
+    public function __construct(array $parameters, InputDefinition $definition = null)
     {
         $this->parameters = $parameters;
         parent::__construct($definition);

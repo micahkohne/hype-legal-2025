@@ -4,55 +4,74 @@ declare (strict_types=1);
 namespace Rector\CodeQuality\Rector\Class_;
 
 use PhpParser\Node;
-use PhpParser\Node\Name\FullyQualified;
 use PhpParser\Node\Stmt\Class_;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ReflectionProvider;
+use PHPStan\Type\ObjectType;
+use PHPStan\Type\Type;
+use Rector\CodeQuality\NodeAnalyzer\ClassLikeAnalyzer;
 use Rector\CodeQuality\NodeAnalyzer\LocalPropertyAnalyzer;
-use Rector\CodeQuality\NodeAnalyzer\MissingPropertiesResolver;
 use Rector\CodeQuality\NodeFactory\MissingPropertiesFactory;
-use Rector\NodeAnalyzer\ClassAnalyzer;
+use Rector\Core\NodeAnalyzer\ClassAnalyzer;
+use Rector\Core\NodeAnalyzer\PropertyPresenceChecker;
+use Rector\Core\Rector\AbstractRector;
 use Rector\Php80\NodeAnalyzer\PhpAttributeAnalyzer;
-use Rector\Rector\AbstractRector;
+use Rector\PostRector\ValueObject\PropertyMetadata;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
+ * @changelog https://3v4l.org/GL6II
+ * @changelog https://3v4l.org/eTrhZ
+ * @changelog https://3v4l.org/C554W
+ *
  * @see \Rector\Tests\CodeQuality\Rector\Class_\CompleteDynamicPropertiesRector\CompleteDynamicPropertiesRectorTest
  */
 final class CompleteDynamicPropertiesRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\CodeQuality\NodeFactory\MissingPropertiesFactory
      */
-    private MissingPropertiesFactory $missingPropertiesFactory;
+    private $missingPropertiesFactory;
     /**
      * @readonly
+     * @var \Rector\CodeQuality\NodeAnalyzer\LocalPropertyAnalyzer
      */
-    private LocalPropertyAnalyzer $localPropertyAnalyzer;
+    private $localPropertyAnalyzer;
     /**
      * @readonly
+     * @var \Rector\CodeQuality\NodeAnalyzer\ClassLikeAnalyzer
      */
-    private ReflectionProvider $reflectionProvider;
+    private $classLikeAnalyzer;
     /**
      * @readonly
+     * @var \PHPStan\Reflection\ReflectionProvider
      */
-    private ClassAnalyzer $classAnalyzer;
+    private $reflectionProvider;
     /**
      * @readonly
+     * @var \Rector\Core\NodeAnalyzer\ClassAnalyzer
      */
-    private PhpAttributeAnalyzer $phpAttributeAnalyzer;
+    private $classAnalyzer;
     /**
      * @readonly
+     * @var \Rector\Core\NodeAnalyzer\PropertyPresenceChecker
      */
-    private MissingPropertiesResolver $missingPropertiesResolver;
-    public function __construct(MissingPropertiesFactory $missingPropertiesFactory, LocalPropertyAnalyzer $localPropertyAnalyzer, ReflectionProvider $reflectionProvider, ClassAnalyzer $classAnalyzer, PhpAttributeAnalyzer $phpAttributeAnalyzer, MissingPropertiesResolver $missingPropertiesResolver)
+    private $propertyPresenceChecker;
+    /**
+     * @readonly
+     * @var \Rector\Php80\NodeAnalyzer\PhpAttributeAnalyzer
+     */
+    private $phpAttributeAnalyzer;
+    public function __construct(MissingPropertiesFactory $missingPropertiesFactory, LocalPropertyAnalyzer $localPropertyAnalyzer, ClassLikeAnalyzer $classLikeAnalyzer, ReflectionProvider $reflectionProvider, ClassAnalyzer $classAnalyzer, PropertyPresenceChecker $propertyPresenceChecker, PhpAttributeAnalyzer $phpAttributeAnalyzer)
     {
         $this->missingPropertiesFactory = $missingPropertiesFactory;
         $this->localPropertyAnalyzer = $localPropertyAnalyzer;
+        $this->classLikeAnalyzer = $classLikeAnalyzer;
         $this->reflectionProvider = $reflectionProvider;
         $this->classAnalyzer = $classAnalyzer;
+        $this->propertyPresenceChecker = $propertyPresenceChecker;
         $this->phpAttributeAnalyzer = $phpAttributeAnalyzer;
-        $this->missingPropertiesResolver = $missingPropertiesResolver;
     }
     public function getRuleDefinition() : RuleDefinition
     {
@@ -96,14 +115,22 @@ CODE_SAMPLE
         if ($this->shouldSkipClass($node)) {
             return null;
         }
-        $classReflection = $this->matchClassReflection($node);
-        if (!$classReflection instanceof ClassReflection) {
+        $className = $this->getName($node);
+        if ($className === null) {
             return null;
         }
+        if (!$this->reflectionProvider->hasClass($className)) {
+            return null;
+        }
+        $classReflection = $this->reflectionProvider->getClass($className);
         // special case for Laravel Collection macro magic
-        $definedLocalPropertiesWithTypes = $this->localPropertyAnalyzer->resolveFetchedPropertiesToTypesFromClass($node);
-        $propertiesToComplete = $this->missingPropertiesResolver->resolve($node, $classReflection, $definedLocalPropertiesWithTypes);
-        $newProperties = $this->missingPropertiesFactory->create($propertiesToComplete);
+        $fetchedLocalPropertyNameToTypes = $this->localPropertyAnalyzer->resolveFetchedPropertiesToTypesFromClass($node);
+        $propertiesToComplete = $this->resolvePropertiesToComplete($node, $fetchedLocalPropertyNameToTypes);
+        if ($propertiesToComplete === []) {
+            return null;
+        }
+        $propertiesToComplete = $this->filterOutExistingProperties($node, $classReflection, $propertiesToComplete);
+        $newProperties = $this->missingPropertiesFactory->create($fetchedLocalPropertyNameToTypes, $propertiesToComplete);
         if ($newProperties === []) {
             return null;
         }
@@ -115,11 +142,10 @@ CODE_SAMPLE
         if ($this->classAnalyzer->isAnonymousClass($class)) {
             return \true;
         }
-        $className = (string) $this->getName($class);
+        $className = (string) $this->nodeNameResolver->getName($class);
         if (!$this->reflectionProvider->hasClass($className)) {
             return \true;
         }
-        // dynamic property on purpose
         if ($this->phpAttributeAnalyzer->hasPhpAttribute($class, 'AllowDynamicProperties')) {
             return \true;
         }
@@ -128,20 +154,39 @@ CODE_SAMPLE
         if ($classReflection->hasMethod('__set')) {
             return \true;
         }
-        if ($classReflection->hasMethod('__get')) {
-            return \true;
-        }
-        return $class->extends instanceof FullyQualified && !$this->reflectionProvider->hasClass($class->extends->toString());
+        return $classReflection->hasMethod('__get');
     }
-    private function matchClassReflection(Class_ $class) : ?ClassReflection
+    /**
+     * @param array<string, Type> $fetchedLocalPropertyNameToTypes
+     * @return string[]
+     */
+    private function resolvePropertiesToComplete(Class_ $class, array $fetchedLocalPropertyNameToTypes) : array
     {
-        $className = $this->getName($class);
-        if ($className === null) {
-            return null;
+        $propertyNames = $this->classLikeAnalyzer->resolvePropertyNames($class);
+        /** @var string[] $fetchedLocalPropertyNames */
+        $fetchedLocalPropertyNames = \array_keys($fetchedLocalPropertyNameToTypes);
+        return \array_diff($fetchedLocalPropertyNames, $propertyNames);
+    }
+    /**
+     * @param string[] $propertiesToComplete
+     * @return string[]
+     */
+    private function filterOutExistingProperties(Class_ $class, ClassReflection $classReflection, array $propertiesToComplete) : array
+    {
+        $missingPropertyNames = [];
+        $className = $classReflection->getName();
+        // remove other properties that are accessible from this scope
+        foreach ($propertiesToComplete as $propertyToComplete) {
+            if ($classReflection->hasProperty($propertyToComplete)) {
+                continue;
+            }
+            $propertyMetadata = new PropertyMetadata($propertyToComplete, new ObjectType($className));
+            $hasClassContextProperty = $this->propertyPresenceChecker->hasClassContextProperty($class, $propertyMetadata);
+            if ($hasClassContextProperty) {
+                continue;
+            }
+            $missingPropertyNames[] = $propertyToComplete;
         }
-        if (!$this->reflectionProvider->hasClass($className)) {
-            return null;
-        }
-        return $this->reflectionProvider->getClass($className);
+        return $missingPropertyNames;
     }
 }

@@ -16,22 +16,19 @@ use Solspace\Addons\FreeformNext\Library\Translations\TranslatorInterface;
 
 abstract class AbstractProperties
 {
-    const TYPE_STRING  = 'string';
-    const TYPE_BOOLEAN = 'boolean';
-    const TYPE_INTEGER = 'integer';
-    const TYPE_ARRAY   = 'array';
-    const TYPE_OBJECT  = 'object';
+    public const TYPE_STRING  = 'string';
+    public const TYPE_BOOLEAN = 'boolean';
+    public const TYPE_INTEGER = 'integer';
+    public const TYPE_ARRAY   = 'array';
+    public const TYPE_OBJECT  = 'object';
 
     /** @var string */
     protected $type;
 
     /**
      * AbstractProperties constructor.
-     *
-     * @param array               $properties
-     * @param TranslatorInterface $translator
      */
-    public final function __construct(array $properties, private readonly TranslatorInterface $translator)
+    public final function __construct(array $properties, private TranslatorInterface $translator)
     {
         $this->validateAndSetProperties($properties);
     }
@@ -63,11 +60,9 @@ abstract class AbstractProperties
     protected abstract function getPropertyManifest();
 
     /**
-     * @param array $properties
-     *
      * @throws ComposerException
      */
-    private function validateAndSetProperties(array $properties): void
+    private function validateAndSetProperties(array $properties)
     {
         $manifest = $this->getPropertyManifest();
 
@@ -79,11 +74,11 @@ abstract class AbstractProperties
                 continue;
             }
 
-            $expectedType = strtolower((string) $manifest[$key]);
+            $expectedType = strtolower($manifest[$key]);
             switch ($expectedType) {
                 case self::TYPE_BOOLEAN:
                     if (!\is_bool($value)) {
-                        $value = \in_array(strtolower((string) $value), ['1', 1, 'true'], true) ? true : false;
+                        $value = \in_array(strtolower($value), ['1', 1, 'true'], true) ? true : false;
                     }
 
                     break;

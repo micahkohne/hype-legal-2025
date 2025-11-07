@@ -7,94 +7,59 @@ use PhpParser\Comment\Doc;
 use PhpParser\Node;
 use PhpParser\Node\Expr\Assign;
 use PhpParser\Node\Expr\AssignOp;
-use PhpParser\Node\Expr\Ternary;
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\Expression;
 use PhpParser\Node\Stmt\Return_;
 use PHPStan\Type\MixedType;
-use Rector\BetterPhpDocParser\PhpDocInfo\PhpDocInfoFactory;
-use Rector\Contract\PhpParser\Node\StmtsAwareInterface;
-use Rector\Contract\Rector\ConfigurableRectorInterface;
-use Rector\NodeAnalyzer\CallAnalyzer;
-use Rector\NodeAnalyzer\VariableAnalyzer;
+use Rector\Core\Contract\PhpParser\Node\StmtsAwareInterface;
+use Rector\Core\NodeAnalyzer\CallAnalyzer;
+use Rector\Core\NodeAnalyzer\VariableAnalyzer;
+use Rector\Core\PhpParser\Node\AssignAndBinaryMap;
+use Rector\Core\Rector\AbstractRector;
 use Rector\NodeTypeResolver\Node\AttributeKey;
-use Rector\PhpParser\Node\AssignAndBinaryMap;
-use Rector\Rector\AbstractRector;
-use Symplify\RuleDocGenerator\ValueObject\CodeSample\ConfiguredCodeSample;
+use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
  * @see \Rector\Tests\CodeQuality\Rector\FunctionLike\SimplifyUselessVariableRector\SimplifyUselessVariableRectorTest
  */
-final class SimplifyUselessVariableRector extends AbstractRector implements ConfigurableRectorInterface
+final class SimplifyUselessVariableRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\Core\PhpParser\Node\AssignAndBinaryMap
      */
-    private AssignAndBinaryMap $assignAndBinaryMap;
+    private $assignAndBinaryMap;
     /**
      * @readonly
+     * @var \Rector\Core\NodeAnalyzer\VariableAnalyzer
      */
-    private VariableAnalyzer $variableAnalyzer;
+    private $variableAnalyzer;
     /**
      * @readonly
+     * @var \Rector\Core\NodeAnalyzer\CallAnalyzer
      */
-    private CallAnalyzer $callAnalyzer;
-    /**
-     * @readonly
-     */
-    private PhpDocInfoFactory $phpDocInfoFactory;
-    /**
-     * @api
-     * @var string
-     */
-    public const ONLY_DIRECT_ASSIGN = 'only_direct_assign';
-    private bool $onlyDirectAssign = \false;
-    public function __construct(AssignAndBinaryMap $assignAndBinaryMap, VariableAnalyzer $variableAnalyzer, CallAnalyzer $callAnalyzer, PhpDocInfoFactory $phpDocInfoFactory)
+    private $callAnalyzer;
+    public function __construct(AssignAndBinaryMap $assignAndBinaryMap, VariableAnalyzer $variableAnalyzer, CallAnalyzer $callAnalyzer)
     {
         $this->assignAndBinaryMap = $assignAndBinaryMap;
         $this->variableAnalyzer = $variableAnalyzer;
         $this->callAnalyzer = $callAnalyzer;
-        $this->phpDocInfoFactory = $phpDocInfoFactory;
-    }
-    public function configure(array $configuration) : void
-    {
-        $this->onlyDirectAssign = $configuration[self::ONLY_DIRECT_ASSIGN] ?? \false;
     }
     public function getRuleDefinition() : RuleDefinition
     {
-        return new RuleDefinition('Remove useless variable assigns', [new ConfiguredCodeSample(
-            <<<'CODE_SAMPLE'
+        return new RuleDefinition('Removes useless variable assigns', [new CodeSample(<<<'CODE_SAMPLE'
 function () {
     $a = true;
     return $a;
 };
 CODE_SAMPLE
-,
-            <<<'CODE_SAMPLE'
+, <<<'CODE_SAMPLE'
 function () {
     return true;
 };
 CODE_SAMPLE
-,
-            // default
-            [self::ONLY_DIRECT_ASSIGN => \true]
-        ), new ConfiguredCodeSample(<<<'CODE_SAMPLE'
-function () {
-    $a = 'Hello, ';
-    $a .= 'World!';
-
-    return $a;
-};
-CODE_SAMPLE
-, <<<'CODE_SAMPLE'
-function () {
-    $a = 'Hello, ';
-
-    return $a . 'World!';
-};
-CODE_SAMPLE
-, [self::ONLY_DIRECT_ASSIGN => \false])]);
+)]);
     }
     /**
      * @return array<class-string<Node>>
@@ -167,12 +132,6 @@ CODE_SAMPLE
         // is variable part of single assign
         $previousNode = $previousStmt->expr;
         if (!$previousNode instanceof AssignOp && !$previousNode instanceof Assign) {
-            return \true;
-        }
-        if ($this->onlyDirectAssign && $previousNode instanceof AssignOp) {
-            return \true;
-        }
-        if ($previousNode instanceof AssignOp && $previousNode->expr instanceof Ternary) {
             return \true;
         }
         $variable = $return->expr;

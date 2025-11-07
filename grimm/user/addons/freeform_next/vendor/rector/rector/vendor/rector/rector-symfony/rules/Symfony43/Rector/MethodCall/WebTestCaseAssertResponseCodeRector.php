@@ -8,11 +8,9 @@ use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\StaticCall;
 use PHPStan\Type\ObjectType;
-use Rector\NodeAnalyzer\ExprAnalyzer;
-use Rector\PhpParser\Node\Value\ValueResolver;
+use Rector\Core\NodeAnalyzer\ExprAnalyzer;
+use Rector\Core\Rector\AbstractRector;
 use Rector\PHPUnit\NodeAnalyzer\TestsNodeAnalyzer;
-use Rector\Rector\AbstractRector;
-use Rector\Symfony\CodeQuality\Enum\ResponseClass;
 use Rector\Symfony\NodeAnalyzer\SymfonyTestCaseAnalyzer;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
@@ -26,26 +24,24 @@ final class WebTestCaseAssertResponseCodeRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\Symfony\NodeAnalyzer\SymfonyTestCaseAnalyzer
      */
-    private SymfonyTestCaseAnalyzer $symfonyTestCaseAnalyzer;
+    private $symfonyTestCaseAnalyzer;
     /**
      * @readonly
+     * @var \Rector\PHPUnit\NodeAnalyzer\TestsNodeAnalyzer
      */
-    private TestsNodeAnalyzer $testsNodeAnalyzer;
+    private $testsNodeAnalyzer;
     /**
      * @readonly
+     * @var \Rector\Core\NodeAnalyzer\ExprAnalyzer
      */
-    private ExprAnalyzer $exprAnalyzer;
-    /**
-     * @readonly
-     */
-    private ValueResolver $valueResolver;
-    public function __construct(SymfonyTestCaseAnalyzer $symfonyTestCaseAnalyzer, TestsNodeAnalyzer $testsNodeAnalyzer, ExprAnalyzer $exprAnalyzer, ValueResolver $valueResolver)
+    private $exprAnalyzer;
+    public function __construct(SymfonyTestCaseAnalyzer $symfonyTestCaseAnalyzer, TestsNodeAnalyzer $testsNodeAnalyzer, ExprAnalyzer $exprAnalyzer)
     {
         $this->symfonyTestCaseAnalyzer = $symfonyTestCaseAnalyzer;
         $this->testsNodeAnalyzer = $testsNodeAnalyzer;
         $this->exprAnalyzer = $exprAnalyzer;
-        $this->valueResolver = $valueResolver;
     }
     public function getRuleDefinition() : RuleDefinition
     {
@@ -131,11 +127,11 @@ CODE_SAMPLE
             return null;
         }
         $nestedMethodCall = $secondArg->value;
-        if (!$this->isName($nestedMethodCall->name, 'getStatusCode')) {
+        if (!$this->nodeNameResolver->isName($nestedMethodCall->name, 'getStatusCode')) {
             return null;
         }
         // caller must be a response object
-        if (!$this->isObjectType($nestedMethodCall->var, new ObjectType(ResponseClass::BASIC))) {
+        if (!$this->isObjectType($nestedMethodCall->var, new ObjectType('Symfony\\Component\\HttpFoundation\\Response'))) {
             return null;
         }
         $statusCode = $this->valueResolver->getValue($args[0]->value, \true);

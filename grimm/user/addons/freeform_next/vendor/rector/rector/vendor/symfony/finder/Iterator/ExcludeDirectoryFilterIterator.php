@@ -8,9 +8,9 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-namespace RectorPrefix202507\Symfony\Component\Finder\Iterator;
+namespace RectorPrefix202308\Symfony\Component\Finder\Iterator;
 
-use RectorPrefix202507\Symfony\Component\Finder\SplFileInfo;
+use RectorPrefix202308\Symfony\Component\Finder\SplFileInfo;
 /**
  * ExcludeDirectoryFilterIterator filters out directories.
  *
@@ -23,16 +23,22 @@ use RectorPrefix202507\Symfony\Component\Finder\SplFileInfo;
 class ExcludeDirectoryFilterIterator extends \FilterIterator implements \RecursiveIterator
 {
     /** @var \Iterator<string, SplFileInfo> */
-    private \Iterator $iterator;
-    private bool $isRecursive;
-    /** @var array<string, true> */
-    private array $excludedDirs = [];
-    private ?string $excludedPattern = null;
-    /** @var list<callable(SplFileInfo):bool> */
-    private array $pruneFilters = [];
+    private $iterator;
     /**
-     * @param \Iterator<string, SplFileInfo>          $iterator    The Iterator to filter
-     * @param list<string|callable(SplFileInfo):bool> $directories An array of directories to exclude
+     * @var bool
+     */
+    private $isRecursive;
+    /**
+     * @var mixed[]
+     */
+    private $excludedDirs = [];
+    /**
+     * @var string|null
+     */
+    private $excludedPattern;
+    /**
+     * @param \Iterator<string, SplFileInfo> $iterator    The Iterator to filter
+     * @param string[]                       $directories An array of directories to exclude
      */
     public function __construct(\Iterator $iterator, array $directories)
     {
@@ -40,13 +46,6 @@ class ExcludeDirectoryFilterIterator extends \FilterIterator implements \Recursi
         $this->isRecursive = $iterator instanceof \RecursiveIterator;
         $patterns = [];
         foreach ($directories as $directory) {
-            if (!\is_string($directory)) {
-                if (!\is_callable($directory)) {
-                    throw new \InvalidArgumentException('Invalid PHP callback.');
-                }
-                $this->pruneFilters[] = $directory;
-                continue;
-            }
             $directory = \rtrim($directory, '/');
             if (!$this->isRecursive || \strpos($directory, '/') !== \false) {
                 $patterns[] = \preg_quote($directory, '#');
@@ -71,13 +70,6 @@ class ExcludeDirectoryFilterIterator extends \FilterIterator implements \Recursi
             $path = $this->isDir() ? $this->current()->getRelativePathname() : $this->current()->getRelativePath();
             $path = \str_replace('\\', '/', $path);
             return !\preg_match($this->excludedPattern, $path);
-        }
-        if ($this->pruneFilters && $this->hasChildren()) {
-            foreach ($this->pruneFilters as $pruneFilter) {
-                if (!$pruneFilter($this->current())) {
-                    return \false;
-                }
-            }
         }
         return \true;
     }

@@ -7,7 +7,6 @@ use PhpParser\Node;
 use PhpParser\Node\Arg;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Assign;
-use PhpParser\Node\Expr\BinaryOp\BooleanOr;
 use PhpParser\Node\Expr\CallLike;
 use PhpParser\Node\Expr\Cast\Array_;
 use PhpParser\Node\Expr\FuncCall;
@@ -17,18 +16,16 @@ use PhpParser\Node\Expr\NullsafeMethodCall;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Name;
-use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\Echo_;
 use PhpParser\Node\Stmt\Expression;
-use PhpParser\Node\Stmt\If_;
 use PhpParser\Node\Stmt\Return_;
 use PhpParser\Node\Stmt\Switch_;
 use PHPStan\Analyser\Scope;
-use Rector\Contract\PhpParser\Node\StmtsAwareInterface;
+use Rector\Core\Contract\PhpParser\Node\StmtsAwareInterface;
+use Rector\Core\Rector\AbstractRector;
 use Rector\Naming\Naming\VariableNaming;
 use Rector\NodeAnalyzer\ExprInTopStmtMatcher;
 use Rector\NodeTypeResolver\Node\AttributeKey;
-use Rector\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -40,12 +37,14 @@ final class DowngradeArrayKeyFirstLastRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\Naming\Naming\VariableNaming
      */
-    private VariableNaming $variableNaming;
+    private $variableNaming;
     /**
      * @readonly
+     * @var \Rector\NodeAnalyzer\ExprInTopStmtMatcher
      */
-    private ExprInTopStmtMatcher $exprInTopStmtMatcher;
+    private $exprInTopStmtMatcher;
     public function __construct(VariableNaming $variableNaming, ExprInTopStmtMatcher $exprInTopStmtMatcher)
     {
         $this->variableNaming = $variableNaming;
@@ -111,9 +110,9 @@ CODE_SAMPLE
     {
         /** @var MethodCall|FuncCall|StaticCall|New_|NullsafeMethodCall $callLike */
         if ($callLike instanceof New_) {
-            $variableName = (string) $this->getName($callLike->class);
+            $variableName = (string) $this->nodeNameResolver->getName($callLike->class);
         } else {
-            $variableName = (string) $this->getName($callLike->name);
+            $variableName = (string) $this->nodeNameResolver->getName($callLike->name);
         }
         if ($variableName === '') {
             $variableName = 'array';
@@ -122,7 +121,7 @@ CODE_SAMPLE
     }
     /**
      * @return Node[]|null
-     * @param \Rector\Contract\PhpParser\Node\StmtsAwareInterface|\PhpParser\Node\Stmt\Switch_|\PhpParser\Node\Stmt\Return_|\PhpParser\Node\Stmt\Expression|\PhpParser\Node\Stmt\Echo_ $stmt
+     * @param \Rector\Core\Contract\PhpParser\Node\StmtsAwareInterface|\PhpParser\Node\Stmt\Switch_|\PhpParser\Node\Stmt\Return_|\PhpParser\Node\Stmt\Expression|\PhpParser\Node\Stmt\Echo_ $stmt
      */
     private function refactorArrayKeyFirst(FuncCall $funcCall, $stmt) : ?array
     {
@@ -141,18 +140,19 @@ CODE_SAMPLE
             $newStmts[] = new Expression(new Assign($array, $originalArray));
         }
         $resetFuncCall = $this->nodeFactory->createFuncCall('reset', [$array]);
-        $newStmts[] = $this->resolvePrependNewStmt($array, $resetFuncCall, $stmt);
+        $resetFuncCallExpression = new Expression($resetFuncCall);
         $funcCall->name = new Name('key');
         if ($originalArray !== $array) {
             $firstArg = $args[0];
             $firstArg->value = $array;
         }
+        $newStmts[] = $resetFuncCallExpression;
         $newStmts[] = $stmt;
         return $newStmts;
     }
     /**
      * @return Node[]|null
-     * @param \Rector\Contract\PhpParser\Node\StmtsAwareInterface|\PhpParser\Node\Stmt\Switch_|\PhpParser\Node\Stmt\Return_|\PhpParser\Node\Stmt\Expression|\PhpParser\Node\Stmt\Echo_ $stmt
+     * @param \Rector\Core\Contract\PhpParser\Node\StmtsAwareInterface|\PhpParser\Node\Stmt\Switch_|\PhpParser\Node\Stmt\Return_|\PhpParser\Node\Stmt\Expression|\PhpParser\Node\Stmt\Echo_ $stmt
      */
     private function refactorArrayKeyLast(FuncCall $funcCall, $stmt) : ?array
     {
@@ -172,33 +172,14 @@ CODE_SAMPLE
             $newStmts[] = new Expression(new Assign($array, $originalArray));
         }
         $endFuncCall = $this->nodeFactory->createFuncCall('end', [$array]);
-        $newStmts[] = $this->resolvePrependNewStmt($array, $endFuncCall, $stmt);
+        $endFuncCallExpression = new Expression($endFuncCall);
+        $newStmts[] = $endFuncCallExpression;
         $funcCall->name = new Name('key');
         if ($originalArray !== $array) {
             $firstArg->value = $array;
         }
         $newStmts[] = $stmt;
-        $resetExpression = new Expression($this->nodeFactory->createFuncCall('reset', [$array]));
-        if ($stmt instanceof StmtsAwareInterface) {
-            $stmt->stmts = \array_merge([$resetExpression], $stmt->stmts);
-        } elseif (!$stmt instanceof Return_) {
-            $newStmts[] = $resetExpression;
-        }
         return $newStmts;
-    }
-    /**
-     * @param \PhpParser\Node\Expr|\PhpParser\Node\Expr\Variable $array
-     * @param \PhpParser\Node\Stmt|\Rector\Contract\PhpParser\Node\StmtsAwareInterface $stmt
-     * @return \PhpParser\Node\Stmt\Expression|\PhpParser\Node\Stmt\If_
-     */
-    private function resolvePrependNewStmt($array, FuncCall $funcCall, $stmt)
-    {
-        if (!$stmt instanceof If_ || $stmt->cond instanceof FuncCall || !$stmt->cond instanceof BooleanOr) {
-            return new Expression($funcCall);
-        }
-        $if = new If_($this->nodeFactory->createFuncCall('is_array', [$array]));
-        $if->stmts[] = new Expression($funcCall);
-        return $if;
     }
     /**
      * @return \PhpParser\Node\Expr|\PhpParser\Node\Expr\Variable
@@ -212,7 +193,7 @@ CODE_SAMPLE
             return $this->resolveCastedArray($expr->expr);
         }
         $scope = $expr->getAttribute(AttributeKey::SCOPE);
-        $variableName = $this->variableNaming->createCountedValueName((string) $this->getName($expr->expr), $scope);
+        $variableName = $this->variableNaming->createCountedValueName((string) $this->nodeNameResolver->getName($expr->expr), $scope);
         return new Variable($variableName);
     }
 }

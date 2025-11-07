@@ -5,21 +5,24 @@ namespace Rector\CodingStyle\Rector\ClassConst;
 
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Class_;
+use Rector\Core\Rector\AbstractRector;
+use Rector\Core\ValueObject\PhpVersionFeature;
 use Rector\Privatization\NodeManipulator\VisibilityManipulator;
-use Rector\Rector\AbstractRector;
-use Rector\ValueObject\PhpVersionFeature;
 use Rector\VersionBonding\Contract\MinPhpVersionInterface;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
+ * @changelog https://php.watch/versions/8.1/final-class-const
+ *
  * @see \Rector\Tests\CodingStyle\Rector\ClassConst\RemoveFinalFromConstRector\RemoveFinalFromConstRectorTest
  */
 final class RemoveFinalFromConstRector extends AbstractRector implements MinPhpVersionInterface
 {
     /**
      * @readonly
+     * @var \Rector\Privatization\NodeManipulator\VisibilityManipulator
      */
-    private VisibilityManipulator $visibilityManipulator;
+    private $visibilityManipulator;
     public function __construct(VisibilityManipulator $visibilityManipulator)
     {
         $this->visibilityManipulator = $visibilityManipulator;
@@ -56,11 +59,11 @@ CODE_SAMPLE
             return null;
         }
         $hasChanged = \false;
-        foreach ($node->getConstants() as $constant) {
-            if (!$constant->isFinal()) {
+        foreach ($node->getConstants() as $classConst) {
+            if (!$classConst->isFinal()) {
                 continue;
             }
-            $this->visibilityManipulator->removeFinal($constant);
+            $this->visibilityManipulator->removeFinal($classConst);
             $hasChanged = \true;
         }
         if ($hasChanged) {

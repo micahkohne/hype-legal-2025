@@ -3,7 +3,6 @@
 declare (strict_types=1);
 namespace Rector\Naming\Naming;
 
-use DateTimeInterface;
 use PhpParser\Node\Expr\Assign;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\MethodCall;
@@ -14,6 +13,7 @@ use PhpParser\Node\Name;
 use PhpParser\Node\Param;
 use PhpParser\Node\UnionType;
 use PHPStan\Type\ArrayType;
+use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use Rector\Naming\ExpectedNameResolver\MatchParamTypeExpectedNameResolver;
@@ -26,20 +26,24 @@ final class ExpectedNameResolver
 {
     /**
      * @readonly
+     * @var \Rector\NodeNameResolver\NodeNameResolver
      */
-    private NodeNameResolver $nodeNameResolver;
+    private $nodeNameResolver;
     /**
      * @readonly
+     * @var \Rector\NodeTypeResolver\NodeTypeResolver
      */
-    private NodeTypeResolver $nodeTypeResolver;
+    private $nodeTypeResolver;
     /**
      * @readonly
+     * @var \Rector\Naming\Naming\PropertyNaming
      */
-    private \Rector\Naming\Naming\PropertyNaming $propertyNaming;
+    private $propertyNaming;
     /**
      * @readonly
+     * @var \Rector\Naming\ExpectedNameResolver\MatchParamTypeExpectedNameResolver
      */
-    private MatchParamTypeExpectedNameResolver $matchParamTypeExpectedNameResolver;
+    private $matchParamTypeExpectedNameResolver;
     public function __construct(NodeNameResolver $nodeNameResolver, NodeTypeResolver $nodeTypeResolver, \Rector\Naming\Naming\PropertyNaming $propertyNaming, MatchParamTypeExpectedNameResolver $matchParamTypeExpectedNameResolver)
     {
         $this->nodeNameResolver = $nodeNameResolver;
@@ -58,7 +62,10 @@ final class ExpectedNameResolver
         }
         /** @var string $currentName */
         $currentName = $this->nodeNameResolver->getName($param->var);
-        if ($currentName === $expectedName || \substr_compare($currentName, \ucfirst($expectedName), -\strlen(\ucfirst($expectedName))) === 0) {
+        if ($currentName === $expectedName) {
+            return null;
+        }
+        if ($this->nodeNameResolver->endsWith($currentName, $expectedName)) {
             return null;
         }
         return $expectedName;
@@ -90,9 +97,6 @@ final class ExpectedNameResolver
         }
         $className = $this->nodeNameResolver->getName($new->class);
         $fullyQualifiedObjectType = new FullyQualifiedObjectType($className);
-        if ($fullyQualifiedObjectType->isInstanceOf(DateTimeInterface::class)->yes()) {
-            return null;
-        }
         $expectedName = $this->propertyNaming->getExpectedNameFromType($fullyQualifiedObjectType);
         if (!$expectedName instanceof ExpectedName) {
             return null;
@@ -112,11 +116,18 @@ final class ExpectedNameResolver
             return null;
         }
         $returnedType = $this->nodeTypeResolver->getType($expr);
-        if (!$returnedType instanceof ObjectType) {
+        if ($returnedType instanceof ArrayType) {
+            return null;
+        }
+        if ($returnedType instanceof MixedType) {
+            return null;
+        }
+        if ($returnedType instanceof ObjectType && $returnedType->isInstanceOf('DateTimeInterface')->yes()) {
+            // skip date time, as custom naming
             return null;
         }
         $expectedName = $this->propertyNaming->getExpectedNameFromType($returnedType);
-        if ($expectedName instanceof ExpectedName) {
+        if ($expectedName !== null) {
             return $expectedName->getName();
         }
         // call with args can return different value, so skip there if not sure about the type
@@ -124,22 +135,22 @@ final class ExpectedNameResolver
             return null;
         }
         $expectedNameFromMethodName = $this->propertyNaming->getExpectedNameFromMethodName($name);
-        if ($expectedNameFromMethodName instanceof ExpectedName) {
+        if ($expectedNameFromMethodName !== null) {
             return $expectedNameFromMethodName->getName();
         }
         return null;
     }
     public function resolveForForeach(VariableAndCallForeach $variableAndCallForeach) : ?string
     {
-        $call = $variableAndCallForeach->getCall();
-        if ($this->isDynamicNameCall($call)) {
+        $expr = $variableAndCallForeach->getCall();
+        if ($this->isDynamicNameCall($expr)) {
             return null;
         }
-        $name = $this->nodeNameResolver->getName($call->name);
+        $name = $this->nodeNameResolver->getName($expr->name);
         if ($name === null) {
             return null;
         }
-        $returnedType = $this->nodeTypeResolver->getType($call);
+        $returnedType = $this->nodeTypeResolver->getType($expr);
         if ($returnedType->isIterable()->no()) {
             return null;
         }
@@ -165,7 +176,7 @@ final class ExpectedNameResolver
     }
     private function isReturnedTypeAnArrayAndExpectedNameFromTypeNotNull(Type $returnedType, ?ExpectedName $expectedName) : bool
     {
-        return $returnedType instanceof ArrayType && $expectedName instanceof ExpectedName;
+        return $returnedType instanceof ArrayType && $expectedName !== null;
     }
     /**
      * @param \PhpParser\Node\Expr\MethodCall|\PhpParser\Node\Expr\StaticCall|\PhpParser\Node\Expr\FuncCall $expr
@@ -182,9 +193,9 @@ final class ExpectedNameResolver
     }
     private function resolveReturnTypeFromArrayType(ArrayType $arrayType) : ?Type
     {
-        if (!$arrayType->getIterableValueType() instanceof ObjectType) {
+        if (!$arrayType->getItemType() instanceof ObjectType) {
             return null;
         }
-        return $arrayType->getIterableValueType();
+        return $arrayType->getItemType();
     }
 }

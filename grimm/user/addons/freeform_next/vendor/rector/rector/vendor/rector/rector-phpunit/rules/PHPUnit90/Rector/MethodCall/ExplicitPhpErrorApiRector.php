@@ -8,9 +8,9 @@ use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\ClassConstFetch;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\StaticCall;
+use Rector\Core\Rector\AbstractRector;
 use Rector\PHPUnit\NodeAnalyzer\TestsNodeAnalyzer;
 use Rector\PHPUnit\NodeFactory\AssertCallFactory;
-use Rector\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -23,12 +23,14 @@ final class ExplicitPhpErrorApiRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\PHPUnit\NodeFactory\AssertCallFactory
      */
-    private AssertCallFactory $assertCallFactory;
+    private $assertCallFactory;
     /**
      * @readonly
+     * @var \Rector\PHPUnit\NodeAnalyzer\TestsNodeAnalyzer
      */
-    private TestsNodeAnalyzer $testsNodeAnalyzer;
+    private $testsNodeAnalyzer;
     /**
      * @var array<string, string>
      */
@@ -75,9 +77,8 @@ CODE_SAMPLE
     }
     /**
      * @param MethodCall|StaticCall $node
-     * @return null|\PhpParser\Node\Expr\MethodCall|\PhpParser\Node\Expr\StaticCall
      */
-    public function refactor(Node $node)
+    public function refactor(Node $node) : ?Node
     {
         if (!$this->testsNodeAnalyzer->isPHPUnitMethodCallNames($node, ['expectException'])) {
             return null;
@@ -88,13 +89,12 @@ CODE_SAMPLE
                 return $newNode;
             }
         }
-        return null;
+        return $node;
     }
     /**
      * @param \PhpParser\Node\Expr\MethodCall|\PhpParser\Node\Expr\StaticCall $node
-     * @return null|\PhpParser\Node\Expr\MethodCall|\PhpParser\Node\Expr\StaticCall
      */
-    private function replaceExceptionWith($node, string $exceptionClass, string $explicitMethod)
+    private function replaceExceptionWith($node, string $exceptionClass, string $explicitMethod) : ?Node
     {
         if ($node->isFirstClassCallable()) {
             return null;

@@ -5,15 +5,12 @@ namespace Rector\Privatization\Rector\Property;
 
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Class_;
-use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Property;
 use PHPStan\Reflection\ClassReflection;
+use Rector\Core\Rector\AbstractRector;
+use Rector\Core\Reflection\ReflectionResolver;
 use Rector\Privatization\Guard\ParentPropertyLookupGuard;
 use Rector\Privatization\NodeManipulator\VisibilityManipulator;
-use Rector\Rector\AbstractRector;
-use Rector\Reflection\ReflectionResolver;
-use Rector\ValueObject\MethodName;
-use Rector\ValueObject\Visibility;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -23,16 +20,19 @@ final class PrivatizeFinalClassPropertyRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\Privatization\NodeManipulator\VisibilityManipulator
      */
-    private VisibilityManipulator $visibilityManipulator;
+    private $visibilityManipulator;
     /**
      * @readonly
+     * @var \Rector\Privatization\Guard\ParentPropertyLookupGuard
      */
-    private ParentPropertyLookupGuard $parentPropertyLookupGuard;
+    private $parentPropertyLookupGuard;
     /**
      * @readonly
+     * @var \Rector\Core\Reflection\ReflectionResolver
      */
-    private ReflectionResolver $reflectionResolver;
+    private $reflectionResolver;
     public function __construct(VisibilityManipulator $visibilityManipulator, ParentPropertyLookupGuard $parentPropertyLookupGuard, ReflectionResolver $reflectionResolver)
     {
         $this->visibilityManipulator = $visibilityManipulator;
@@ -71,35 +71,19 @@ CODE_SAMPLE
             return null;
         }
         $hasChanged = \false;
-        $classReflection = $this->reflectionResolver->resolveClassReflection($node);
-        if (!$classReflection instanceof ClassReflection) {
-            return null;
-        }
+        $classReflection = null;
         foreach ($node->getProperties() as $property) {
             if ($this->shouldSkipProperty($property)) {
                 continue;
+            }
+            if (!$classReflection instanceof ClassReflection) {
+                $classReflection = $this->reflectionResolver->resolveClassReflection($node);
             }
             if (!$this->parentPropertyLookupGuard->isLegal($property, $classReflection)) {
                 continue;
             }
             $this->visibilityManipulator->makePrivate($property);
             $hasChanged = \true;
-        }
-        $construct = $node->getMethod(MethodName::CONSTRUCT);
-        if ($construct instanceof ClassMethod) {
-            foreach ($construct->params as $param) {
-                if (!$param->isPromoted()) {
-                    continue;
-                }
-                if (!$this->visibilityManipulator->hasVisibility($param, Visibility::PROTECTED)) {
-                    continue;
-                }
-                if (!$this->parentPropertyLookupGuard->isLegal((string) $this->getName($param), $classReflection)) {
-                    continue;
-                }
-                $this->visibilityManipulator->makePrivate($param);
-                $hasChanged = \true;
-            }
         }
         if ($hasChanged) {
             return $node;

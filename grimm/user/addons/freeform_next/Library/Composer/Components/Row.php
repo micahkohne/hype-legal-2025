@@ -22,7 +22,7 @@ class Row implements JsonSerializable, Iterator, ArrayAccess, Countable
 {
     /**
      * @param string $id
-     * @param array  $fields
+     * @param AbstractField[] $fields
      */
     public function __construct(private $id, private array $fields)
     {
@@ -47,7 +47,7 @@ class Row implements JsonSerializable, Iterator, ArrayAccess, Countable
      * @return mixed
      */
 	#[ReturnTypeWillChange]
-	public function current()
+	public function current(): mixed
     {
         return current($this->fields);
     }
@@ -69,7 +69,7 @@ class Row implements JsonSerializable, Iterator, ArrayAccess, Countable
 	 * @return int|null
 	 */
 	#[ReturnTypeWillChange]
-	public function key()
+	public function key(): mixed
     {
         return key($this->fields);
     }
@@ -117,7 +117,7 @@ class Row implements JsonSerializable, Iterator, ArrayAccess, Countable
      * @inheritDoc
      */
 	#[ReturnTypeWillChange]
-    public function offsetGet($offset)
+    public function offsetGet($offset): mixed
     {
         return $this->offsetExists($offset) ? $this->fields[$offset] : null;
     }
@@ -126,7 +126,7 @@ class Row implements JsonSerializable, Iterator, ArrayAccess, Countable
      * @inheritDoc
      */
 	#[ReturnTypeWillChange]
-    public function offsetSet($offset, $value)
+    public function offsetSet($offset, $value): void
     {
         throw new FreeformException("Form Page Row ArrayAccess does not allow unsetting values");
     }
@@ -135,7 +135,7 @@ class Row implements JsonSerializable, Iterator, ArrayAccess, Countable
      * @inheritDoc
      */
 	#[ReturnTypeWillChange]
-    public function offsetUnset($offset)
+    public function offsetUnset($offset): void
     {
         throw new FreeformException("Form Page Row ArrayAccess does not allow unsetting values");
     }

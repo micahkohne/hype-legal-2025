@@ -17,18 +17,15 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\StaticType;
 use PHPStan\Type\ThisType;
 use PHPStan\Type\Type;
-use Rector\BetterPhpDocParser\PhpDocInfo\PhpDocInfoFactory;
 use Rector\BetterPhpDocParser\PhpDocManipulator\PhpDocTypeChanger;
-use Rector\Comments\NodeDocBlock\DocBlockUpdater;
+use Rector\Core\Rector\AbstractRector;
+use Rector\Core\Reflection\ReflectionResolver;
+use Rector\Core\Util\Reflection\PrivatesAccessor;
 use Rector\DeadCode\PhpDoc\TagRemover\ReturnTagRemover;
 use Rector\NodeTypeResolver\Node\AttributeKey;
 use Rector\PHPStanStaticTypeMapper\Enum\TypeKind;
 use Rector\PHPStanStaticTypeMapper\TypeAnalyzer\UnionTypeAnalyzer;
-use Rector\Rector\AbstractRector;
-use Rector\Reflection\ReflectionResolver;
-use Rector\StaticTypeMapper\StaticTypeMapper;
 use Rector\StaticTypeMapper\ValueObject\Type\ParentStaticType;
-use Rector\Util\Reflection\PrivatesAccessor;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -40,46 +37,36 @@ final class DowngradeCovariantReturnTypeRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\BetterPhpDocParser\PhpDocManipulator\PhpDocTypeChanger
      */
-    private PhpDocTypeChanger $phpDocTypeChanger;
+    private $phpDocTypeChanger;
     /**
      * @readonly
+     * @var \Rector\DeadCode\PhpDoc\TagRemover\ReturnTagRemover
      */
-    private ReturnTagRemover $returnTagRemover;
+    private $returnTagRemover;
     /**
      * @readonly
+     * @var \Rector\Core\Reflection\ReflectionResolver
      */
-    private ReflectionResolver $reflectionResolver;
+    private $reflectionResolver;
     /**
      * @readonly
+     * @var \Rector\Core\Util\Reflection\PrivatesAccessor
      */
-    private PrivatesAccessor $privatesAccessor;
+    private $privatesAccessor;
     /**
      * @readonly
+     * @var \Rector\PHPStanStaticTypeMapper\TypeAnalyzer\UnionTypeAnalyzer
      */
-    private UnionTypeAnalyzer $unionTypeAnalyzer;
-    /**
-     * @readonly
-     */
-    private DocBlockUpdater $docBlockUpdater;
-    /**
-     * @readonly
-     */
-    private PhpDocInfoFactory $phpDocInfoFactory;
-    /**
-     * @readonly
-     */
-    private StaticTypeMapper $staticTypeMapper;
-    public function __construct(PhpDocTypeChanger $phpDocTypeChanger, ReturnTagRemover $returnTagRemover, ReflectionResolver $reflectionResolver, PrivatesAccessor $privatesAccessor, UnionTypeAnalyzer $unionTypeAnalyzer, DocBlockUpdater $docBlockUpdater, PhpDocInfoFactory $phpDocInfoFactory, StaticTypeMapper $staticTypeMapper)
+    private $unionTypeAnalyzer;
+    public function __construct(PhpDocTypeChanger $phpDocTypeChanger, ReturnTagRemover $returnTagRemover, ReflectionResolver $reflectionResolver, PrivatesAccessor $privatesAccessor, UnionTypeAnalyzer $unionTypeAnalyzer)
     {
         $this->phpDocTypeChanger = $phpDocTypeChanger;
         $this->returnTagRemover = $returnTagRemover;
         $this->reflectionResolver = $reflectionResolver;
         $this->privatesAccessor = $privatesAccessor;
         $this->unionTypeAnalyzer = $unionTypeAnalyzer;
-        $this->docBlockUpdater = $docBlockUpdater;
-        $this->phpDocInfoFactory = $phpDocInfoFactory;
-        $this->staticTypeMapper = $staticTypeMapper;
     }
     public function getRuleDefinition() : RuleDefinition
     {
@@ -197,7 +184,6 @@ CODE_SAMPLE
         $type = $this->staticTypeMapper->mapPhpParserNodePHPStanType($returnType);
         $this->phpDocTypeChanger->changeReturnType($classMethod, $phpDocInfo, $type);
         $this->returnTagRemover->removeReturnTagIfUseless($phpDocInfo, $classMethod);
-        $this->docBlockUpdater->updateRefactoredNodeWithPhpDocInfo($classMethod);
     }
     /**
      * @param ClassReflection[] $parentClassesAndInterfaces

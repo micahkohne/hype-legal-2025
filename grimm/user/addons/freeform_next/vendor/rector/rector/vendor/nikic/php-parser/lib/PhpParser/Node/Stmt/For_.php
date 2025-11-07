@@ -4,31 +4,26 @@ declare (strict_types=1);
 namespace PhpParser\Node\Stmt;
 
 use PhpParser\Node;
-use Rector\Contract\PhpParser\Node\StmtsAwareInterface;
+use Rector\Core\Contract\PhpParser\Node\StmtsAwareInterface;
 class For_ extends Node\Stmt implements StmtsAwareInterface
 {
     /** @var Node\Expr[] Init expressions */
-    public array $init;
+    public $init;
     /** @var Node\Expr[] Loop conditions */
-    public array $cond;
+    public $cond;
     /** @var Node\Expr[] Loop expressions */
-    public array $loop;
+    public $loop;
     /** @var Node\Stmt[] Statements */
-    public array $stmts;
+    public $stmts;
     /**
      * Constructs a for loop node.
      *
-     * @param array{
-     *     init?: Node\Expr[],
-     *     cond?: Node\Expr[],
-     *     loop?: Node\Expr[],
-     *     stmts?: Node\Stmt[],
-     * } $subNodes Array of the following optional subnodes:
-     *             'init'  => array(): Init expressions
-     *             'cond'  => array(): Loop conditions
-     *             'loop'  => array(): Loop expressions
-     *             'stmts' => array(): Statements
-     * @param array<string, mixed> $attributes Additional attributes
+     * @param array $subNodes   Array of the following optional subnodes:
+     *                          'init'  => array(): Init expressions
+     *                          'cond'  => array(): Loop conditions
+     *                          'loop'  => array(): Loop expressions
+     *                          'stmts' => array(): Statements
+     * @param array $attributes Additional attributes
      */
     public function __construct(array $subNodes = [], array $attributes = [])
     {

@@ -5,12 +5,13 @@ namespace Rector\Php73\Rector\FuncCall;
 
 use PhpParser\Node;
 use PhpParser\Node\Arg;
-use PhpParser\Node\ArrayItem;
 use PhpParser\Node\Expr\Array_;
+use PhpParser\Node\Expr\ArrayItem;
 use PhpParser\Node\Expr\FuncCall;
+use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Scalar\String_;
-use Rector\Rector\AbstractRector;
-use Rector\ValueObject\PhpVersionFeature;
+use Rector\Core\Rector\AbstractRector;
+use Rector\Core\ValueObject\PhpVersionFeature;
 use Rector\VersionBonding\Contract\MinPhpVersionInterface;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
@@ -18,6 +19,8 @@ use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
  * Convert legacy setcookie arguments to new array options
  *
  * @see \Rector\Tests\Php73\Rector\FuncCall\SetcookieRector\SetCookieRectorTest
+ *
+ * @changelog https://www.php.net/setcookie https://wiki.php.net/rfc/same-site-cookie
  */
 final class SetCookieRector extends AbstractRector implements MinPhpVersionInterface
 {
@@ -72,19 +75,15 @@ CODE_SAMPLE
         if ($funcCall->isFirstClassCallable()) {
             return \true;
         }
-        $args = $funcCall->getArgs();
-        $argsCount = \count($args);
+        $argsCount = \count($funcCall->args);
         if ($argsCount <= 2) {
             return \true;
         }
-        if ($args[2]->value instanceof Array_) {
+        if ($funcCall->args[2] instanceof Arg && $funcCall->args[2]->value instanceof Array_) {
             return \true;
         }
         if ($argsCount === 3) {
-            $type = $this->nodeTypeResolver->getNativeType($args[2]->value);
-            if (!$type->isInteger()->yes()) {
-                return \true;
-            }
+            return $funcCall->args[2] instanceof Arg && $funcCall->args[2]->value instanceof Variable;
         }
         return \false;
     }

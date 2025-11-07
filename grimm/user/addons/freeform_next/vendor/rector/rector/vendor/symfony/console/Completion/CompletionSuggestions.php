@@ -8,9 +8,9 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-namespace RectorPrefix202507\Symfony\Component\Console\Completion;
+namespace RectorPrefix202308\Symfony\Component\Console\Completion;
 
-use RectorPrefix202507\Symfony\Component\Console\Input\InputOption;
+use RectorPrefix202308\Symfony\Component\Console\Input\InputOption;
 /**
  * Stores all completion suggestions for the current input.
  *
@@ -18,8 +18,8 @@ use RectorPrefix202507\Symfony\Component\Console\Input\InputOption;
  */
 final class CompletionSuggestions
 {
-    private array $valueSuggestions = [];
-    private array $optionSuggestions = [];
+    private $valueSuggestions = [];
+    private $optionSuggestions = [];
     /**
      * Add a suggested value for an input option or argument.
      *

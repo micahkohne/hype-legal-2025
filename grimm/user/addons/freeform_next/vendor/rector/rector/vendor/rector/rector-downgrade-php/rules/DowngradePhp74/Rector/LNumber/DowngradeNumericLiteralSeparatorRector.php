@@ -4,10 +4,10 @@ declare (strict_types=1);
 namespace Rector\DowngradePhp74\Rector\LNumber;
 
 use PhpParser\Node;
-use PhpParser\Node\Scalar\Float_;
-use PhpParser\Node\Scalar\Int_;
+use PhpParser\Node\Scalar\DNumber;
+use PhpParser\Node\Scalar\LNumber;
+use Rector\Core\Rector\AbstractRector;
 use Rector\NodeTypeResolver\Node\AttributeKey;
-use Rector\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -46,10 +46,10 @@ CODE_SAMPLE
      */
     public function getNodeTypes() : array
     {
-        return [Int_::class, Float_::class];
+        return [LNumber::class, DNumber::class];
     }
     /**
-     * @param Int_|Float_ $node
+     * @param LNumber|DNumber $node
      */
     public function refactor(Node $node) : ?Node
     {
@@ -66,7 +66,7 @@ CODE_SAMPLE
         return $node;
     }
     /**
-     * @param \PhpParser\Node\Scalar\Int_|\PhpParser\Node\Scalar\Float_ $node
+     * @param \PhpParser\Node\Scalar\LNumber|\PhpParser\Node\Scalar\DNumber $node
      * @param mixed $rawValue
      */
     private function shouldSkip($node, $rawValue) : bool
@@ -75,9 +75,9 @@ CODE_SAMPLE
             return \true;
         }
         // "_" notation can be applied to decimal numbers only
-        if ($node instanceof Int_) {
+        if ($node instanceof LNumber) {
             $numberKind = $node->getAttribute(AttributeKey::KIND);
-            if ($numberKind !== Int_::KIND_DEC) {
+            if ($numberKind !== LNumber::KIND_DEC) {
                 return \true;
             }
         }

@@ -8,10 +8,9 @@ use PhpParser\Node\Arg;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Scalar\String_;
-use Rector\NodeAnalyzer\ExprAnalyzer;
-use Rector\PhpParser\Node\Value\ValueResolver;
+use Rector\Core\NodeAnalyzer\ExprAnalyzer;
+use Rector\Core\Rector\AbstractRector;
 use Rector\PHPUnit\NodeAnalyzer\TestsNodeAnalyzer;
-use Rector\Rector\AbstractRector;
 use Rector\Symfony\NodeAnalyzer\SymfonyTestCaseAnalyzer;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
@@ -25,26 +24,24 @@ final class WebTestCaseAssertIsSuccessfulRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\Symfony\NodeAnalyzer\SymfonyTestCaseAnalyzer
      */
-    private SymfonyTestCaseAnalyzer $symfonyTestCaseAnalyzer;
+    private $symfonyTestCaseAnalyzer;
     /**
      * @readonly
+     * @var \Rector\PHPUnit\NodeAnalyzer\TestsNodeAnalyzer
      */
-    private TestsNodeAnalyzer $testsNodeAnalyzer;
+    private $testsNodeAnalyzer;
     /**
      * @readonly
+     * @var \Rector\Core\NodeAnalyzer\ExprAnalyzer
      */
-    private ExprAnalyzer $exprAnalyzer;
-    /**
-     * @readonly
-     */
-    private ValueResolver $valueResolver;
-    public function __construct(SymfonyTestCaseAnalyzer $symfonyTestCaseAnalyzer, TestsNodeAnalyzer $testsNodeAnalyzer, ExprAnalyzer $exprAnalyzer, ValueResolver $valueResolver)
+    private $exprAnalyzer;
+    public function __construct(SymfonyTestCaseAnalyzer $symfonyTestCaseAnalyzer, TestsNodeAnalyzer $testsNodeAnalyzer, ExprAnalyzer $exprAnalyzer)
     {
         $this->symfonyTestCaseAnalyzer = $symfonyTestCaseAnalyzer;
         $this->testsNodeAnalyzer = $testsNodeAnalyzer;
         $this->exprAnalyzer = $exprAnalyzer;
-        $this->valueResolver = $valueResolver;
     }
     public function getRuleDefinition() : RuleDefinition
     {
@@ -66,7 +63,7 @@ class SomeClass extends TestCase
 {
     public function test()
     {
-        $this->assertResponseIsSuccessful();
+         $this->assertResponseIsSuccessful();
     }
 }
 CODE_SAMPLE

@@ -15,9 +15,9 @@ class InvalidTagValueNode implements \PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocTagV
 {
     use NodeAttributes;
     /** @var string (may be empty) */
-    public string $value;
+    public $value;
     /** @var mixed[] */
-    private array $exceptionArgs;
+    private $exceptionArgs;
     public function __construct(string $value, ParserException $exception)
     {
         $this->value = $value;

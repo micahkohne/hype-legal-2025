@@ -12,10 +12,10 @@ use PhpParser\Node\Name\FullyQualified;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\Expression;
 use PHPStan\Reflection\ReflectionProvider;
-use Rector\Enum\ObjectReference;
-use Rector\NodeAnalyzer\ClassAnalyzer;
-use Rector\NodeManipulator\ClassMethodManipulator;
-use Rector\Rector\AbstractRector;
+use Rector\Core\Enum\ObjectReference;
+use Rector\Core\NodeAnalyzer\ClassAnalyzer;
+use Rector\Core\NodeManipulator\ClassMethodManipulator;
+use Rector\Core\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -25,16 +25,19 @@ final class RemoveParentCallWithoutParentRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\Core\NodeManipulator\ClassMethodManipulator
      */
-    private ClassMethodManipulator $classMethodManipulator;
+    private $classMethodManipulator;
     /**
      * @readonly
+     * @var \Rector\Core\NodeAnalyzer\ClassAnalyzer
      */
-    private ClassAnalyzer $classAnalyzer;
+    private $classAnalyzer;
     /**
      * @readonly
+     * @var \PHPStan\Reflection\ReflectionProvider
      */
-    private ReflectionProvider $reflectionProvider;
+    private $reflectionProvider;
     public function __construct(ClassMethodManipulator $classMethodManipulator, ClassAnalyzer $classAnalyzer, ReflectionProvider $reflectionProvider)
     {
         $this->classMethodManipulator = $classMethodManipulator;
@@ -115,9 +118,6 @@ CODE_SAMPLE
     private function isParentStaticCall(Expr $expr) : bool
     {
         if (!$expr instanceof StaticCall) {
-            return \false;
-        }
-        if ($expr->name instanceof Expr) {
             return \false;
         }
         return $this->isName($expr->class, ObjectReference::PARENT);

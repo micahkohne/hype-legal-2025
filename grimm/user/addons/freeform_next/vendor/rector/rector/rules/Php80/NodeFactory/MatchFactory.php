@@ -9,27 +9,30 @@ use PhpParser\Node\Expr\Assign;
 use PhpParser\Node\Expr\Match_;
 use PhpParser\Node\Expr\Throw_;
 use PhpParser\Node\Stmt;
-use PhpParser\Node\Stmt\Expression;
 use PhpParser\Node\Stmt\Return_;
+use PhpParser\Node\Stmt\Throw_ as ThrowsStmt;
+use Rector\Core\PhpParser\Comparing\NodeComparator;
 use Rector\Php80\Enum\MatchKind;
 use Rector\Php80\NodeAnalyzer\MatchSwitchAnalyzer;
 use Rector\Php80\ValueObject\CondAndExpr;
 use Rector\Php80\ValueObject\MatchResult;
-use Rector\PhpParser\Comparing\NodeComparator;
 final class MatchFactory
 {
     /**
      * @readonly
+     * @var \Rector\Php80\NodeFactory\MatchArmsFactory
      */
-    private \Rector\Php80\NodeFactory\MatchArmsFactory $matchArmsFactory;
+    private $matchArmsFactory;
     /**
      * @readonly
+     * @var \Rector\Php80\NodeAnalyzer\MatchSwitchAnalyzer
      */
-    private MatchSwitchAnalyzer $matchSwitchAnalyzer;
+    private $matchSwitchAnalyzer;
     /**
      * @readonly
+     * @var \Rector\Core\PhpParser\Comparing\NodeComparator
      */
-    private NodeComparator $nodeComparator;
+    private $nodeComparator;
     public function __construct(\Rector\Php80\NodeFactory\MatchArmsFactory $matchArmsFactory, MatchSwitchAnalyzer $matchSwitchAnalyzer, NodeComparator $nodeComparator)
     {
         $this->matchArmsFactory = $matchArmsFactory;
@@ -45,8 +48,8 @@ final class MatchFactory
         // is default value missing? maybe it can be found in next stmt
         if (!$this->matchSwitchAnalyzer->hasCondsAndExprDefaultValue($condAndExprs)) {
             // 1. is followed by throws stmts?
-            if ($nextStmt instanceof Expression && $nextStmt->expr instanceof Throw_) {
-                $throw = $nextStmt->expr;
+            if ($nextStmt instanceof ThrowsStmt) {
+                $throw = new Throw_($nextStmt->expr);
                 $condAndExprs[] = new CondAndExpr([], $throw, MatchKind::RETURN);
                 $shouldRemoteNextStmt = \true;
             }
@@ -62,7 +65,7 @@ final class MatchFactory
                     return null;
                 }
                 $shouldRemoteNextStmt = !$expr instanceof Expr;
-                $condAndExprs[] = new CondAndExpr([], $nextStmt->expr, MatchKind::RETURN, $nextStmt->getComments());
+                $condAndExprs[] = new CondAndExpr([], $nextStmt->expr, MatchKind::RETURN);
             }
         }
         $matchArms = $this->matchArmsFactory->createFromCondAndExprs($condAndExprs);

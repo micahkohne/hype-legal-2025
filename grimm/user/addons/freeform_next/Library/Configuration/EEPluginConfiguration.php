@@ -13,7 +13,7 @@ namespace Solspace\Addons\FreeformNext\Library\Configuration;
 
 class EEPluginConfiguration implements ConfigurationInterface
 {
-    const CONFIG_INDEX = 'freeform_next';
+    public const CONFIG_INDEX = 'freeform_next';
 
     /**
      * @param string $key

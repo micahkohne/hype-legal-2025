@@ -10,12 +10,8 @@ use PhpParser\Node\Expr\Empty_;
 use PhpParser\Node\Expr\Instanceof_;
 use PhpParser\Node\Name;
 use PHPStan\Type\ObjectType;
-use PHPStan\Type\TypeCombinator;
-use PHPStan\Type\UnionType;
-use Rector\PHPStan\ScopeFetcher;
+use Rector\Core\Rector\AbstractRector;
 use Rector\PHPStanStaticTypeMapper\Enum\TypeKind;
-use Rector\Rector\AbstractRector;
-use Rector\StaticTypeMapper\StaticTypeMapper;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -23,17 +19,9 @@ use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
  */
 final class EmptyOnNullableObjectToInstanceOfRector extends AbstractRector
 {
-    /**
-     * @readonly
-     */
-    private StaticTypeMapper $staticTypeMapper;
-    public function __construct(StaticTypeMapper $staticTypeMapper)
-    {
-        $this->staticTypeMapper = $staticTypeMapper;
-    }
     public function getRuleDefinition() : RuleDefinition
     {
-        return new RuleDefinition('Change `empty()` on nullable object to instanceof check', [new CodeSample(<<<'CODE_SAMPLE'
+        return new RuleDefinition('Change empty() on nullable object to instanceof check', [new CodeSample(<<<'CODE_SAMPLE'
 class SomeClass
 {
     public function run(?AnotherObject $anotherObject)
@@ -70,9 +58,8 @@ CODE_SAMPLE
     }
     /**
      * @param Empty_|BooleanNot $node
-     * @return null|\PhpParser\Node\Expr\Instanceof_|\PhpParser\Node\Expr\BooleanNot
      */
-    public function refactor(Node $node)
+    public function refactor(Node $node) : ?Node
     {
         if ($node instanceof BooleanNot) {
             if (!$node->expr instanceof Empty_) {
@@ -87,12 +74,7 @@ CODE_SAMPLE
         if ($empty->expr instanceof ArrayDimFetch) {
             return null;
         }
-        $scope = ScopeFetcher::fetch($node);
-        $exprType = $scope->getNativeType($empty->expr);
-        if (!$exprType instanceof UnionType) {
-            return null;
-        }
-        $exprType = TypeCombinator::removeNull($exprType);
+        $exprType = $this->getType($empty->expr);
         if (!$exprType instanceof ObjectType) {
             return null;
         }

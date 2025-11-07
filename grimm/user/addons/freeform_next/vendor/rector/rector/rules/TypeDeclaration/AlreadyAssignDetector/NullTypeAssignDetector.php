@@ -7,7 +7,7 @@ use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Assign;
 use PhpParser\Node\Stmt\ClassLike;
-use PhpParser\NodeVisitor;
+use PhpParser\NodeTraverser;
 use Rector\NodeTypeResolver\NodeTypeResolver;
 use Rector\PhpDocParser\NodeTraverser\SimpleCallableNodeTraverser;
 use Rector\PHPStanStaticTypeMapper\DoctrineTypeAnalyzer;
@@ -19,20 +19,24 @@ final class NullTypeAssignDetector
 {
     /**
      * @readonly
+     * @var \Rector\PHPStanStaticTypeMapper\DoctrineTypeAnalyzer
      */
-    private DoctrineTypeAnalyzer $doctrineTypeAnalyzer;
+    private $doctrineTypeAnalyzer;
     /**
      * @readonly
+     * @var \Rector\NodeTypeResolver\NodeTypeResolver
      */
-    private NodeTypeResolver $nodeTypeResolver;
+    private $nodeTypeResolver;
     /**
      * @readonly
+     * @var \Rector\TypeDeclaration\Matcher\PropertyAssignMatcher
      */
-    private PropertyAssignMatcher $propertyAssignMatcher;
+    private $propertyAssignMatcher;
     /**
      * @readonly
+     * @var \Rector\PhpDocParser\NodeTraverser\SimpleCallableNodeTraverser
      */
-    private SimpleCallableNodeTraverser $simpleCallableNodeTraverser;
+    private $simpleCallableNodeTraverser;
     public function __construct(DoctrineTypeAnalyzer $doctrineTypeAnalyzer, NodeTypeResolver $nodeTypeResolver, PropertyAssignMatcher $propertyAssignMatcher, SimpleCallableNodeTraverser $simpleCallableNodeTraverser)
     {
         $this->doctrineTypeAnalyzer = $doctrineTypeAnalyzer;
@@ -52,7 +56,7 @@ final class NullTypeAssignDetector
             $staticType = $this->nodeTypeResolver->getType($expr);
             if ($this->doctrineTypeAnalyzer->isDoctrineCollectionWithIterableUnionType($staticType)) {
                 $needsNullType = \false;
-                return NodeVisitor::DONT_TRAVERSE_CURRENT_AND_CHILDREN;
+                return NodeTraverser::DONT_TRAVERSE_CURRENT_AND_CHILDREN;
             }
             return null;
         });

@@ -12,28 +12,32 @@ use PHPStan\Type\UnionType;
 use PHPStan\Type\VerbosityLevel;
 use Rector\BetterPhpDocParser\PhpDocInfo\PhpDocInfo;
 use Rector\BetterPhpDocParser\PhpDocManipulator\PhpDocTypeChanger;
-use Rector\Php\PhpVersionProvider;
-use Rector\PhpParser\Node\NodeFactory;
+use Rector\Core\Php\PhpVersionProvider;
+use Rector\Core\PhpParser\Node\NodeFactory;
+use Rector\Core\ValueObject\PhpVersionFeature;
 use Rector\PHPStanStaticTypeMapper\TypeAnalyzer\UnionTypeAnalyzer;
-use Rector\ValueObject\PhpVersionFeature;
 final class PropertyTypeDecorator
 {
     /**
      * @readonly
+     * @var \Rector\PHPStanStaticTypeMapper\TypeAnalyzer\UnionTypeAnalyzer
      */
-    private UnionTypeAnalyzer $unionTypeAnalyzer;
+    private $unionTypeAnalyzer;
     /**
      * @readonly
+     * @var \Rector\BetterPhpDocParser\PhpDocManipulator\PhpDocTypeChanger
      */
-    private PhpDocTypeChanger $phpDocTypeChanger;
+    private $phpDocTypeChanger;
     /**
      * @readonly
+     * @var \Rector\Core\Php\PhpVersionProvider
      */
-    private PhpVersionProvider $phpVersionProvider;
+    private $phpVersionProvider;
     /**
      * @readonly
+     * @var \Rector\Core\PhpParser\Node\NodeFactory
      */
-    private NodeFactory $nodeFactory;
+    private $nodeFactory;
     public function __construct(UnionTypeAnalyzer $unionTypeAnalyzer, PhpDocTypeChanger $phpDocTypeChanger, PhpVersionProvider $phpVersionProvider, NodeFactory $nodeFactory)
     {
         $this->unionTypeAnalyzer = $unionTypeAnalyzer;

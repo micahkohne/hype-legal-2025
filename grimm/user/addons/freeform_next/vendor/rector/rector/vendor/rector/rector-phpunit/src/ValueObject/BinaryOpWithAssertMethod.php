@@ -7,16 +7,19 @@ final class BinaryOpWithAssertMethod
 {
     /**
      * @readonly
+     * @var string
      */
-    private string $binaryOpClass;
+    private $binaryOpClass;
     /**
      * @readonly
+     * @var string
      */
-    private string $assetMethodName;
+    private $assetMethodName;
     /**
      * @readonly
+     * @var string
      */
-    private string $notAssertMethodName;
+    private $notAssertMethodName;
     public function __construct(string $binaryOpClass, string $assetMethodName, string $notAssertMethodName)
     {
         $this->binaryOpClass = $binaryOpClass;

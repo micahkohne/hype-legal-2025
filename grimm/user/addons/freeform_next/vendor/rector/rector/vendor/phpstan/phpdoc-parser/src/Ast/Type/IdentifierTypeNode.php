@@ -7,7 +7,8 @@ use PHPStan\PhpDocParser\Ast\NodeAttributes;
 class IdentifierTypeNode implements \PHPStan\PhpDocParser\Ast\Type\TypeNode
 {
     use NodeAttributes;
-    public string $name;
+    /** @var string */
+    public $name;
     public function __construct(string $name)
     {
         $this->name = $name;

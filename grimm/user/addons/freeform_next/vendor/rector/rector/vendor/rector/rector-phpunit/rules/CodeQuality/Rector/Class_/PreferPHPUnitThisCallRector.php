@@ -4,16 +4,14 @@ declare (strict_types=1);
 namespace Rector\PHPUnit\CodeQuality\Rector\Class_;
 
 use PhpParser\Node;
-use PhpParser\Node\Expr\ArrowFunction;
 use PhpParser\Node\Expr\Closure;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassMethod;
-use PhpParser\NodeVisitor;
-use Rector\PHPUnit\CodeQuality\NodeAnalyser\AssertMethodAnalyzer;
+use PhpParser\NodeTraverser;
+use Rector\Core\Rector\AbstractRector;
 use Rector\PHPUnit\NodeAnalyzer\TestsNodeAnalyzer;
-use Rector\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -23,16 +21,12 @@ final class PreferPHPUnitThisCallRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\PHPUnit\NodeAnalyzer\TestsNodeAnalyzer
      */
-    private TestsNodeAnalyzer $testsNodeAnalyzer;
-    /**
-     * @readonly
-     */
-    private AssertMethodAnalyzer $assertMethodAnalyzer;
-    public function __construct(TestsNodeAnalyzer $testsNodeAnalyzer, AssertMethodAnalyzer $assertMethodAnalyzer)
+    private $testsNodeAnalyzer;
+    public function __construct(TestsNodeAnalyzer $testsNodeAnalyzer)
     {
         $this->testsNodeAnalyzer = $testsNodeAnalyzer;
-        $this->assertMethodAnalyzer = $assertMethodAnalyzer;
     }
     public function getRuleDefinition() : RuleDefinition
     {
@@ -77,20 +71,23 @@ CODE_SAMPLE
         }
         $hasChanged = \false;
         $this->traverseNodesWithCallable($node, function (Node $node) use(&$hasChanged) {
-            $isInsideStaticFunctionLike = $node instanceof ClassMethod && $node->isStatic() || ($node instanceof Closure || $node instanceof ArrowFunction) && $node->static;
-            if ($isInsideStaticFunctionLike) {
-                return NodeVisitor::DONT_TRAVERSE_CURRENT_AND_CHILDREN;
+            $isStatic = $node instanceof ClassMethod && $node->isStatic() || $node instanceof Closure && $node->static;
+            if ($isStatic) {
+                return NodeTraverser::DONT_TRAVERSE_CURRENT_AND_CHILDREN;
             }
             if (!$node instanceof StaticCall) {
                 return null;
             }
-            if ($node->isFirstClassCallable()) {
-                return null;
-            }
-            if (!$this->assertMethodAnalyzer->detectTestCaseCall($node)) {
-                return null;
-            }
             $methodName = $this->getName($node->name);
+            if (!\is_string($methodName)) {
+                return null;
+            }
+            if (!$this->isNames($node->class, ['static', 'self'])) {
+                return null;
+            }
+            if (!$this->isName($node->name, 'assert*')) {
+                return null;
+            }
             $hasChanged = \true;
             return $this->nodeFactory->createMethodCall('this', $methodName, $node->getArgs());
         });

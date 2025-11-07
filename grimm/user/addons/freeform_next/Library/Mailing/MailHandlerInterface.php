@@ -20,11 +20,8 @@ interface MailHandlerInterface
     /**
      * Send out an email to recipients using the given mail template
      *
-     * @param Form             $form
-     * @param array            $recipients
      * @param int              $notificationId
      * @param FieldInterface[] $fields
-     * @param string $format
      * @param SubmissionModel  $submission
      *
      * @return bool

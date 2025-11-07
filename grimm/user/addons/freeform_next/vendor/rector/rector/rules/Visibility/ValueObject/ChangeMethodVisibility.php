@@ -3,21 +3,24 @@
 declare (strict_types=1);
 namespace Rector\Visibility\ValueObject;
 
-use Rector\Validation\RectorAssert;
+use Rector\Core\Validation\RectorAssert;
 final class ChangeMethodVisibility
 {
     /**
      * @readonly
+     * @var string
      */
-    private string $class;
+    private $class;
     /**
      * @readonly
+     * @var string
      */
-    private string $method;
+    private $method;
     /**
      * @readonly
+     * @var int
      */
-    private int $visibility;
+    private $visibility;
     public function __construct(string $class, string $method, int $visibility)
     {
         $this->class = $class;

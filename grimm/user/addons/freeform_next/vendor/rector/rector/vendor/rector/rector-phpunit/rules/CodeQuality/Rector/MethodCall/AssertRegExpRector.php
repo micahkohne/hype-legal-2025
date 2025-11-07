@@ -9,16 +9,11 @@ use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\StaticCall;
-use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Identifier;
-use PhpParser\Node\Scalar\Int_;
-use PhpParser\Node\Stmt\Expression;
-use Rector\Contract\PhpParser\Node\StmtsAwareInterface;
-use Rector\Exception\ShouldNotHappenException;
-use Rector\NodeManipulator\StmtsManipulator;
-use Rector\PhpParser\Node\Value\ValueResolver;
+use PhpParser\Node\Scalar\LNumber;
+use Rector\Core\Exception\ShouldNotHappenException;
+use Rector\Core\Rector\AbstractRector;
 use Rector\PHPUnit\NodeAnalyzer\TestsNodeAnalyzer;
-use Rector\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -28,16 +23,9 @@ final class AssertRegExpRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\PHPUnit\NodeAnalyzer\TestsNodeAnalyzer
      */
-    private TestsNodeAnalyzer $testsNodeAnalyzer;
-    /**
-     * @readonly
-     */
-    private ValueResolver $valueResolver;
-    /**
-     * @readonly
-     */
-    private StmtsManipulator $stmtsManipulator;
+    private $testsNodeAnalyzer;
     /**
      * @var string
      */
@@ -54,11 +42,9 @@ final class AssertRegExpRector extends AbstractRector
      * @var string
      */
     private const ASSERT_NOT_EQUALS = 'assertNotEquals';
-    public function __construct(TestsNodeAnalyzer $testsNodeAnalyzer, ValueResolver $valueResolver, StmtsManipulator $stmtsManipulator)
+    public function __construct(TestsNodeAnalyzer $testsNodeAnalyzer)
     {
         $this->testsNodeAnalyzer = $testsNodeAnalyzer;
-        $this->valueResolver = $valueResolver;
-        $this->stmtsManipulator = $stmtsManipulator;
     }
     public function getRuleDefinition() : RuleDefinition
     {
@@ -69,63 +55,40 @@ final class AssertRegExpRector extends AbstractRector
      */
     public function getNodeTypes() : array
     {
-        return [StmtsAwareInterface::class];
+        return [MethodCall::class, StaticCall::class];
     }
     /**
-     * @param StmtsAwareInterface $node
+     * @param MethodCall|StaticCall $node
      */
     public function refactor(Node $node) : ?Node
     {
-        if ($node->stmts === null) {
+        if (!$this->testsNodeAnalyzer->isPHPUnitMethodCallNames($node, [self::ASSERT_SAME, self::ASSERT_EQUALS, self::ASSERT_NOT_SAME, self::ASSERT_NOT_EQUALS])) {
             return null;
         }
-        $hasChanged = \false;
-        foreach ($node->stmts as $key => $stmt) {
-            if (!$stmt instanceof Expression) {
-                continue;
-            }
-            if (!$stmt->expr instanceof MethodCall && !$stmt->expr instanceof StaticCall) {
-                continue;
-            }
-            if (!$this->testsNodeAnalyzer->isPHPUnitMethodCallNames($stmt->expr, [self::ASSERT_SAME, self::ASSERT_EQUALS, self::ASSERT_NOT_SAME, self::ASSERT_NOT_EQUALS])) {
-                continue;
-            }
-            if ($stmt->expr->isFirstClassCallable()) {
-                continue;
-            }
-            /** @var FuncCall|Node $secondArgumentValue */
-            $secondArgumentValue = $stmt->expr->getArgs()[1]->value;
-            if (!$secondArgumentValue instanceof FuncCall) {
-                continue;
-            }
-            if (!$this->isName($secondArgumentValue, 'preg_match')) {
-                continue;
-            }
-            if ($secondArgumentValue->isFirstClassCallable()) {
-                continue;
-            }
-            $oldMethodName = $this->getName($stmt->expr->name);
-            if ($oldMethodName === null) {
-                continue;
-            }
-            $args = $secondArgumentValue->getArgs();
-            if (isset($args[2]) && $args[2]->value instanceof Variable && $this->stmtsManipulator->isVariableUsedInNextStmt($node, $key + 1, (string) $this->getName($args[2]->value))) {
-                continue;
-            }
-            $oldFirstArgument = $stmt->expr->getArgs()[0]->value;
-            $oldCondition = $this->resolveOldCondition($oldFirstArgument);
-            $this->renameMethod($stmt->expr, $oldMethodName, $oldCondition);
-            $this->moveFunctionArgumentsUp($stmt->expr);
-            $hasChanged = \true;
+        if ($node->isFirstClassCallable()) {
+            return null;
         }
-        if ($hasChanged) {
-            return $node;
+        /** @var FuncCall|Node $secondArgumentValue */
+        $secondArgumentValue = $node->getArgs()[1]->value;
+        if (!$secondArgumentValue instanceof FuncCall) {
+            return null;
         }
-        return null;
+        if (!$this->isName($secondArgumentValue, 'preg_match')) {
+            return null;
+        }
+        $oldMethodName = $this->getName($node->name);
+        if ($oldMethodName === null) {
+            return null;
+        }
+        $oldFirstArgument = $node->getArgs()[0]->value;
+        $oldCondition = $this->resolveOldCondition($oldFirstArgument);
+        $this->renameMethod($node, $oldMethodName, $oldCondition);
+        $this->moveFunctionArgumentsUp($node);
+        return $node;
     }
     private function resolveOldCondition(Expr $expr) : int
     {
-        if ($expr instanceof Int_) {
+        if ($expr instanceof LNumber) {
             return $expr->value;
         }
         if ($expr instanceof ConstFetch) {

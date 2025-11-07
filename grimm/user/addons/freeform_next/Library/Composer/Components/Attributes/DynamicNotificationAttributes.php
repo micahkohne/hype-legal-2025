@@ -12,7 +12,6 @@
 namespace Solspace\Addons\FreeformNext\Library\Composer\Components\Attributes;
 
 use JsonSerializable;
-
 class DynamicNotificationAttributes extends AbstractAttributes implements JsonSerializable
 {
     /** @var array */

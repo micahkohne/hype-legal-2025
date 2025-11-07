@@ -8,7 +8,7 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-namespace RectorPrefix202507\Symfony\Component\Console\Helper;
+namespace RectorPrefix202308\Symfony\Component\Console\Helper;
 
 /**
  * Helps outputting debug information when running an external program from a command.
@@ -20,8 +20,14 @@ namespace RectorPrefix202507\Symfony\Component\Console\Helper;
 class DebugFormatterHelper extends Helper
 {
     private const COLORS = ['black', 'red', 'green', 'yellow', 'blue', 'magenta', 'cyan', 'white', 'default'];
-    private array $started = [];
-    private int $count = -1;
+    /**
+     * @var mixed[]
+     */
+    private $started = [];
+    /**
+     * @var int
+     */
+    private $count = -1;
     /**
      * Starts a debug formatting session.
      */

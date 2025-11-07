@@ -8,8 +8,8 @@ use PhpParser\Node\Arg;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\StaticCall;
-use Rector\Rector\AbstractRector;
-use Rector\ValueObject\PhpVersionFeature;
+use Rector\Core\Rector\AbstractRector;
+use Rector\Core\ValueObject\PhpVersionFeature;
 use Rector\VersionBonding\Contract\MinPhpVersionInterface;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
@@ -24,7 +24,7 @@ final class RemoveReferenceFromCallRector extends AbstractRector implements MinP
     }
     public function getRuleDefinition() : RuleDefinition
     {
-        return new RuleDefinition('Remove `&` from function and method calls', [new CodeSample(<<<'CODE_SAMPLE'
+        return new RuleDefinition('Remove & from function and method calls', [new CodeSample(<<<'CODE_SAMPLE'
 final class SomeClass
 {
     public function run($one)

@@ -13,20 +13,20 @@ use PhpParser\Node\Expr\Closure;
 use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\New_;
-use PhpParser\Node\Expr\Throw_;
 use PhpParser\Node\Name;
 use PhpParser\Node\Name\FullyQualified as NameFullyQualified;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\Expression;
 use PhpParser\Node\Stmt\Function_;
 use PhpParser\Node\Stmt\If_;
+use PhpParser\Node\Stmt\Throw_;
 use PhpParser\Node\Stmt\TryCatch;
 use PhpParser\Node\VariadicPlaceholder;
-use PhpParser\NodeVisitor;
+use PhpParser\NodeTraverser;
+use Rector\Core\Rector\AbstractRector;
 use Rector\DowngradePhp72\NodeManipulator\JsonConstCleaner;
 use Rector\Enum\JsonConstant;
 use Rector\NodeAnalyzer\DefineFuncCallAnalyzer;
-use Rector\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -38,12 +38,14 @@ final class DowngradePhp73JsonConstRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\DowngradePhp72\NodeManipulator\JsonConstCleaner
      */
-    private JsonConstCleaner $jsonConstCleaner;
+    private $jsonConstCleaner;
     /**
      * @readonly
+     * @var \Rector\NodeAnalyzer\DefineFuncCallAnalyzer
      */
-    private DefineFuncCallAnalyzer $defineFuncCallAnalyzer;
+    private $defineFuncCallAnalyzer;
     /**
      * @var string
      */
@@ -92,13 +94,12 @@ CODE_SAMPLE
     }
     /**
      * @param ConstFetch|BitwiseOr|If_|TryCatch|Expression $node
-     * @return null|Expr|array<Expression|If_>
+     * @return int|null|Expr|If_|array<Expression|If_>
      */
     public function refactor(Node $node)
     {
         if ($node instanceof If_) {
-            $this->markConstantKnownInInnerStmts($node);
-            return null;
+            return $this->refactorIf($node);
         }
         // skip as known
         if ((bool) $node->getAttribute(self::PHP73_JSON_CONSTANT_IS_KNOWN)) {
@@ -107,7 +108,7 @@ CODE_SAMPLE
         if ($node instanceof TryCatch) {
             $this->traverseNodesWithCallable($node->stmts, function (Node $subNode) : ?int {
                 if ($subNode instanceof Class_ || $subNode instanceof Function_ || $subNode instanceof Closure) {
-                    return NodeVisitor::DONT_TRAVERSE_CURRENT_AND_CHILDREN;
+                    return NodeTraverser::DONT_TRAVERSE_CURRENT_AND_CHILDREN;
                 }
                 if (!$subNode instanceof Expression) {
                     return null;
@@ -125,15 +126,16 @@ CODE_SAMPLE
         }
         return $this->jsonConstCleaner->clean($node, [JsonConstant::THROW_ON_ERROR]);
     }
-    private function markConstantKnownInInnerStmts(If_ $if) : void
+    private function refactorIf(If_ $if) : ?If_
     {
         if (!$this->defineFuncCallAnalyzer->isDefinedWithConstants($if->cond, [JsonConstant::THROW_ON_ERROR])) {
-            return;
+            return null;
         }
         $this->traverseNodesWithCallable($if, static function (Node $node) {
             $node->setAttribute(self::PHP73_JSON_CONSTANT_IS_KNOWN, \true);
             return null;
         });
+        return $if;
     }
     private function resolveFuncCall(Expression $Expression) : ?FuncCall
     {
@@ -178,7 +180,7 @@ CODE_SAMPLE
             return null;
         }
         $nodes = [$Expression];
-        $nodes[] = new If_(new NotIdentical(new FuncCall(new Name('json_last_error')), new ConstFetch(new Name('JSON_ERROR_NONE'))), ['stmts' => [new Expression(new Throw_(new New_(new NameFullyQualified('Exception'), [new Arg(new FuncCall(new Name('json_last_error_msg')))])))]]);
+        $nodes[] = new If_(new NotIdentical(new FuncCall(new Name('json_last_error')), new ConstFetch(new Name('JSON_ERROR_NONE'))), ['stmts' => [new Throw_(new New_(new NameFullyQualified('Exception'), [new Arg(new FuncCall(new Name('json_last_error_msg')))]))]]);
         return $nodes;
     }
     /**
@@ -209,6 +211,10 @@ CODE_SAMPLE
     {
         $found = \false;
         foreach ([$bitwiseOr->left, $bitwiseOr->right] as $subNode) {
+            // Only `Node` instances can hold the constant.
+            if (!$subNode instanceof Node) {
+                continue;
+            }
             switch (\true) {
                 case $subNode instanceof BitwiseOr:
                     $found = $this->hasConstFetchInBitwiseOr($subNode, $constName);

@@ -40,14 +40,10 @@ abstract class AbstractIntegration implements IntegrationInterface
     /**
      * @param int                    $id
      * @param string                 $name
-     * @param DateTime $lastUpdate
      * @param string                 $accessToken
      * @param array|null             $settings
-     * @param LoggerInterface        $logger
-     * @param ConfigurationInterface $configuration
-     * @param TranslatorInterface    $translator
      */
-    public function __construct(private $id, private $name, private readonly DateTime $lastUpdate, private $accessToken, private $settings, private readonly LoggerInterface $logger, private readonly ConfigurationInterface $configuration, private readonly TranslatorInterface $translator, private readonly IntegrationHandlerInterface $handler)
+    public function __construct(private $id, private $name, private DateTime $lastUpdate, private $accessToken, private $settings, private LoggerInterface $logger, private ConfigurationInterface $configuration, private TranslatorInterface $translator, private IntegrationHandlerInterface $handler)
     {
     }
 
@@ -129,10 +125,8 @@ abstract class AbstractIntegration implements IntegrationInterface
 
     /**
      * Perform anything necessary before this integration is saved
-     *
-     * @param IntegrationStorageInterface $model
      */
-    public function onBeforeSave(IntegrationStorageInterface $model)
+    public function onBeforeSave(IntegrationStorageInterface $model): void
     {
     }
 
@@ -173,12 +167,10 @@ abstract class AbstractIntegration implements IntegrationInterface
     }
 
     /**
-     * @param FieldObject $fieldObject
      * @param mixed|null  $value
-     *
      * @return bool|string
      */
-    public function convertCustomFieldValue(FieldObject $fieldObject, $value = null)
+    public function convertCustomFieldValue(FieldObject $fieldObject, mixed $value = null): bool|string
     {
         if (is_array($value) && $fieldObject->getType() !== FieldObject::TYPE_ARRAY) {
             $value = implode(', ', $value);
@@ -186,7 +178,7 @@ abstract class AbstractIntegration implements IntegrationInterface
 
         switch ($fieldObject->getType()) {
             case FieldObject::TYPE_NUMERIC:
-                return (int)preg_replace('/\D/', '', (string) $value) ?: '';
+                return (int)preg_replace('/\D/', '', $value) ?: '';
 
             case FieldObject::TYPE_BOOLEAN:
                 return (bool)$value;
@@ -275,7 +267,7 @@ abstract class AbstractIntegration implements IntegrationInterface
                     return $this->settings[$handle];
                 }
 
-                return strtolower((string) $this->settings[$handle]) === "y";
+                return strtolower($this->settings[$handle]) === "y";
             }
 
             return $this->settings[$handle];
@@ -295,11 +287,10 @@ abstract class AbstractIntegration implements IntegrationInterface
 
     /**
      * @param string $handle
-     * @param mixed  $value
      *
      * @return $this
      */
-    final protected function setSetting($handle, $value)
+    final protected function setSetting($handle, mixed $value)
     {
         // Check for blueprint validity
         $this->getSettingBlueprint($handle);

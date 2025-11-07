@@ -10,15 +10,15 @@ use PhpParser\Node\Expr\Closure;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\PropertyFetch;
 use PhpParser\Node\Expr\StaticCall;
-use PhpParser\Node\Identifier;
+use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\Function_;
-use PhpParser\NodeVisitor;
+use PhpParser\NodeTraverser;
 use PHPStan\Analyser\Scope;
 use PHPStan\Type\MixedType;
+use PHPStan\Type\Type;
 use Rector\CodeQuality\TypeResolver\ArrayDimFetchTypeResolver;
-use Rector\CodeQuality\ValueObject\DefinedPropertyWithType;
-use Rector\NodeAnalyzer\PropertyFetchAnalyzer;
+use Rector\Core\NodeAnalyzer\PropertyFetchAnalyzer;
 use Rector\NodeNameResolver\NodeNameResolver;
 use Rector\NodeTypeResolver\Node\AttributeKey;
 use Rector\NodeTypeResolver\NodeTypeResolver;
@@ -28,28 +28,34 @@ final class LocalPropertyAnalyzer
 {
     /**
      * @readonly
+     * @var \Rector\PhpDocParser\NodeTraverser\SimpleCallableNodeTraverser
      */
-    private SimpleCallableNodeTraverser $simpleCallableNodeTraverser;
+    private $simpleCallableNodeTraverser;
     /**
      * @readonly
+     * @var \Rector\NodeNameResolver\NodeNameResolver
      */
-    private NodeNameResolver $nodeNameResolver;
+    private $nodeNameResolver;
     /**
      * @readonly
+     * @var \Rector\CodeQuality\TypeResolver\ArrayDimFetchTypeResolver
      */
-    private ArrayDimFetchTypeResolver $arrayDimFetchTypeResolver;
+    private $arrayDimFetchTypeResolver;
     /**
      * @readonly
+     * @var \Rector\NodeTypeResolver\NodeTypeResolver
      */
-    private NodeTypeResolver $nodeTypeResolver;
+    private $nodeTypeResolver;
     /**
      * @readonly
+     * @var \Rector\Core\NodeAnalyzer\PropertyFetchAnalyzer
      */
-    private PropertyFetchAnalyzer $propertyFetchAnalyzer;
+    private $propertyFetchAnalyzer;
     /**
      * @readonly
+     * @var \Rector\NodeTypeResolver\PHPStan\Type\TypeFactory
      */
-    private TypeFactory $typeFactory;
+    private $typeFactory;
     /**
      * @var string
      */
@@ -64,41 +70,36 @@ final class LocalPropertyAnalyzer
         $this->typeFactory = $typeFactory;
     }
     /**
-     * @return DefinedPropertyWithType[]
+     * @return array<string, Type>
      */
     public function resolveFetchedPropertiesToTypesFromClass(Class_ $class) : array
     {
-        $definedPropertiesWithTypes = [];
-        foreach ($class->getMethods() as $classMethod) {
-            $methodName = $this->nodeNameResolver->getName($classMethod);
-            $this->simpleCallableNodeTraverser->traverseNodesWithCallable($classMethod->getStmts(), function (Node $node) use(&$definedPropertiesWithTypes, $methodName) : ?int {
-                if ($this->shouldSkip($node)) {
-                    return NodeVisitor::DONT_TRAVERSE_CURRENT_AND_CHILDREN;
-                }
-                if ($node instanceof Assign && ($node->var instanceof PropertyFetch || $node->var instanceof ArrayDimFetch)) {
-                    $propertyFetch = $node->var;
-                    $propertyName = $this->resolvePropertyName($propertyFetch instanceof ArrayDimFetch ? $propertyFetch->var : $propertyFetch);
-                    if ($propertyName === null) {
-                        return NodeVisitor::DONT_TRAVERSE_CURRENT_AND_CHILDREN;
-                    }
-                    if ($propertyFetch instanceof ArrayDimFetch) {
-                        $propertyType = $this->arrayDimFetchTypeResolver->resolve($propertyFetch, $node);
-                        $definedPropertiesWithTypes[] = new DefinedPropertyWithType($propertyName, $propertyType, $methodName);
-                        return NodeVisitor::DONT_TRAVERSE_CURRENT_AND_CHILDREN;
-                    }
-                    $propertyType = $this->nodeTypeResolver->getType($node->expr);
-                    $definedPropertiesWithTypes[] = new DefinedPropertyWithType($propertyName, $propertyType, $methodName);
-                    return NodeVisitor::DONT_TRAVERSE_CURRENT_AND_CHILDREN;
-                }
-                $propertyName = $this->resolvePropertyName($node);
+        $fetchedLocalPropertyNameToTypes = [];
+        $this->simpleCallableNodeTraverser->traverseNodesWithCallable($class->getMethods(), function (Node $node) use(&$fetchedLocalPropertyNameToTypes) : ?int {
+            if ($this->shouldSkip($node)) {
+                return NodeTraverser::DONT_TRAVERSE_CURRENT_AND_CHILDREN;
+            }
+            if ($node instanceof Assign && ($node->var instanceof PropertyFetch || $node->var instanceof ArrayDimFetch)) {
+                $propertyFetch = $node->var;
+                $propertyName = $this->resolvePropertyName($propertyFetch instanceof ArrayDimFetch ? $propertyFetch->var : $propertyFetch);
                 if ($propertyName === null) {
-                    return null;
+                    return NodeTraverser::DONT_TRAVERSE_CURRENT_AND_CHILDREN;
                 }
-                $definedPropertiesWithTypes[] = new DefinedPropertyWithType($propertyName, new MixedType(), $methodName);
+                if ($propertyFetch instanceof ArrayDimFetch) {
+                    $fetchedLocalPropertyNameToTypes[$propertyName][] = $this->arrayDimFetchTypeResolver->resolve($propertyFetch, $node);
+                    return NodeTraverser::DONT_TRAVERSE_CURRENT_AND_CHILDREN;
+                }
+                $fetchedLocalPropertyNameToTypes[$propertyName][] = $this->nodeTypeResolver->getType($node->expr);
+                return NodeTraverser::DONT_TRAVERSE_CURRENT_AND_CHILDREN;
+            }
+            $propertyName = $this->resolvePropertyName($node);
+            if ($propertyName === null) {
                 return null;
-            });
-        }
-        return $this->normalizeToSingleType($definedPropertiesWithTypes);
+            }
+            $fetchedLocalPropertyNameToTypes[$propertyName][] = new MixedType();
+            return null;
+        });
+        return $this->normalizeToSingleType($fetchedLocalPropertyNameToTypes);
     }
     private function shouldSkip(Node $node) : bool
     {
@@ -133,38 +134,20 @@ final class LocalPropertyAnalyzer
         if ($this->isPartOfClosureBind($propertyFetch)) {
             return \true;
         }
-        return !$propertyFetch->name instanceof Identifier;
+        return $propertyFetch->name instanceof Variable;
     }
     /**
-     * @param DefinedPropertyWithType[] $definedPropertiesWithTypes
-     * @return DefinedPropertyWithType[]
+     * @param array<string, Type[]> $propertyNameToTypes
+     * @return array<string, Type>
      */
-    private function normalizeToSingleType(array $definedPropertiesWithTypes) : array
+    private function normalizeToSingleType(array $propertyNameToTypes) : array
     {
-        $definedPropertiesWithTypesByPropertyName = [];
-        foreach ($definedPropertiesWithTypes as $definedPropertyWithType) {
-            $definedPropertiesWithTypesByPropertyName[$definedPropertyWithType->getName()][] = $definedPropertyWithType;
+        // normalize types to union
+        $propertyNameToType = [];
+        foreach ($propertyNameToTypes as $name => $types) {
+            $propertyNameToType[$name] = $this->typeFactory->createMixedPassedOrUnionType($types);
         }
-        $normalizedDefinedPropertiesWithTypes = [];
-        foreach ($definedPropertiesWithTypesByPropertyName as $propertyName => $definedPropertiesWithTypes) {
-            if (\count($definedPropertiesWithTypes) === 1) {
-                $normalizedDefinedPropertiesWithTypes[] = $definedPropertiesWithTypes[0];
-                continue;
-            }
-            $propertyTypes = [];
-            foreach ($definedPropertiesWithTypes as $definedPropertyWithType) {
-                /** @var DefinedPropertyWithType $definedPropertyWithType */
-                $propertyTypes[] = $definedPropertyWithType->getType();
-            }
-            $normalizePropertyType = $this->typeFactory->createMixedPassedOrUnionType($propertyTypes);
-            $normalizedDefinedPropertiesWithTypes[] = new DefinedPropertyWithType(
-                $propertyName,
-                $normalizePropertyType,
-                // skip as multiple places can define the same property
-                null
-            );
-        }
-        return $normalizedDefinedPropertiesWithTypes;
+        return $propertyNameToType;
     }
     /**
      * Local property is actually not local one, but belongs to passed object

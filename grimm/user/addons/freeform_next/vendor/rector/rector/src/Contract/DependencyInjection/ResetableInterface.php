@@ -1,7 +1,7 @@
 <?php
 
 declare (strict_types=1);
-namespace Rector\Contract\DependencyInjection;
+namespace Rector\Core\Contract\DependencyInjection;
 
 interface ResetableInterface
 {

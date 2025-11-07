@@ -2,7 +2,6 @@
 
 namespace Solspace\Addons\FreeformNext\Repositories;
 
-use Override;
 use Exception;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Form;
 use Solspace\Addons\FreeformNext\Library\DataObjects\SubmissionAttributes;
@@ -15,16 +14,13 @@ class SubmissionRepository extends Repository
     /**
      * @return SubmissionRepository
      */
-    #[Override]
     public static function getInstance()
     {
         return parent::getInstance();
     }
 
     /**
-     * @param Form $form
      * @param int  $submissionId
-     *
      * @return SubmissionModel
      */
     public function getSubmission(Form $form, $submissionId)
@@ -54,11 +50,9 @@ class SubmissionRepository extends Repository
     }
 
     /**
-     * @param array $ids
-     *
      * @return SubmissionModel[]
      */
-    public function getSubmissionsByIdList(array $ids): array
+    public function getSubmissionsByIdList(array $ids)
     {
         if (empty($ids)) {
             return [];
@@ -89,9 +83,7 @@ class SubmissionRepository extends Repository
     }
 
     /**
-     * @param Form   $form
      * @param string $token
-     *
      * @return SubmissionModel|null
      */
     public function getSubmissionByToken(Form $form, $token)
@@ -122,12 +114,11 @@ class SubmissionRepository extends Repository
     }
 
     /**
-     * @param SubmissionAttributes $attributes
      *
      * @return SubmissionModel[]
      * @throws Exception
      */
-    public function getAllSubmissionsFor(SubmissionAttributes $attributes): array
+    public function getAllSubmissionsFor(SubmissionAttributes $attributes)
     {
         $submissionTable    = SubmissionModel::TABLE;
         $statusTable        = StatusModel::TABLE;
@@ -223,8 +214,6 @@ class SubmissionRepository extends Repository
     }
 
     /**
-     * @param SubmissionAttributes $attributes
-     *
      * @return int
      */
     public function getAllSubmissionCountFor(SubmissionAttributes $attributes)
@@ -311,7 +300,7 @@ class SubmissionRepository extends Repository
     /**
      * @return array
      */
-    public function getSpamTotalsPerForm()
+    public function getSpamTotalsPerForm(): array
     {
         $result = ee()->db
             ->select('COUNT(id) as total, formId')
@@ -329,7 +318,7 @@ class SubmissionRepository extends Repository
         return $totals;
     }
 
-    private function groupLike($values): string|self
+    private function groupLike($values)
     {
 
         $where = '';
@@ -376,7 +365,6 @@ class SubmissionRepository extends Repository
 
     /**
      * @param string $sql
-     * @param string $where
      *
      * @return string
      */

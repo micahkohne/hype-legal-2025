@@ -84,8 +84,8 @@ class ExportProfilesController extends Controller
                     'value' => $profile->id,
                     'data'  => [
                         'confirm' => lang('Export Profile') . ': <b>' . htmlentities(
-                                (string) $profile->name,
-                                ENT_QUOTES
+                                $profile->name,
+                                ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401, 'UTF-8'
                             ) . '</b>',
                     ],
                 ],
@@ -321,7 +321,7 @@ class ExportProfilesController extends Controller
      *
      * @throws Exception
      */
-    public function export($profileId, $type): void
+    public function export($profileId, $type)
     {
         $profile = ExportProfilesRepository::getInstance()->getProfileById($profileId);
 
@@ -360,11 +360,9 @@ class ExportProfilesController extends Controller
     }
 
     /**
-     * @param ExportProfileModel $profile
-     *
      * @return string
      */
-    private function getFieldExportTemplate(ExportProfileModel $profile): string|false
+    private function getFieldExportTemplate(ExportProfileModel $profile): string|bool
     {
         ob_start();
         include __DIR__ . '/../View/export_profiles/fieldSettings.php';
@@ -373,11 +371,9 @@ class ExportProfilesController extends Controller
     }
 
     /**
-     * @param ExportProfileModel $profile
-     *
      * @return string
      */
-    private function getFiltersTemplate(ExportProfileModel $profile): string|false
+    private function getFiltersTemplate(ExportProfileModel $profile): string|bool
     {
         ob_start();
         include __DIR__ . '/../View/export_profiles/filters.php';
@@ -387,7 +383,6 @@ class ExportProfilesController extends Controller
 
     /**
      * @param int  $id
-     * @param Form $form
      *
      * @return ExportProfileModel
      */

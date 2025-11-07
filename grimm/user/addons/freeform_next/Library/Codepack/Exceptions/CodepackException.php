@@ -12,7 +12,6 @@
 namespace Solspace\Addons\FreeformNext\Library\Codepack\Exceptions;
 
 use Exception;
-
 class CodepackException extends Exception
 {
 }

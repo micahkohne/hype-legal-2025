@@ -13,15 +13,13 @@ use PhpParser\Node\Stmt\Interface_;
 use PhpParser\Node\Stmt\Property;
 use PHPStan\PhpDocParser\Ast\PhpDoc\GenericTagValueNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocTagNode;
-use Rector\BetterPhpDocParser\PhpDocInfo\PhpDocInfoFactory;
-use Rector\Comments\NodeDocBlock\DocBlockUpdater;
-use Rector\Contract\Rector\ConfigurableRectorInterface;
+use Rector\Core\Contract\Rector\ConfigurableRectorInterface;
+use Rector\Core\Rector\AbstractRector;
 use Rector\DowngradePhp80\ValueObject\DowngradeAttributeToAnnotation;
 use Rector\NodeFactory\DoctrineAnnotationFactory;
-use Rector\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\ConfiguredCodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
-use RectorPrefix202507\Webmozart\Assert\Assert;
+use RectorPrefix202308\Webmozart\Assert\Assert;
 /**
  * @changelog https://php.watch/articles/php-attributes#syntax
  *
@@ -31,30 +29,24 @@ final class DowngradeAttributeToAnnotationRector extends AbstractRector implemen
 {
     /**
      * @readonly
+     * @var \Rector\NodeFactory\DoctrineAnnotationFactory
      */
-    private DoctrineAnnotationFactory $doctrineAnnotationFactory;
-    /**
-     * @readonly
-     */
-    private DocBlockUpdater $docBlockUpdater;
-    /**
-     * @readonly
-     */
-    private PhpDocInfoFactory $phpDocInfoFactory;
+    private $doctrineAnnotationFactory;
     /**
      * @var string[]
      */
-    private const SKIPPED_ATTRIBUTES = ['Attribute', 'ReturnTypeWillChange', 'AllowDynamicProperties'];
+    private const SKIPPED_ATTRIBUTES = ['Attribute', 'ReturnTypeWillChange'];
     /**
      * @var DowngradeAttributeToAnnotation[]
      */
-    private array $attributesToAnnotations = [];
-    private bool $isDowngraded = \false;
-    public function __construct(DoctrineAnnotationFactory $doctrineAnnotationFactory, DocBlockUpdater $docBlockUpdater, PhpDocInfoFactory $phpDocInfoFactory)
+    private $attributesToAnnotations = [];
+    /**
+     * @var bool
+     */
+    private $isDowngraded = \false;
+    public function __construct(DoctrineAnnotationFactory $doctrineAnnotationFactory)
     {
         $this->doctrineAnnotationFactory = $doctrineAnnotationFactory;
-        $this->docBlockUpdater = $docBlockUpdater;
-        $this->phpDocInfoFactory = $phpDocInfoFactory;
     }
     public function getRuleDefinition() : RuleDefinition
     {
@@ -96,20 +88,11 @@ CODE_SAMPLE
      */
     public function refactor(Node $node) : ?Node
     {
-        if ($node->attrGroups === []) {
-            return null;
-        }
         $this->isDowngraded = \false;
         $phpDocInfo = $this->phpDocInfoFactory->createFromNodeOrEmpty($node);
-        $oldTokens = $this->file->getOldTokens();
         foreach ($node->attrGroups as $attrGroup) {
             foreach ($attrGroup->attrs as $key => $attribute) {
                 if ($this->shouldSkipAttribute($attribute)) {
-                    if (isset($oldTokens[$attrGroup->getEndTokenPos() + 1]) && \strpos((string) $oldTokens[$attrGroup->getEndTokenPos() + 1], "\n") === \false) {
-                        // add new line
-                        $oldTokens[$attrGroup->getEndTokenPos() + 1]->text = "\n" . $oldTokens[$attrGroup->getEndTokenPos() + 1]->text;
-                        $this->isDowngraded = \true;
-                    }
                     continue;
                 }
                 $attributeToAnnotation = $this->matchAttributeToAnnotation($attribute, $this->attributesToAnnotations);
@@ -119,15 +102,13 @@ CODE_SAMPLE
                     continue;
                 }
                 unset($attrGroup->attrs[$key]);
-                $this->isDowngraded = \true;
                 if (\strpos($attributeToAnnotation->getTag(), '\\') === \false) {
                     $phpDocInfo->addPhpDocTagNode(new PhpDocTagNode('@' . $attributeToAnnotation->getTag(), new GenericTagValueNode('')));
-                    $this->docBlockUpdater->updateRefactoredNodeWithPhpDocInfo($node);
-                    continue;
+                } else {
+                    $doctrineAnnotation = $this->doctrineAnnotationFactory->createFromAttribute($attribute, $attributeToAnnotation->getTag());
+                    $phpDocInfo->addTagValueNode($doctrineAnnotation);
                 }
-                $doctrineAnnotation = $this->doctrineAnnotationFactory->createFromAttribute($attribute, $attributeToAnnotation->getTag());
-                $phpDocInfo->addTagValueNode($doctrineAnnotation);
-                $this->docBlockUpdater->updateRefactoredNodeWithPhpDocInfo($node);
+                $this->isDowngraded = \true;
             }
         }
         // cleanup empty attr groups
@@ -138,7 +119,7 @@ CODE_SAMPLE
         return $node;
     }
     /**
-     * @param DowngradeAttributeToAnnotation[] $configuration
+     * @param mixed[] $configuration
      */
     public function configure(array $configuration) : void
     {

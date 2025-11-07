@@ -9,14 +9,14 @@ use PhpParser\Node\Expr\Closure;
 use PhpParser\Node\Param;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Function_;
+use Rector\Core\Rector\AbstractRector;
+use Rector\Core\ValueObject\MethodName;
 use Rector\Naming\ExpectedNameResolver\MatchParamTypeExpectedNameResolver;
 use Rector\Naming\Guard\BreakingVariableRenameGuard;
 use Rector\Naming\Naming\ExpectedNameResolver;
 use Rector\Naming\ParamRenamer\ParamRenamer;
 use Rector\Naming\ValueObject\ParamRename;
 use Rector\Naming\ValueObjectFactory\ParamRenameFactory;
-use Rector\Rector\AbstractRector;
-use Rector\ValueObject\MethodName;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -26,25 +26,33 @@ final class RenameParamToMatchTypeRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\Naming\Guard\BreakingVariableRenameGuard
      */
-    private BreakingVariableRenameGuard $breakingVariableRenameGuard;
+    private $breakingVariableRenameGuard;
     /**
      * @readonly
+     * @var \Rector\Naming\Naming\ExpectedNameResolver
      */
-    private ExpectedNameResolver $expectedNameResolver;
+    private $expectedNameResolver;
     /**
      * @readonly
+     * @var \Rector\Naming\ExpectedNameResolver\MatchParamTypeExpectedNameResolver
      */
-    private MatchParamTypeExpectedNameResolver $matchParamTypeExpectedNameResolver;
+    private $matchParamTypeExpectedNameResolver;
     /**
      * @readonly
+     * @var \Rector\Naming\ValueObjectFactory\ParamRenameFactory
      */
-    private ParamRenameFactory $paramRenameFactory;
+    private $paramRenameFactory;
     /**
      * @readonly
+     * @var \Rector\Naming\ParamRenamer\ParamRenamer
      */
-    private ParamRenamer $paramRenamer;
-    private bool $hasChanged = \false;
+    private $paramRenamer;
+    /**
+     * @var bool
+     */
+    private $hasChanged = \false;
     public function __construct(BreakingVariableRenameGuard $breakingVariableRenameGuard, ExpectedNameResolver $expectedNameResolver, MatchParamTypeExpectedNameResolver $matchParamTypeExpectedNameResolver, ParamRenameFactory $paramRenameFactory, ParamRenamer $paramRenamer)
     {
         $this->breakingVariableRenameGuard = $breakingVariableRenameGuard;
@@ -89,10 +97,6 @@ CODE_SAMPLE
     {
         $this->hasChanged = \false;
         foreach ($node->params as $param) {
-            // skip as array-like
-            if ($param->variadic) {
-                continue;
-            }
             $expectedName = $this->expectedNameResolver->resolveForParamIfNotYet($param);
             if ($expectedName === null) {
                 continue;
@@ -133,6 +137,6 @@ CODE_SAMPLE
         if (!$this->isName($classMethod, MethodName::CONSTRUCT)) {
             return \false;
         }
-        return $param->isPromoted();
+        return $param->flags !== 0;
     }
 }

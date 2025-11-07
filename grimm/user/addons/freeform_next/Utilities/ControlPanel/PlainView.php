@@ -21,7 +21,6 @@ class PlainView extends View
      * CpView constructor.
      *
      * @param       $template
-     * @param array $templateVariables
      * @param string $template
      */
     public function __construct(private $template, private array $templateVariables = [])
@@ -31,7 +30,7 @@ class PlainView extends View
     /**
      * @return string
      */
-    public function compile(): string|false
+    public function compile(): string|bool
     {
         ob_start();
         extract($this->templateVariables, EXTR_SKIP);
@@ -54,7 +53,7 @@ class PlainView extends View
      *
      * @return $this
      */
-    public function setTemplate($template): static
+    public function setTemplate($template)
     {
         $this->template = $template;
 
@@ -70,11 +69,9 @@ class PlainView extends View
     }
 
     /**
-     * @param array $templateVariables
-     *
      * @return $this
      */
-    public function setTemplateVariables(array $templateVariables): static
+    public function setTemplateVariables(array $templateVariables)
     {
         $this->templateVariables = $templateVariables;
 

@@ -9,17 +9,21 @@ use PhpParser\Node\Expr\BinaryOp\NotIdentical;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\Ternary;
 use PhpParser\Node\Stmt\Class_;
-use PhpParser\NodeVisitor;
+use PhpParser\NodeTraverser;
+use PHPStan\Analyser\Scope;
+use PHPStan\Type\NullType;
+use Rector\Core\Rector\AbstractScopeAwareRector;
+use Rector\Core\ValueObject\PhpVersionFeature;
 use Rector\NodeTypeResolver\Node\AttributeKey;
-use Rector\Rector\AbstractRector;
-use Rector\ValueObject\PhpVersionFeature;
 use Rector\VersionBonding\Contract\MinPhpVersionInterface;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
+ * @changelog http://php.net/manual/en/migration72.incompatible.php#migration72.incompatible.no-null-to-get_class https://3v4l.org/sk0fp
+ *
  * @see \Rector\Tests\Php72\Rector\FuncCall\GetClassOnNullRector\GetClassOnNullRectorTest
  */
-final class GetClassOnNullRector extends AbstractRector implements MinPhpVersionInterface
+final class GetClassOnNullRector extends AbstractScopeAwareRector implements MinPhpVersionInterface
 {
     public function provideMinPhpVersion() : int
     {
@@ -27,7 +31,7 @@ final class GetClassOnNullRector extends AbstractRector implements MinPhpVersion
     }
     public function getRuleDefinition() : RuleDefinition
     {
-        return new RuleDefinition('Null is no more allowed in `get_class()`', [new CodeSample(<<<'CODE_SAMPLE'
+        return new RuleDefinition('Null is no more allowed in get_class()', [new CodeSample(<<<'CODE_SAMPLE'
 final class SomeClass
 {
     public function getItem()
@@ -59,12 +63,12 @@ CODE_SAMPLE
     /**
      * @param Class_ $node
      */
-    public function refactor(Node $node) : ?Node
+    public function refactorWithScope(Node $node, Scope $scope) : ?Node
     {
         $hasChanged = \false;
         $this->traverseNodesWithCallable($node, function (Node $node) use(&$hasChanged) {
             if ($node instanceof Ternary) {
-                return NodeVisitor::STOP_TRAVERSAL;
+                return NodeTraverser::STOP_TRAVERSAL;
             }
             if (!$node instanceof FuncCall) {
                 return null;
@@ -85,7 +89,7 @@ CODE_SAMPLE
             }
             $firstArgValue = $firstArg->value;
             $firstArgType = $this->getType($firstArgValue);
-            if (!$this->nodeTypeResolver->isNullableType($firstArgValue) && !$firstArgType->isNull()->yes()) {
+            if (!$this->nodeTypeResolver->isNullableType($firstArgValue) && !$firstArgType instanceof NullType) {
                 return null;
             }
             $notIdentical = new NotIdentical($firstArgValue, $this->nodeFactory->createNull());

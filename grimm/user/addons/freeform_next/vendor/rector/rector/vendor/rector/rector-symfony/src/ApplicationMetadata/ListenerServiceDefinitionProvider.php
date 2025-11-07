@@ -3,26 +3,30 @@
 declare (strict_types=1);
 namespace Rector\Symfony\ApplicationMetadata;
 
+use Rector\Core\Util\StringUtils;
 use Rector\Symfony\DataProvider\ServiceMapProvider;
 use Rector\Symfony\ValueObject\ServiceDefinition;
 use Rector\Symfony\ValueObject\Tag\EventListenerTag;
-use Rector\Util\StringUtils;
 final class ListenerServiceDefinitionProvider
 {
     /**
      * @readonly
+     * @var \Rector\Symfony\DataProvider\ServiceMapProvider
      */
-    private ServiceMapProvider $serviceMapProvider;
+    private $serviceMapProvider;
     /**
      * @var string
      * @see https://regex101.com/r/j6SAga/1
      */
     private const SYMFONY_FAMILY_REGEX = '#^(Symfony|Sensio|Doctrine)\\b#';
-    private bool $areListenerClassesLoaded = \false;
+    /**
+     * @var bool
+     */
+    private $areListenerClassesLoaded = \false;
     /**
      * @var ServiceDefinition[][][]
      */
-    private array $listenerClassesToEvents = [];
+    private $listenerClassesToEvents = [];
     public function __construct(ServiceMapProvider $serviceMapProvider)
     {
         $this->serviceMapProvider = $serviceMapProvider;
@@ -47,12 +51,6 @@ final class ListenerServiceDefinitionProvider
                     continue;
                 }
                 $eventName = $tag->getEvent();
-                // fill method based on the event
-                if ($tag->getMethod() === '' && \strncmp($tag->getEvent(), 'kernel.', \strlen('kernel.')) === 0) {
-                    [, $event] = \explode('.', $tag->getEvent());
-                    $methodName = 'onKernel' . \ucfirst($event);
-                    $tag->changeMethod($methodName);
-                }
                 $this->listenerClassesToEvents[$eventListener->getClass()][$eventName][] = $eventListener;
             }
         }

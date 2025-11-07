@@ -8,7 +8,7 @@
  * For the full copyright and license information, please view
  * the LICENSE file that was distributed with this source code.
  */
-namespace RectorPrefix202507\Composer\Pcre;
+namespace RectorPrefix202308\Composer\Pcre;
 
 class PcreException extends \RuntimeException
 {
@@ -34,8 +34,12 @@ class PcreException extends \RuntimeException
         if (\function_exists('preg_last_error_msg')) {
             return \preg_last_error_msg();
         }
+        // older php versions did not set the code properly in all cases
+        if (\PHP_VERSION_ID < 70201 && $code === 0) {
+            return 'UNDEFINED_ERROR';
+        }
         $constants = \get_defined_constants(\true);
-        if (!isset($constants['pcre']) || !\is_array($constants['pcre'])) {
+        if (!isset($constants['pcre'])) {
             return 'UNDEFINED_ERROR';
         }
         foreach ($constants['pcre'] as $const => $val) {

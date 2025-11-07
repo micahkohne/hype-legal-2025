@@ -8,7 +8,7 @@ use PhpParser\Node\Expr\ClassConstFetch;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\Class_;
-use Rector\Rector\AbstractRector;
+use Rector\Core\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -66,10 +66,7 @@ CODE_SAMPLE
             if (!$node instanceof ClassConstFetch) {
                 return null;
             }
-            if (!$this->isUsingStatic($node)) {
-                return null;
-            }
-            if (!$class->isFinal() && !$this->isPrivateConstant($node, $class)) {
+            if ($this->shouldBeSkipped($class, $node)) {
                 return null;
             }
             $hasChanged = \true;
@@ -91,13 +88,20 @@ CODE_SAMPLE
         if ($constantName === null) {
             return \false;
         }
-        foreach ($class->getConstants() as $constant) {
-            if (!$this->isName($constant, $constantName)) {
+        foreach ($class->getConstants() as $classConst) {
+            if (!$this->nodeNameResolver->isName($classConst, $constantName)) {
                 continue;
             }
-            return $constant->isPrivate();
+            return $classConst->isPrivate();
         }
         return \false;
+    }
+    private function shouldBeSkipped(Class_ $class, ClassConstFetch $classConstFetch) : bool
+    {
+        if (!$this->isUsingStatic($classConstFetch)) {
+            return \true;
+        }
+        return !$this->isPrivateConstant($classConstFetch, $class);
     }
     private function getConstantName(ClassConstFetch $classConstFetch) : ?string
     {

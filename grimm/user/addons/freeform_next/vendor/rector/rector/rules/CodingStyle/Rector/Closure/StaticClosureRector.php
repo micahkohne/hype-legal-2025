@@ -6,7 +6,7 @@ namespace Rector\CodingStyle\Rector\Closure;
 use PhpParser\Node;
 use PhpParser\Node\Expr\Closure;
 use Rector\CodingStyle\Guard\StaticGuard;
-use Rector\Rector\AbstractRector;
+use Rector\Core\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -16,8 +16,9 @@ final class StaticClosureRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\CodingStyle\Guard\StaticGuard
      */
-    private StaticGuard $staticGuard;
+    private $staticGuard;
     public function __construct(StaticGuard $staticGuard)
     {
         $this->staticGuard = $staticGuard;

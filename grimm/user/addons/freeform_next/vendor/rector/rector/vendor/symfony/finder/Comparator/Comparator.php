@@ -8,15 +8,21 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-namespace RectorPrefix202507\Symfony\Component\Finder\Comparator;
+namespace RectorPrefix202308\Symfony\Component\Finder\Comparator;
 
 /**
  * @author Fabien Potencier <fabien@symfony.com>
  */
 class Comparator
 {
-    private string $target;
-    private string $operator;
+    /**
+     * @var string
+     */
+    private $target;
+    /**
+     * @var string
+     */
+    private $operator;
     public function __construct(string $target, string $operator = '==')
     {
         if (!\in_array($operator, ['>', '<', '>=', '<=', '==', '!='])) {

@@ -47,7 +47,7 @@ class SettingsService
     /**
      * @return FormTemplate[]
      */
-    public function getSolspaceFormTemplates(): array
+    public function getSolspaceFormTemplates()
     {
         $templateDirectoryPath = $this->getSolspaceFormTemplateDirectory();
 

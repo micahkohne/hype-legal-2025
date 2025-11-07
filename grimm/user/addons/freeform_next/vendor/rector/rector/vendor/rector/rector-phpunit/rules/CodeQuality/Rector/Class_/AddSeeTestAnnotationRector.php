@@ -4,16 +4,14 @@ declare (strict_types=1);
 namespace Rector\PHPUnit\CodeQuality\Rector\Class_;
 
 use PhpParser\Node;
-use PhpParser\Node\Identifier;
 use PhpParser\Node\Stmt\Class_;
 use PHPStan\PhpDocParser\Ast\PhpDoc\GenericTagValueNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocTagNode;
 use PHPStan\Reflection\ReflectionProvider;
 use Rector\BetterPhpDocParser\PhpDocInfo\PhpDocInfo;
-use Rector\BetterPhpDocParser\PhpDocInfo\PhpDocInfoFactory;
-use Rector\Comments\NodeDocBlock\DocBlockUpdater;
+use Rector\BetterPhpDocParser\PhpDocManipulator\PhpDocTagRemover;
+use Rector\Core\Rector\AbstractRector;
 use Rector\PHPUnit\Naming\TestClassNameResolver;
-use Rector\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -23,30 +21,28 @@ final class AddSeeTestAnnotationRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \PHPStan\Reflection\ReflectionProvider
      */
-    private ReflectionProvider $reflectionProvider;
+    private $reflectionProvider;
     /**
      * @readonly
+     * @var \Rector\BetterPhpDocParser\PhpDocManipulator\PhpDocTagRemover
      */
-    private TestClassNameResolver $testClassNameResolver;
+    private $phpDocTagRemover;
     /**
      * @readonly
+     * @var \Rector\PHPUnit\Naming\TestClassNameResolver
      */
-    private DocBlockUpdater $docBlockUpdater;
-    /**
-     * @readonly
-     */
-    private PhpDocInfoFactory $phpDocInfoFactory;
+    private $testClassNameResolver;
     /**
      * @var string
      */
     private const SEE = 'see';
-    public function __construct(ReflectionProvider $reflectionProvider, TestClassNameResolver $testClassNameResolver, DocBlockUpdater $docBlockUpdater, PhpDocInfoFactory $phpDocInfoFactory)
+    public function __construct(ReflectionProvider $reflectionProvider, PhpDocTagRemover $phpDocTagRemover, TestClassNameResolver $testClassNameResolver)
     {
         $this->reflectionProvider = $reflectionProvider;
+        $this->phpDocTagRemover = $phpDocTagRemover;
         $this->testClassNameResolver = $testClassNameResolver;
-        $this->docBlockUpdater = $docBlockUpdater;
-        $this->phpDocInfoFactory = $phpDocInfoFactory;
     }
     public function getRuleDefinition() : RuleDefinition
     {
@@ -89,16 +85,17 @@ CODE_SAMPLE
      */
     public function refactor(Node $node) : ?Node
     {
-        if ($this->shouldSkipClass($node)) {
-            return null;
-        }
         $className = $this->getName($node);
         if ($className === null) {
             return null;
         }
         $possibleTestClassNames = $this->testClassNameResolver->resolve($className);
         $matchingTestClassName = $this->matchExistingClassName($possibleTestClassNames);
+        if ($this->shouldSkipClass($node)) {
+            return null;
+        }
         $phpDocInfo = $this->phpDocInfoFactory->createFromNodeOrEmpty($node);
+        $this->removeNonExistingClassSeeAnnotation($phpDocInfo);
         if ($matchingTestClassName === null) {
             return null;
         }
@@ -107,16 +104,12 @@ CODE_SAMPLE
         }
         $phpDocTagNode = $this->createSeePhpDocTagNode($matchingTestClassName);
         $phpDocInfo->addPhpDocTagNode($phpDocTagNode);
-        $this->docBlockUpdater->updateRefactoredNodeWithPhpDocInfo($node);
         return $node;
     }
     private function shouldSkipClass(Class_ $class) : bool
     {
-        if ($class->isAnonymous()) {
-            return \true;
-        }
         // we are in the test case
-        if ($class->name instanceof Identifier && \substr_compare($class->name->toString(), 'Test', -\strlen('Test')) === 0) {
+        if ($this->isName($class, '*Test')) {
             return \true;
         }
         $phpDocInfo = $this->phpDocInfoFactory->createFromNodeOrEmpty($class);
@@ -155,6 +148,32 @@ CODE_SAMPLE
             }
         }
         return \false;
+    }
+    private function removeNonExistingClassSeeAnnotation(PhpDocInfo $phpDocInfo) : void
+    {
+        /** @var PhpDocTagNode[] $seePhpDocTagNodes */
+        $seePhpDocTagNodes = $phpDocInfo->getTagsByName(self::SEE);
+        foreach ($seePhpDocTagNodes as $seePhpDocTagNode) {
+            if (!$seePhpDocTagNode->value instanceof GenericTagValueNode) {
+                continue;
+            }
+            $possibleClassName = $seePhpDocTagNode->value->value;
+            if (!$this->isSeeTestCaseClass($possibleClassName)) {
+                continue;
+            }
+            if ($this->reflectionProvider->hasClass($possibleClassName)) {
+                continue;
+            }
+            // remove old annotation
+            $this->phpDocTagRemover->removeTagValueFromNode($phpDocInfo, $seePhpDocTagNode);
+        }
+    }
+    private function isSeeTestCaseClass(string $possibleClassName) : bool
+    {
+        if (\strncmp($possibleClassName, '\\', \strlen('\\')) !== 0) {
+            return \false;
+        }
+        return \substr_compare($possibleClassName, 'Test', -\strlen('Test')) === 0;
     }
     /**
      * @param string[] $classNames

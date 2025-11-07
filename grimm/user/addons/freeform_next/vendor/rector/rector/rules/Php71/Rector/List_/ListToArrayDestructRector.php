@@ -8,20 +8,21 @@ use PhpParser\Node\Expr\Array_;
 use PhpParser\Node\Expr\Assign;
 use PhpParser\Node\Expr\List_;
 use PhpParser\Node\Stmt\Foreach_;
-use Rector\NodeTypeResolver\Node\AttributeKey;
-use Rector\Rector\AbstractRector;
-use Rector\ValueObject\PhpVersionFeature;
+use Rector\Core\Rector\AbstractRector;
+use Rector\Core\ValueObject\PhpVersionFeature;
 use Rector\VersionBonding\Contract\MinPhpVersionInterface;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
+ * @changelog https://wiki.php.net/rfc/short_list_syntax https://www.php.net/manual/en/migration71.new-features.php#migration71.new-features.symmetric-array-destructuring
+ *
  * @see \Rector\Tests\Php71\Rector\List_\ListToArrayDestructRector\ListToArrayDestructRectorTest
  */
 final class ListToArrayDestructRector extends AbstractRector implements MinPhpVersionInterface
 {
     public function getRuleDefinition() : RuleDefinition
     {
-        return new RuleDefinition('Change `list()` to array destruct', [new CodeSample(<<<'CODE_SAMPLE'
+        return new RuleDefinition('Change list() to array destruct', [new CodeSample(<<<'CODE_SAMPLE'
 class SomeClass
 {
     public function run()
@@ -63,9 +64,6 @@ CODE_SAMPLE
             if (!$node->var instanceof List_) {
                 return null;
             }
-            if ($node->var->getAttribute(AttributeKey::KIND) === List_::KIND_ARRAY) {
-                return null;
-            }
             $list = $node->var;
             $node->var = new Array_($list->items);
             return $node;
@@ -73,16 +71,7 @@ CODE_SAMPLE
         if (!$node->valueVar instanceof List_) {
             return null;
         }
-        if ($node->valueVar->getAttribute(AttributeKey::KIND) === List_::KIND_ARRAY) {
-            return null;
-        }
         $list = $node->valueVar;
-        // all list items must be set
-        foreach ($list->items as $listItem) {
-            if ($listItem === null) {
-                return null;
-            }
-        }
         $node->valueVar = new Array_($list->items);
         return $node;
     }

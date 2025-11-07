@@ -1,19 +1,19 @@
 <?php
 
 declare (strict_types=1);
-namespace RectorPrefix202507\Symplify\EasyParallel\ValueObject;
+namespace RectorPrefix202308\Symplify\EasyParallel\ValueObject;
 
-use RectorPrefix202507\Clue\React\NDJson\Decoder;
-use RectorPrefix202507\Clue\React\NDJson\Encoder;
+use RectorPrefix202308\Clue\React\NDJson\Decoder;
+use RectorPrefix202308\Clue\React\NDJson\Encoder;
 use Exception;
-use RectorPrefix202507\React\ChildProcess\Process;
-use RectorPrefix202507\React\EventLoop\LoopInterface;
-use RectorPrefix202507\React\EventLoop\TimerInterface;
-use RectorPrefix202507\Symplify\EasyParallel\Enum\Action;
-use RectorPrefix202507\Symplify\EasyParallel\Enum\Content;
-use RectorPrefix202507\Symplify\EasyParallel\Enum\ReactCommand;
-use RectorPrefix202507\Symplify\EasyParallel\Enum\ReactEvent;
-use RectorPrefix202507\Symplify\EasyParallel\Exception\ParallelShouldNotHappenException;
+use RectorPrefix202308\React\ChildProcess\Process;
+use RectorPrefix202308\React\EventLoop\LoopInterface;
+use RectorPrefix202308\React\EventLoop\TimerInterface;
+use RectorPrefix202308\Symplify\EasyParallel\Enum\Action;
+use RectorPrefix202308\Symplify\EasyParallel\Enum\Content;
+use RectorPrefix202308\Symplify\EasyParallel\Enum\ReactCommand;
+use RectorPrefix202308\Symplify\EasyParallel\Enum\ReactEvent;
+use RectorPrefix202308\Symplify\EasyParallel\Exception\ParallelShouldNotHappenException;
 use Throwable;
 /**
  * Inspired at @see https://raw.githubusercontent.com/phpstan/phpstan-src/master/src/Parallel/Process.php
@@ -24,18 +24,27 @@ final class ParallelProcess
 {
     /**
      * @readonly
+     * @var string
      */
-    private string $command;
+    private $command;
     /**
      * @readonly
+     * @var \React\EventLoop\LoopInterface
      */
-    private LoopInterface $loop;
+    private $loop;
     /**
      * @readonly
+     * @var int
      */
-    private int $timetoutInSeconds;
-    private Process $process;
-    private Encoder $encoder;
+    private $timetoutInSeconds;
+    /**
+     * @var \React\ChildProcess\Process
+     */
+    private $process;
+    /**
+     * @var \Clue\React\NDJson\Encoder
+     */
+    private $encoder;
     /**
      * @var resource|null
      */
@@ -48,7 +57,10 @@ final class ParallelProcess
      * @var callable(Throwable): void
      */
     private $onError;
-    private ?TimerInterface $timer = null;
+    /**
+     * @var \React\EventLoop\TimerInterface|null
+     */
+    private $timer;
     public function __construct(string $command, LoopInterface $loop, int $timetoutInSeconds)
     {
         $this->command = $command;
@@ -129,7 +141,7 @@ final class ParallelProcess
     }
     private function cancelTimer() : void
     {
-        if (!$this->timer instanceof TimerInterface) {
+        if ($this->timer === null) {
             return;
         }
         $this->loop->cancelTimer($this->timer);

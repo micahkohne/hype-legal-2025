@@ -16,12 +16,11 @@ use PhpParser\Node\Param;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Function_;
-use PhpParser\NodeVisitor;
+use PhpParser\NodeTraverser;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
-use Rector\BetterPhpDocParser\PhpDocInfo\PhpDocInfoFactory;
-use Rector\Rector\AbstractRector;
+use Rector\Core\Rector\AbstractRector;
 use Rector\VendorLocker\ParentClassMethodTypeOverrideGuard;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
@@ -32,16 +31,12 @@ final class StrictStringParamConcatRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\VendorLocker\ParentClassMethodTypeOverrideGuard
      */
-    private ParentClassMethodTypeOverrideGuard $parentClassMethodTypeOverrideGuard;
-    /**
-     * @readonly
-     */
-    private PhpDocInfoFactory $phpDocInfoFactory;
-    public function __construct(ParentClassMethodTypeOverrideGuard $parentClassMethodTypeOverrideGuard, PhpDocInfoFactory $phpDocInfoFactory)
+    private $parentClassMethodTypeOverrideGuard;
+    public function __construct(ParentClassMethodTypeOverrideGuard $parentClassMethodTypeOverrideGuard)
     {
         $this->parentClassMethodTypeOverrideGuard = $parentClassMethodTypeOverrideGuard;
-        $this->phpDocInfoFactory = $phpDocInfoFactory;
     }
     public function getRuleDefinition() : RuleDefinition
     {
@@ -95,19 +90,12 @@ CODE_SAMPLE
                 continue;
             }
             $nativeType = $this->nodeTypeResolver->getNativeType($variableConcattedFromParam);
-            if (!$nativeType instanceof MixedType) {
-                continue;
-            }
-            $subtractedType = $nativeType->getSubtractedType();
-            if (!$subtractedType instanceof Type) {
-                $param->type = new Identifier('string');
-                $hasChanged = \true;
-                continue;
-            }
-            if (TypeCombinator::containsNull($subtractedType)) {
+            if ($nativeType instanceof MixedType && $nativeType->getSubtractedType() instanceof Type && TypeCombinator::containsNull($nativeType->getSubtractedType())) {
                 $param->type = new NullableType(new Identifier('string'));
-                $hasChanged = \true;
+            } else {
+                $param->type = new Identifier('string');
             }
+            $hasChanged = \true;
         }
         if ($hasChanged) {
             return $node;
@@ -130,11 +118,11 @@ CODE_SAMPLE
         $this->traverseNodesWithCallable($functionLike->stmts, function (Node $node) use($paramName, &$variableConcatted) : ?int {
             // skip nested class and function nodes
             if ($node instanceof FunctionLike || $node instanceof Class_) {
-                return NodeVisitor::DONT_TRAVERSE_CURRENT_AND_CHILDREN;
+                return NodeTraverser::DONT_TRAVERSE_CURRENT_AND_CHILDREN;
             }
             if ($node instanceof Assign && $node->var instanceof Variable && $this->isName($node->var, $paramName)) {
                 $variableConcatted = null;
-                return NodeVisitor::STOP_TRAVERSAL;
+                return NodeTraverser::STOP_TRAVERSAL;
             }
             $expr = $this->resolveAssignConcatVariable($node, $paramName);
             if ($expr instanceof Variable) {

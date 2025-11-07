@@ -8,32 +8,35 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-namespace RectorPrefix202507\Symfony\Component\Finder\Iterator;
+namespace RectorPrefix202308\Symfony\Component\Finder\Iterator;
 
-use RectorPrefix202507\Symfony\Component\Finder\Gitignore;
+use RectorPrefix202308\Symfony\Component\Finder\Gitignore;
 /**
  * @extends \FilterIterator<string, \SplFileInfo>
  */
 final class VcsIgnoredFilterIterator extends \FilterIterator
 {
-    private string $baseDir;
+    /**
+     * @var string
+     */
+    private $baseDir;
     /**
      * @var array<string, array{0: string, 1: string}|null>
      */
-    private array $gitignoreFilesCache = [];
+    private $gitignoreFilesCache = [];
     /**
      * @var array<string, bool>
      */
-    private array $ignoredPathsCache = [];
+    private $ignoredPathsCache = [];
     /**
      * @param \Iterator<string, \SplFileInfo> $iterator
      */
     public function __construct(\Iterator $iterator, string $baseDir)
     {
         $this->baseDir = $this->normalizePath($baseDir);
-        foreach (\array_merge([$this->baseDir], $this->parentDirectoriesUpwards($this->baseDir)) as $directory) {
-            if (@\is_dir("{$directory}/.git")) {
-                $this->baseDir = $directory;
+        foreach ($this->parentDirectoriesUpwards($this->baseDir) as $parentDirectory) {
+            if (@\is_dir("{$parentDirectory}/.git")) {
+                $this->baseDir = $parentDirectory;
                 break;
             }
         }
@@ -93,7 +96,9 @@ final class VcsIgnoredFilterIterator extends \FilterIterator
     }
     private function parentDirectoriesUpTo(string $from, string $upTo) : array
     {
-        return \array_filter($this->parentDirectoriesUpwards($from), static fn(string $directory): bool => \strncmp($directory, $upTo, \strlen($upTo)) === 0);
+        return \array_filter($this->parentDirectoriesUpwards($from), static function (string $directory) use($upTo) : bool {
+            return \strncmp($directory, $upTo, \strlen($upTo)) === 0;
+        });
     }
     /**
      * @return list<string>

@@ -3,12 +3,11 @@
 declare (strict_types=1);
 namespace Rector\Symfony\Set;
 
+use Rector\Set\Contract\SetListInterface;
 /**
- * @deprecated Use ->withAttributesSets(symfony: true) in rector.php config instead
- *
  * @api
  */
-final class SensiolabsSetList
+final class SensiolabsSetList implements SetListInterface
 {
     /**
      * @var string

@@ -11,7 +11,6 @@
 
 namespace Solspace\Addons\FreeformNext\Library\Composer\Components\Fields;
 
-use Override;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\AbstractField;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\FieldInterface;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Fields\DataContainers\Option;
@@ -38,7 +37,6 @@ class DynamicRecipientField extends AbstractField implements RecipientInterface,
     /**
      * @return string
      */
-    #[Override]
     public static function getFieldType(): string
     {
         return FieldInterface::TYPE_DYNAMIC_RECIPIENTS;
@@ -93,7 +91,6 @@ class DynamicRecipientField extends AbstractField implements RecipientInterface,
      *
      * @return string
      */
-    #[Override]
     public function getValueAsString($optionsAsValues = true)
     {
         if (!$optionsAsValues) {
@@ -184,7 +181,7 @@ class DynamicRecipientField extends AbstractField implements RecipientInterface,
      *
      * @return mixed
      */
-    public function getValueLabels($values)
+    public function getValueLabels($values): ?array
     {
         $options = $this->getOptions();
 

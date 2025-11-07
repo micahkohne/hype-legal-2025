@@ -7,48 +7,47 @@ use PhpParser\BuilderHelpers;
 use PhpParser\Node;
 use PhpParser\Node\Expr\ArrayDimFetch;
 use PhpParser\Node\Expr\MethodCall;
-use PhpParser\Node\Expr\NullsafeMethodCall;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Stmt\Class_;
-use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Interface_;
-use PhpParser\Node\Stmt\Trait_;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ReflectionProvider;
-use Rector\Contract\Rector\ConfigurableRectorInterface;
-use Rector\NodeManipulator\ClassManipulator;
-use Rector\PHPStan\ScopeFetcher;
-use Rector\Rector\AbstractRector;
-use Rector\Reflection\ReflectionResolver;
+use Rector\Core\Contract\Rector\ConfigurableRectorInterface;
+use Rector\Core\NodeManipulator\ClassManipulator;
+use Rector\Core\Rector\AbstractScopeAwareRector;
+use Rector\Core\Reflection\ReflectionResolver;
 use Rector\Renaming\Contract\MethodCallRenameInterface;
 use Rector\Renaming\ValueObject\MethodCallRename;
 use Rector\Renaming\ValueObject\MethodCallRenameWithArrayKey;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\ConfiguredCodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
-use RectorPrefix202507\Webmozart\Assert\Assert;
+use RectorPrefix202308\Webmozart\Assert\Assert;
 /**
  * @see \Rector\Tests\Renaming\Rector\MethodCall\RenameMethodRector\RenameMethodRectorTest
  */
-final class RenameMethodRector extends AbstractRector implements ConfigurableRectorInterface
+final class RenameMethodRector extends AbstractScopeAwareRector implements ConfigurableRectorInterface
 {
     /**
      * @readonly
+     * @var \Rector\Core\NodeManipulator\ClassManipulator
      */
-    private ClassManipulator $classManipulator;
+    private $classManipulator;
     /**
      * @readonly
+     * @var \Rector\Core\Reflection\ReflectionResolver
      */
-    private ReflectionResolver $reflectionResolver;
+    private $reflectionResolver;
     /**
      * @readonly
+     * @var \PHPStan\Reflection\ReflectionProvider
      */
-    private ReflectionProvider $reflectionProvider;
+    private $reflectionProvider;
     /**
      * @var MethodCallRenameInterface[]
      */
-    private array $methodCallRenames = [];
+    private $methodCallRenames = [];
     public function __construct(ClassManipulator $classManipulator, ReflectionResolver $reflectionResolver, ReflectionProvider $reflectionProvider)
     {
         $this->classManipulator = $classManipulator;
@@ -57,7 +56,7 @@ final class RenameMethodRector extends AbstractRector implements ConfigurableRec
     }
     public function getRuleDefinition() : RuleDefinition
     {
-        return new RuleDefinition('Turn method names to new ones', [new ConfiguredCodeSample(<<<'CODE_SAMPLE'
+        return new RuleDefinition('Turns method names to new ones.', [new ConfiguredCodeSample(<<<'CODE_SAMPLE'
 $someObject = new SomeExampleClass;
 $someObject->oldMethod();
 CODE_SAMPLE
@@ -72,15 +71,14 @@ CODE_SAMPLE
      */
     public function getNodeTypes() : array
     {
-        return [MethodCall::class, NullsafeMethodCall::class, StaticCall::class, Class_::class, Trait_::class, Interface_::class];
+        return [MethodCall::class, StaticCall::class, Class_::class, Interface_::class];
     }
     /**
-     * @param MethodCall|NullsafeMethodCall|StaticCall|Class_|Interface_|Trait_ $node
+     * @param MethodCall|StaticCall|Class_|Interface_ $node
      */
-    public function refactor(Node $node) : ?Node
+    public function refactorWithScope(Node $node, Scope $scope) : ?Node
     {
-        if ($node instanceof Class_ || $node instanceof Trait_ || $node instanceof Interface_) {
-            $scope = ScopeFetcher::fetch($node);
+        if ($node instanceof Class_ || $node instanceof Interface_) {
             return $this->refactorClass($node, $scope);
         }
         return $this->refactorMethodCallAndStaticCall($node);
@@ -94,7 +92,7 @@ CODE_SAMPLE
         $this->methodCallRenames = $configuration;
     }
     /**
-     * @param \PhpParser\Node\Expr\MethodCall|\PhpParser\Node\Expr\NullsafeMethodCall|\PhpParser\Node\Expr\StaticCall $call
+     * @param \PhpParser\Node\Expr\MethodCall|\PhpParser\Node\Expr\StaticCall $call
      */
     private function shouldSkipClassMethod($call, MethodCallRenameInterface $methodCallRename) : bool
     {
@@ -117,11 +115,11 @@ CODE_SAMPLE
         return $classReflection->hasMethod($methodCallRename->getNewMethod());
     }
     /**
-     * @param \PhpParser\Node\Stmt\Class_|\PhpParser\Node\Stmt\Trait_|\PhpParser\Node\Stmt\Interface_ $classOrInterface
+     * @param \PhpParser\Node\Stmt\Class_|\PhpParser\Node\Stmt\Interface_ $classOrInternace
      */
-    private function hasClassNewClassMethod($classOrInterface, MethodCallRenameInterface $methodCallRename) : bool
+    private function hasClassNewClassMethod($classOrInternace, MethodCallRenameInterface $methodCallRename) : bool
     {
-        return (bool) $classOrInterface->getMethod($methodCallRename->getNewMethod());
+        return (bool) $classOrInternace->getMethod($methodCallRename->getNewMethod());
     }
     private function shouldKeepForParentInterface(MethodCallRenameInterface $methodCallRename, ?ClassReflection $classReflection) : bool
     {
@@ -132,28 +130,35 @@ CODE_SAMPLE
         if (!$classReflection->isInterface()) {
             return \false;
         }
-        return $this->classManipulator->hasParentMethodOrInterface($methodCallRename->getObjectType(), $methodCallRename->getOldMethod());
+        return $this->classManipulator->hasParentMethodOrInterface($methodCallRename->getObjectType(), $methodCallRename->getOldMethod(), $methodCallRename->getNewMethod());
     }
     /**
-     * @param \PhpParser\Node\Stmt\Class_|\PhpParser\Node\Stmt\Trait_|\PhpParser\Node\Stmt\Interface_ $classOrInterface
-     * @return \PhpParser\Node\Stmt\Class_|\PhpParser\Node\Stmt\Trait_|\PhpParser\Node\Stmt\Interface_|null
+     * @param \PhpParser\Node\Stmt\Class_|\PhpParser\Node\Stmt\Interface_ $classOrInterface
+     * @return \PhpParser\Node\Stmt\Class_|\PhpParser\Node\Stmt\Interface_|null
      */
     private function refactorClass($classOrInterface, Scope $scope)
     {
+        if (!$scope->isInClass()) {
+            return null;
+        }
         $classReflection = $scope->getClassReflection();
         $hasChanged = \false;
         foreach ($classOrInterface->getMethods() as $classMethod) {
-            $methodName = $this->getName($classMethod->name);
-            if ($methodName === null) {
-                continue;
-            }
             foreach ($this->methodCallRenames as $methodCallRename) {
-                if ($this->shouldSkipRename($methodName, $classMethod, $methodCallRename, $classOrInterface, $classReflection)) {
+                if (!$this->isName($classMethod->name, $methodCallRename->getOldMethod())) {
+                    continue;
+                }
+                if (!$this->nodeTypeResolver->isMethodStaticCallOrClassMethodObjectType($classMethod, $methodCallRename->getObjectType())) {
+                    continue;
+                }
+                if ($this->shouldKeepForParentInterface($methodCallRename, $classReflection)) {
+                    continue;
+                }
+                if ($this->hasClassNewClassMethod($classOrInterface, $methodCallRename)) {
                     continue;
                 }
                 $classMethod->name = new Identifier($methodCallRename->getNewMethod());
                 $hasChanged = \true;
-                continue 2;
             }
         }
         if ($hasChanged) {
@@ -162,36 +167,13 @@ CODE_SAMPLE
         return null;
     }
     /**
-     * @param \PhpParser\Node\Stmt\Class_|\PhpParser\Node\Stmt\Trait_|\PhpParser\Node\Stmt\Interface_ $classOrInterface
-     */
-    private function shouldSkipRename(string $methodName, ClassMethod $classMethod, MethodCallRenameInterface $methodCallRename, $classOrInterface, ?ClassReflection $classReflection) : bool
-    {
-        if (!$this->nodeNameResolver->isStringName($methodName, $methodCallRename->getOldMethod())) {
-            return \true;
-        }
-        if (!$classReflection instanceof ClassReflection && $classOrInterface instanceof Trait_) {
-            return $this->hasClassNewClassMethod($classOrInterface, $methodCallRename);
-        }
-        if (!$this->nodeTypeResolver->isMethodStaticCallOrClassMethodObjectType($classMethod, $methodCallRename->getObjectType())) {
-            return \true;
-        }
-        if ($this->shouldKeepForParentInterface($methodCallRename, $classReflection)) {
-            return \true;
-        }
-        return $this->hasClassNewClassMethod($classOrInterface, $methodCallRename);
-    }
-    /**
-     * @param \PhpParser\Node\Expr\StaticCall|\PhpParser\Node\Expr\MethodCall|\PhpParser\Node\Expr\NullsafeMethodCall $call
-     * @return \PhpParser\Node\Expr\ArrayDimFetch|null|\PhpParser\Node\Expr\MethodCall|\PhpParser\Node\Expr\StaticCall|\PhpParser\Node\Expr\NullsafeMethodCall
+     * @param \PhpParser\Node\Expr\StaticCall|\PhpParser\Node\Expr\MethodCall $call
+     * @return \PhpParser\Node\Expr\ArrayDimFetch|null|\PhpParser\Node\Expr\MethodCall|\PhpParser\Node\Expr\StaticCall
      */
     private function refactorMethodCallAndStaticCall($call)
     {
-        $callName = $this->getName($call->name);
-        if ($callName === null) {
-            return null;
-        }
         foreach ($this->methodCallRenames as $methodCallRename) {
-            if (!$this->nodeNameResolver->isStringName($callName, $methodCallRename->getOldMethod())) {
+            if (!$this->isName($call->name, $methodCallRename->getOldMethod())) {
                 continue;
             }
             if (!$this->nodeTypeResolver->isMethodStaticCallOrClassMethodObjectType($call, $methodCallRename->getObjectType())) {

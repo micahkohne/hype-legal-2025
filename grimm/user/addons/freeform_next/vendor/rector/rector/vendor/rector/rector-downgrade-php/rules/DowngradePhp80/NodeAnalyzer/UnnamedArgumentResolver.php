@@ -15,12 +15,14 @@ final class UnnamedArgumentResolver
 {
     /**
      * @readonly
+     * @var \Rector\NodeNameResolver\NodeNameResolver
      */
-    private NodeNameResolver $nodeNameResolver;
+    private $nodeNameResolver;
     /**
      * @readonly
+     * @var \Rector\DowngradePhp80\NodeAnalyzer\NamedToUnnamedArgs
      */
-    private \Rector\DowngradePhp80\NodeAnalyzer\NamedToUnnamedArgs $namedToUnnamedArgs;
+    private $namedToUnnamedArgs;
     public function __construct(NodeNameResolver $nodeNameResolver, \Rector\DowngradePhp80\NodeAnalyzer\NamedToUnnamedArgs $namedToUnnamedArgs)
     {
         $this->nodeNameResolver = $nodeNameResolver;
@@ -33,8 +35,8 @@ final class UnnamedArgumentResolver
      */
     public function resolveFromReflection($functionLikeReflection, array $currentArgs) : array
     {
-        $extendedParametersAcceptor = ParametersAcceptorSelector::combineAcceptors($functionLikeReflection->getVariants());
-        $parameters = $extendedParametersAcceptor->getParameters();
+        $parametersAcceptor = ParametersAcceptorSelector::selectSingle($functionLikeReflection->getVariants());
+        $parameters = $parametersAcceptor->getParameters();
         if ($functionLikeReflection instanceof NativeFunctionReflection) {
             $functionLikeReflection = new ReflectionFunction($functionLikeReflection->getName());
         }
@@ -43,7 +45,7 @@ final class UnnamedArgumentResolver
         $toFillArgs = [];
         foreach ($currentArgs as $key => $arg) {
             if (!$arg->name instanceof Identifier) {
-                $unnamedArgs[$key] = new Arg($arg->value, $arg->byRef, $arg->unpack, [], null);
+                $unnamedArgs[$key] = new Arg($arg->value, $arg->byRef, $arg->unpack, $arg->getAttributes(), null);
                 continue;
             }
             /** @var string $argName */

@@ -8,16 +8,19 @@ final class VersionCompareCondition implements ConditionInterface
 {
     /**
      * @readonly
+     * @var int
      */
-    private int $firstVersion;
+    private $firstVersion;
     /**
      * @readonly
+     * @var int
      */
-    private int $secondVersion;
+    private $secondVersion;
     /**
      * @readonly
+     * @var string|null
      */
-    private ?string $compareSign;
+    private $compareSign;
     public function __construct(int $firstVersion, int $secondVersion, ?string $compareSign)
     {
         $this->firstVersion = $firstVersion;

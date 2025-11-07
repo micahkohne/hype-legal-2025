@@ -1,7 +1,7 @@
 <?php
 
 declare (strict_types=1);
-namespace Rector\ValueObject;
+namespace Rector\Core\ValueObject;
 
 use PhpParser\Node\Expr;
 use PhpParser\Node\Scalar\String_;
@@ -9,13 +9,14 @@ final class SprintfStringAndArgs
 {
     /**
      * @readonly
+     * @var \PhpParser\Node\Scalar\String_
      */
-    private String_ $string;
+    private $string;
     /**
      * @var Expr[]
      * @readonly
      */
-    private array $arrayItems;
+    private $arrayItems;
     /**
      * @param Expr[] $arrayItems
      */

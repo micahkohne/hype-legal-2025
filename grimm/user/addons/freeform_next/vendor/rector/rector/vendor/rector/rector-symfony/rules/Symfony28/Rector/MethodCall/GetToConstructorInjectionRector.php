@@ -6,9 +6,9 @@ namespace Rector\Symfony\Symfony28\Rector\MethodCall;
 use PhpParser\Node;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Stmt\Class_;
-use Rector\NodeManipulator\ClassDependencyManipulator;
+use Rector\Core\NodeManipulator\ClassDependencyManipulator;
+use Rector\Core\Rector\AbstractRector;
 use Rector\PostRector\ValueObject\PropertyMetadata;
-use Rector\Rector\AbstractRector;
 use Rector\Symfony\NodeAnalyzer\DependencyInjectionMethodCallAnalyzer;
 use Rector\Symfony\TypeAnalyzer\ContainerAwareAnalyzer;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
@@ -20,16 +20,19 @@ final class GetToConstructorInjectionRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\Symfony\NodeAnalyzer\DependencyInjectionMethodCallAnalyzer
      */
-    private DependencyInjectionMethodCallAnalyzer $dependencyInjectionMethodCallAnalyzer;
+    private $dependencyInjectionMethodCallAnalyzer;
     /**
      * @readonly
+     * @var \Rector\Symfony\TypeAnalyzer\ContainerAwareAnalyzer
      */
-    private ContainerAwareAnalyzer $containerAwareAnalyzer;
+    private $containerAwareAnalyzer;
     /**
      * @readonly
+     * @var \Rector\Core\NodeManipulator\ClassDependencyManipulator
      */
-    private ClassDependencyManipulator $classDependencyManipulator;
+    private $classDependencyManipulator;
     public function __construct(DependencyInjectionMethodCallAnalyzer $dependencyInjectionMethodCallAnalyzer, ContainerAwareAnalyzer $containerAwareAnalyzer, ClassDependencyManipulator $classDependencyManipulator)
     {
         $this->dependencyInjectionMethodCallAnalyzer = $dependencyInjectionMethodCallAnalyzer;

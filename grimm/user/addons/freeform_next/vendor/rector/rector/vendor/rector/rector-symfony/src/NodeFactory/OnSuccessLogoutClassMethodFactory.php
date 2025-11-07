@@ -13,28 +13,32 @@ use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Expression;
 use PhpParser\Node\Stmt\If_;
 use PhpParser\Node\Stmt\Return_;
-use PhpParser\NodeVisitor;
+use PhpParser\NodeTraverser;
+use Rector\Core\PhpParser\Node\NodeFactory;
 use Rector\NodeNameResolver\NodeNameResolver;
 use Rector\PhpDocParser\NodeTraverser\SimpleCallableNodeTraverser;
-use Rector\PhpParser\Node\NodeFactory;
 final class OnSuccessLogoutClassMethodFactory
 {
     /**
      * @readonly
+     * @var \Rector\Core\PhpParser\Node\NodeFactory
      */
-    private NodeFactory $nodeFactory;
+    private $nodeFactory;
     /**
      * @readonly
+     * @var \Rector\NodeNameResolver\NodeNameResolver
      */
-    private NodeNameResolver $nodeNameResolver;
+    private $nodeNameResolver;
     /**
      * @readonly
+     * @var \Rector\PhpDocParser\NodeTraverser\SimpleCallableNodeTraverser
      */
-    private SimpleCallableNodeTraverser $simpleCallableNodeTraverser;
+    private $simpleCallableNodeTraverser;
     /**
      * @readonly
+     * @var \Rector\Symfony\NodeFactory\BareLogoutClassMethodFactory
      */
-    private \Rector\Symfony\NodeFactory\BareLogoutClassMethodFactory $bareLogoutClassMethodFactory;
+    private $bareLogoutClassMethodFactory;
     /**
      * @var string
      */
@@ -78,7 +82,7 @@ final class OnSuccessLogoutClassMethodFactory
     {
         $this->simpleCallableNodeTraverser->traverseNodesWithCallable($classMethod, function (Node $node) {
             if ($node instanceof Param) {
-                return NodeVisitor::DONT_TRAVERSE_CURRENT_AND_CHILDREN;
+                return NodeTraverser::DONT_TRAVERSE_CURRENT_AND_CHILDREN;
             }
             if (!$node instanceof Variable) {
                 return null;

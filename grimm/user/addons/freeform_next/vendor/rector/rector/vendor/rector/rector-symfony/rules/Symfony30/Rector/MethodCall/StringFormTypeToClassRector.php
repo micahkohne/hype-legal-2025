@@ -7,7 +7,7 @@ use PhpParser\Node;
 use PhpParser\Node\Arg;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Scalar\String_;
-use Rector\Rector\AbstractRector;
+use Rector\Core\Rector\AbstractRector;
 use Rector\Symfony\FormHelper\FormTypeStringToTypeProvider;
 use Rector\Symfony\NodeAnalyzer\FormAddMethodCallAnalyzer;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
@@ -21,12 +21,14 @@ final class StringFormTypeToClassRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\Symfony\NodeAnalyzer\FormAddMethodCallAnalyzer
      */
-    private FormAddMethodCallAnalyzer $formAddMethodCallAnalyzer;
+    private $formAddMethodCallAnalyzer;
     /**
      * @readonly
+     * @var \Rector\Symfony\FormHelper\FormTypeStringToTypeProvider
      */
-    private FormTypeStringToTypeProvider $formTypeStringToTypeProvider;
+    private $formTypeStringToTypeProvider;
     /**
      * @var string
      */

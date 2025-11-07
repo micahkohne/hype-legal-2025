@@ -20,7 +20,7 @@ class ConnectionResult
     /**
      * @return bool
      */
-    public function isSuccessful()
+    public function isSuccessful(): bool
     {
         $isEmpty = empty($this->formErrors) && empty($this->fieldErrors);
 
@@ -61,7 +61,7 @@ class ConnectionResult
      *
      * @return $this
      */
-    public function addFormError($message): static
+    public function addFormError($message)
     {
         $this->formErrors[] = $message;
 
@@ -69,11 +69,9 @@ class ConnectionResult
     }
 
     /**
-     * @param array $errors
-     *
      * @return $this
      */
-    public function addFormErrors(array $errors): static
+    public function addFormErrors(array $errors)
     {
         foreach ($errors as $error) {
             $this->formErrors[] = $error;
@@ -88,7 +86,7 @@ class ConnectionResult
      *
      * @return ConnectionResult
      */
-    public function addFieldError($fieldName, $message): static
+    public function addFieldError($fieldName, $message)
     {
         if (!isset($this->fieldErrors[$fieldName])) {
             $this->fieldErrors[$fieldName] = [];
@@ -100,11 +98,9 @@ class ConnectionResult
     }
 
     /**
-     * @param array $errors
-     *
      * @return ConnectionResult
      */
-    public function addFieldErrors(array $errors): static
+    public function addFieldErrors(array $errors)
     {
         foreach ($errors as $key => $message) {
             $this->addFieldError($key, $message);

@@ -1,19 +1,13 @@
 {
   "name": "solspace/ee-freeform-next",
   "description": "The most reliable, intuitive and powerful form builder for ExpressionEngine.",
-  "version": "3.3.0",
+  "version": "3.3.3",
   "type": "library",
-  "authors": [
-    {
-      "name": "Solspace",
-      "homepage": "https://solspace.com/"
-    }
-  ],
   "require": {
-    "php": "^8.2||^8.3||^8.4",
-    "symfony/property-access": "^6.0",
-    "symfony/finder": "^5.0",
-    "symfony/filesystem": "^2.8",
+    "php": "^8.0 || ^8.1 || ^8.2 || ^8.3 || ^8.4",
+    "symfony/property-access": "^5.4 || ^6.0",
+    "symfony/finder": "^5.4 || ^6.0",
+    "symfony/filesystem": "^5.4 || ^6.0",
     "hashids/hashids": "^4.1",
     "pixel418/markdownify": "^2.3.1",
     "egulias/email-validator": "^2.1",
@@ -23,11 +17,9 @@
     "guzzlehttp/guzzle": "^7.0"
   },
   "require-dev": {
-    "phpunit/phpunit": "^11.5.1",
-    "dealerdirect/phpcodesniffer-composer-installer": "^1.0",
-    "phpcompatibility/php-compatibility": "^10.2",
-    "squizlabs/php_codesniffer": "^3.7",
-    "rector/rector": "^2.1"
+    "phpunit/phpunit": "^9.6",
+    "rector/rector": "^0.17.12",
+    "nikic/php-parser": "^4.15.5"
   },
   "autoload": {
     "psr-4": {
@@ -42,17 +34,19 @@
       "ft.freeform_next.php"
     ],
     "exclude-from-classmap": [
-      "vendor/",
-      "php7/"
+      "vendor/"
     ]
   },
   "config": {
-    "allow-plugins": {
-      "dealerdirect/phpcodesniffer-composer-installer": true
-    },
     "platform": {
-      "php": "8.2.0"
-    }
+      "php": "8.0.30"
+    },
+    "allow-plugins": {}
+  },
+  "scripts": {
+    "rector": "rector process",
+    "rector:dry": "rector process --dry-run",
+    "rector:clear": "rector process --clear-cache --dry-run"
   },
   "minimum-stability": "dev",
   "prefer-stable": true

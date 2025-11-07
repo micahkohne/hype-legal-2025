@@ -12,7 +12,6 @@
 namespace Solspace\Addons\FreeformNext\Library\Integrations;
 
 use DateTime;
-
 interface IntegrationInterface
 {
     /**

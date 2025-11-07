@@ -1,7 +1,7 @@
 <?php
 
 declare (strict_types=1);
-namespace RectorPrefix202507;
+namespace RectorPrefix202308;
 
 use Rector\Config\RectorConfig;
 use Rector\Renaming\Rector\MethodCall\RenameMethodRector;
@@ -17,8 +17,6 @@ return static function (RectorConfig $rectorConfig) : void {
         new MethodCallRename('Doctrine\\ORM\\Event\\PreFlushEventArgs', 'getEntityManager', 'getObjectManager'),
         // @see https://github.com/doctrine/orm/pull/9906
         new MethodCallRename('Doctrine\\ORM\\Event\\LifecycleEventArgs', 'getEntity', 'getObject'),
-        // @see https://github.com/doctrine/dbal/pull/4580
-        new MethodCallRename('Doctrine\\DBAL\\Statement', 'execute', 'executeQuery'),
     ]);
     $rectorConfig->ruleWithConfiguration(RenameClassRector::class, [
         // @see https://github.com/doctrine/orm/pull/9906

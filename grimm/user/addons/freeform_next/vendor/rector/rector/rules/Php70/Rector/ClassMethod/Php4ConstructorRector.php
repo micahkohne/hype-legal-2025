@@ -9,36 +9,37 @@ use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
-use PhpParser\Node\Name\FullyQualified;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Expression;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ClassReflection;
-use Rector\Enum\ObjectReference;
+use Rector\Core\Enum\ObjectReference;
+use Rector\Core\Rector\AbstractScopeAwareRector;
+use Rector\Core\ValueObject\MethodName;
+use Rector\Core\ValueObject\PhpVersionFeature;
 use Rector\NodeCollector\ScopeResolver\ParentClassScopeResolver;
 use Rector\NodeTypeResolver\Node\AttributeKey;
 use Rector\Php70\NodeAnalyzer\Php4ConstructorClassMethodAnalyzer;
-use Rector\PHPStan\ScopeFetcher;
-use Rector\Rector\AbstractRector;
-use Rector\ValueObject\MethodName;
-use Rector\ValueObject\PhpVersionFeature;
 use Rector\VersionBonding\Contract\MinPhpVersionInterface;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
+ * @changelog https://wiki.php.net/rfc/remove_php4_constructors
  * @see \Rector\Tests\Php70\Rector\ClassMethod\Php4ConstructorRector\Php4ConstructorRectorTest
  */
-final class Php4ConstructorRector extends AbstractRector implements MinPhpVersionInterface
+final class Php4ConstructorRector extends AbstractScopeAwareRector implements MinPhpVersionInterface
 {
     /**
      * @readonly
+     * @var \Rector\Php70\NodeAnalyzer\Php4ConstructorClassMethodAnalyzer
      */
-    private Php4ConstructorClassMethodAnalyzer $php4ConstructorClassMethodAnalyzer;
+    private $php4ConstructorClassMethodAnalyzer;
     /**
      * @readonly
+     * @var \Rector\NodeCollector\ScopeResolver\ParentClassScopeResolver
      */
-    private ParentClassScopeResolver $parentClassScopeResolver;
+    private $parentClassScopeResolver;
     public function __construct(Php4ConstructorClassMethodAnalyzer $php4ConstructorClassMethodAnalyzer, ParentClassScopeResolver $parentClassScopeResolver)
     {
         $this->php4ConstructorClassMethodAnalyzer = $php4ConstructorClassMethodAnalyzer;
@@ -77,8 +78,9 @@ CODE_SAMPLE
     }
     /**
      * @param Class_ $node
+     * @return \PhpParser\Node\Stmt\Class_|int|null
      */
-    public function refactor(Node $node) : ?\PhpParser\Node\Stmt\Class_
+    public function refactorWithScope(Node $node, Scope $scope)
     {
         $className = $this->getName($node);
         if (!\is_string($className)) {
@@ -88,7 +90,6 @@ CODE_SAMPLE
         if (!$psr4ConstructorMethod instanceof ClassMethod) {
             return null;
         }
-        $scope = ScopeFetcher::fetch($node);
         if (!$this->php4ConstructorClassMethodAnalyzer->detect($psr4ConstructorMethod, $scope)) {
             return null;
         }
@@ -99,26 +100,21 @@ CODE_SAMPLE
         // process parent call references first
         $this->processClassMethodStatementsForParentConstructorCalls($psr4ConstructorMethod, $scope);
         // does it already have a __construct method?
-        if (!$node->getMethod(MethodName::CONSTRUCT) instanceof ClassMethod) {
+        if (!$classReflection->hasConstructor()) {
             $psr4ConstructorMethod->name = new Identifier(MethodName::CONSTRUCT);
         }
         $classMethodStmts = $psr4ConstructorMethod->stmts;
         if ($classMethodStmts === null) {
             return null;
         }
-        $parentClassName = $classReflection->getParentClass() instanceof ClassReflection ? $classReflection->getParentClass()->getName() : '';
-        foreach ($classMethodStmts as $classMethodStmt) {
-            if (!$classMethodStmt instanceof Expression) {
+        if (\count($classMethodStmts) === 1) {
+            $stmt = $psr4ConstructorMethod->stmts[0];
+            if (!$stmt instanceof Expression) {
                 return null;
             }
-            if ($this->isLocalMethodCallNamed($classMethodStmt->expr, MethodName::CONSTRUCT)) {
+            if ($this->isLocalMethodCallNamed($stmt->expr, MethodName::CONSTRUCT)) {
                 $stmtKey = $psr4ConstructorMethod->getAttribute(AttributeKey::STMT_KEY);
                 unset($node->stmts[$stmtKey]);
-            }
-            if ($this->isLocalMethodCallNamed($classMethodStmt->expr, $parentClassName) && !$node->getMethod($parentClassName) instanceof ClassMethod) {
-                /** @var MethodCall $expr */
-                $expr = $classMethodStmt->expr;
-                $classMethodStmt->expr = new StaticCall(new FullyQualified($parentClassName), new Identifier(MethodName::CONSTRUCT), $expr->args);
             }
         }
         return $node;

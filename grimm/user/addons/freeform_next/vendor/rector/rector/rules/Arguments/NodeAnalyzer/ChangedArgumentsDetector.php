@@ -3,27 +3,29 @@
 declare (strict_types=1);
 namespace Rector\Arguments\NodeAnalyzer;
 
-use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Param;
 use PHPStan\Type\Type;
+use Rector\Core\PhpParser\Node\Value\ValueResolver;
 use Rector\NodeTypeResolver\TypeComparator\TypeComparator;
-use Rector\PhpParser\Node\Value\ValueResolver;
 use Rector\StaticTypeMapper\StaticTypeMapper;
 final class ChangedArgumentsDetector
 {
     /**
      * @readonly
+     * @var \Rector\Core\PhpParser\Node\Value\ValueResolver
      */
-    private ValueResolver $valueResolver;
+    private $valueResolver;
     /**
      * @readonly
+     * @var \Rector\StaticTypeMapper\StaticTypeMapper
      */
-    private StaticTypeMapper $staticTypeMapper;
+    private $staticTypeMapper;
     /**
      * @readonly
+     * @var \Rector\NodeTypeResolver\TypeComparator\TypeComparator
      */
-    private TypeComparator $typeComparator;
+    private $typeComparator;
     public function __construct(ValueResolver $valueResolver, StaticTypeMapper $staticTypeMapper, TypeComparator $typeComparator)
     {
         $this->valueResolver = $valueResolver;
@@ -42,7 +44,7 @@ final class ChangedArgumentsDetector
     }
     public function isTypeChanged(Param $param, ?Type $newType) : bool
     {
-        if (!$param->type instanceof Node) {
+        if ($param->type === null) {
             return \false;
         }
         if (!$newType instanceof Type) {

@@ -3,7 +3,7 @@
 namespace Solspace\Addons\FreeformNext\Controllers;
 
 use Exception;
-use ExpressionEngine\Library\CP\Table;
+use EllisLab\ExpressionEngine\Library\CP\Table;
 use GuzzleHttp\Exception\BadResponseException;
 use Solspace\Addons\FreeformNext\Library\Exceptions\Integrations\IntegrationException;
 use Solspace\Addons\FreeformNext\Library\Helpers\ExtensionHelper;
@@ -28,7 +28,7 @@ class CrmController extends Controller
      *
      * @return View
      */
-    public function handle($id = null): CpView|AjaxView|RedirectView
+    public function handle(null|string|int $id = null): CpView|AjaxView|RedirectView
     {
         if (null === $id) {
             return $this->index();
@@ -93,8 +93,8 @@ class CrmController extends Controller
                     'value' => $integration->id,
                     'data'  => [
                         'confirm' => lang('Integration') . ': <b>' . htmlentities(
-                                (string) $integration->name,
-                                ENT_QUOTES
+                                $integration->name,
+                                ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401, 'UTF-8'
                             ) . '</b>',
                     ],
                 ],
@@ -313,8 +313,6 @@ class CrmController extends Controller
     }
 
     /**
-     * @param IntegrationModel $model
-     *
      * @return bool
      */
     public function save(IntegrationModel $model)
@@ -322,7 +320,7 @@ class CrmController extends Controller
         $isNew = !$model->id;
 
         $class  = ee()->input->post('class');
-        $hash   = md5((string) $class);
+        $hash   = md5($class);
         $name   = ee()->input->post('name');
         $handle = ee()->input->post('handle');
 
@@ -441,8 +439,6 @@ class CrmController extends Controller
 
     /**
      * Handle OAuth2 authorization
-     *
-     * @param IntegrationModel $model
      */
     private function handleAuthorization(IntegrationModel $model): void
     {

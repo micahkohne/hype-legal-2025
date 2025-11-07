@@ -1,60 +1,48 @@
 <?php
 
 declare (strict_types=1);
-namespace Rector\NodeManipulator;
+namespace Rector\Core\NodeManipulator;
 
 use PhpParser\Node;
-use PhpParser\Node\Expr;
-use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Expression;
-use PhpParser\Node\Stmt\Finally_;
-use PhpParser\Node\Stmt\TryCatch;
-use Rector\Contract\PhpParser\Node\StmtsAwareInterface;
-use Rector\DeadCode\NodeAnalyzer\ExprUsedInNodeAnalyzer;
-use Rector\NodeTypeResolver\Node\AttributeKey;
+use Rector\Core\Contract\PhpParser\Node\StmtsAwareInterface;
+use Rector\Core\PhpParser\Comparing\NodeComparator;
+use Rector\Core\PhpParser\Node\BetterNodeFinder;
 use Rector\PhpDocParser\NodeTraverser\SimpleCallableNodeTraverser;
-use Rector\PhpParser\Comparing\NodeComparator;
-use Rector\PhpParser\Node\BetterNodeFinder;
 final class StmtsManipulator
 {
     /**
      * @readonly
+     * @var \Rector\PhpDocParser\NodeTraverser\SimpleCallableNodeTraverser
      */
-    private SimpleCallableNodeTraverser $simpleCallableNodeTraverser;
+    private $simpleCallableNodeTraverser;
     /**
      * @readonly
+     * @var \Rector\Core\PhpParser\Node\BetterNodeFinder
      */
-    private BetterNodeFinder $betterNodeFinder;
+    private $betterNodeFinder;
     /**
      * @readonly
+     * @var \Rector\Core\PhpParser\Comparing\NodeComparator
      */
-    private NodeComparator $nodeComparator;
-    /**
-     * @readonly
-     */
-    private ExprUsedInNodeAnalyzer $exprUsedInNodeAnalyzer;
-    public function __construct(SimpleCallableNodeTraverser $simpleCallableNodeTraverser, BetterNodeFinder $betterNodeFinder, NodeComparator $nodeComparator, ExprUsedInNodeAnalyzer $exprUsedInNodeAnalyzer)
+    private $nodeComparator;
+    public function __construct(SimpleCallableNodeTraverser $simpleCallableNodeTraverser, BetterNodeFinder $betterNodeFinder, NodeComparator $nodeComparator)
     {
         $this->simpleCallableNodeTraverser = $simpleCallableNodeTraverser;
         $this->betterNodeFinder = $betterNodeFinder;
         $this->nodeComparator = $nodeComparator;
-        $this->exprUsedInNodeAnalyzer = $exprUsedInNodeAnalyzer;
     }
     /**
      * @param Stmt[] $stmts
-     * @return null|\PhpParser\Node\Expr|\PhpParser\Node\Stmt
      */
-    public function getUnwrappedLastStmt(array $stmts)
+    public function getUnwrappedLastStmt(array $stmts) : ?Node
     {
-        if ($stmts === []) {
-            return null;
-        }
-        $lastStmtKey = \array_key_last($stmts);
+        \end($stmts);
+        $lastStmtKey = \key($stmts);
         $lastStmt = $stmts[$lastStmtKey];
         if ($lastStmt instanceof Expression) {
-            $lastStmt->expr->setAttribute(AttributeKey::COMMENTS, $lastStmt->getAttribute(AttributeKey::COMMENTS));
             return $lastStmt->expr;
         }
         return $lastStmt;
@@ -81,22 +69,7 @@ final class StmtsManipulator
         if ($stmtsAware->stmts === null) {
             return \false;
         }
-        $lastKey = \array_key_last($stmtsAware->stmts);
-        $stmts = [];
-        for ($key = $jumpToKey; $key <= $lastKey; ++$key) {
-            if (!isset($stmtsAware->stmts[$key])) {
-                // can be just removed
-                continue;
-            }
-            $stmts[] = $stmtsAware->stmts[$key];
-        }
-        if ($stmtsAware instanceof TryCatch) {
-            $stmts = \array_merge($stmts, $stmtsAware->catches);
-            if ($stmtsAware->finally instanceof Finally_) {
-                $stmts = \array_merge($stmts, $stmtsAware->finally->stmts);
-            }
-        }
-        $variable = new Variable($variableName);
-        return (bool) $this->betterNodeFinder->findFirst($stmts, fn(Node $subNode): bool => $this->exprUsedInNodeAnalyzer->isUsed($subNode, $variable));
+        $stmts = \array_slice($stmtsAware->stmts, $jumpToKey, null, \true);
+        return (bool) $this->betterNodeFinder->findVariableOfName($stmts, $variableName);
     }
 }

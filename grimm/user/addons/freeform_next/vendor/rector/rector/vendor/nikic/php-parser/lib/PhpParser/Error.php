@@ -5,19 +5,23 @@ namespace PhpParser;
 
 class Error extends \RuntimeException
 {
-    protected string $rawMessage;
-    /** @var array<string, mixed> */
-    protected array $attributes;
+    protected $rawMessage;
+    protected $attributes;
     /**
      * Creates an Exception signifying a parse error.
      *
-     * @param string $message Error message
-     * @param array<string, mixed> $attributes Attributes of node/token where error occurred
+     * @param string    $message    Error message
+     * @param array|int $attributes Attributes of node/token where error occurred
+     *                              (or start line of error -- deprecated)
      */
-    public function __construct(string $message, array $attributes = [])
+    public function __construct(string $message, $attributes = [])
     {
         $this->rawMessage = $message;
-        $this->attributes = $attributes;
+        if (\is_array($attributes)) {
+            $this->attributes = $attributes;
+        } else {
+            $this->attributes = ['startLine' => $attributes];
+        }
         $this->updateMessage();
     }
     /**
@@ -33,7 +37,6 @@ class Error extends \RuntimeException
      * Gets the line the error starts in.
      *
      * @return int Error start line
-     * @phpstan-return -1|positive-int
      */
     public function getStartLine() : int
     {
@@ -43,7 +46,6 @@ class Error extends \RuntimeException
      * Gets the line the error ends in.
      *
      * @return int Error end line
-     * @phpstan-return -1|positive-int
      */
     public function getEndLine() : int
     {
@@ -52,7 +54,7 @@ class Error extends \RuntimeException
     /**
      * Gets the attributes of the node/token the error occurred at.
      *
-     * @return array<string, mixed>
+     * @return array
      */
     public function getAttributes() : array
     {
@@ -61,9 +63,9 @@ class Error extends \RuntimeException
     /**
      * Sets the attributes of the node/token the error occurred at.
      *
-     * @param array<string, mixed> $attributes
+     * @param array $attributes
      */
-    public function setAttributes(array $attributes) : void
+    public function setAttributes(array $attributes)
     {
         $this->attributes = $attributes;
         $this->updateMessage();
@@ -73,7 +75,7 @@ class Error extends \RuntimeException
      *
      * @param string $message Error message
      */
-    public function setRawMessage(string $message) : void
+    public function setRawMessage(string $message)
     {
         $this->rawMessage = $message;
         $this->updateMessage();
@@ -83,7 +85,7 @@ class Error extends \RuntimeException
      *
      * @param int $line Error start line
      */
-    public function setStartLine(int $line) : void
+    public function setStartLine(int $line)
     {
         $this->attributes['startLine'] = $line;
         $this->updateMessage();
@@ -92,6 +94,8 @@ class Error extends \RuntimeException
      * Returns whether the error has start and end column information.
      *
      * For column information enable the startFilePos and endFilePos in the lexer options.
+     *
+     * @return bool
      */
     public function hasColumnInfo() : bool
     {
@@ -101,6 +105,7 @@ class Error extends \RuntimeException
      * Gets the start column (1-based) into the line where the error started.
      *
      * @param string $code Source code of the file
+     * @return int
      */
     public function getStartColumn(string $code) : int
     {
@@ -113,6 +118,7 @@ class Error extends \RuntimeException
      * Gets the end column (1-based) into the line where the error ended.
      *
      * @param string $code Source code of the file
+     * @return int
      */
     public function getEndColumn(string $code) : int
     {
@@ -136,7 +142,7 @@ class Error extends \RuntimeException
      * Converts a file offset into a column.
      *
      * @param string $code Source code that $pos indexes into
-     * @param int $pos 0-based position in $code
+     * @param int    $pos  0-based position in $code
      *
      * @return int 1-based column (relative to start of line)
      */
@@ -154,7 +160,7 @@ class Error extends \RuntimeException
     /**
      * Updates the exception message after a change to rawMessage or rawLine.
      */
-    protected function updateMessage() : void
+    protected function updateMessage()
     {
         $this->message = $this->rawMessage;
         if (-1 === $this->getStartLine()) {

@@ -3,44 +3,51 @@
 declare (strict_types=1);
 namespace Rector\Naming\ValueObject;
 
-use PhpParser\Node\PropertyItem;
 use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\Node\Stmt\Property;
-use Rector\Validation\RectorAssert;
-final class PropertyRename
+use PhpParser\Node\Stmt\PropertyProperty;
+use Rector\Core\Validation\RectorAssert;
+use Rector\Naming\Contract\RenamePropertyValueObjectInterface;
+final class PropertyRename implements RenamePropertyValueObjectInterface
 {
     /**
      * @readonly
+     * @var \PhpParser\Node\Stmt\Property
      */
-    private Property $property;
+    private $property;
     /**
      * @readonly
+     * @var string
      */
-    private string $expectedName;
+    private $expectedName;
     /**
      * @readonly
+     * @var string
      */
-    private string $currentName;
+    private $currentName;
     /**
      * @readonly
+     * @var \PhpParser\Node\Stmt\ClassLike
      */
-    private ClassLike $classLike;
+    private $classLike;
     /**
      * @readonly
+     * @var string
      */
-    private string $classLikeName;
+    private $classLikeName;
     /**
      * @readonly
+     * @var \PhpParser\Node\Stmt\PropertyProperty
      */
-    private PropertyItem $propertyItem;
-    public function __construct(Property $property, string $expectedName, string $currentName, ClassLike $classLike, string $classLikeName, PropertyItem $propertyItem)
+    private $propertyProperty;
+    public function __construct(Property $property, string $expectedName, string $currentName, ClassLike $classLike, string $classLikeName, PropertyProperty $propertyProperty)
     {
         $this->property = $property;
         $this->expectedName = $expectedName;
         $this->currentName = $currentName;
         $this->classLike = $classLike;
         $this->classLikeName = $classLikeName;
-        $this->propertyItem = $propertyItem;
+        $this->propertyProperty = $propertyProperty;
         // name must be valid
         RectorAssert::propertyName($currentName);
         RectorAssert::propertyName($expectedName);
@@ -73,8 +80,8 @@ final class PropertyRename
     {
         return $this->classLikeName;
     }
-    public function getPropertyProperty() : PropertyItem
+    public function getPropertyProperty() : PropertyProperty
     {
-        return $this->propertyItem;
+        return $this->propertyProperty;
     }
 }

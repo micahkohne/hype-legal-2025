@@ -19,11 +19,11 @@ use Solspace\Addons\FreeformNext\Utilities\ControlPanel\View;
 class MigrationsController extends Controller
 {
     /**
-     * @param null|int|string $id
+     * @param int|null $id
      *
      * @return View
      */
-    public function handle(null|int|string $id = null): RedirectView|CpView|AjaxView
+    public function handle(null|string|int $id = null): RedirectView|CpView|AjaxView
     {
         if (null === $id) {
             return $this->index();
@@ -183,8 +183,6 @@ class MigrationsController extends Controller
     }
 
     /**
-     * @param IntegrationModel $model
-     *
      * @return bool
      */
     public function save(IntegrationModel $model)
@@ -198,7 +196,7 @@ class MigrationsController extends Controller
         $isNew = !$model->id;
 
         $class  = ee()->input->post('class');
-        $hash   = md5((string) $class);
+        $hash   = md5($class);
         $name   = ee()->input->post('name');
         $handle = ee()->input->post('handle');
 

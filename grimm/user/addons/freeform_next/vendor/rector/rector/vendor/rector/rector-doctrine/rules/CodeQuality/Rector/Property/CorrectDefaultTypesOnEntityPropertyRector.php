@@ -9,18 +9,15 @@ use PhpParser\Node\Expr\ClassConstFetch;
 use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\Expr\UnaryMinus;
 use PhpParser\Node\Expr\UnaryPlus;
-use PhpParser\Node\PropertyItem;
-use PhpParser\Node\Scalar\Int_;
+use PhpParser\Node\Scalar\LNumber;
 use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\Stmt\Property;
+use PhpParser\Node\Stmt\PropertyProperty;
 use Rector\BetterPhpDocParser\PhpDoc\ArrayItemNode;
 use Rector\BetterPhpDocParser\PhpDoc\DoctrineAnnotationTagValueNode;
 use Rector\BetterPhpDocParser\PhpDoc\StringNode;
-use Rector\BetterPhpDocParser\PhpDocInfo\PhpDocInfoFactory;
-use Rector\Doctrine\Enum\MappingClass;
-use Rector\Exception\NotImplementedYetException;
-use Rector\PhpParser\Node\Value\ValueResolver;
-use Rector\Rector\AbstractRector;
+use Rector\Core\Exception\NotImplementedYetException;
+use Rector\Core\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -28,19 +25,6 @@ use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
  */
 final class CorrectDefaultTypesOnEntityPropertyRector extends AbstractRector
 {
-    /**
-     * @readonly
-     */
-    private PhpDocInfoFactory $phpDocInfoFactory;
-    /**
-     * @readonly
-     */
-    private ValueResolver $valueResolver;
-    public function __construct(PhpDocInfoFactory $phpDocInfoFactory, ValueResolver $valueResolver)
-    {
-        $this->phpDocInfoFactory = $phpDocInfoFactory;
-        $this->valueResolver = $valueResolver;
-    }
     public function getRuleDefinition() : RuleDefinition
     {
         return new RuleDefinition('Change default value types to match Doctrine annotation type', [new CodeSample(<<<'CODE_SAMPLE'
@@ -86,7 +70,7 @@ CODE_SAMPLE
     public function refactor(Node $node) : ?Node
     {
         $phpDocInfo = $this->phpDocInfoFactory->createFromNodeOrEmpty($node);
-        $doctrineAnnotationTagValueNode = $phpDocInfo->getByAnnotationClass(MappingClass::COLUMN);
+        $doctrineAnnotationTagValueNode = $phpDocInfo->getByAnnotationClass('Doctrine\\ORM\\Mapping\\Column');
         if (!$doctrineAnnotationTagValueNode instanceof DoctrineAnnotationTagValueNode) {
             return null;
         }
@@ -114,14 +98,14 @@ CODE_SAMPLE
         }
         return null;
     }
-    private function refactorToBoolType(PropertyItem $propertyItem, Property $property) : ?Property
+    private function refactorToBoolType(PropertyProperty $propertyProperty, Property $property) : ?Property
     {
-        if (!$propertyItem->default instanceof Expr) {
+        if (!$propertyProperty->default instanceof Expr) {
             return null;
         }
-        $defaultExpr = $propertyItem->default;
+        $defaultExpr = $propertyProperty->default;
         if ($defaultExpr instanceof String_) {
-            $propertyItem->default = (bool) $defaultExpr->value ? $this->nodeFactory->createTrue() : $this->nodeFactory->createFalse();
+            $propertyProperty->default = (bool) $defaultExpr->value ? $this->nodeFactory->createTrue() : $this->nodeFactory->createFalse();
             return $property;
         }
         if ($defaultExpr instanceof ConstFetch || $defaultExpr instanceof ClassConstFetch) {
@@ -130,17 +114,17 @@ CODE_SAMPLE
         }
         throw new NotImplementedYetException();
     }
-    private function refactorToIntType(PropertyItem $propertyItem, Property $property) : ?Property
+    private function refactorToIntType(PropertyProperty $propertyProperty, Property $property) : ?Property
     {
-        if (!$propertyItem->default instanceof Expr) {
+        if (!$propertyProperty->default instanceof Expr) {
             return null;
         }
-        $defaultExpr = $propertyItem->default;
+        $defaultExpr = $propertyProperty->default;
         if ($defaultExpr instanceof String_) {
-            $propertyItem->default = new Int_((int) $defaultExpr->value);
+            $propertyProperty->default = new LNumber((int) $defaultExpr->value);
             return $property;
         }
-        if ($defaultExpr instanceof Int_) {
+        if ($defaultExpr instanceof LNumber) {
             // already correct
             return null;
         }

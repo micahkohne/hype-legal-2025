@@ -10,7 +10,7 @@ use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Return_;
 use PHPStan\Type\ObjectType;
-use Rector\Rector\AbstractRector;
+use Rector\Core\Rector\AbstractRector;
 use Rector\Symfony\FormHelper\FormTypeStringToTypeProvider;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
@@ -21,8 +21,9 @@ final class FormTypeGetParentRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\Symfony\FormHelper\FormTypeStringToTypeProvider
      */
-    private FormTypeStringToTypeProvider $formTypeStringToTypeProvider;
+    private $formTypeStringToTypeProvider;
     public function __construct(FormTypeStringToTypeProvider $formTypeStringToTypeProvider)
     {
         $this->formTypeStringToTypeProvider = $formTypeStringToTypeProvider;
@@ -117,7 +118,7 @@ CODE_SAMPLE
             return $this->isObjectType($class, new ObjectType('Symfony\\Component\\Form\\AbstractType'));
         }
         if ($this->isName($classMethod->name, 'getExtendedType')) {
-            return $this->isObjectType($class, new ObjectType('Symfony\\Component\\Form\\AbstractTypeExtension'));
+            return $this->isObjectType($classMethod, new ObjectType('Symfony\\Component\\Form\\AbstractTypeExtension'));
         }
         return \false;
     }

@@ -337,7 +337,7 @@ class MailingListsService  extends AbstractIntegrationService implements Mailing
     /**
      * @return array
      */
-    public function getAllMailingListServiceProviders(): array
+    public function getAllMailingListServiceProviders()
     {
         if (null === self::$integrations) {
             $interface = MailingListIntegrationInterface::class;
@@ -435,15 +435,13 @@ class MailingListsService  extends AbstractIntegrationService implements Mailing
     /**
      * {@inheritDoc}
      */
-    public function onAfterResponse(AbstractIntegration $integration, ResponseInterface $response)
+    public function onAfterResponse(AbstractIntegration $integration, ResponseInterface $response): void
     {
 
     }
 
     /**
      * Update the access token of an integration
-     *
-     * @param AbstractMailingListIntegration $integration
      */
     public function updateAccessToken(AbstractMailingListIntegration $integration): void
     {

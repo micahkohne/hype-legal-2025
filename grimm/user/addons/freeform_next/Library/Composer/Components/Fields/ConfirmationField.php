@@ -2,7 +2,6 @@
 
 namespace Solspace\Addons\FreeformNext\Library\Composer\Components\Fields;
 
-use Override;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Fields\Interfaces\NoStorageInterface;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Fields\Interfaces\RememberPostedValueInterface;
 use Solspace\Addons\FreeformNext\Library\Exceptions\FreeformException;
@@ -17,7 +16,6 @@ class ConfirmationField extends TextField implements NoStorageInterface, Remembe
      *
      * @return string
      */
-    #[Override]
     public function getType(): string
     {
         return self::TYPE_CONFIRMATION;
@@ -34,7 +32,6 @@ class ConfirmationField extends TextField implements NoStorageInterface, Remembe
     /**
      * @return array
      */
-    #[Override]
     protected function validate()
     {
         $errors = parent::validate();
@@ -44,7 +41,7 @@ class ConfirmationField extends TextField implements NoStorageInterface, Remembe
 
             $value = $field->getValue();
             if ($field instanceof EmailField) {
-                if (count($value) >= 1) {
+                if ((is_countable($value) ? count($value) : 0) >= 1) {
                     $value = reset($value);
                 } else {
                     $value = '';
@@ -66,8 +63,7 @@ class ConfirmationField extends TextField implements NoStorageInterface, Remembe
     /**
      * @inheritDoc
      */
-    #[Override]
-    protected function getInputHtml(): string
+    protected function getInputHtml()
     {
         $attributes = $this->getCustomAttributes();
 
@@ -103,13 +99,9 @@ class ConfirmationField extends TextField implements NoStorageInterface, Remembe
 
     /**
      * @param string $string
-     * @param string $name
-     * @param mixed  $value
-     * @param bool   $escapeValue
-     *
      * @return string
      */
-    private function injectAttribute(string|array|null $string, string $name, $value, bool $escapeValue = true): string|array|null
+    private function injectAttribute(string|array|null $string, string $name, mixed $value, bool $escapeValue = true): string|array|null
     {
         if (preg_match('/' . $name . '=[\'"][^\'"]*[\'"]/', $string)) {
             $string = preg_replace(

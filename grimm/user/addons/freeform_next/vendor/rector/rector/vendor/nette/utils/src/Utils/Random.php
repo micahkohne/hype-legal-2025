@@ -5,10 +5,9 @@
  * Copyright (c) 2004 David Grudl (https://davidgrudl.com)
  */
 declare (strict_types=1);
-namespace RectorPrefix202507\Nette\Utils;
+namespace RectorPrefix202308\Nette\Utils;
 
-use RectorPrefix202507\Nette;
-use Random\Randomizer;
+use RectorPrefix202308\Nette;
 /**
  * Secure random string generator.
  */
@@ -21,15 +20,14 @@ final class Random
      */
     public static function generate(int $length = 10, string $charlist = '0-9a-z') : string
     {
-        $charlist = \preg_replace_callback('#.-.#', fn(array $m): string => \implode('', \range($m[0][0], $m[0][2])), $charlist);
-        $charlist = \count_chars($charlist, 3);
+        $charlist = \count_chars(\preg_replace_callback('#.-.#', function (array $m) : string {
+            return \implode('', \range($m[0][0], $m[0][2]));
+        }, $charlist), 3);
         $chLen = \strlen($charlist);
         if ($length < 1) {
             throw new Nette\InvalidArgumentException('Length must be greater than zero.');
         } elseif ($chLen < 2) {
             throw new Nette\InvalidArgumentException('Character list must contain at least two chars.');
-        } elseif (\PHP_VERSION_ID >= 80300) {
-            return (new Randomizer())->getBytesFromString($charlist, $length);
         }
         $res = '';
         for ($i = 0; $i < $length; $i++) {

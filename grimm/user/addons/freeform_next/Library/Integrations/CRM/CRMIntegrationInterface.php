@@ -25,9 +25,8 @@ interface CRMIntegrationInterface
     /**
      * Push objects to the CRM
      *
-     * @param array $keyValueList
      *
      * @return bool
      */
-    public function pushObject(array $keyValueList, $formFields = null);
+    public function pushObject(array $keyValueList, ?array $formFields = null): bool;
 }

@@ -11,27 +11,18 @@ interface FieldHandlerInterface
 {
     /**
      * Perform actions with a field before validation takes place
-     *
-     * @param AbstractField $field
-     * @param Form          $form
      */
     public function beforeValidate(AbstractField $field, Form $form);
 
     /**
      * Perform actions with a field after validation takes place
-     *
-     * @param AbstractField $field
-     * @param Form          $form
      */
     public function afterValidate(AbstractField $field, Form $form);
 
     /**
      * @param string $source
-     * @param mixed  $target
-     * @param array  $configuration
-     * @param mixed  $selectedValues
      *
      * @return Option[]
      */
-    public function getOptionsFromSource($source, $target, array $configuration = [], $selectedValues = []);
+    public function getOptionsFromSource($source, mixed $target, array $configuration = [], mixed $selectedValues = []);
 }

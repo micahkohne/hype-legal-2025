@@ -11,11 +11,10 @@ use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\VariadicPlaceholder;
 use PHPStan\Analyser\Scope;
 use PHPStan\Type\ObjectType;
+use Rector\Core\Rector\AbstractScopeAwareRector;
+use Rector\Core\ValueObject\PhpVersion;
 use Rector\NodeCollector\NodeAnalyzer\ArrayCallableMethodMatcher;
 use Rector\NodeCollector\ValueObject\ArrayCallable;
-use Rector\PHPStan\ScopeFetcher;
-use Rector\Rector\AbstractRector;
-use Rector\ValueObject\PhpVersion;
 use Rector\VersionBonding\Contract\MinPhpVersionInterface;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
@@ -24,12 +23,13 @@ use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
  *
  * @see PHP 8.1 way to handle functions/filters https://github.com/symfony/symfony/blob/e0ad2eead3513a558c09d8aa3ae9e867fb10b419/src/Symfony/Bridge/Twig/Extension/CodeExtension.php#L41-L52
  */
-final class MagicClosureTwigExtensionToNativeMethodsRector extends AbstractRector implements MinPhpVersionInterface
+final class MagicClosureTwigExtensionToNativeMethodsRector extends AbstractScopeAwareRector implements MinPhpVersionInterface
 {
     /**
      * @readonly
+     * @var \Rector\NodeCollector\NodeAnalyzer\ArrayCallableMethodMatcher
      */
-    private ArrayCallableMethodMatcher $arrayCallableMethodMatcher;
+    private $arrayCallableMethodMatcher;
     public function __construct(ArrayCallableMethodMatcher $arrayCallableMethodMatcher)
     {
         $this->arrayCallableMethodMatcher = $arrayCallableMethodMatcher;
@@ -86,13 +86,12 @@ CODE_SAMPLE
     /**
      * @param Class_ $node
      */
-    public function refactor(Node $node) : ?Node
+    public function refactorWithScope(Node $node, Scope $scope) : ?Node
     {
         if (!$this->nodeTypeResolver->isObjectTypes($node, [new ObjectType('Twig_ExtensionInterface'), new ObjectType('Twig\\Extension\\ExtensionInterface')])) {
             return null;
         }
         $hasFunctionsChanged = \false;
-        $scope = ScopeFetcher::fetch($node);
         $getFunctionsClassMethod = $node->getMethod('getFunctions');
         if ($getFunctionsClassMethod instanceof ClassMethod) {
             $hasFunctionsChanged = $this->refactorClassMethod($getFunctionsClassMethod, $scope);

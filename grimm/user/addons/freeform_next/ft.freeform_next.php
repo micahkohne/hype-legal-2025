@@ -1,10 +1,9 @@
 <?php
 
-use Solspace\Addons\FreeformNext\Library\Composer\Components\Form;
 use Solspace\Addons\FreeformNext\Library\Session\FormValueContext;
 use Solspace\Addons\FreeformNext\Repositories\FormRepository;
 
-require_once version_compare(PHP_VERSION, '8.0.0') < 0 ? __DIR__ . '/php7/vendor/autoload.php' : __DIR__ . '/vendor/autoload.php';
+require_once __DIR__ . '/vendor/autoload.php';
 
 class Freeform_next_ft extends EE_Fieldtype
 {
@@ -37,7 +36,7 @@ class Freeform_next_ft extends EE_Fieldtype
     /**
      * @inheritdoc
      */
-    public function update($version = '')
+    public function update($version = ''): bool
     {
         return $version && version_compare($this->info['version'], $version, '>');
     }
@@ -346,17 +345,15 @@ class Freeform_next_ft extends EE_Fieldtype
      *
      * @return bool
      */
-    public function accepts_content_type($name)
+    public function accepts_content_type($name): bool
     {
         return in_array($name, ['channel', 'fluid_field', 'grid', 'blocks/1'], true);
     }
 
     /**
-     * @param mixed $data
-     *
      * @return string
      */
-    public function save($data)
+    public function save(mixed $data)
     {
         if ((int) $data === 0) {
             return parent::save(null);
@@ -365,7 +362,7 @@ class Freeform_next_ft extends EE_Fieldtype
         return parent::save($data);
     }
 
-    private function getForm($data): string|Form
+    private function getForm($data)
     {
         $formId    = (int) $data;
         $formModel = FormRepository::getInstance()->getFormById($formId);

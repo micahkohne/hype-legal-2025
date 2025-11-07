@@ -32,13 +32,13 @@ $this->extend('_layouts/table_form_wrapper');
             <button type="button" class="has-sub filter-bar__button js-dropdown-toggle button button--default button--small">
                 <?= lang('form') ?>
                 <span class="faded">
-                    (<?= htmlspecialchars($currentFormLabel, ENT_QUOTES, 'UTF-8') ?>)
+                    (<?= htmlspecialchars($currentFormLabel, ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401, 'UTF-8') ?>)
                 </span>
             </button>
             <div class="dropdown">
                 <?php foreach ($formSwitches as $handle => $item): ?>
                     <a href="<?= $item['url'] ?>" class="dropdown__link" data-prevent-trigger="1">
-                        <?= htmlspecialchars($item['label'], ENT_QUOTES, 'UTF-8') ?>
+                        <?= htmlspecialchars($item['label'], ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401, 'UTF-8') ?>
                     </a>
                 <?php endforeach; ?>
             </div>

@@ -206,7 +206,7 @@ class CustomFormAttributes extends AbstractAttributes
     /**
      * @return array
      */
-    public function getDynamicNotificationRecipients()
+    public function getDynamicNotificationRecipients(): ?array
     {
         if (null === $this->dynamicNotificationRecipients) {
             return null;

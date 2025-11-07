@@ -9,8 +9,10 @@ use function trim;
 class PhpDocTagNode implements \PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocChildNode
 {
     use NodeAttributes;
-    public string $name;
-    public \PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocTagValueNode $value;
+    /** @var string */
+    public $name;
+    /** @var PhpDocTagValueNode */
+    public $value;
     public function __construct(string $name, \PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocTagValueNode $value)
     {
         $this->name = $name;

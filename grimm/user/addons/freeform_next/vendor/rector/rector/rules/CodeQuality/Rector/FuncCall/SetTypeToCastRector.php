@@ -5,8 +5,8 @@ namespace Rector\CodeQuality\Rector\FuncCall;
 
 use PhpParser\Node;
 use PhpParser\Node\Arg;
-use PhpParser\Node\ArrayItem;
 use PhpParser\Node\Expr;
+use PhpParser\Node\Expr\ArrayItem;
 use PhpParser\Node\Expr\Assign;
 use PhpParser\Node\Expr\Cast;
 use PhpParser\Node\Expr\Cast\Array_;
@@ -17,20 +17,17 @@ use PhpParser\Node\Expr\Cast\Object_;
 use PhpParser\Node\Expr\Cast\String_;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Stmt\Expression;
-use PhpParser\NodeVisitor;
-use Rector\PhpParser\Node\Value\ValueResolver;
-use Rector\Rector\AbstractRector;
+use PhpParser\NodeTraverser;
+use Rector\Core\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
+ * @changelog https://stackoverflow.com/questions/5577003/using-settype-in-php-instead-of-typecasting-using-brackets-what-is-the-differen/5577068#5577068
+ *
  * @see \Rector\Tests\CodeQuality\Rector\FuncCall\SetTypeToCastRector\SetTypeToCastRectorTest
  */
 final class SetTypeToCastRector extends AbstractRector
 {
-    /**
-     * @readonly
-     */
-    private ValueResolver $valueResolver;
     /**
      * @var array<string, class-string<Cast>>
      */
@@ -39,13 +36,9 @@ final class SetTypeToCastRector extends AbstractRector
      * @var string
      */
     private const IS_ARG_VALUE_ITEM_SET_TYPE = 'is_arg_value_item_set_type';
-    public function __construct(ValueResolver $valueResolver)
-    {
-        $this->valueResolver = $valueResolver;
-    }
     public function getRuleDefinition() : RuleDefinition
     {
-        return new RuleDefinition('Change `settype()` to `(type)` where possible', [new CodeSample(<<<'CODE_SAMPLE'
+        return new RuleDefinition('Changes settype() to (type) where possible', [new CodeSample(<<<'CODE_SAMPLE'
 class SomeClass
 {
     public function run($foo)
@@ -77,7 +70,7 @@ CODE_SAMPLE
         return [FuncCall::class, Expression::class, Assign::class, ArrayItem::class, Arg::class];
     }
     /**
-     * @param FuncCall|Expression|Assign|ArrayItem|Node\Arg $node
+     * @param FuncCall|Expression|Assign|Expr\ArrayItem|Node\Arg $node
      * @return null|int|\PhpParser\Node\Stmt\Expression|\PhpParser\Node\Expr\Assign|\PhpParser\Node\Expr\Cast
      */
     public function refactor(Node $node)
@@ -92,7 +85,7 @@ CODE_SAMPLE
             if (!$this->isSetTypeFuncCall($node->expr)) {
                 return null;
             }
-            return NodeVisitor::DONT_TRAVERSE_CHILDREN;
+            return NodeTraverser::DONT_TRAVERSE_CHILDREN;
         }
         if ($node instanceof Expression) {
             if (!$node->expr instanceof FuncCall) {

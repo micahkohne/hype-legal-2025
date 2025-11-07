@@ -5,14 +5,13 @@ namespace Rector\Symfony\Symfony52\Rector\MethodCall;
 
 use PhpParser\Node;
 use PhpParser\Node\Arg;
-use PhpParser\Node\ArrayItem;
 use PhpParser\Node\Expr\Array_;
+use PhpParser\Node\Expr\ArrayItem;
 use PhpParser\Node\Expr\BinaryOp\BitwiseOr;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Scalar\String_;
 use PHPStan\Type\ObjectType;
-use Rector\PhpParser\Node\Value\ValueResolver;
-use Rector\Rector\AbstractRector;
+use Rector\Core\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -21,10 +20,6 @@ use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
  */
 final class ReflectionExtractorEnableMagicCallExtractorRector extends AbstractRector
 {
-    /**
-     * @readonly
-     */
-    private ValueResolver $valueResolver;
     /**
      * @var string
      */
@@ -37,10 +32,6 @@ final class ReflectionExtractorEnableMagicCallExtractorRector extends AbstractRe
      * @var string[]
      */
     private const METHODS_WITH_OPTION = ['getWriteInfo', 'getReadInfo'];
-    public function __construct(ValueResolver $valueResolver)
-    {
-        $this->valueResolver = $valueResolver;
-    }
     public function getRuleDefinition() : RuleDefinition
     {
         return new RuleDefinition('Migrates from deprecated enable_magic_call_extraction context option in ReflectionExtractor', [new CodeSample(<<<'CODE_SAMPLE'

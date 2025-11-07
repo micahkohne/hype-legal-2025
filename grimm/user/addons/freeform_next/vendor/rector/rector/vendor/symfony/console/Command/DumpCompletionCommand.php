@@ -8,15 +8,15 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-namespace RectorPrefix202507\Symfony\Component\Console\Command;
+namespace RectorPrefix202308\Symfony\Component\Console\Command;
 
-use RectorPrefix202507\Symfony\Component\Console\Attribute\AsCommand;
-use RectorPrefix202507\Symfony\Component\Console\Input\InputArgument;
-use RectorPrefix202507\Symfony\Component\Console\Input\InputInterface;
-use RectorPrefix202507\Symfony\Component\Console\Input\InputOption;
-use RectorPrefix202507\Symfony\Component\Console\Output\ConsoleOutputInterface;
-use RectorPrefix202507\Symfony\Component\Console\Output\OutputInterface;
-use RectorPrefix202507\Symfony\Component\Process\Process;
+use RectorPrefix202308\Symfony\Component\Console\Attribute\AsCommand;
+use RectorPrefix202308\Symfony\Component\Console\Input\InputArgument;
+use RectorPrefix202308\Symfony\Component\Console\Input\InputInterface;
+use RectorPrefix202308\Symfony\Component\Console\Input\InputOption;
+use RectorPrefix202308\Symfony\Component\Console\Output\ConsoleOutputInterface;
+use RectorPrefix202308\Symfony\Component\Console\Output\OutputInterface;
+use RectorPrefix202308\Symfony\Component\Process\Process;
 /**
  * Dumps the completion script for the current shell.
  *
@@ -32,7 +32,10 @@ final class DumpCompletionCommand extends Command
      * @deprecated since Symfony 6.1
      */
     protected static $defaultDescription = 'Dump the shell completion script';
-    private array $supportedShells;
+    /**
+     * @var mixed[]
+     */
+    private $supportedShells;
     protected function configure() : void
     {
         $fullCommand = $_SERVER['PHP_SELF'];

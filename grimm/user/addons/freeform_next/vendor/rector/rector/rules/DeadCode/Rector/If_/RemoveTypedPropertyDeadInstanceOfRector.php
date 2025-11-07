@@ -17,10 +17,10 @@ use PhpParser\Node\Stmt\Foreach_;
 use PhpParser\Node\Stmt\If_;
 use PhpParser\Node\Stmt\Property;
 use PhpParser\Node\Stmt\While_;
-use PhpParser\NodeVisitor;
-use Rector\NodeManipulator\IfManipulator;
+use PhpParser\NodeTraverser;
+use Rector\Core\NodeManipulator\IfManipulator;
+use Rector\Core\Rector\AbstractRector;
 use Rector\Php80\NodeAnalyzer\PromotedPropertyResolver;
-use Rector\Rector\AbstractRector;
 use Rector\TypeDeclaration\AlreadyAssignDetector\ConstructorAssignDetector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
@@ -31,16 +31,19 @@ final class RemoveTypedPropertyDeadInstanceOfRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\Core\NodeManipulator\IfManipulator
      */
-    private IfManipulator $ifManipulator;
+    private $ifManipulator;
     /**
      * @readonly
+     * @var \Rector\TypeDeclaration\AlreadyAssignDetector\ConstructorAssignDetector
      */
-    private ConstructorAssignDetector $constructorAssignDetector;
+    private $constructorAssignDetector;
     /**
      * @readonly
+     * @var \Rector\Php80\NodeAnalyzer\PromotedPropertyResolver
      */
-    private PromotedPropertyResolver $promotedPropertyResolver;
+    private $promotedPropertyResolver;
     public function __construct(IfManipulator $ifManipulator, ConstructorAssignDetector $constructorAssignDetector, PromotedPropertyResolver $promotedPropertyResolver)
     {
         $this->ifManipulator = $ifManipulator;
@@ -104,7 +107,7 @@ CODE_SAMPLE
         $this->traverseNodesWithCallable($node->getMethods(), function (Node $node) use(&$hasChanged, $class) {
             // avoid loop ifs
             if ($node instanceof While_ || $node instanceof Foreach_ || $node instanceof For_ || $node instanceof Do_) {
-                return NodeVisitor::STOP_TRAVERSAL;
+                return NodeTraverser::STOP_TRAVERSAL;
             }
             if (!$node instanceof If_) {
                 return null;
@@ -155,10 +158,10 @@ CODE_SAMPLE
             return null;
         }
         if ($if->cond !== $instanceof) {
-            return NodeVisitor::REMOVE_NODE;
+            return NodeTraverser::REMOVE_NODE;
         }
         if ($if->stmts === []) {
-            return NodeVisitor::REMOVE_NODE;
+            return NodeTraverser::REMOVE_NODE;
         }
         return $if->stmts;
     }
@@ -178,7 +181,7 @@ CODE_SAMPLE
         if (!$property instanceof Property) {
             return \true;
         }
-        return !$property->type instanceof Node;
+        return $property->type === null;
     }
     /**
      * @param \PhpParser\Node\Expr\PropertyFetch|\PhpParser\Node\Expr\StaticPropertyFetch $propertyFetch
@@ -186,10 +189,10 @@ CODE_SAMPLE
     private function isInPropertyPromotedParams(Class_ $class, $propertyFetch) : bool
     {
         /** @var string $propertyName */
-        $propertyName = $this->getName($propertyFetch);
+        $propertyName = $this->nodeNameResolver->getName($propertyFetch);
         $params = $this->promotedPropertyResolver->resolveFromClass($class);
         foreach ($params as $param) {
-            if ($this->isName($param, $propertyName)) {
+            if ($this->nodeNameResolver->isName($param, $propertyName)) {
                 return \true;
             }
         }

@@ -16,19 +16,16 @@ use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Expression;
 use PhpParser\Node\Stmt\Function_;
-use PhpParser\NodeVisitor;
+use PhpParser\NodeTraverser;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
+use Rector\Core\Rector\AbstractRector;
+use Rector\Core\ValueObject\PhpVersionFeature;
 use Rector\NodeTypeResolver\PHPStan\Type\TypeFactory;
 use Rector\PhpDocParser\NodeTraverser\SimpleCallableNodeTraverser;
-use Rector\PHPStan\ScopeFetcher;
 use Rector\PHPStanStaticTypeMapper\Enum\TypeKind;
-use Rector\Rector\AbstractRector;
-use Rector\StaticTypeMapper\StaticTypeMapper;
 use Rector\StaticTypeMapper\ValueObject\Type\FullyQualifiedGenericObjectType;
 use Rector\StaticTypeMapper\ValueObject\Type\FullyQualifiedObjectType;
-use Rector\ValueObject\PhpVersionFeature;
-use Rector\VendorLocker\NodeVendorLocker\ClassMethodReturnTypeOverrideGuard;
 use Rector\VersionBonding\Contract\MinPhpVersionInterface;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
@@ -39,26 +36,18 @@ final class AddReturnTypeDeclarationFromYieldsRector extends AbstractRector impl
 {
     /**
      * @readonly
+     * @var \Rector\NodeTypeResolver\PHPStan\Type\TypeFactory
      */
-    private TypeFactory $typeFactory;
+    private $typeFactory;
     /**
      * @readonly
+     * @var \Rector\PhpDocParser\NodeTraverser\SimpleCallableNodeTraverser
      */
-    private SimpleCallableNodeTraverser $simpleCallableNodeTraverser;
-    /**
-     * @readonly
-     */
-    private StaticTypeMapper $staticTypeMapper;
-    /**
-     * @readonly
-     */
-    private ClassMethodReturnTypeOverrideGuard $classMethodReturnTypeOverrideGuard;
-    public function __construct(TypeFactory $typeFactory, SimpleCallableNodeTraverser $simpleCallableNodeTraverser, StaticTypeMapper $staticTypeMapper, ClassMethodReturnTypeOverrideGuard $classMethodReturnTypeOverrideGuard)
+    private $simpleCallableNodeTraverser;
+    public function __construct(TypeFactory $typeFactory, SimpleCallableNodeTraverser $simpleCallableNodeTraverser)
     {
         $this->typeFactory = $typeFactory;
         $this->simpleCallableNodeTraverser = $simpleCallableNodeTraverser;
-        $this->staticTypeMapper = $staticTypeMapper;
-        $this->classMethodReturnTypeOverrideGuard = $classMethodReturnTypeOverrideGuard;
     }
     public function getRuleDefinition() : RuleDefinition
     {
@@ -90,23 +79,19 @@ CODE_SAMPLE
      */
     public function getNodeTypes() : array
     {
-        return [Function_::class, ClassMethod::class];
+        return [Function_::class, ClassMethod::class, Closure::class];
     }
     /**
-     * @param Function_|ClassMethod $node
+     * @param Function_|ClassMethod|Closure $node
      */
     public function refactor(Node $node) : ?Node
     {
-        $scope = ScopeFetcher::fetch($node);
         $yieldNodes = $this->findCurrentScopeYieldNodes($node);
         if ($yieldNodes === []) {
             return null;
         }
         // skip already filled type
-        if ($node->returnType instanceof Node && $this->isNames($node->returnType, ['Iterator', 'Generator', 'Traversable', 'iterable'])) {
-            return null;
-        }
-        if ($node instanceof ClassMethod && $this->classMethodReturnTypeOverrideGuard->shouldSkipClassMethod($node, $scope)) {
+        if ($node->returnType instanceof Node && $this->isNames($node->returnType, ['Iterator', 'Generator', 'Traversable'])) {
             return null;
         }
         $yieldType = $this->resolveYieldType($yieldNodes, $node);
@@ -130,15 +115,15 @@ CODE_SAMPLE
         $this->simpleCallableNodeTraverser->traverseNodesWithCallable((array) $functionLike->getStmts(), static function (Node $node) use(&$yieldNodes) : ?int {
             // skip anonymous class and inner function
             if ($node instanceof Class_) {
-                return NodeVisitor::DONT_TRAVERSE_CURRENT_AND_CHILDREN;
+                return NodeTraverser::DONT_TRAVERSE_CURRENT_AND_CHILDREN;
             }
             // skip nested scope
             if ($node instanceof FunctionLike) {
-                return NodeVisitor::DONT_TRAVERSE_CURRENT_AND_CHILDREN;
+                return NodeTraverser::DONT_TRAVERSE_CURRENT_AND_CHILDREN;
             }
             if ($node instanceof Stmt && !$node instanceof Expression) {
                 $yieldNodes = [];
-                return NodeVisitor::STOP_TRAVERSAL;
+                return NodeTraverser::STOP_TRAVERSAL;
             }
             if (!$node instanceof Yield_ && !$node instanceof YieldFrom) {
                 return null;
@@ -181,7 +166,7 @@ CODE_SAMPLE
     }
     /**
      * @param array<Yield_|YieldFrom> $yieldNodes
-     * @param \PhpParser\Node\Stmt\ClassMethod|\PhpParser\Node\Stmt\Function_ $functionLike
+     * @param \PhpParser\Node\Stmt\ClassMethod|\PhpParser\Node\Stmt\Function_|\PhpParser\Node\Expr\Closure $functionLike
      * @return \Rector\StaticTypeMapper\ValueObject\Type\FullyQualifiedObjectType|\Rector\StaticTypeMapper\ValueObject\Type\FullyQualifiedGenericObjectType
      */
     private function resolveYieldType(array $yieldNodes, $functionLike)
@@ -203,8 +188,8 @@ CODE_SAMPLE
         if ($returnTypeNode instanceof Identifier && $returnTypeNode->name === 'iterable') {
             return 'Iterator';
         }
-        if ($returnTypeNode instanceof Name && !$this->isName($returnTypeNode, 'Generator')) {
-            return $this->getName($returnTypeNode);
+        if ($returnTypeNode instanceof Name && !$this->nodeNameResolver->isName($returnTypeNode, 'Generator')) {
+            return $this->nodeNameResolver->getName($returnTypeNode);
         }
         return 'Generator';
     }

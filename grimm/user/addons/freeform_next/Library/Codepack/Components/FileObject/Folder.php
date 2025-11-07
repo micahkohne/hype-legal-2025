@@ -19,7 +19,7 @@ use Symfony\Component\Finder\Finder;
 class Folder extends FileObject implements Iterator
 {
     /** @var FileObject[]|null */
-    protected $files;
+    protected array $files;
 
     /** @var int */
     private $fileCount;
@@ -57,7 +57,7 @@ class Folder extends FileObject implements Iterator
      * @return void
      * @throws FileObjectException
      */
-    public function copy($target, $prefix = null, $callable = null, $filePrefix = null): void
+    public function copy($target, ?string $prefix = null, null|callable|array $callable = null, ?string $filePrefix = null)
     {
         $fs = $this->getFilesystem();
 
@@ -108,7 +108,7 @@ class Folder extends FileObject implements Iterator
     /**
      * @return FileObject[]|null
      */
-    public function getFiles()
+    public function getFiles(): array
     {
         return $this->files;
     }
@@ -121,7 +121,7 @@ class Folder extends FileObject implements Iterator
      * @since 5.0.0
      */
 	#[ReturnTypeWillChange]
-	public function current()
+	public function current(): mixed
     {
         return current($this->files);
     }
@@ -147,7 +147,7 @@ class Folder extends FileObject implements Iterator
      * @since 5.0.0
      */
 	#[ReturnTypeWillChange]
-    public function key()
+    public function key(): mixed
     {
         return key($this->files);
     }

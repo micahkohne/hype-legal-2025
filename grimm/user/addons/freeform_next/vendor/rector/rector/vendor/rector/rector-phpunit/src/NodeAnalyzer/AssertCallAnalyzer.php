@@ -6,53 +6,54 @@ namespace Rector\PHPUnit\NodeAnalyzer;
 use PhpParser\Node;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\StaticCall;
-use PhpParser\Node\Identifier;
 use PhpParser\Node\Stmt\ClassMethod;
 use PHPStan\Type\TypeWithClassName;
+use Rector\Core\PhpParser\AstResolver;
+use Rector\Core\PhpParser\Node\BetterNodeFinder;
+use Rector\Core\PhpParser\Printer\BetterStandardPrinter;
 use Rector\NodeNameResolver\NodeNameResolver;
 use Rector\NodeTypeResolver\NodeTypeResolver;
-use Rector\PhpParser\AstResolver;
-use Rector\PhpParser\Node\BetterNodeFinder;
-use Rector\PhpParser\Printer\BetterStandardPrinter;
 use Rector\StaticTypeMapper\ValueObject\Type\FullyQualifiedObjectType;
 final class AssertCallAnalyzer
 {
     /**
      * @readonly
+     * @var \Rector\Core\PhpParser\AstResolver
      */
-    private AstResolver $astResolver;
+    private $astResolver;
     /**
      * @readonly
+     * @var \Rector\Core\PhpParser\Printer\BetterStandardPrinter
      */
-    private BetterStandardPrinter $betterStandardPrinter;
+    private $betterStandardPrinter;
     /**
      * @readonly
+     * @var \Rector\Core\PhpParser\Node\BetterNodeFinder
      */
-    private BetterNodeFinder $betterNodeFinder;
+    private $betterNodeFinder;
     /**
      * @readonly
+     * @var \Rector\NodeNameResolver\NodeNameResolver
      */
-    private NodeNameResolver $nodeNameResolver;
+    private $nodeNameResolver;
     /**
      * @readonly
+     * @var \Rector\NodeTypeResolver\NodeTypeResolver
      */
-    private NodeTypeResolver $nodeTypeResolver;
+    private $nodeTypeResolver;
     /**
      * @var int
      */
     private const MAX_NESTED_METHOD_CALL_LEVEL = 5;
     /**
-     * @var string[]
-     */
-    private const ASSERT_METHOD_NAME_PREFIXES = ['expectNotToPerformAssertions', 'assert', 'expectException', 'setExpectedException', 'expectOutput', 'should'];
-    /**
      * @var array<string, bool>
      */
-    private array $containsAssertCallByClassMethod = [];
+    private $containsAssertCallByClassMethod = [];
     /**
      * This should prevent segfaults while going too deep into to parsed code. Without it, it might end-up with segfault
+     * @var int
      */
-    private int $classMethodNestingLevel = 0;
+    private $classMethodNestingLevel = 0;
     public function __construct(AstResolver $astResolver, BetterStandardPrinter $betterStandardPrinter, BetterNodeFinder $betterNodeFinder, NodeNameResolver $nodeNameResolver, NodeTypeResolver $nodeTypeResolver)
     {
         $this->astResolver = $astResolver;
@@ -155,18 +156,16 @@ final class AssertCallAnalyzer
      */
     private function isAssertMethodName($call) : bool
     {
-        if (!$call->name instanceof Identifier) {
-            return \false;
-        }
-        $callName = $this->nodeNameResolver->getName($call->name);
-        if (!\is_string($callName)) {
-            return \false;
-        }
-        foreach (self::ASSERT_METHOD_NAME_PREFIXES as $assertMethodNamePrefix) {
-            if (\strncmp($callName, $assertMethodNamePrefix, \strlen($assertMethodNamePrefix)) === 0) {
-                return \true;
-            }
-        }
-        return \false;
+        return $this->nodeNameResolver->isNames($call->name, [
+            // phpunit
+            '*assert',
+            'assert*',
+            'expectException*',
+            'setExpectedException*',
+            'expectOutput*',
+            'should*',
+            'doTestFileInfo',
+            'expectNotToPerformAssertions',
+        ]);
     }
 }

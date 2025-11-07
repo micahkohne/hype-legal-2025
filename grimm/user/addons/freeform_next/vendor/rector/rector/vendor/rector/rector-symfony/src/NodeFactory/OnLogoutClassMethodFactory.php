@@ -10,22 +10,25 @@ use PhpParser\Node\Param;
 use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Expression;
-use Rector\NodeAnalyzer\ParamAnalyzer;
+use Rector\Core\NodeAnalyzer\ParamAnalyzer;
 use Rector\NodeNameResolver\NodeNameResolver;
 final class OnLogoutClassMethodFactory
 {
     /**
      * @readonly
+     * @var \Rector\NodeNameResolver\NodeNameResolver
      */
-    private NodeNameResolver $nodeNameResolver;
+    private $nodeNameResolver;
     /**
      * @readonly
+     * @var \Rector\Symfony\NodeFactory\BareLogoutClassMethodFactory
      */
-    private \Rector\Symfony\NodeFactory\BareLogoutClassMethodFactory $bareLogoutClassMethodFactory;
+    private $bareLogoutClassMethodFactory;
     /**
      * @readonly
+     * @var \Rector\Core\NodeAnalyzer\ParamAnalyzer
      */
-    private ParamAnalyzer $paramAnalyzer;
+    private $paramAnalyzer;
     /**
      * @var array<string, string>
      */

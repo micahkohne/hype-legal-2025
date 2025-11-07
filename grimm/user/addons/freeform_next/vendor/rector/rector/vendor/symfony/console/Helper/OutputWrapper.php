@@ -8,7 +8,7 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-namespace RectorPrefix202507\Symfony\Component\Console\Helper;
+namespace RectorPrefix202308\Symfony\Component\Console\Helper;
 
 /**
  * Simple output wrapper for "tagged outputs" instead of wordwrap(). This solution is based on a StackOverflow
@@ -43,7 +43,10 @@ namespace RectorPrefix202507\Symfony\Component\Console\Helper;
  */
 final class OutputWrapper
 {
-    private bool $allowCutUrls = \false;
+    /**
+     * @var bool
+     */
+    private $allowCutUrls = \false;
     private const TAG_OPEN_REGEX_SEGMENT = '[a-z](?:[^\\\\<>]*+ | \\\\.)*';
     private const TAG_CLOSE_REGEX_SEGMENT = '[a-z][^<>]*+';
     private const URL_PATTERN = 'https?://\\S+';

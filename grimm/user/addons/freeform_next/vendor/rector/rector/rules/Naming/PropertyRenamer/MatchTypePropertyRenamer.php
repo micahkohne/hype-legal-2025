@@ -12,16 +12,19 @@ final class MatchTypePropertyRenamer
 {
     /**
      * @readonly
+     * @var \Rector\Naming\Guard\PropertyConflictingNameGuard\MatchPropertyTypeConflictingNameGuard
      */
-    private MatchPropertyTypeConflictingNameGuard $matchPropertyTypeConflictingNameGuard;
+    private $matchPropertyTypeConflictingNameGuard;
     /**
      * @readonly
+     * @var \Rector\Naming\RenameGuard\PropertyRenameGuard
      */
-    private PropertyRenameGuard $propertyRenameGuard;
+    private $propertyRenameGuard;
     /**
      * @readonly
+     * @var \Rector\Naming\PropertyRenamer\PropertyFetchRenamer
      */
-    private \Rector\Naming\PropertyRenamer\PropertyFetchRenamer $propertyFetchRenamer;
+    private $propertyFetchRenamer;
     public function __construct(MatchPropertyTypeConflictingNameGuard $matchPropertyTypeConflictingNameGuard, PropertyRenameGuard $propertyRenameGuard, \Rector\Naming\PropertyRenamer\PropertyFetchRenamer $propertyFetchRenamer)
     {
         $this->matchPropertyTypeConflictingNameGuard = $matchPropertyTypeConflictingNameGuard;
@@ -39,8 +42,8 @@ final class MatchTypePropertyRenamer
         if ($this->propertyRenameGuard->shouldSkip($propertyRename)) {
             return null;
         }
-        $propertyItem = $propertyRename->getPropertyProperty();
-        $propertyItem->name = new VarLikeIdentifier($propertyRename->getExpectedName());
+        $onlyPropertyProperty = $propertyRename->getPropertyProperty();
+        $onlyPropertyProperty->name = new VarLikeIdentifier($propertyRename->getExpectedName());
         $this->renamePropertyFetchesInClass($propertyRename);
         return $propertyRename->getProperty();
     }

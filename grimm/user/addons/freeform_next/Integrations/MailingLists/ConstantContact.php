@@ -11,7 +11,6 @@
 
 namespace Solspace\Addons\FreeformNext\Integrations\MailingLists;
 
-use Override;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\BadResponseException;
 use Solspace\Addons\FreeformNext\Library\Exceptions\Integrations\IntegrationException;
@@ -23,11 +22,11 @@ use Solspace\Addons\FreeformNext\Library\Integrations\SettingBlueprint;
 
 class ConstantContact extends AbstractMailingListIntegration
 {
-    const TITLE        = 'Constant Contact';
-    const LOG_CATEGORY = 'ConstantContact';
+    public const TITLE        = 'Constant Contact';
+    public const LOG_CATEGORY = 'ConstantContact';
 
-    const SETTING_API_KEY      = 'api_key';
-    const SETTING_ACCESS_TOKEN = 'access_token';
+    public const SETTING_API_KEY      = 'api_key';
+    public const SETTING_ACCESS_TOKEN = 'access_token';
 
     /**
      * Returns a list of additional settings for this integration
@@ -35,7 +34,6 @@ class ConstantContact extends AbstractMailingListIntegration
      *
      * @return SettingBlueprint[]
      */
-    #[Override]
     public static function getSettingBlueprints(): array
     {
         return [
@@ -62,7 +60,6 @@ class ConstantContact extends AbstractMailingListIntegration
      *
      * @return string
      */
-    #[Override]
     public function getServiceProvider(): string
     {
         return 'Constant Contact';
@@ -105,7 +102,7 @@ class ConstantContact extends AbstractMailingListIntegration
         }
     }
 
-    public function initiateAuthentication()
+    public function initiateAuthentication(): void
     {
     }
 

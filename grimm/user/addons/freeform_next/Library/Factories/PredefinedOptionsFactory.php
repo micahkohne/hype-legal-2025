@@ -9,19 +9,17 @@ use Solspace\Addons\FreeformNext\Library\Configuration\ExternalOptionsConfigurat
 
 class PredefinedOptionsFactory
 {
-    const TYPE_INT              = 'int';
-    const TYPE_INT_LEADING_ZERO = 'int_w_zero';
-    const TYPE_FULL             = 'full';
-    const TYPE_ABBREVIATED      = 'abbreviated';
+    public const TYPE_INT              = 'int';
+    public const TYPE_INT_LEADING_ZERO = 'int_w_zero';
+    public const TYPE_FULL             = 'full';
+    public const TYPE_ABBREVIATED      = 'abbreviated';
 
     /**
      * @param string                       $type
-     * @param ExternalOptionsConfiguration $configuration
-     * @param array                        $selectedValues
      *
      * @return Option[]
      */
-    public static function create($type, ExternalOptionsConfiguration $configuration, array $selectedValues = []): array
+    public static function create($type, ExternalOptionsConfiguration $configuration, array $selectedValues = [])
     {
         $instance = new self($configuration, $selectedValues);
 
@@ -48,11 +46,8 @@ class PredefinedOptionsFactory
 
     /**
      * PredefinedOptionsFactory constructor.
-     *
-     * @param ExternalOptionsConfiguration $configuration
-     * @param array                        $selectedValues
      */
-    private function __construct(private readonly ExternalOptionsConfiguration $configuration, private readonly array $selectedValues)
+    private function __construct(private ExternalOptionsConfiguration $configuration, private array $selectedValues)
     {
     }
 
@@ -95,7 +90,7 @@ class PredefinedOptionsFactory
     /**
      * @return Option[]
      */
-    private function getMonthOptions(): array
+    private function getMonthOptions()
     {
         $options = [];
 
@@ -114,7 +109,7 @@ class PredefinedOptionsFactory
     /**
      * @return Option[]
      */
-    private function getDayOptions(): array
+    private function getDayOptions()
     {
         $options = [];
 
@@ -134,7 +129,7 @@ class PredefinedOptionsFactory
     /**
      * @return Option[]
      */
-    private function getDaysOfWeekOptions(): array
+    private function getDaysOfWeekOptions()
     {
         $options = [];
 
@@ -275,11 +270,9 @@ class PredefinedOptionsFactory
 
 
     /**
-     * @param mixed $value
-     *
      * @return bool
      */
-    private function isChecked($value): bool
+    private function isChecked(mixed $value): bool
     {
         return \in_array((string) $value, $this->selectedValues, true);
     }
@@ -297,7 +290,7 @@ class PredefinedOptionsFactory
      *
      * @return string
      */
-    private static function getMonthFormatFromType($type = null): string
+    private static function getMonthFormatFromType(?string $type = null): string
     {
         $format = 'F';
         $format = match ($type) {
@@ -315,7 +308,7 @@ class PredefinedOptionsFactory
      *
      * @return string
      */
-    private static function getDayFormatFromType($type = null): string
+    private static function getDayFormatFromType(?string $type = null): string
     {
         $format = 'd';
         $format = match ($type) {
@@ -331,7 +324,7 @@ class PredefinedOptionsFactory
      *
      * @return string
      */
-    private static function getDayOfTheWeekFormatFromType($type = null): string
+    private static function getDayOfTheWeekFormatFromType(?string $type = null): string
     {
         $format = 'l';
         $format = match ($type) {

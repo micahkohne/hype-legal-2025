@@ -11,7 +11,6 @@
 
 namespace Solspace\Addons\FreeformNext\Library\Composer\Components\Fields;
 
-use Override;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\AbstractField;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\FieldInterface;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Fields\Interfaces\InputOnlyInterface;
@@ -58,7 +57,7 @@ class CheckboxField extends AbstractField implements SingleValueInterface, Input
      *
      * @return $this
      */
-    public function setIsChecked($isChecked): static
+    public function setIsChecked($isChecked)
     {
         $this->checked = (bool) $isChecked;
 
@@ -70,7 +69,7 @@ class CheckboxField extends AbstractField implements SingleValueInterface, Input
      *
      * @return $this
      */
-    public function setIsCheckedByPost($isChecked): static
+    public function setIsCheckedByPost($isChecked)
     {
         $this->checkedByPost = (bool) $isChecked;
 
@@ -113,7 +112,6 @@ class CheckboxField extends AbstractField implements SingleValueInterface, Input
      *
      * @return string
      */
-    #[Override]
     public function getValueAsString($optionsAsValues = true): string
     {
         if ($optionsAsValues) {
@@ -130,7 +128,6 @@ class CheckboxField extends AbstractField implements SingleValueInterface, Input
      *
      * @return string
      */
-    #[Override]
     protected function onBeforeInputHtml(): string
     {
         $attributes = $this->getCustomAttributes();
@@ -145,7 +142,6 @@ class CheckboxField extends AbstractField implements SingleValueInterface, Input
      *
      * @return string
      */
-    #[Override]
     protected function onAfterInputHtml(): string
     {
         $output = $this->getLabel();

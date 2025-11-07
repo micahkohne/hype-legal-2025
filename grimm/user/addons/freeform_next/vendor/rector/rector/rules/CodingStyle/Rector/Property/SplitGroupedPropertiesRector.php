@@ -4,9 +4,9 @@ declare (strict_types=1);
 namespace Rector\CodingStyle\Rector\Property;
 
 use PhpParser\Node;
-use PhpParser\Node\PropertyItem;
 use PhpParser\Node\Stmt\Property;
-use Rector\Rector\AbstractRector;
+use PhpParser\Node\Stmt\PropertyProperty;
+use Rector\Core\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -58,7 +58,7 @@ CODE_SAMPLE
         if (\count($allProperties) === 1) {
             return null;
         }
-        /** @var PropertyItem $firstPropertyProperty */
+        /** @var PropertyProperty $firstPropertyProperty */
         $firstPropertyProperty = \array_shift($allProperties);
         $node->props = [$firstPropertyProperty];
         $nextProperties = [];

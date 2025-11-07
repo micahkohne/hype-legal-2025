@@ -25,5 +25,5 @@ interface ComponentInterface
      *
      * @param string $prefix
      */
-    public function install($prefix = null);
+    public function install(?string $prefix = null);
 }

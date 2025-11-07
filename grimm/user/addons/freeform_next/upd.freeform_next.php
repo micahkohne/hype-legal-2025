@@ -21,7 +21,7 @@ use Solspace\Addons\FreeformNext\Utilities\AddonUpdater\PluginExtension;
 class Freeform_next_upd extends AddonUpdater
 {
     /**
-     * @param ?string $previousVersion
+     * @param string|null $previousVersion
      *
      * @return bool
      */

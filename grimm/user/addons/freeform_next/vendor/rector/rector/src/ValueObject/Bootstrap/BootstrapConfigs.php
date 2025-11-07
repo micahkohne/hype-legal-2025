@@ -1,19 +1,20 @@
 <?php
 
 declare (strict_types=1);
-namespace Rector\ValueObject\Bootstrap;
+namespace Rector\Core\ValueObject\Bootstrap;
 
 final class BootstrapConfigs
 {
     /**
      * @readonly
+     * @var string|null
      */
-    private ?string $mainConfigFile;
+    private $mainConfigFile;
     /**
      * @var string[]
      * @readonly
      */
-    private array $setConfigFiles;
+    private $setConfigFiles;
     /**
      * @param string[] $setConfigFiles
      */

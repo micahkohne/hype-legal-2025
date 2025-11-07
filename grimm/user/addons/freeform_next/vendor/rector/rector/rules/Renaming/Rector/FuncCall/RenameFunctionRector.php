@@ -7,11 +7,12 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Name;
 use PhpParser\Node\Name\FullyQualified;
-use Rector\Contract\Rector\ConfigurableRectorInterface;
-use Rector\Rector\AbstractRector;
+use Rector\Core\Contract\Rector\ConfigurableRectorInterface;
+use Rector\Core\Rector\AbstractRector;
+use Rector\NodeTypeResolver\Node\AttributeKey;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\ConfiguredCodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
-use RectorPrefix202507\Webmozart\Assert\Assert;
+use RectorPrefix202308\Webmozart\Assert\Assert;
 /**
  * @see \Rector\Tests\Renaming\Rector\FuncCall\RenameFunctionRector\RenameFunctionRectorTest
  */
@@ -20,10 +21,10 @@ final class RenameFunctionRector extends AbstractRector implements ConfigurableR
     /**
      * @var array<string, string>
      */
-    private array $oldFunctionToNewFunction = [];
+    private $oldFunctionToNewFunction = [];
     public function getRuleDefinition() : RuleDefinition
     {
-        return new RuleDefinition('Turn defined function call new one', [new ConfiguredCodeSample('view("...", []);', 'Laravel\\Templating\\render("...", []);', ['view' => 'Laravel\\Templating\\render'])]);
+        return new RuleDefinition('Turns defined function call new one.', [new ConfiguredCodeSample('view("...", []);', 'Laravel\\Templating\\render("...", []);', ['view' => 'Laravel\\Templating\\render'])]);
     }
     /**
      * @return array<class-string<Node>>
@@ -37,12 +38,13 @@ final class RenameFunctionRector extends AbstractRector implements ConfigurableR
      */
     public function refactor(Node $node) : ?Node
     {
-        $nodeName = $this->getName($node);
-        if ($nodeName === null) {
+        // not to refactor here
+        $isVirtual = (bool) $node->name->getAttribute(AttributeKey::VIRTUAL_NODE);
+        if ($isVirtual) {
             return null;
         }
         foreach ($this->oldFunctionToNewFunction as $oldFunction => $newFunction) {
-            if (!$this->nodeNameResolver->isStringName($nodeName, $oldFunction)) {
+            if (!$this->isName($node, $oldFunction)) {
                 continue;
             }
             $node->name = $this->createName($newFunction);

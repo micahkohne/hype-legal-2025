@@ -11,6 +11,7 @@
 
 namespace Solspace\Addons\FreeformNext\Model;
 
+use DateTime;
 use EllisLab\ExpressionEngine\Service\Model\Model;
 
 /**
@@ -20,15 +21,15 @@ use EllisLab\ExpressionEngine\Service\Model\Model;
  * @property string     $reasonType
  * @property string     $reasonMessage
  * @property string     $reasonValue
- * @property \DateTime  $dateCreated
- * @property \DateTime  $dateUpdated
+ * @property DateTime $dateCreated
+ * @property DateTime $dateUpdated
  */
 class SpamReasonModel extends Model
 {
     use TimestampableTrait;
 
-    const MODEL = 'freeform_next:SpamReasonModel';
-    const TABLE = 'freeform_next_spam_reasons';
+    public const MODEL = 'freeform_next:SpamReasonModel';
+    public const TABLE = 'freeform_next_spam_reasons';
 
     public const TYPE_GENERIC = 'generic';
     public const TYPE_HONEYPOT = 'honeypot';
@@ -48,10 +49,6 @@ class SpamReasonModel extends Model
     /**
      * Creates a Spam Reason object
      *
-     * @param int       $submissionId
-     * @param string    $reasonType
-     * @param string    $reasonMessage
-     * @param string    $reasonValue
      *
      * @return SpamReasonModel
      */
@@ -93,7 +90,7 @@ class SpamReasonModel extends Model
                     $insertData
                 );
         } else {
-            if (!empty($this->dateCreated)) {
+            if ($this->dateCreated instanceof DateTime) {
                 if (is_string($this->dateCreated)) {
                     $dateCreated = $this->dateCreated;
                 } else {
@@ -105,7 +102,7 @@ class SpamReasonModel extends Model
 
             $insertData['dateCreated'] = $dateCreated;
 
-            if (!empty($this->dateUpdated)) {
+            if ($this->dateUpdated instanceof DateTime) {
                 if (is_string($this->dateUpdated)) {
                     $dateUpdated = $this->dateUpdated;
                 } else {

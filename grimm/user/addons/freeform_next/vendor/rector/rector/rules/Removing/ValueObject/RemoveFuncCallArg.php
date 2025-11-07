@@ -3,17 +3,19 @@
 declare (strict_types=1);
 namespace Rector\Removing\ValueObject;
 
-use Rector\Validation\RectorAssert;
+use Rector\Core\Validation\RectorAssert;
 final class RemoveFuncCallArg
 {
     /**
      * @readonly
+     * @var string
      */
-    private string $function;
+    private $function;
     /**
      * @readonly
+     * @var int
      */
-    private int $argumentPosition;
+    private $argumentPosition;
     public function __construct(string $function, int $argumentPosition)
     {
         $this->function = $function;

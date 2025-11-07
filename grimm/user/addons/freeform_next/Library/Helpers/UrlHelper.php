@@ -9,7 +9,7 @@ class UrlHelper
      *
      * @return string
      */
-    public static function getLink(string $target)
+    public static function getLink(string $target): object
     {
         return ee('CP/URL', 'addons/settings/freeform_next/' . $target);
     }

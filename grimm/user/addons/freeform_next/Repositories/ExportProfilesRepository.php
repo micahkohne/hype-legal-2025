@@ -11,7 +11,6 @@
 
 namespace Solspace\Addons\FreeformNext\Repositories;
 
-use Override;
 use Solspace\Addons\FreeformNext\Model\ExportProfileModel;
 
 class ExportProfilesRepository extends Repository
@@ -22,7 +21,6 @@ class ExportProfilesRepository extends Repository
     /**
      * @return ExportProfilesRepository
      */
-    #[Override]
     public static function getInstance()
     {
         return parent::getInstance();
@@ -57,8 +55,6 @@ class ExportProfilesRepository extends Repository
     }
 
     /**
-     * @param array $ids
-     *
      * @return ExportProfileModel[]
      */
     public function getProfilesByIdList(array $ids)

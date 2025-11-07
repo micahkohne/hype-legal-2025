@@ -1,6 +1,6 @@
 <?php
 
-namespace RectorPrefix202507\Illuminate\Contracts\Routing;
+namespace RectorPrefix202308\Illuminate\Contracts\Routing;
 
 interface ResponseFactory
 {
@@ -102,7 +102,7 @@ interface ResponseFactory
     /**
      * Create a new redirect response to a named route.
      *
-     * @param  \BackedEnum|string  $route
+     * @param  string  $route
      * @param  mixed  $parameters
      * @param  int  $status
      * @param  array  $headers
@@ -112,7 +112,7 @@ interface ResponseFactory
     /**
      * Create a new redirect response to a controller action.
      *
-     * @param  array|string  $action
+     * @param  string  $action
      * @param  mixed  $parameters
      * @param  int  $status
      * @param  array  $headers

@@ -7,12 +7,14 @@ final class ClassMethodWillChangeReturnType
 {
     /**
      * @readonly
+     * @var string
      */
-    private string $className;
+    private $className;
     /**
      * @readonly
+     * @var string
      */
-    private string $methodName;
+    private $methodName;
     public function __construct(string $className, string $methodName)
     {
         $this->className = $className;

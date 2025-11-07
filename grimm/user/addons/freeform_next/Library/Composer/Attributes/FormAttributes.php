@@ -39,8 +39,6 @@ class FormAttributes
      * FormAttributes constructor.
      *
      * @param                  $formId
-     * @param SessionInterface $session
-     * @param RequestInterface $request
      * @param int $formId
      */
     public function __construct(private $id, SessionInterface $session, RequestInterface $request)
@@ -70,7 +68,7 @@ class FormAttributes
      *
      * @return $this
      */
-    public function setCsrfEnabled($csrfEnabled): static
+    public function setCsrfEnabled($csrfEnabled)
     {
         $this->csrfEnabled = $csrfEnabled;
 
@@ -90,7 +88,7 @@ class FormAttributes
      *
      * @return $this
      */
-    public function setCsrfToken($csrfToken): static
+    public function setCsrfToken($csrfToken)
     {
         $this->csrfToken = $csrfToken;
 
@@ -110,7 +108,7 @@ class FormAttributes
      *
      * @return $this
      */
-    public function setCsrfTokenName($csrfTokenName): static
+    public function setCsrfTokenName($csrfTokenName)
     {
         $this->csrfTokenName = $csrfTokenName;
 
@@ -130,7 +128,7 @@ class FormAttributes
      *
      * @return $this
      */
-    public function setActionUrl($actionUrl): static
+    public function setActionUrl($actionUrl)
     {
         $this->actionUrl = $actionUrl;
 
@@ -146,11 +144,9 @@ class FormAttributes
     }
 
     /**
-     * @param string $method
-     *
      * @return $this
      */
-    public function setMethod(string $method): static
+    public function setMethod(string $method)
     {
         $this->method = $method;
 
@@ -166,8 +162,6 @@ class FormAttributes
     }
 
     /**
-     * @param SessionInterface $session
-     * @param RequestInterface $request
      *
      * @return FormValueContext
      */

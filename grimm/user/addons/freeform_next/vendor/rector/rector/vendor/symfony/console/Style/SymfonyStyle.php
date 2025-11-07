@@ -8,27 +8,27 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-namespace RectorPrefix202507\Symfony\Component\Console\Style;
+namespace RectorPrefix202308\Symfony\Component\Console\Style;
 
-use RectorPrefix202507\Symfony\Component\Console\Exception\InvalidArgumentException;
-use RectorPrefix202507\Symfony\Component\Console\Exception\RuntimeException;
-use RectorPrefix202507\Symfony\Component\Console\Formatter\OutputFormatter;
-use RectorPrefix202507\Symfony\Component\Console\Helper\Helper;
-use RectorPrefix202507\Symfony\Component\Console\Helper\OutputWrapper;
-use RectorPrefix202507\Symfony\Component\Console\Helper\ProgressBar;
-use RectorPrefix202507\Symfony\Component\Console\Helper\SymfonyQuestionHelper;
-use RectorPrefix202507\Symfony\Component\Console\Helper\Table;
-use RectorPrefix202507\Symfony\Component\Console\Helper\TableCell;
-use RectorPrefix202507\Symfony\Component\Console\Helper\TableSeparator;
-use RectorPrefix202507\Symfony\Component\Console\Input\InputInterface;
-use RectorPrefix202507\Symfony\Component\Console\Output\ConsoleOutputInterface;
-use RectorPrefix202507\Symfony\Component\Console\Output\ConsoleSectionOutput;
-use RectorPrefix202507\Symfony\Component\Console\Output\OutputInterface;
-use RectorPrefix202507\Symfony\Component\Console\Output\TrimmedBufferOutput;
-use RectorPrefix202507\Symfony\Component\Console\Question\ChoiceQuestion;
-use RectorPrefix202507\Symfony\Component\Console\Question\ConfirmationQuestion;
-use RectorPrefix202507\Symfony\Component\Console\Question\Question;
-use RectorPrefix202507\Symfony\Component\Console\Terminal;
+use RectorPrefix202308\Symfony\Component\Console\Exception\InvalidArgumentException;
+use RectorPrefix202308\Symfony\Component\Console\Exception\RuntimeException;
+use RectorPrefix202308\Symfony\Component\Console\Formatter\OutputFormatter;
+use RectorPrefix202308\Symfony\Component\Console\Helper\Helper;
+use RectorPrefix202308\Symfony\Component\Console\Helper\OutputWrapper;
+use RectorPrefix202308\Symfony\Component\Console\Helper\ProgressBar;
+use RectorPrefix202308\Symfony\Component\Console\Helper\SymfonyQuestionHelper;
+use RectorPrefix202308\Symfony\Component\Console\Helper\Table;
+use RectorPrefix202308\Symfony\Component\Console\Helper\TableCell;
+use RectorPrefix202308\Symfony\Component\Console\Helper\TableSeparator;
+use RectorPrefix202308\Symfony\Component\Console\Input\InputInterface;
+use RectorPrefix202308\Symfony\Component\Console\Output\ConsoleOutputInterface;
+use RectorPrefix202308\Symfony\Component\Console\Output\ConsoleSectionOutput;
+use RectorPrefix202308\Symfony\Component\Console\Output\OutputInterface;
+use RectorPrefix202308\Symfony\Component\Console\Output\TrimmedBufferOutput;
+use RectorPrefix202308\Symfony\Component\Console\Question\ChoiceQuestion;
+use RectorPrefix202308\Symfony\Component\Console\Question\ConfirmationQuestion;
+use RectorPrefix202308\Symfony\Component\Console\Question\Question;
+use RectorPrefix202308\Symfony\Component\Console\Terminal;
 /**
  * Output decorator helpers for the Symfony Style Guide.
  *
@@ -37,12 +37,30 @@ use RectorPrefix202507\Symfony\Component\Console\Terminal;
 class SymfonyStyle extends OutputStyle
 {
     public const MAX_LINE_LENGTH = 120;
-    private InputInterface $input;
-    private OutputInterface $output;
-    private SymfonyQuestionHelper $questionHelper;
-    private ProgressBar $progressBar;
-    private int $lineLength;
-    private TrimmedBufferOutput $bufferedOutput;
+    /**
+     * @var \Symfony\Component\Console\Input\InputInterface
+     */
+    private $input;
+    /**
+     * @var \Symfony\Component\Console\Output\OutputInterface
+     */
+    private $output;
+    /**
+     * @var \Symfony\Component\Console\Helper\SymfonyQuestionHelper
+     */
+    private $questionHelper;
+    /**
+     * @var \Symfony\Component\Console\Helper\ProgressBar
+     */
+    private $progressBar;
+    /**
+     * @var int
+     */
+    private $lineLength;
+    /**
+     * @var \Symfony\Component\Console\Output\TrimmedBufferOutput
+     */
+    private $bufferedOutput;
     public function __construct(InputInterface $input, OutputInterface $output)
     {
         $this->input = $input;
@@ -58,7 +76,7 @@ class SymfonyStyle extends OutputStyle
      * @return void
      * @param string|mixed[] $messages
      */
-    public function block($messages, ?string $type = null, ?string $style = null, string $prefix = ' ', bool $padding = \false, bool $escape = \true)
+    public function block($messages, string $type = null, string $style = null, string $prefix = ' ', bool $padding = \false, bool $escape = \true)
     {
         $messages = \is_array($messages) ? \array_values($messages) : [$messages];
         $this->autoPrependBlock();
@@ -89,7 +107,9 @@ class SymfonyStyle extends OutputStyle
     public function listing(array $elements)
     {
         $this->autoPrependText();
-        $elements = \array_map(fn($element) => \sprintf(' * %s', $element), $elements);
+        $elements = \array_map(function ($element) {
+            return \sprintf(' * %s', $element);
+        }, $elements);
         $this->writeln($elements);
         $this->newLine();
     }
@@ -220,7 +240,7 @@ class SymfonyStyle extends OutputStyle
     /**
      * @return mixed
      */
-    public function ask(string $question, ?string $default = null, ?callable $validator = null)
+    public function ask(string $question, string $default = null, callable $validator = null)
     {
         $question = new Question($question, $default);
         $question->setValidator($validator);
@@ -229,7 +249,7 @@ class SymfonyStyle extends OutputStyle
     /**
      * @return mixed
      */
-    public function askHidden(string $question, ?callable $validator = null)
+    public function askHidden(string $question, callable $validator = null)
     {
         $question = new Question($question);
         $question->setHidden(\true);
@@ -292,16 +312,8 @@ class SymfonyStyle extends OutputStyle
     }
     /**
      * @see ProgressBar::iterate()
-     *
-     * @template TKey
-     * @template TValue
-     *
-     * @param iterable<TKey, TValue> $iterable
-     * @param int|null               $max      Number of steps to complete the bar (0 if indeterminate), if null it will be inferred from $iterable
-     *
-     * @return iterable<TKey, TValue>
      */
-    public function progressIterate(iterable $iterable, ?int $max = null) : iterable
+    public function progressIterate(iterable $iterable, int $max = null) : iterable
     {
         yield from $this->createProgressBar()->iterate($iterable, $max);
         $this->newLine(2);
@@ -314,7 +326,7 @@ class SymfonyStyle extends OutputStyle
         if ($this->input->isInteractive()) {
             $this->autoPrependBlock();
         }
-        $this->questionHelper ??= new SymfonyQuestionHelper();
+        $this->questionHelper = $this->questionHelper ?? new SymfonyQuestionHelper();
         $answer = $this->questionHelper->ask($this->input, $this, $question);
         if ($this->input->isInteractive()) {
             if ($this->output instanceof ConsoleSectionOutput) {
@@ -408,7 +420,7 @@ class SymfonyStyle extends OutputStyle
         // We need to know if the last chars are PHP_EOL
         $this->bufferedOutput->write($message, $newLine, $type);
     }
-    private function createBlock(iterable $messages, ?string $type = null, ?string $style = null, string $prefix = ' ', bool $padding = \false, bool $escape = \false) : array
+    private function createBlock(iterable $messages, string $type = null, string $style = null, string $prefix = ' ', bool $padding = \false, bool $escape = \false) : array
     {
         $indentLength = 0;
         $prefixLength = Helper::width(Helper::removeDecoration($this->getFormatter(), $prefix));

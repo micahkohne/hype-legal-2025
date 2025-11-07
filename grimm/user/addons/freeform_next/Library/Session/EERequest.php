@@ -19,7 +19,7 @@ class EERequest implements RequestInterface
      *
      * @return mixed
      */
-    public function getPost($key, $defaultValue = null)
+    public function getPost($key, mixed $defaultValue = null)
     {
         $post = ee()->input->post($key);
 

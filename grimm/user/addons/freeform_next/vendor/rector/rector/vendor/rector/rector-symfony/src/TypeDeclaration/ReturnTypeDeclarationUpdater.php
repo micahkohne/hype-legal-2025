@@ -3,54 +3,62 @@
 declare (strict_types=1);
 namespace Rector\Symfony\TypeDeclaration;
 
-use PhpParser\Node;
 use PhpParser\Node\Name\FullyQualified;
 use PhpParser\Node\Stmt\ClassMethod;
 use PHPStan\PhpDocParser\Ast\PhpDoc\ReturnTagValueNode;
+use PHPStan\Type\ArrayType;
 use PHPStan\Type\ObjectType;
+use PHPStan\Type\UnionType;
 use Rector\BetterPhpDocParser\PhpDocInfo\PhpDocInfoFactory;
-use Rector\Comments\NodeDocBlock\DocBlockUpdater;
-use Rector\Php\PhpVersionProvider;
+use Rector\BetterPhpDocParser\ValueObject\Type\FullyQualifiedIdentifierTypeNode;
+use Rector\Core\Php\PhpVersionProvider;
+use Rector\Core\ValueObject\PhpVersionFeature;
 use Rector\StaticTypeMapper\StaticTypeMapper;
-use Rector\ValueObject\PhpVersionFeature;
 final class ReturnTypeDeclarationUpdater
 {
     /**
      * @readonly
+     * @var \Rector\Core\Php\PhpVersionProvider
      */
-    private PhpVersionProvider $phpVersionProvider;
+    private $phpVersionProvider;
     /**
      * @readonly
+     * @var \Rector\StaticTypeMapper\StaticTypeMapper
      */
-    private StaticTypeMapper $staticTypeMapper;
+    private $staticTypeMapper;
     /**
      * @readonly
+     * @var \Rector\BetterPhpDocParser\PhpDocInfo\PhpDocInfoFactory
      */
-    private PhpDocInfoFactory $phpDocInfoFactory;
-    /**
-     * @readonly
-     */
-    private DocBlockUpdater $docBlockUpdater;
-    public function __construct(PhpVersionProvider $phpVersionProvider, StaticTypeMapper $staticTypeMapper, PhpDocInfoFactory $phpDocInfoFactory, DocBlockUpdater $docBlockUpdater)
+    private $phpDocInfoFactory;
+    public function __construct(PhpVersionProvider $phpVersionProvider, StaticTypeMapper $staticTypeMapper, PhpDocInfoFactory $phpDocInfoFactory)
     {
         $this->phpVersionProvider = $phpVersionProvider;
         $this->staticTypeMapper = $staticTypeMapper;
         $this->phpDocInfoFactory = $phpDocInfoFactory;
-        $this->docBlockUpdater = $docBlockUpdater;
     }
     /**
      * @param class-string $className
      */
     public function updateClassMethod(ClassMethod $classMethod, string $className) : void
     {
-        $this->removeReturnDocBlocks($classMethod);
+        $this->updatePhpDoc($classMethod, $className);
         $this->updatePhp($classMethod, $className);
     }
-    private function removeReturnDocBlocks(ClassMethod $classMethod) : void
+    /**
+     * @param class-string $className
+     */
+    private function updatePhpDoc(ClassMethod $classMethod, string $className) : void
     {
         $phpDocInfo = $this->phpDocInfoFactory->createFromNodeOrEmpty($classMethod);
-        $phpDocInfo->removeByType(ReturnTagValueNode::class);
-        $this->docBlockUpdater->updateRefactoredNodeWithPhpDocInfo($classMethod);
+        $returnTagValueNode = $phpDocInfo->getReturnTagValue();
+        if (!$returnTagValueNode instanceof ReturnTagValueNode) {
+            return;
+        }
+        $returnStaticType = $this->staticTypeMapper->mapPHPStanPhpDocTypeNodeToPHPStanType($returnTagValueNode->type, $classMethod);
+        if ($returnStaticType instanceof ArrayType || $returnStaticType instanceof UnionType) {
+            $returnTagValueNode->type = new FullyQualifiedIdentifierTypeNode($className);
+        }
     }
     /**
      * @param class-string $className
@@ -62,7 +70,7 @@ final class ReturnTypeDeclarationUpdater
         }
         $objectType = new ObjectType($className);
         // change return type
-        if ($classMethod->returnType instanceof Node) {
+        if ($classMethod->returnType !== null) {
             $returnType = $this->staticTypeMapper->mapPhpParserNodePHPStanType($classMethod->returnType);
             if ($objectType->isSuperTypeOf($returnType)->yes()) {
                 return;

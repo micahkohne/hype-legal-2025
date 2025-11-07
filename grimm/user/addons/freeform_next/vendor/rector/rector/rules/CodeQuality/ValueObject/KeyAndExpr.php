@@ -9,17 +9,19 @@ final class KeyAndExpr
 {
     /**
      * @readonly
+     * @var \PhpParser\Node\Expr|null
      */
-    private ?Expr $keyExpr;
+    private $keyExpr;
     /**
      * @readonly
+     * @var \PhpParser\Node\Expr
      */
-    private Expr $expr;
+    private $expr;
     /**
      * @var Comment[]
      * @readonly
      */
-    private array $comments;
+    private $comments;
     /**
      * @param Comment[] $comments
      */

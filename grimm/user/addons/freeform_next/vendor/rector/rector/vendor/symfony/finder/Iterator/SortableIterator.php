@@ -8,7 +8,7 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-namespace RectorPrefix202507\Symfony\Component\Finder\Iterator;
+namespace RectorPrefix202308\Symfony\Component\Finder\Iterator;
 
 /**
  * SortableIterator applies a sort on a given Iterator.
@@ -31,7 +31,7 @@ class SortableIterator implements \IteratorAggregate
     public const SORT_BY_EXTENSION = 9;
     public const SORT_BY_SIZE = 10;
     /** @var \Traversable<string, \SplFileInfo> */
-    private \Traversable $iterator;
+    private $iterator;
     /**
      * @var \Closure|int
      */
@@ -47,13 +47,21 @@ class SortableIterator implements \IteratorAggregate
         $this->iterator = $iterator;
         $order = $reverseOrder ? -1 : 1;
         if (self::SORT_BY_NAME === $sort) {
-            $this->sort = static fn(\SplFileInfo $a, \SplFileInfo $b) => $order * \strcmp($a->getRealPath() ?: $a->getPathname(), $b->getRealPath() ?: $b->getPathname());
+            $this->sort = static function (\SplFileInfo $a, \SplFileInfo $b) use($order) {
+                return $order * \strcmp($a->getRealPath() ?: $a->getPathname(), $b->getRealPath() ?: $b->getPathname());
+            };
         } elseif (self::SORT_BY_NAME_NATURAL === $sort) {
-            $this->sort = static fn(\SplFileInfo $a, \SplFileInfo $b) => $order * \strnatcmp($a->getRealPath() ?: $a->getPathname(), $b->getRealPath() ?: $b->getPathname());
+            $this->sort = static function (\SplFileInfo $a, \SplFileInfo $b) use($order) {
+                return $order * \strnatcmp($a->getRealPath() ?: $a->getPathname(), $b->getRealPath() ?: $b->getPathname());
+            };
         } elseif (self::SORT_BY_NAME_CASE_INSENSITIVE === $sort) {
-            $this->sort = static fn(\SplFileInfo $a, \SplFileInfo $b) => $order * \strcasecmp($a->getRealPath() ?: $a->getPathname(), $b->getRealPath() ?: $b->getPathname());
+            $this->sort = static function (\SplFileInfo $a, \SplFileInfo $b) use($order) {
+                return $order * \strcasecmp($a->getRealPath() ?: $a->getPathname(), $b->getRealPath() ?: $b->getPathname());
+            };
         } elseif (self::SORT_BY_NAME_NATURAL_CASE_INSENSITIVE === $sort) {
-            $this->sort = static fn(\SplFileInfo $a, \SplFileInfo $b) => $order * \strnatcasecmp($a->getRealPath() ?: $a->getPathname(), $b->getRealPath() ?: $b->getPathname());
+            $this->sort = static function (\SplFileInfo $a, \SplFileInfo $b) use($order) {
+                return $order * \strnatcasecmp($a->getRealPath() ?: $a->getPathname(), $b->getRealPath() ?: $b->getPathname());
+            };
         } elseif (self::SORT_BY_TYPE === $sort) {
             $this->sort = static function (\SplFileInfo $a, \SplFileInfo $b) use($order) {
                 if ($a->isDir() && $b->isFile()) {
@@ -64,19 +72,31 @@ class SortableIterator implements \IteratorAggregate
                 return $order * \strcmp($a->getRealPath() ?: $a->getPathname(), $b->getRealPath() ?: $b->getPathname());
             };
         } elseif (self::SORT_BY_ACCESSED_TIME === $sort) {
-            $this->sort = static fn(\SplFileInfo $a, \SplFileInfo $b) => $order * ($a->getATime() - $b->getATime());
+            $this->sort = static function (\SplFileInfo $a, \SplFileInfo $b) use($order) {
+                return $order * ($a->getATime() - $b->getATime());
+            };
         } elseif (self::SORT_BY_CHANGED_TIME === $sort) {
-            $this->sort = static fn(\SplFileInfo $a, \SplFileInfo $b) => $order * ($a->getCTime() - $b->getCTime());
+            $this->sort = static function (\SplFileInfo $a, \SplFileInfo $b) use($order) {
+                return $order * ($a->getCTime() - $b->getCTime());
+            };
         } elseif (self::SORT_BY_MODIFIED_TIME === $sort) {
-            $this->sort = static fn(\SplFileInfo $a, \SplFileInfo $b) => $order * ($a->getMTime() - $b->getMTime());
+            $this->sort = static function (\SplFileInfo $a, \SplFileInfo $b) use($order) {
+                return $order * ($a->getMTime() - $b->getMTime());
+            };
         } elseif (self::SORT_BY_EXTENSION === $sort) {
-            $this->sort = static fn(\SplFileInfo $a, \SplFileInfo $b) => $order * \strnatcmp($a->getExtension(), $b->getExtension());
+            $this->sort = static function (\SplFileInfo $a, \SplFileInfo $b) use($order) {
+                return $order * \strnatcmp($a->getExtension(), $b->getExtension());
+            };
         } elseif (self::SORT_BY_SIZE === $sort) {
-            $this->sort = static fn(\SplFileInfo $a, \SplFileInfo $b) => $order * ($a->getSize() - $b->getSize());
+            $this->sort = static function (\SplFileInfo $a, \SplFileInfo $b) use($order) {
+                return $order * ($a->getSize() - $b->getSize());
+            };
         } elseif (self::SORT_BY_NONE === $sort) {
             $this->sort = $order;
         } elseif (\is_callable($sort)) {
-            $this->sort = $reverseOrder ? static fn(\SplFileInfo $a, \SplFileInfo $b) => -$sort($a, $b) : \Closure::fromCallable($sort);
+            $this->sort = $reverseOrder ? static function (\SplFileInfo $a, \SplFileInfo $b) use($sort) {
+                return -$sort($a, $b);
+            } : \Closure::fromCallable($sort);
         } else {
             throw new \InvalidArgumentException('The SortableIterator takes a PHP callable or a valid built-in sort algorithm as an argument.');
         }

@@ -1,6 +1,6 @@
 <?php
 
-namespace RectorPrefix202507\Illuminate\Contracts\Mail;
+namespace RectorPrefix202308\Illuminate\Contracts\Mail;
 
 interface Mailer
 {
@@ -35,13 +35,4 @@ interface Mailer
      * @return \Illuminate\Mail\SentMessage|null
      */
     public function send($view, array $data = [], $callback = null);
-    /**
-     * Send a new message synchronously using a view.
-     *
-     * @param  \Illuminate\Contracts\Mail\Mailable|string|array  $mailable
-     * @param  array  $data
-     * @param  \Closure|string|null  $callback
-     * @return \Illuminate\Mail\SentMessage|null
-     */
-    public function sendNow($mailable, array $data = [], $callback = null);
 }

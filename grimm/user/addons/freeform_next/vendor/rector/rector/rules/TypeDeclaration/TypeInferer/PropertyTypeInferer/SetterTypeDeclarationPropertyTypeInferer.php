@@ -15,16 +15,19 @@ final class SetterTypeDeclarationPropertyTypeInferer
 {
     /**
      * @readonly
+     * @var \Rector\TypeDeclaration\NodeAnalyzer\ClassMethodAndPropertyAnalyzer
      */
-    private ClassMethodAndPropertyAnalyzer $classMethodAndPropertyAnalyzer;
+    private $classMethodAndPropertyAnalyzer;
     /**
      * @readonly
+     * @var \Rector\NodeNameResolver\NodeNameResolver
      */
-    private NodeNameResolver $nodeNameResolver;
+    private $nodeNameResolver;
     /**
      * @readonly
+     * @var \Rector\StaticTypeMapper\StaticTypeMapper
      */
-    private StaticTypeMapper $staticTypeMapper;
+    private $staticTypeMapper;
     public function __construct(ClassMethodAndPropertyAnalyzer $classMethodAndPropertyAnalyzer, NodeNameResolver $nodeNameResolver, StaticTypeMapper $staticTypeMapper)
     {
         $this->classMethodAndPropertyAnalyzer = $classMethodAndPropertyAnalyzer;

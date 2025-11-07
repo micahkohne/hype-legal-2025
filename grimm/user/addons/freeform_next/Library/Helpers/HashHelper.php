@@ -15,8 +15,8 @@ use Hashids\Hashids;
 
 class HashHelper
 {
-    const SALT       = "composer";
-    const MIN_LENGTH = 9;
+    public const SALT       = "composer";
+    public const MIN_LENGTH = 9;
 
     private static ?Hashids $hashids = null;
 
@@ -35,7 +35,7 @@ class HashHelper
      *
      * @return int
      */
-    public static function decode($hash): mixed
+    public static function decode($hash)
     {
         $idList = self::getHashids()->decode($hash);
 
@@ -53,15 +53,13 @@ class HashHelper
     }
 
     /**
-     * @param mixed $value
      * @param int   $length
      * @param int   $offset
-     *
      * @return string
      */
-    public static function sha1($value, $length = null, $offset = 0): string
+    public static function sha1(mixed $value, ?int $length = null, ?int $offset = 0): string
     {
-        $hash = sha1((string) $value);
+        $hash = sha1($value);
 
         if ($length) {
             return substr($hash, $offset, $length);
@@ -73,7 +71,7 @@ class HashHelper
     /**
      * @return Hashids
      */
-    private static function getHashids(): Hashids
+    private static function getHashids()
     {
         if (is_null(self::$hashids)) {
             self::$hashids = new Hashids(self::SALT, self::MIN_LENGTH);

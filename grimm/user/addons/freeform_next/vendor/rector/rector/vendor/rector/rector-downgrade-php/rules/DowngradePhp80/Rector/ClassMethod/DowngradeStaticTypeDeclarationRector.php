@@ -7,9 +7,9 @@ use PhpParser\Node;
 use PhpParser\Node\Stmt\ClassMethod;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Type\StaticType;
+use Rector\Core\Rector\AbstractRector;
+use Rector\Core\Reflection\ReflectionResolver;
 use Rector\PhpDocDecorator\PhpDocFromTypeDeclarationDecorator;
-use Rector\Rector\AbstractRector;
-use Rector\Reflection\ReflectionResolver;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -19,12 +19,14 @@ final class DowngradeStaticTypeDeclarationRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\PhpDocDecorator\PhpDocFromTypeDeclarationDecorator
      */
-    private PhpDocFromTypeDeclarationDecorator $phpDocFromTypeDeclarationDecorator;
+    private $phpDocFromTypeDeclarationDecorator;
     /**
      * @readonly
+     * @var \Rector\Core\Reflection\ReflectionResolver
      */
-    private ReflectionResolver $reflectionResolver;
+    private $reflectionResolver;
     public function __construct(PhpDocFromTypeDeclarationDecorator $phpDocFromTypeDeclarationDecorator, ReflectionResolver $reflectionResolver)
     {
         $this->phpDocFromTypeDeclarationDecorator = $phpDocFromTypeDeclarationDecorator;
@@ -67,15 +69,13 @@ CODE_SAMPLE
      */
     public function refactor(Node $node) : ?Node
     {
-        if ($node->params === [] && !$node->returnType instanceof Node) {
-            return null;
-        }
         $classReflection = $this->reflectionResolver->resolveClassReflection($node);
         if (!$classReflection instanceof ClassReflection) {
             return null;
         }
         $staticType = new StaticType($classReflection);
         $hasChanged = \false;
+        $hasParamChanged = \false;
         foreach ($node->getParams() as $param) {
             $hasParamChanged = $this->phpDocFromTypeDeclarationDecorator->decorateParamWithSpecificType($param, $node, $staticType);
             if ($hasParamChanged) {

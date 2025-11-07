@@ -11,12 +11,14 @@ final class RenameAnnotation implements RenameAnnotationInterface
 {
     /**
      * @readonly
+     * @var string
      */
-    private string $oldAnnotation;
+    private $oldAnnotation;
     /**
      * @readonly
+     * @var string
      */
-    private string $newAnnotation;
+    private $newAnnotation;
     public function __construct(string $oldAnnotation, string $newAnnotation)
     {
         $this->oldAnnotation = $oldAnnotation;

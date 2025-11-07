@@ -8,16 +8,15 @@ use PhpParser\Node\Expr\Assign;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Function_;
-use PhpParser\NodeVisitor;
+use PhpParser\NodeTraverser;
 use PHPStan\Type\Type;
-use Rector\NodeAnalyzer\PropertyFetchAnalyzer;
+use Rector\Core\NodeAnalyzer\PropertyFetchAnalyzer;
+use Rector\Core\Rector\AbstractRector;
+use Rector\Core\ValueObject\PhpVersionFeature;
 use Rector\NodeTypeResolver\PHPStan\Type\TypeFactory;
 use Rector\PhpDocParser\NodeTraverser\SimpleCallableNodeTraverser;
 use Rector\PHPStanStaticTypeMapper\Enum\TypeKind;
-use Rector\Rector\AbstractRector;
-use Rector\StaticTypeMapper\StaticTypeMapper;
 use Rector\TypeDeclaration\Guard\ParamTypeAddGuard;
-use Rector\ValueObject\PhpVersionFeature;
 use Rector\VendorLocker\ParentClassMethodTypeOverrideGuard;
 use Rector\VersionBonding\Contract\MinPhpVersionInterface;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
@@ -29,40 +28,40 @@ final class AddParamTypeFromPropertyTypeRector extends AbstractRector implements
 {
     /**
      * @readonly
+     * @var \Rector\Core\NodeAnalyzer\PropertyFetchAnalyzer
      */
-    private PropertyFetchAnalyzer $propertyFetchAnalyzer;
+    private $propertyFetchAnalyzer;
     /**
      * @readonly
+     * @var \Rector\PhpDocParser\NodeTraverser\SimpleCallableNodeTraverser
      */
-    private SimpleCallableNodeTraverser $simpleCallableNodeTraverser;
+    private $simpleCallableNodeTraverser;
     /**
      * @readonly
+     * @var \Rector\NodeTypeResolver\PHPStan\Type\TypeFactory
      */
-    private TypeFactory $typeFactory;
+    private $typeFactory;
     /**
      * @readonly
+     * @var \Rector\VendorLocker\ParentClassMethodTypeOverrideGuard
      */
-    private ParentClassMethodTypeOverrideGuard $parentClassMethodTypeOverrideGuard;
+    private $parentClassMethodTypeOverrideGuard;
     /**
      * @readonly
+     * @var \Rector\TypeDeclaration\Guard\ParamTypeAddGuard
      */
-    private ParamTypeAddGuard $paramTypeAddGuard;
-    /**
-     * @readonly
-     */
-    private StaticTypeMapper $staticTypeMapper;
+    private $paramTypeAddGuard;
     /**
      * @var string
      */
-    private const ERROR_MESSAGE = 'Add param type declaration based on property type';
-    public function __construct(PropertyFetchAnalyzer $propertyFetchAnalyzer, SimpleCallableNodeTraverser $simpleCallableNodeTraverser, TypeFactory $typeFactory, ParentClassMethodTypeOverrideGuard $parentClassMethodTypeOverrideGuard, ParamTypeAddGuard $paramTypeAddGuard, StaticTypeMapper $staticTypeMapper)
+    private const ERROR_MESSAGE = 'Adds param type declaration based on property type the value is assigned to PHPUnit provider return type declaration';
+    public function __construct(PropertyFetchAnalyzer $propertyFetchAnalyzer, SimpleCallableNodeTraverser $simpleCallableNodeTraverser, TypeFactory $typeFactory, ParentClassMethodTypeOverrideGuard $parentClassMethodTypeOverrideGuard, ParamTypeAddGuard $paramTypeAddGuard)
     {
         $this->propertyFetchAnalyzer = $propertyFetchAnalyzer;
         $this->simpleCallableNodeTraverser = $simpleCallableNodeTraverser;
         $this->typeFactory = $typeFactory;
         $this->parentClassMethodTypeOverrideGuard = $parentClassMethodTypeOverrideGuard;
         $this->paramTypeAddGuard = $paramTypeAddGuard;
-        $this->staticTypeMapper = $staticTypeMapper;
     }
     public function getRuleDefinition() : RuleDefinition
     {
@@ -108,9 +107,6 @@ CODE_SAMPLE
             if ($param->type instanceof Node) {
                 continue;
             }
-            if ($param->variadic) {
-                continue;
-            }
             if (!$this->paramTypeAddGuard->isLegal($param, $node)) {
                 continue;
             }
@@ -145,7 +141,7 @@ CODE_SAMPLE
         $this->simpleCallableNodeTraverser->traverseNodesWithCallable($classMethod, function (Node $node) use($paramName, &$propertyStaticTypes) : ?int {
             if ($node instanceof Class_ || $node instanceof Function_) {
                 // skip anonymous classes and inner function
-                return NodeVisitor::DONT_TRAVERSE_CURRENT_AND_CHILDREN;
+                return NodeTraverser::DONT_TRAVERSE_CURRENT_AND_CHILDREN;
             }
             if (!$node instanceof Assign) {
                 return null;

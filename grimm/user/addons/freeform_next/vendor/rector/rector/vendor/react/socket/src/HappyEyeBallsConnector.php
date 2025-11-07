@@ -1,39 +1,25 @@
 <?php
 
-namespace RectorPrefix202507\React\Socket;
+namespace RectorPrefix202308\React\Socket;
 
-use RectorPrefix202507\React\Dns\Resolver\ResolverInterface;
-use RectorPrefix202507\React\EventLoop\Loop;
-use RectorPrefix202507\React\EventLoop\LoopInterface;
-use RectorPrefix202507\React\Promise;
+use RectorPrefix202308\React\Dns\Resolver\ResolverInterface;
+use RectorPrefix202308\React\EventLoop\Loop;
+use RectorPrefix202308\React\EventLoop\LoopInterface;
+use RectorPrefix202308\React\Promise;
 final class HappyEyeBallsConnector implements ConnectorInterface
 {
     private $loop;
     private $connector;
     private $resolver;
-    /**
-     * @param ?LoopInterface $loop
-     * @param ConnectorInterface $connector
-     * @param ResolverInterface $resolver
-     */
-    public function __construct($loop = null, $connector = null, $resolver = null)
+    public function __construct(LoopInterface $loop = null, ConnectorInterface $connector = null, ResolverInterface $resolver = null)
     {
         // $connector and $resolver arguments are actually required, marked
         // optional for technical reasons only. Nullable $loop without default
         // requires PHP 7.1, null default is also supported in legacy PHP
         // versions, but required parameters are not allowed after arguments
         // with null default. Mark all parameters optional and check accordingly.
-        if ($loop !== null && !$loop instanceof LoopInterface) {
-            // manual type check to support legacy PHP < 7.1
-            throw new \InvalidArgumentException('Argument #1 ($loop) expected null|React\\EventLoop\\LoopInterface');
-        }
-        if (!$connector instanceof ConnectorInterface) {
-            // manual type check to support legacy PHP < 7.1
-            throw new \InvalidArgumentException('Argument #2 ($connector) expected React\\Socket\\ConnectorInterface');
-        }
-        if (!$resolver instanceof ResolverInterface) {
-            // manual type check to support legacy PHP < 7.1
-            throw new \InvalidArgumentException('Argument #3 ($resolver) expected React\\Dns\\Resolver\\ResolverInterface');
+        if ($connector === null || $resolver === null) {
+            throw new \InvalidArgumentException('Missing required $connector or $resolver argument');
         }
         $this->loop = $loop ?: Loop::get();
         $this->connector = $connector;

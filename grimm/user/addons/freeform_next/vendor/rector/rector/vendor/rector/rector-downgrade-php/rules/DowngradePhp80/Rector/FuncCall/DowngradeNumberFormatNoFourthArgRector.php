@@ -7,8 +7,8 @@ use PhpParser\Node;
 use PhpParser\Node\Arg;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Scalar\String_;
-use Rector\NodeAnalyzer\ArgsAnalyzer;
-use Rector\Rector\AbstractRector;
+use Rector\Core\NodeAnalyzer\ArgsAnalyzer;
+use Rector\Core\Rector\AbstractRector;
 use ReflectionFunction;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
@@ -21,8 +21,9 @@ final class DowngradeNumberFormatNoFourthArgRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\Core\NodeAnalyzer\ArgsAnalyzer
      */
-    private ArgsAnalyzer $argsAnalyzer;
+    private $argsAnalyzer;
     public function __construct(ArgsAnalyzer $argsAnalyzer)
     {
         $this->argsAnalyzer = $argsAnalyzer;
@@ -70,7 +71,7 @@ CODE_SAMPLE
     }
     private function shouldSkip(FuncCall $funcCall) : bool
     {
-        if (!$this->isName($funcCall, 'number_format')) {
+        if (!$this->nodeNameResolver->isName($funcCall, 'number_format')) {
             return \true;
         }
         $args = $funcCall->getArgs();

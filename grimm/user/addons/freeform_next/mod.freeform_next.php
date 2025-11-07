@@ -8,7 +8,8 @@
  * @link          https://docs.solspace.com/expressionengine/freeform/v3/
  * @license       https://docs.solspace.com/license-agreement/
  */
-
+use Solspace\Addons\FreeformNext\Services\FilesService;
+use Solspace\Addons\FreeformNext\Services\SettingsService;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Form;
 use Solspace\Addons\FreeformNext\Library\DataObjects\SubmissionAttributes;
 use Solspace\Addons\FreeformNext\Library\EETags\FormTagParamUtilities;
@@ -22,12 +23,10 @@ use Solspace\Addons\FreeformNext\Model\SpamReasonModel;
 use Solspace\Addons\FreeformNext\Model\SubmissionModel;
 use Solspace\Addons\FreeformNext\Repositories\FormRepository;
 use Solspace\Addons\FreeformNext\Repositories\SubmissionRepository;
-use Solspace\Addons\FreeformNext\Services\FilesService;
 use Solspace\Addons\FreeformNext\Services\HoneypotService;
-use Solspace\Addons\FreeformNext\Services\SettingsService;
 use Solspace\Addons\FreeformNext\Utilities\Plugin;
 
-require_once version_compare(PHP_VERSION, '8.0.0') < 0 ? __DIR__ . '/php7/vendor/autoload.php' : __DIR__ . '/vendor/autoload.php';
+require_once __DIR__ . '/vendor/autoload.php';
 
 class Freeform_Next extends Plugin
 {
@@ -175,8 +174,6 @@ class Freeform_Next extends Plugin
     }
 
     /**
-     * @param ?Form $form
-     *
      * @throws FreeformException
      */
     public function submitForm(?Form $form = null): void
@@ -328,16 +325,12 @@ class Freeform_Next extends Plugin
         return $form;
     }
 
-    /**
-     * @param Form                 $form
-     * @param SubmissionAttributes $attributes
-     */
     private function findAndAttachSearchParams(Form $form, SubmissionAttributes $attributes): void
     {
         $table = ee()->db->dbprefix('freeform_next_submissions');
 
         foreach (ee()->TMPL->tagparams as $key => $value) {
-            if (preg_match("/^search:(\w+)$/", (string) $key, $matches)) {
+            if (preg_match("/^search:(\w+)$/", $key, $matches)) {
                 [$_, $handle] = $matches;
 
                 $field = $form->get($handle);
@@ -362,17 +355,17 @@ class Freeform_Next extends Plugin
      *
      * @return    string    SQL to include in an existing query's WHERE clause
      */
-    public function field_search_sql($terms, $col_name, $site_id = false): string
+    public function field_search_sql($terms, $col_name, $site_id = false)
     {
         $search_method = '_field_search';
 
-        if (str_starts_with((string) $terms, '=')) {
+        if (str_starts_with($terms, '=')) {
             // Remove the '=' sign that specified exact match.
-            $terms = substr((string) $terms, 1);
+            $terms = substr($terms, 1);
 
             $search_method = '_exact_field_search';
-        } else if (str_starts_with((string) $terms, '<') ||
-            str_starts_with((string) $terms, '>')) {
+        } else if (str_starts_with($terms, '<') ||
+            str_starts_with($terms, '>')) {
             $search_method = '_numeric_comparison_search';
         }
 
@@ -388,7 +381,7 @@ class Freeform_Next extends Plugin
      */
     private function _numeric_comparison_search($terms, $col_name, $site_id): string
     {
-        preg_match_all('/([<>]=?)(\d+)/', (string) $terms, $matches, PREG_SET_ORDER);
+        preg_match_all('/([<>]=?)(\d+)/', $terms, $matches, PREG_SET_ORDER);
 
         if (empty($matches)) {
             return $this->_field_search($terms, $col_name, $site_id);
@@ -420,14 +413,14 @@ class Freeform_Next extends Plugin
         $not     = false;
         $site_id = ($site_id !== false) ? 'wd.site_id=' . $site_id . ' AND ' : '';
 
-        if (strncasecmp((string) $terms, 'not ', 4) == 0) {
+        if (strncasecmp($terms, 'not ', 4) == 0) {
             $not   = true;
-            $terms = substr((string) $terms, 4);
+            $terms = substr($terms, 4);
         }
 
         // Trivial case, we don't have special IS_EMPTY handling.
-        if (!str_contains((string) $terms, 'IS_EMPTY')) {
-            $no_is_empty = substr((string) ee()->functions->sql_andor_string(($not ? 'not ' . $terms : $terms), $col_name), 3) . ' ';
+        if (!str_contains($terms, 'IS_EMPTY')) {
+            $no_is_empty = substr(ee()->functions->sql_andor_string(($not ? 'not ' . $terms : $terms), $col_name), 3) . ' ';
 
             if ($not) {
                 $no_is_empty = '(' . $no_is_empty . ' OR (' . $site_id . $col_name . ' IS NULL)) ';
@@ -436,7 +429,7 @@ class Freeform_Next extends Plugin
             return $no_is_empty;
         }
 
-        if (str_contains((string) $terms, '|')) {
+        if (str_contains($terms, '|')) {
             $terms = str_replace('IS_EMPTY|', '', $terms);
         } else {
             $terms = str_replace('IS_EMPTY', '', $terms);
@@ -451,7 +444,7 @@ class Freeform_Next extends Plugin
             // but may come back to it.
             $add_search = ee()->functions->sql_andor_string(($not ? 'not ' . $terms : $terms), $col_name);
             // remove the first AND output by ee()->functions->sql_andor_string() so we can parenthesize this clause
-            $add_search = '(' . $site_id . substr((string) $add_search, 3) . ')';
+            $add_search = '(' . $site_id . substr($add_search, 3) . ')';
 
             $conj = ($add_search != '' && !$not) ? 'OR' : 'AND';
         }
@@ -473,16 +466,16 @@ class Freeform_Next extends Plugin
     private function _field_search($terms, $col_name, $site_id = false): string
     {
         $not = '';
-        if (strncasecmp((string) $terms, 'not ', 4) == 0) {
-            $terms = substr((string) $terms, 4);
+        if (strncasecmp($terms, 'not ', 4) == 0) {
+            $terms = substr($terms, 4);
             $not   = 'NOT';
         }
 
-        if (str_contains((string) $terms, '&&')) {
-            $terms = explode('&&', (string) $terms);
+        if (str_contains($terms, '&&')) {
+            $terms = explode('&&', $terms);
             $andor = $not == 'NOT' ? 'OR' : 'AND';
         } else {
-            $terms = explode('|', (string) $terms);
+            $terms = explode('|', $terms);
             $andor = $not == 'NOT' ? 'AND' : 'OR';
         }
 

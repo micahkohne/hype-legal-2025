@@ -5,34 +5,44 @@ namespace Rector\PHPUnit\PHPUnit100\Rector\MethodCall;
 
 use PhpParser\Node;
 use PhpParser\Node\Arg;
-use PhpParser\Node\Expr\ClassConstFetch;
+use PhpParser\Node\Expr\ArrayDimFetch;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\MethodCall;
+use PhpParser\Node\Expr\New_;
+use PhpParser\Node\Expr\PropertyFetch;
+use PhpParser\Node\Expr\StaticCall;
+use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Name;
+use PhpParser\Node\Name\FullyQualified;
+use PhpParser\Node\Scalar\String_;
+use Rector\Core\Rector\AbstractRector;
 use Rector\PHPUnit\NodeAnalyzer\IdentifierManipulator;
 use Rector\PHPUnit\NodeAnalyzer\TestsNodeAnalyzer;
-use Rector\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
- * @url https://github.com/sebastianbergmann/phpunit/issues/4601
- *
  * @see \Rector\PHPUnit\Tests\PHPUnit100\Rector\MethodCall\PropertyExistsWithoutAssertRector\PropertyExistsWithoutAssertRectorTest
  */
 final class PropertyExistsWithoutAssertRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\PHPUnit\NodeAnalyzer\IdentifierManipulator
      */
-    private IdentifierManipulator $identifierManipulator;
+    private $identifierManipulator;
     /**
      * @readonly
+     * @var \Rector\PHPUnit\NodeAnalyzer\TestsNodeAnalyzer
      */
-    private TestsNodeAnalyzer $testsNodeAnalyzer;
+    private $testsNodeAnalyzer;
     /**
      * @var array<string, string>
      */
-    private const RENAME_METHODS_WITH_OBJECT_MAP = ['assertClassHasStaticAttribute' => 'assertTrue', 'classHasStaticAttribute' => 'assertTrue', 'assertClassNotHasStaticAttribute' => 'assertFalse'];
+    private const RENAME_METHODS_WITH_OBJECT_MAP = ['assertObjectHasAttribute' => 'assertTrue', 'assertObjectNotHasAttribute' => 'assertFalse'];
+    /**
+     * @var array<string, string>
+     */
+    private const RENAME_METHODS_WITH_CLASS_MAP = ['assertClassHasAttribute' => 'assertTrue', 'assertClassNotHasAttribute' => 'assertFalse'];
     public function __construct(IdentifierManipulator $identifierManipulator, TestsNodeAnalyzer $testsNodeAnalyzer)
     {
         $this->identifierManipulator = $identifierManipulator;
@@ -40,15 +50,13 @@ final class PropertyExistsWithoutAssertRector extends AbstractRector
     }
     public function getRuleDefinition() : RuleDefinition
     {
-        return new RuleDefinition('Replace deleted PHPUnit methods: assertClassHasStaticAttribute, classHasStaticAttribute and assertClassNotHasStaticAttribute by property_exists()', [new CodeSample(<<<'CODE_SAMPLE'
-$this->assertClassHasStaticAttribute("Class", "property");
-$this->classHasStaticAttribute("Class", "property");
-$this->assertClassNotHasStaticAttribute("Class", "property");
+        return new RuleDefinition('Turns PHPUnit TestCase assertObjectHasAttribute into `property_exists` comparisons', [new CodeSample(<<<'CODE_SAMPLE'
+$this->assertClassHasAttribute("property", "Class");
+$this->assertClassNotHasAttribute("property", "Class");
 CODE_SAMPLE
 , <<<'CODE_SAMPLE'
-$this->assertTrue(property_exists("Class", "property"));
-$this->assertTrue(property_exists("Class", "property"));
-$this->assertFalse(property_exists("Class", "property"));
+$this->assertFalse(property_exists(new Class, "property"));
+$this->assertTrue(property_exists(new Class, "property"));
 CODE_SAMPLE
 )]);
     }
@@ -57,29 +65,38 @@ CODE_SAMPLE
      */
     public function getNodeTypes() : array
     {
-        return [MethodCall::class];
+        return [MethodCall::class, StaticCall::class];
     }
     /**
-     * @param MethodCall $node
+     * @param MethodCall|StaticCall $node
      */
     public function refactor(Node $node) : ?Node
     {
-        $map = self::RENAME_METHODS_WITH_OBJECT_MAP;
-        if (!$this->testsNodeAnalyzer->isPHPUnitMethodCallNames($node, \array_keys($map))) {
+        if (!$this->testsNodeAnalyzer->isPHPUnitMethodCallNames($node, ['assertClassHasAttribute', 'assertClassNotHasAttribute', 'assertObjectNotHasAttribute', 'assertObjectHasAttribute'])) {
             return null;
         }
-        if ($node->isFirstClassCallable() || !isset($node->getArgs()[0], $node->getArgs()[1])) {
-            return null;
-        }
-        $firstNode = new Arg($node->getArgs()[0]->value);
-        if ($node->getArgs()[1]->value instanceof ClassConstFetch) {
-            $secondNode = $node->getArgs()[1];
+        $arguments = \array_column($node->args, 'value');
+        if ($arguments[0] instanceof String_ || $arguments[0] instanceof Variable || $arguments[0] instanceof ArrayDimFetch || $arguments[0] instanceof PropertyFetch) {
+            $secondArg = $arguments[0];
         } else {
-            $secondNode = new Arg($node->getArgs()[1]->value);
+            return null;
         }
-        $funcCall = new FuncCall(new Name('property_exists'), [$secondNode, $firstNode]);
-        $newArgs = $this->nodeFactory->createArgs([$funcCall]);
-        unset($node->args[0], $node->args[1]);
+        if ($arguments[1] instanceof Variable) {
+            $firstArg = new Variable($arguments[1]->name);
+            $map = self::RENAME_METHODS_WITH_OBJECT_MAP;
+        } elseif ($arguments[1] instanceof String_) {
+            $firstArg = new New_(new FullyQualified($arguments[1]->value));
+            $map = self::RENAME_METHODS_WITH_CLASS_MAP;
+        } elseif ($arguments[1] instanceof PropertyFetch || $arguments[1] instanceof ArrayDimFetch) {
+            $firstArg = $arguments[1];
+            $map = self::RENAME_METHODS_WITH_OBJECT_MAP;
+        } else {
+            return null;
+        }
+        unset($node->args[0]);
+        unset($node->args[1]);
+        $propertyExistsFuncCall = new FuncCall(new Name('property_exists'), [new Arg($firstArg), new Arg($secondArg)]);
+        $newArgs = $this->nodeFactory->createArgs([$propertyExistsFuncCall]);
         $node->args = \array_merge($newArgs, $node->getArgs());
         $this->identifierManipulator->renameNodeWithMap($node, $map);
         return $node;

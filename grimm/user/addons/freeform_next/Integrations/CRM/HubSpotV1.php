@@ -11,9 +11,8 @@
 
 namespace Solspace\Addons\FreeformNext\Integrations\CRM;
 
-use Override;
-use Exception;
 use Psr\Http\Message\ResponseInterface;
+use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\RequestException;
 use Solspace\Addons\FreeformNext\Library\Exceptions\Integrations\IntegrationException;
@@ -25,13 +24,13 @@ use Solspace\Addons\FreeformNext\Library\Composer\Components\Fields\CheckboxGrou
 
 class HubSpotV1 extends AbstractCRMIntegration
 {
-    const SETTING_API_KEY = 'api_key';
-    const SETTING_IP_FIELD = 'ip_field';
-    const SETTING_APPEND_COMPANY_DATA = 'append_company_data';
-    const SETTING_APPEND_CONTACT_DATA = 'append_contact_data';
+    public const SETTING_API_KEY = 'api_key';
+    public const SETTING_IP_FIELD = 'ip_field';
+    public const SETTING_APPEND_COMPANY_DATA = 'append_company_data';
+    public const SETTING_APPEND_CONTACT_DATA = 'append_contact_data';
 
-    const TITLE           = 'HubSpot (v1)';
-    const LOG_CATEGORY    = 'HubSpot_v1';
+    public const TITLE           = 'HubSpot (v1)';
+    public const LOG_CATEGORY    = 'HubSpot_v1';
 
     /**
      * Returns a list of additional settings for this integration
@@ -39,7 +38,6 @@ class HubSpotV1 extends AbstractCRMIntegration
      *
      * @return SettingBlueprint[]
      */
-    #[Override]
     public static function getSettingBlueprints(): array
     {
         return [
@@ -79,7 +77,7 @@ class HubSpotV1 extends AbstractCRMIntegration
      * @param array $keyValueList
      * @param array $formFields
      */
-    public function pushObject(array $keyValueList, $formFields = null): bool
+    public function pushObject(array $keyValueList, ?array$formFields = null): bool
     {
         $isAppendContactData = $this->getSetting(self::SETTING_APPEND_CONTACT_DATA);
         $isAppendCompanyData = $this->getSetting(self::SETTING_APPEND_COMPANY_DATA);
@@ -170,7 +168,7 @@ class HubSpotV1 extends AbstractCRMIntegration
                     $json = json_decode((string) $response->getBody());
 
                     // If we've found a company based on the domain name
-                    if (\count($json->results) > 0) {
+                    if ((is_countable($json->results) ? \count($json->results) : 0) > 0) {
                         $company = $json->results[0];
 
                         if (isset($company->companyId)) {
@@ -355,7 +353,7 @@ class HubSpotV1 extends AbstractCRMIntegration
      *
      * @return FieldObject[]
      */
-    public function fetchFields(): array
+    public function fetchFields()
     {
         $fieldList = [];
         $this->extractCustomFields(
@@ -394,7 +392,7 @@ class HubSpotV1 extends AbstractCRMIntegration
     /**
      * A method that initiates the authentication
      */
-    public function initiateAuthentication()
+    public function initiateAuthentication(): void
     {
     }
 
@@ -417,11 +415,6 @@ class HubSpotV1 extends AbstractCRMIntegration
     }
 
 
-    /**
-     * @param string $endpoint
-     * @param string $dataType
-     * @param array  $fieldList
-     */
     private function extractCustomFields(string $endpoint, string $dataType, array &$fieldList): void
     {
         $client = $this->generateAuthorizedClient();
@@ -480,7 +473,7 @@ class HubSpotV1 extends AbstractCRMIntegration
      *
      * @return string
      */
-    private function getEmailFieldValue($contactProps)
+    private function getEmailFieldValue(array $contactProps)
     {
         foreach ($contactProps as $contactProp) {
             if (isset($contactProp['property'])) {
@@ -517,16 +510,16 @@ class HubSpotV1 extends AbstractCRMIntegration
         return false;
     }
 
-    private function extractDomainFromEmail($email): ?string
+    private function extractDomainFromEmail($email)
     {
-        if (preg_match('/^.*@([^@]+)$$/', (string) $email, $matches)) {
+        if (preg_match('/^.*@([^@]+)$$/', $email, $matches)) {
             return $matches[1];
         }
 
         return null;
     }
 
-    private function addCompanyDomainToCompanyProps(string $companyDomain, array $companyProps): array
+    private function addCompanyDomainToCompanyProps($companyDomain, array $companyProps): array
     {
         foreach ($companyProps as $key => $companyProp) {
             $companyPropName = $companyProp['name'];
@@ -558,7 +551,7 @@ class HubSpotV1 extends AbstractCRMIntegration
      *
      * @return mixed
      */
-    private function getContactByEmail(string $email, Client $client, $contactProps): ResponseInterface
+    private function getContactByEmail(string $email, Client $client, array $contactProps): ResponseInterface
     {
         return $client->get(
             $this->getEndpoint('/contacts/v1/contact/email/'.$email.'/profile'),
@@ -669,7 +662,7 @@ class HubSpotV1 extends AbstractCRMIntegration
      *
      * @return mixed
      */
-    private function appendValuesToCompanyProperties(array $companyProps, $appendCompanyFields, object $company): array
+    private function appendValuesToCompanyProperties(array $companyProps, $appendCompanyFields, $company): array
     {
         foreach ($companyProps as $key => $companyProp) {
             $companyPropValue = $companyProp['value'];
@@ -684,7 +677,7 @@ class HubSpotV1 extends AbstractCRMIntegration
                     }
 
                     // Clean up duplicate values
-                    $valueArray = explode(';', (string) $newCompanyPropValue);
+                    $valueArray = explode(';', $newCompanyPropValue);
                     $valueArray = array_unique($valueArray);
                     $newCompanyPropValue = implode(';', $valueArray);
 
@@ -708,7 +701,7 @@ class HubSpotV1 extends AbstractCRMIntegration
      *
      * @return mixed
      */
-    private function appendValuesToContactProperties(array $contactProps, $appendContactFields, object $contact): array
+    private function appendValuesToContactProperties(array $contactProps, $appendContactFields, $contact): array
     {
         foreach ($contactProps as $key => $contactProp) {
             $contactPropValue = $contactProp['value'];
@@ -724,7 +717,7 @@ class HubSpotV1 extends AbstractCRMIntegration
                     }
 
                     // Clean up duplicate values
-                    $valueArray = explode(';', (string) $newCompanyPropValue);
+                    $valueArray = explode(';', $newCompanyPropValue);
                     $valueArray = array_unique($valueArray);
                     $newCompanyPropValue = implode(';', $valueArray);
 

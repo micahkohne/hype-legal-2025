@@ -8,11 +8,16 @@ use function sprintf;
 class ConditionalTypeForParameterNode implements \PHPStan\PhpDocParser\Ast\Type\TypeNode
 {
     use NodeAttributes;
-    public string $parameterName;
-    public \PHPStan\PhpDocParser\Ast\Type\TypeNode $targetType;
-    public \PHPStan\PhpDocParser\Ast\Type\TypeNode $if;
-    public \PHPStan\PhpDocParser\Ast\Type\TypeNode $else;
-    public bool $negated;
+    /** @var string */
+    public $parameterName;
+    /** @var TypeNode */
+    public $targetType;
+    /** @var TypeNode */
+    public $if;
+    /** @var TypeNode */
+    public $else;
+    /** @var bool */
+    public $negated;
     public function __construct(string $parameterName, \PHPStan\PhpDocParser\Ast\Type\TypeNode $targetType, \PHPStan\PhpDocParser\Ast\Type\TypeNode $if, \PHPStan\PhpDocParser\Ast\Type\TypeNode $else, bool $negated)
     {
         $this->parameterName = $parameterName;

@@ -8,25 +8,28 @@ use PhpParser\Node\Expr\Array_;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\MethodCall;
 use Rector\CodingStyle\NodeFactory\ArrayCallableToMethodCallFactory;
-use Rector\Rector\AbstractRector;
+use Rector\Core\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
+ * @changelog https://stackoverflow.com/a/1596250/1348344
+ *
  * @see \Rector\Tests\CodingStyle\Rector\FuncCall\CallUserFuncToMethodCallRector\CallUserFuncToMethodCallRectorTest
  */
 final class CallUserFuncToMethodCallRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\CodingStyle\NodeFactory\ArrayCallableToMethodCallFactory
      */
-    private ArrayCallableToMethodCallFactory $arrayCallableToMethodCallFactory;
+    private $arrayCallableToMethodCallFactory;
     public function __construct(ArrayCallableToMethodCallFactory $arrayCallableToMethodCallFactory)
     {
         $this->arrayCallableToMethodCallFactory = $arrayCallableToMethodCallFactory;
     }
     public function getRuleDefinition() : RuleDefinition
     {
-        return new RuleDefinition('Refactor `call_user_func()` on known class method to a method call', [new CodeSample(<<<'CODE_SAMPLE'
+        return new RuleDefinition('Refactor call_user_func() on known class method to a method call', [new CodeSample(<<<'CODE_SAMPLE'
 final class SomeClass
 {
     public function run()

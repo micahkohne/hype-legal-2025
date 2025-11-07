@@ -7,30 +7,34 @@ use PhpParser\Node;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassMethod;
-use Rector\Configuration\Parameter\FeatureFlags;
-use Rector\PhpParser\NodeFinder\LocalMethodCallFinder;
-use Rector\Rector\AbstractRector;
+use Rector\Core\PhpParser\NodeFinder\LocalMethodCallFinder;
+use Rector\Core\Rector\AbstractRector;
 use Rector\TypeDeclaration\NodeAnalyzer\CallTypesResolver;
 use Rector\TypeDeclaration\NodeAnalyzer\ClassMethodParamTypeCompleter;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
+ * @changelog https://github.com/symplify/phpstan-rules/blob/master/docs/rules_overview.md#checktypehintcallertyperule
+ *
  * @see \Rector\Tests\TypeDeclaration\Rector\ClassMethod\AddMethodCallBasedStrictParamTypeRector\AddMethodCallBasedStrictParamTypeRectorTest
  */
 final class AddMethodCallBasedStrictParamTypeRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\TypeDeclaration\NodeAnalyzer\CallTypesResolver
      */
-    private CallTypesResolver $callTypesResolver;
+    private $callTypesResolver;
     /**
      * @readonly
+     * @var \Rector\TypeDeclaration\NodeAnalyzer\ClassMethodParamTypeCompleter
      */
-    private ClassMethodParamTypeCompleter $classMethodParamTypeCompleter;
+    private $classMethodParamTypeCompleter;
     /**
      * @readonly
+     * @var \Rector\Core\PhpParser\NodeFinder\LocalMethodCallFinder
      */
-    private LocalMethodCallFinder $localMethodCallFinder;
+    private $localMethodCallFinder;
     /**
      * @var int
      */
@@ -84,19 +88,20 @@ CODE_SAMPLE
     public function refactor(Node $node) : ?Node
     {
         $hasChanged = \false;
-        foreach ($node->getMethods() as $classMethod) {
-            if ($classMethod->params === []) {
+        foreach ($node->getMethods() as $method) {
+            if ($method->params === []) {
                 continue;
             }
-            if (!$this->isClassMethodPrivate($node, $classMethod)) {
+            $isPrivate = $node->isFinal() && !$node->extends instanceof Name && $node->implements === [] && $method->isProtected() || $method->isFinal() && !$node->extends instanceof Name && $node->implements === [] || $method->isPrivate();
+            if (!$isPrivate) {
                 continue;
             }
-            if ($classMethod->isPublic()) {
+            if ($method->isPublic()) {
                 continue;
             }
-            $methodCalls = $this->localMethodCallFinder->match($node, $classMethod);
+            $methodCalls = $this->localMethodCallFinder->match($node, $method);
             $classMethodParameterTypes = $this->callTypesResolver->resolveStrictTypesFromCalls($methodCalls);
-            $classMethod = $this->classMethodParamTypeCompleter->complete($classMethod, $classMethodParameterTypes, self::MAX_UNION_TYPES);
+            $classMethod = $this->classMethodParamTypeCompleter->complete($method, $classMethodParameterTypes, self::MAX_UNION_TYPES);
             if ($classMethod instanceof ClassMethod) {
                 $hasChanged = \true;
             }
@@ -105,16 +110,5 @@ CODE_SAMPLE
             return $node;
         }
         return null;
-    }
-    private function isClassMethodPrivate(Class_ $class, ClassMethod $classMethod) : bool
-    {
-        if ($classMethod->isPrivate()) {
-            return \true;
-        }
-        if ($classMethod->isFinal() && !$class->extends instanceof Name && $class->implements === []) {
-            return \true;
-        }
-        $isClassFinal = $class->isFinal() || FeatureFlags::treatClassesAsFinal() && !$class->isAbstract();
-        return $isClassFinal && !$class->extends instanceof Name && $class->implements === [] && $classMethod->isProtected();
     }
 }

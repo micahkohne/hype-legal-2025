@@ -1,7 +1,7 @@
 <?php
 
 declare (strict_types=1);
-namespace Rector\Reflection;
+namespace Rector\Core\Reflection;
 
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\MethodReflection;
@@ -10,8 +10,9 @@ final class MethodReflectionResolver
 {
     /**
      * @readonly
+     * @var \PHPStan\Reflection\ReflectionProvider
      */
-    private ReflectionProvider $reflectionProvider;
+    private $reflectionProvider;
     public function __construct(ReflectionProvider $reflectionProvider)
     {
         $this->reflectionProvider = $reflectionProvider;

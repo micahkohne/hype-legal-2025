@@ -1,19 +1,21 @@
 <?php
 
 declare (strict_types=1);
-namespace Rector\Console\Style;
+namespace Rector\Core\Console\Style;
 
-use Rector\Util\Reflection\PrivatesAccessor;
-use RectorPrefix202507\Symfony\Component\Console\Application;
-use RectorPrefix202507\Symfony\Component\Console\Input\ArgvInput;
-use RectorPrefix202507\Symfony\Component\Console\Output\ConsoleOutput;
-use RectorPrefix202507\Symfony\Component\Console\Output\OutputInterface;
+use Rector\Core\Util\Reflection\PrivatesAccessor;
+use RectorPrefix202308\Symfony\Component\Console\Application;
+use RectorPrefix202308\Symfony\Component\Console\Input\ArgvInput;
+use RectorPrefix202308\Symfony\Component\Console\Output\ConsoleOutput;
+use RectorPrefix202308\Symfony\Component\Console\Output\OutputInterface;
+use RectorPrefix202308\Symfony\Component\Console\Style\SymfonyStyle;
 final class SymfonyStyleFactory
 {
     /**
      * @readonly
+     * @var \Rector\Core\Util\Reflection\PrivatesAccessor
      */
-    private PrivatesAccessor $privatesAccessor;
+    private $privatesAccessor;
     public function __construct(PrivatesAccessor $privatesAccessor)
     {
         $this->privatesAccessor = $privatesAccessor;
@@ -21,7 +23,7 @@ final class SymfonyStyleFactory
     /**
      * @api
      */
-    public function create() : \Rector\Console\Style\RectorStyle
+    public function create() : SymfonyStyle
     {
         // to prevent missing argv indexes
         if (!isset($_SERVER['argv'])) {
@@ -39,10 +41,10 @@ final class SymfonyStyleFactory
         if ($this->isPHPUnitRun()) {
             $consoleOutput->setVerbosity(OutputInterface::VERBOSITY_QUIET);
         }
-        return new \Rector\Console\Style\RectorStyle($argvInput, $consoleOutput);
+        return new \Rector\Core\Console\Style\RectorStyle($argvInput, $consoleOutput);
     }
     /**
-     * Never ever used static methods if not necessary, this is just handy for tests + src to prevent duplication.
+     * Never ever used static methods if not neccesary, this is just handy for tests + src to prevent duplication.
      */
     private function isPHPUnitRun() : bool
     {

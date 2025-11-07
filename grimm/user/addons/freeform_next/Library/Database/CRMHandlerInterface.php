@@ -35,9 +35,7 @@ interface CRMHandlerInterface extends IntegrationHandlerInterface
     /**
      * Updates the fields of a given CRM integration
      *
-     * @param AbstractCRMIntegration $integration
      * @param FieldObject[]          $fields
-     *
      * @return bool
      */
     public function updateFields(AbstractCRMIntegration $integration, array $fields);
@@ -45,7 +43,6 @@ interface CRMHandlerInterface extends IntegrationHandlerInterface
     /**
      * Returns all FieldObjects of a particular CRM integration
      *
-     * @param AbstractCRMIntegration $integration
      *
      * @return FieldObject[]
      */
@@ -53,16 +50,12 @@ interface CRMHandlerInterface extends IntegrationHandlerInterface
 
     /**
      * Flag the given CRM integration so that it's updated the next time it's accessed
-     *
-     * @param AbstractCRMIntegration $integration
      */
     public function flagIntegrationForUpdating(AbstractCRMIntegration $integration);
 
     /**
      * Push the mapped object values to the CRM
      *
-     * @param IntegrationProperties $properties
-     * @param Layout                $layout
      *
      * @return bool
      */

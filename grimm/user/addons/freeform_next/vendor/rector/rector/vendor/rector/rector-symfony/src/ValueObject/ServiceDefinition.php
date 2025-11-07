@@ -8,29 +8,34 @@ final class ServiceDefinition
 {
     /**
      * @readonly
+     * @var string
      */
-    private string $id;
+    private $id;
     /**
      * @readonly
+     * @var string|null
      */
-    private ?string $class;
+    private $class;
     /**
      * @readonly
+     * @var bool
      */
-    private bool $isPublic;
+    private $isPublic;
     /**
      * @readonly
+     * @var bool
      */
-    private bool $isSynthetic;
+    private $isSynthetic;
     /**
      * @readonly
+     * @var string|null
      */
-    private ?string $alias;
+    private $alias;
     /**
      * @var TagInterface[]
      * @readonly
      */
-    private array $tags;
+    private $tags;
     /**
      * @param TagInterface[] $tags
      */

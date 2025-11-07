@@ -11,9 +11,7 @@ use PhpParser\Node\Expr\BooleanNot;
 use PhpParser\Node\Expr\Instanceof_;
 use PhpParser\Node\Name\FullyQualified;
 use PHPStan\Type\ObjectType;
-use Rector\PhpParser\Node\Value\ValueResolver;
-use Rector\Rector\AbstractRector;
-use Rector\StaticTypeMapper\ValueObject\Type\AliasedObjectType;
+use Rector\Core\Rector\AbstractRector;
 use Rector\StaticTypeMapper\ValueObject\Type\ShortenedObjectType;
 use Rector\TypeDeclaration\TypeAnalyzer\NullableTypeAnalyzer;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
@@ -25,16 +23,12 @@ final class FlipTypeControlToUseExclusiveTypeRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\TypeDeclaration\TypeAnalyzer\NullableTypeAnalyzer
      */
-    private NullableTypeAnalyzer $nullableTypeAnalyzer;
-    /**
-     * @readonly
-     */
-    private ValueResolver $valueResolver;
-    public function __construct(NullableTypeAnalyzer $nullableTypeAnalyzer, ValueResolver $valueResolver)
+    private $nullableTypeAnalyzer;
+    public function __construct(NullableTypeAnalyzer $nullableTypeAnalyzer)
     {
         $this->nullableTypeAnalyzer = $nullableTypeAnalyzer;
-        $this->valueResolver = $valueResolver;
     }
     public function getRuleDefinition() : RuleDefinition
     {
@@ -84,7 +78,7 @@ CODE_SAMPLE
      */
     private function processConvertToExclusiveType(ObjectType $objectType, Expr $expr, $binaryOp)
     {
-        $fullyQualifiedType = $objectType instanceof ShortenedObjectType || $objectType instanceof AliasedObjectType ? $objectType->getFullyQualifiedName() : $objectType->getClassName();
+        $fullyQualifiedType = $objectType instanceof ShortenedObjectType ? $objectType->getFullyQualifiedName() : $objectType->getClassName();
         $instanceof = new Instanceof_($expr, new FullyQualified($fullyQualifiedType));
         if ($binaryOp instanceof NotIdentical) {
             return $instanceof;

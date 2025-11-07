@@ -7,30 +7,32 @@ use PhpParser\Node;
 use PhpParser\Node\Arg;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\New_;
-use PhpParser\Node\Expr\Throw_;
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\Catch_;
-use PhpParser\NodeVisitor;
+use PhpParser\Node\Stmt\Throw_;
+use PhpParser\NodeTraverser;
 use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\ObjectType;
+use PHPStan\Type\TypeWithClassName;
+use Rector\Core\Rector\AbstractRector;
+use Rector\Core\ValueObject\MethodName;
 use Rector\NodeTypeResolver\Node\AttributeKey;
-use Rector\Rector\AbstractRector;
-use Rector\StaticTypeMapper\Resolver\ClassNameFromObjectTypeResolver;
-use Rector\ValueObject\MethodName;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
+ * @changelog https://github.com/thecodingmachine/phpstan-strict-rules/blob/e3d746a61d38993ca2bc2e2fcda7012150de120c/src/Rules/Exceptions/ThrowMustBundlePreviousExceptionRule.php#L83
  * @see \Rector\Tests\CodeQuality\Rector\Catch_\ThrowWithPreviousExceptionRector\ThrowWithPreviousExceptionRectorTest
  */
 final class ThrowWithPreviousExceptionRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \PHPStan\Reflection\ReflectionProvider
      */
-    private ReflectionProvider $reflectionProvider;
+    private $reflectionProvider;
     /**
      * @var int
      */
@@ -98,7 +100,7 @@ CODE_SAMPLE
         }
         return $node;
     }
-    private function refactorThrow(Throw_ $throw, Variable $caughtThrowableVariable) : ?int
+    private function refactorThrow(Throw_ $throw, Variable $catchedThrowableVariable) : ?int
     {
         if (!$throw->expr instanceof New_) {
             return null;
@@ -118,33 +120,27 @@ CODE_SAMPLE
         if (isset($new->getArgs()[$exceptionArgumentPosition])) {
             return null;
         }
-        /** @var Arg|null $messageArgument */
-        $messageArgument = $new->args[0] ?? null;
-        $shouldUseNamedArguments = $messageArgument instanceof Arg && $messageArgument->name instanceof Identifier;
-        if (!isset($new->args[0])) {
+        if (!isset($new->getArgs()[0])) {
             // get previous message
-            $getMessageMethodCall = new MethodCall($caughtThrowableVariable, 'getMessage');
+            $getMessageMethodCall = new MethodCall($catchedThrowableVariable, 'getMessage');
             $new->args[0] = new Arg($getMessageMethodCall);
-        } elseif ($new->args[0] instanceof Arg && $new->args[0]->name instanceof Identifier && $new->args[0]->name->toString() === 'previous' && $this->nodeComparator->areNodesEqual($new->args[0]->value, $caughtThrowableVariable)) {
-            $new->args[0]->name->name = 'message';
-            $new->args[0]->value = new MethodCall($caughtThrowableVariable, 'getMessage');
         }
         if (!isset($new->getArgs()[1])) {
             // get previous code
-            $new->args[1] = new Arg(new MethodCall($caughtThrowableVariable, 'getCode'), \false, \false, [], $shouldUseNamedArguments ? new Identifier('code') : null);
+            $new->args[1] = new Arg(new MethodCall($catchedThrowableVariable, 'getCode'));
         }
         /** @var Arg $arg1 */
         $arg1 = $new->args[1];
         if ($arg1->name instanceof Identifier && $arg1->name->toString() === 'previous') {
-            $new->args[1] = new Arg(new MethodCall($caughtThrowableVariable, 'getCode'), \false, \false, [], $shouldUseNamedArguments ? new Identifier('code') : null);
+            $new->args[1] = new Arg(new MethodCall($catchedThrowableVariable, 'getCode'));
             $new->args[$exceptionArgumentPosition] = $arg1;
         } else {
-            $new->args[$exceptionArgumentPosition] = new Arg($caughtThrowableVariable, \false, \false, [], $shouldUseNamedArguments ? new Identifier('previous') : null);
+            $new->args[$exceptionArgumentPosition] = new Arg($catchedThrowableVariable);
         }
         // null the node, to fix broken format preserving printers, see https://github.com/rectorphp/rector/issues/5576
         $new->setAttribute(AttributeKey::ORIGINAL_NODE, null);
         // nothing more to add
-        return NodeVisitor::DONT_TRAVERSE_CURRENT_AND_CHILDREN;
+        return NodeTraverser::DONT_TRAVERSE_CURRENT_AND_CHILDREN;
     }
     private function resolveExceptionArgumentPosition(Name $exceptionName) : ?int
     {
@@ -162,11 +158,10 @@ CODE_SAMPLE
             return self::DEFAULT_EXCEPTION_ARGUMENT_POSITION;
         }
         $extendedMethodReflection = $classReflection->getConstructor();
-        $extendedParametersAcceptor = ParametersAcceptorSelector::combineAcceptors($extendedMethodReflection->getVariants());
-        foreach ($extendedParametersAcceptor->getParameters() as $position => $parameterReflectionWithPhpDoc) {
+        $parametersAcceptorWithPhpDocs = ParametersAcceptorSelector::selectSingle($extendedMethodReflection->getVariants());
+        foreach ($parametersAcceptorWithPhpDocs->getParameters() as $position => $parameterReflectionWithPhpDoc) {
             $parameterType = $parameterReflectionWithPhpDoc->getType();
-            $className = ClassNameFromObjectTypeResolver::resolve($parameterReflectionWithPhpDoc->getType());
-            if ($className === null) {
+            if (!$parameterType instanceof TypeWithClassName) {
                 continue;
             }
             $objectType = new ObjectType('Throwable');

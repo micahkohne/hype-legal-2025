@@ -12,16 +12,19 @@ final class MatchPropertyTypeConflictingNameGuard
 {
     /**
      * @readonly
+     * @var \Rector\Naming\ExpectedNameResolver\MatchPropertyTypeExpectedNameResolver
      */
-    private MatchPropertyTypeExpectedNameResolver $matchPropertyTypeExpectedNameResolver;
+    private $matchPropertyTypeExpectedNameResolver;
     /**
      * @readonly
+     * @var \Rector\NodeNameResolver\NodeNameResolver
      */
-    private NodeNameResolver $nodeNameResolver;
+    private $nodeNameResolver;
     /**
      * @readonly
+     * @var \Rector\Naming\PhpArray\ArrayFilter
      */
-    private ArrayFilter $arrayFilter;
+    private $arrayFilter;
     public function __construct(MatchPropertyTypeExpectedNameResolver $matchPropertyTypeExpectedNameResolver, NodeNameResolver $nodeNameResolver, ArrayFilter $arrayFilter)
     {
         $this->matchPropertyTypeExpectedNameResolver = $matchPropertyTypeExpectedNameResolver;
@@ -47,6 +50,6 @@ final class MatchPropertyTypeConflictingNameGuard
             }
             $expectedNames[] = $expectedName;
         }
-        return $this->arrayFilter->filterWithAtLeastTwoOccurrences($expectedNames);
+        return $this->arrayFilter->filterWithAtLeastTwoOccurences($expectedNames);
     }
 }

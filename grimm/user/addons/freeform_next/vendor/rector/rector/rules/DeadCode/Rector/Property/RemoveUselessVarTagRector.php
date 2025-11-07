@@ -4,11 +4,9 @@ declare (strict_types=1);
 namespace Rector\DeadCode\Rector\Property;
 
 use PhpParser\Node;
-use PhpParser\Node\Stmt\ClassConst;
 use PhpParser\Node\Stmt\Property;
-use Rector\BetterPhpDocParser\PhpDocInfo\PhpDocInfoFactory;
+use Rector\Core\Rector\AbstractRector;
 use Rector\DeadCode\PhpDoc\TagRemover\VarTagRemover;
-use Rector\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -18,20 +16,16 @@ final class RemoveUselessVarTagRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\DeadCode\PhpDoc\TagRemover\VarTagRemover
      */
-    private VarTagRemover $varTagRemover;
-    /**
-     * @readonly
-     */
-    private PhpDocInfoFactory $phpDocInfoFactory;
-    public function __construct(VarTagRemover $varTagRemover, PhpDocInfoFactory $phpDocInfoFactory)
+    private $varTagRemover;
+    public function __construct(VarTagRemover $varTagRemover)
     {
         $this->varTagRemover = $varTagRemover;
-        $this->phpDocInfoFactory = $phpDocInfoFactory;
     }
     public function getRuleDefinition() : RuleDefinition
     {
-        return new RuleDefinition('Remove unused `@var` annotation for properties and class constants', [new CodeSample(<<<'CODE_SAMPLE'
+        return new RuleDefinition('Remove unused @var annotation for properties', [new CodeSample(<<<'CODE_SAMPLE'
 final class SomeClass
 {
     /**
@@ -53,18 +47,18 @@ CODE_SAMPLE
      */
     public function getNodeTypes() : array
     {
-        return [Property::class, ClassConst::class];
+        return [Property::class];
     }
     /**
-     * @param Property|ClassConst $node
+     * @param Property $node
      */
     public function refactor(Node $node) : ?Node
     {
         $phpDocInfo = $this->phpDocInfoFactory->createFromNodeOrEmpty($node);
-        $hasChanged = $this->varTagRemover->removeVarTagIfUseless($phpDocInfo, $node);
-        if (!$hasChanged) {
-            return null;
+        $this->varTagRemover->removeVarTagIfUseless($phpDocInfo, $node);
+        if ($phpDocInfo->hasChanged()) {
+            return $node;
         }
-        return $node;
+        return null;
     }
 }

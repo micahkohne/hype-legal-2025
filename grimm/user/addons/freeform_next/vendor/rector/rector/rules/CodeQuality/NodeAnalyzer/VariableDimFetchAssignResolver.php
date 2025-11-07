@@ -11,18 +11,20 @@ use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\Expression;
 use Rector\CodeQuality\ValueObject\KeyAndExpr;
-use Rector\PhpParser\Comparing\NodeComparator;
-use Rector\PhpParser\Node\BetterNodeFinder;
+use Rector\Core\PhpParser\Comparing\NodeComparator;
+use Rector\Core\PhpParser\Node\BetterNodeFinder;
 final class VariableDimFetchAssignResolver
 {
     /**
      * @readonly
+     * @var \Rector\Core\PhpParser\Comparing\NodeComparator
      */
-    private NodeComparator $nodeComparator;
+    private $nodeComparator;
     /**
      * @readonly
+     * @var \Rector\Core\PhpParser\Node\BetterNodeFinder
      */
-    private BetterNodeFinder $betterNodeFinder;
+    private $betterNodeFinder;
     public function __construct(NodeComparator $nodeComparator, BetterNodeFinder $betterNodeFinder)
     {
         $this->nodeComparator = $nodeComparator;
@@ -45,9 +47,6 @@ final class VariableDimFetchAssignResolver
             }
             $assign = $stmtExpr;
             $keyExpr = $this->matchKeyOnArrayDimFetchOfVariable($assign, $variable);
-            if ($assign->var instanceof ArrayDimFetch && $assign->var->var instanceof ArrayDimFetch) {
-                return [];
-            }
             $keysAndExprs[] = new KeyAndExpr($keyExpr, $assign->expr, $stmt->getComments());
         }
         // we can only work with same variable
@@ -66,7 +65,9 @@ final class VariableDimFetchAssignResolver
         if (!$this->nodeComparator->areNodesEqual($arrayDimFetch->var, $variable)) {
             return null;
         }
-        $isFoundInExpr = (bool) $this->betterNodeFinder->findFirst($assign->expr, fn(Node $subNode): bool => $this->nodeComparator->areNodesEqual($subNode, $variable));
+        $isFoundInExpr = (bool) $this->betterNodeFinder->findFirst($assign->expr, function (Node $subNode) use($variable) : bool {
+            return $this->nodeComparator->areNodesEqual($subNode, $variable);
+        });
         if ($isFoundInExpr) {
             return null;
         }

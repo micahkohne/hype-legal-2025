@@ -6,7 +6,7 @@ namespace Rector\Php80\NodeAnalyzer;
 use PhpParser\Node\Param;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassMethod;
-use Rector\ValueObject\MethodName;
+use Rector\Core\ValueObject\MethodName;
 final class PromotedPropertyResolver
 {
     /**
@@ -20,7 +20,7 @@ final class PromotedPropertyResolver
         }
         $promotedPropertyParams = [];
         foreach ($constructClassMethod->getParams() as $param) {
-            if (!$param->isPromoted()) {
+            if ($param->flags === 0) {
                 continue;
             }
             $promotedPropertyParams[] = $param;

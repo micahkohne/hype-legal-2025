@@ -30,7 +30,7 @@ class TextField extends AbstractField implements SingleValueInterface, Placehold
      *
      * @return string
      */
-    public function getType(): string
+    public function getType()
     {
         return self::TYPE_TEXT;
     }
@@ -48,7 +48,7 @@ class TextField extends AbstractField implements SingleValueInterface, Placehold
      *
      * @return string
      */
-    protected function getInputHtml(): string
+    protected function getInputHtml()
     {
         $attributes  = $this->getCustomAttributes();
         $classString = $attributes->getClass() . ' ' . $this->getInputClassString();

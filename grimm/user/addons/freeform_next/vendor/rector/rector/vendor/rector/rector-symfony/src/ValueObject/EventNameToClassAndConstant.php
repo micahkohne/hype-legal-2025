@@ -7,16 +7,19 @@ final class EventNameToClassAndConstant
 {
     /**
      * @readonly
+     * @var string
      */
-    private string $eventName;
+    private $eventName;
     /**
      * @readonly
+     * @var string
      */
-    private string $eventClass;
+    private $eventClass;
     /**
      * @readonly
+     * @var string
      */
-    private string $eventConstant;
+    private $eventConstant;
     public function __construct(string $eventName, string $eventClass, string $eventConstant)
     {
         $this->eventName = $eventName;

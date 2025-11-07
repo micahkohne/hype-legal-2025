@@ -15,24 +15,24 @@ use Solspace\Addons\FreeformNext\Repositories\PermissionsRepository;
 
 class PermissionsService
 {
-    const PERMISSION__MANAGE_FORMS         = 'forms';
-    const PERMISSION__ACCESS_SUBMISSIONS   = 'submissions';
-    const PERMISSION__MANAGE_SUBMISSIONS   = 'manageSubmissions';
-    const PERMISSION__ACCESS_FIELDS        = 'fields';
-    const PERMISSION__ACCESS_EXPORT        = 'export';
-    const PERMISSION__ACCESS_NOTIFICATIONS = 'notifications';
-    const PERMISSION__ACCESS_SETTINGS      = 'settings';
-    const PERMISSION__ACCESS_INTEGRATIONS  = 'integrations';
-    const PERMISSION__ACCESS_RESOURCES     = 'resources';
-    const PERMISSION__ACCESS_LOGS          = 'logs';
+    public const PERMISSION__MANAGE_FORMS         = 'forms';
+    public const PERMISSION__ACCESS_SUBMISSIONS   = 'submissions';
+    public const PERMISSION__MANAGE_SUBMISSIONS   = 'manageSubmissions';
+    public const PERMISSION__ACCESS_FIELDS        = 'fields';
+    public const PERMISSION__ACCESS_EXPORT        = 'export';
+    public const PERMISSION__ACCESS_NOTIFICATIONS = 'notifications';
+    public const PERMISSION__ACCESS_SETTINGS      = 'settings';
+    public const PERMISSION__ACCESS_INTEGRATIONS  = 'integrations';
+    public const PERMISSION__ACCESS_RESOURCES     = 'resources';
+    public const PERMISSION__ACCESS_LOGS          = 'logs';
 
-    const PERMISSION__ACCESS_SETTINGS__LICENSE             = 'settings/license';
-    const PERMISSION__ACCESS_SETTINGS__GENERAL             = 'settings/general';
-    const PERMISSION__ACCESS_SETTINGS__PERMISSIONS         = 'settings/permissions';
-    const PERMISSION__ACCESS_SETTINGS__FORMATING_TEMPLATES = 'settings/formatting_templates';
-    const PERMISSION__ACCESS_SETTINGS__EMAIL_TEMPLATES     = 'settings/email_templates';
-    const PERMISSION__ACCESS_SETTINGS__STATUSES            = 'settings/statuses';
-    const PERMISSION__ACCESS_SETTINGS__DEMO_TEMPLATES      = 'settings/demo_templates';
+    public const PERMISSION__ACCESS_SETTINGS__LICENSE             = 'settings/license';
+    public const PERMISSION__ACCESS_SETTINGS__GENERAL             = 'settings/general';
+    public const PERMISSION__ACCESS_SETTINGS__PERMISSIONS         = 'settings/permissions';
+    public const PERMISSION__ACCESS_SETTINGS__FORMATING_TEMPLATES = 'settings/formatting_templates';
+    public const PERMISSION__ACCESS_SETTINGS__EMAIL_TEMPLATES     = 'settings/email_templates';
+    public const PERMISSION__ACCESS_SETTINGS__STATUSES            = 'settings/statuses';
+    public const PERMISSION__ACCESS_SETTINGS__DEMO_TEMPLATES      = 'settings/demo_templates';
 
     /**
      * Check if user is allowed in the section
@@ -42,7 +42,7 @@ class PermissionsService
      *
      * @return bool
      */
-    public function canUserAccessSection(string $method, $groupId)
+    public function canUserAccessSection(string $method, $groupId): bool
     {
         if ((int) $groupId === 1) {
             return true;
@@ -66,7 +66,7 @@ class PermissionsService
      *
      * @return bool
      */
-    public function canUserSeeSectionInNavigation($method, $groupId)
+    public function canUserSeeSectionInNavigation($method, $groupId): bool
     {
         if ((int) $groupId === 1) {
             return true;
@@ -90,7 +90,7 @@ class PermissionsService
      *
      * @return bool
      */
-    public function canManageForms($groupId)
+    public function canManageForms($groupId): bool
     {
         return $this->canUserAccessSection(self::PERMISSION__MANAGE_FORMS, $groupId);
     }
@@ -100,7 +100,7 @@ class PermissionsService
      *
      * @return bool
      */
-    public function canAccessSubmissions($groupId)
+    public function canAccessSubmissions($groupId): bool
     {
         return $this->canUserAccessSection(self::PERMISSION__ACCESS_SUBMISSIONS, $groupId);
     }
@@ -110,7 +110,7 @@ class PermissionsService
      *
      * @return bool
      */
-    public function canManageSubmissions($groupId)
+    public function canManageSubmissions($groupId): bool
     {
         if (!$this->canAccessSubmissions($groupId)) {
             return false;
@@ -124,7 +124,7 @@ class PermissionsService
      *
      * @return bool
      */
-    public function canAccessFields($groupId)
+    public function canAccessFields($groupId): bool
     {
         return $this->canUserAccessSection(self::PERMISSION__ACCESS_FIELDS, $groupId);
     }
@@ -134,7 +134,7 @@ class PermissionsService
      *
      * @return bool
      */
-    public function canAccessExport($groupId)
+    public function canAccessExport($groupId): bool
     {
         return $this->canUserAccessSection(self::PERMISSION__ACCESS_EXPORT, $groupId);
     }
@@ -144,7 +144,7 @@ class PermissionsService
      *
      * @return bool
      */
-    public function canAccessNotifications($groupId)
+    public function canAccessNotifications($groupId): bool
     {
         return $this->canUserAccessSection(self::PERMISSION__ACCESS_NOTIFICATIONS, $groupId);
     }
@@ -154,7 +154,7 @@ class PermissionsService
      *
      * @return bool
      */
-    public function canAccessSettings($groupId)
+    public function canAccessSettings($groupId): bool
     {
         return $this->canUserAccessSection(self::PERMISSION__ACCESS_SETTINGS, $groupId);
     }
@@ -164,7 +164,7 @@ class PermissionsService
      *
      * @return bool
      */
-    public function canAccessIntegrations($groupId)
+    public function canAccessIntegrations($groupId): bool
     {
         return $this->canUserAccessSection(self::PERMISSION__ACCESS_INTEGRATIONS, $groupId);
     }
@@ -174,7 +174,7 @@ class PermissionsService
      *
      * @return bool
      */
-    public function canAccessResources($groupId)
+    public function canAccessResources($groupId): bool
     {
         return $this->canUserAccessSection(self::PERMISSION__ACCESS_RESOURCES, $groupId);
     }
@@ -184,7 +184,7 @@ class PermissionsService
      *
      * @return bool
      */
-    public function canAccessLogs($groupId)
+    public function canAccessLogs($groupId): bool
     {
         return $this->canUserAccessSection(self::PERMISSION__ACCESS_LOGS, $groupId);
     }

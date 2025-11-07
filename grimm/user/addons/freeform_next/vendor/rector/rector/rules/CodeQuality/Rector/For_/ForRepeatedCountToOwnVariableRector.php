@@ -13,8 +13,7 @@ use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\Expression;
 use PhpParser\Node\Stmt\For_;
-use Rector\PHPStan\ScopeFetcher;
-use Rector\Rector\AbstractRector;
+use Rector\Core\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -66,10 +65,6 @@ CODE_SAMPLE
      */
     public function refactor(Node $node) : ?array
     {
-        $scope = ScopeFetcher::fetch($node);
-        if ($scope->hasVariableType(self::COUNTER_NAME)->yes()) {
-            return null;
-        }
         $countInCond = null;
         $counterVariable = new Variable(self::COUNTER_NAME);
         foreach ($node->cond as $condExpr) {

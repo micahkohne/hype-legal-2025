@@ -9,7 +9,7 @@ use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\New_;
 use PhpParser\Node\Name\FullyQualified;
 use PHPStan\Type\ObjectType;
-use Rector\Rector\AbstractRector;
+use Rector\Core\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -28,12 +28,14 @@ final class FormBuilderSetDataMapperRector extends AbstractRector
     private const DATAMAPPER_CLASS = 'Symfony\\Component\\Form\\Extension\\Core\\DataMapper\\DataMapper';
     /**
      * @readonly
+     * @var \PHPStan\Type\ObjectType
      */
-    private ObjectType $objectType;
+    private $objectType;
     /**
      * @readonly
+     * @var \PHPStan\Type\ObjectType
      */
-    private ObjectType $dataMapperObjectType;
+    private $dataMapperObjectType;
     public function __construct()
     {
         $this->objectType = new ObjectType(self::DATAMAPPER_INTERFACE);

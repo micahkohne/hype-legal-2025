@@ -1,17 +1,18 @@
 <?php
 
 declare (strict_types=1);
-namespace Rector\NodeAnalyzer;
+namespace Rector\Core\NodeAnalyzer;
 
 use PhpParser\Node\Stmt\ClassMethod;
+use Rector\Core\ValueObject\MethodName;
 use Rector\NodeNameResolver\NodeNameResolver;
-use Rector\ValueObject\MethodName;
 final class MagicClassMethodAnalyzer
 {
     /**
      * @readonly
+     * @var \Rector\NodeNameResolver\NodeNameResolver
      */
-    private NodeNameResolver $nodeNameResolver;
+    private $nodeNameResolver;
     public function __construct(NodeNameResolver $nodeNameResolver)
     {
         $this->nodeNameResolver = $nodeNameResolver;

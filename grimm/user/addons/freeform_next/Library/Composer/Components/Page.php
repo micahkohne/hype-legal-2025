@@ -22,7 +22,7 @@ use Solspace\Addons\FreeformNext\Library\Exceptions\FreeformException;
 
 class Page implements JsonSerializable, Iterator, ArrayAccess
 {
-    private readonly int $index;
+    private int $index;
 
     /**
      * Page constructor.
@@ -32,7 +32,7 @@ class Page implements JsonSerializable, Iterator, ArrayAccess
      * @param Row[]            $rows
      * @param FieldInterface[] $fields
      */
-    public function __construct($index, private $label, private array $rows, private readonly array $fields)
+    public function __construct($index, private $label, private array $rows, private array $fields)
     {
         $this->index  = (int)$index;
     }
@@ -108,7 +108,7 @@ class Page implements JsonSerializable, Iterator, ArrayAccess
      * @return mixed
      */
 	#[ReturnTypeWillChange]
-    public function current()
+    public function current(): mixed
     {
         return current($this->rows);
     }
@@ -130,7 +130,7 @@ class Page implements JsonSerializable, Iterator, ArrayAccess
      * @return mixed
      */
 	#[ReturnTypeWillChange]
-    public function key()
+    public function key(): mixed
     {
         return key($this->rows);
     }
@@ -168,7 +168,7 @@ class Page implements JsonSerializable, Iterator, ArrayAccess
      * @inheritDoc
      */
 	#[ReturnTypeWillChange]
-    public function offsetGet($offset)
+    public function offsetGet($offset): mixed
     {
         return $this->offsetExists($offset) ? $this->rows[$offset] : null;
     }
@@ -177,7 +177,7 @@ class Page implements JsonSerializable, Iterator, ArrayAccess
      * @inheritDoc
      */
 	#[ReturnTypeWillChange]
-    public function offsetSet($offset, $value)
+    public function offsetSet($offset, $value): void
     {
         throw new FreeformException("Form Page ArrayAccess does not allow for setting values");
     }
@@ -186,7 +186,7 @@ class Page implements JsonSerializable, Iterator, ArrayAccess
      * @inheritDoc
      */
 	#[ReturnTypeWillChange]
-    public function offsetUnset($offset)
+    public function offsetUnset($offset): void
     {
         throw new FreeformException("Form Page ArrayAccess does not allow unsetting values");
     }

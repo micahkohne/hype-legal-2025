@@ -22,10 +22,10 @@ use Solspace\Addons\FreeformNext\Library\Translations\TranslatorInterface;
 
 class Properties implements JsonSerializable
 {
-    const PAGE_PREFIX              = "page";
-    const FORM_HASH                = "form";
-    const INTEGRATION_HASH         = "integration";
-    const ADMIN_NOTIFICATIONS_HASH = "admin_notifications";
+    public const PAGE_PREFIX              = "page";
+    public const FORM_HASH                = "form";
+    public const INTEGRATION_HASH         = "integration";
+    public const ADMIN_NOTIFICATIONS_HASH = "admin_notifications";
 
     private array $propertyList;
 
@@ -34,23 +34,21 @@ class Properties implements JsonSerializable
     /**
      * Properties constructor.
      *
-     * @param array               $properties
-     * @param TranslatorInterface $translator
      *
      * @throws ComposerException
      */
-    public function __construct(array $properties, private readonly TranslatorInterface $translator)
+    public function __construct(array $properties, private TranslatorInterface $translator)
     {
         foreach ($properties as $key => $value) {
             if (!is_array($value)) {
                 throw new ComposerException(
-                    $this->translator->translate("Properties for key '{key}' is not an array", ["key" => $key])
+                    $translator->translate("Properties for key '{key}' is not an array", ["key" => $key])
                 );
             }
 
             if (!isset($value['type'])) {
                 throw new ComposerException(
-                    $this->translator->translate("Properties for key '{key}' do not contain TYPE", ["key" => $key])
+                    $translator->translate("Properties for key '{key}' do not contain TYPE", ["key" => $key])
                 );
             }
         }

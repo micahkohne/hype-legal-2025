@@ -6,13 +6,15 @@ namespace Rector\Php74\Rector\FuncCall;
 use PhpParser\Node;
 use PhpParser\Node\Arg;
 use PhpParser\Node\Expr\FuncCall;
-use PhpParser\Node\Scalar\Int_;
-use Rector\Rector\AbstractRector;
-use Rector\ValueObject\PhpVersionFeature;
+use PhpParser\Node\Scalar\LNumber;
+use Rector\Core\Rector\AbstractRector;
+use Rector\Core\ValueObject\PhpVersionFeature;
 use Rector\VersionBonding\Contract\MinPhpVersionInterface;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
+ * @changelog https://wiki.php.net/rfc/deprecations_php_7_4 https://3v4l.org/kLdtB
+ *
  * @see \Rector\Tests\Php74\Rector\FuncCall\MbStrrposEncodingArgumentPositionRector\MbStrrposEncodingArgumentPositionRectorTest
  */
 final class MbStrrposEncodingArgumentPositionRector extends AbstractRector implements MinPhpVersionInterface
@@ -54,7 +56,7 @@ final class MbStrrposEncodingArgumentPositionRector extends AbstractRector imple
             return null;
         }
         $node->args[3] = $node->args[2];
-        $node->args[2] = new Arg(new Int_(0));
+        $node->args[2] = new Arg(new LNumber(0));
         return $node;
     }
 }

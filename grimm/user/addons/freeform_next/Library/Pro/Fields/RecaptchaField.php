@@ -2,7 +2,6 @@
 
 namespace Solspace\Addons\FreeformNext\Library\Pro\Fields;
 
-use Override;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\AbstractField;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Fields\Interfaces\InputOnlyInterface;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Fields\Interfaces\NoStorageInterface;
@@ -25,7 +24,6 @@ class RecaptchaField extends AbstractField implements NoStorageInterface, Single
     /**
      * @inheritDoc
      */
-    #[Override]
     public function getHandle(): string
     {
         return 'grecaptcha_' . $this->getHash();
@@ -34,7 +32,7 @@ class RecaptchaField extends AbstractField implements NoStorageInterface, Single
     /**
      * @inheritDoc
      */
-    protected function getInputHtml(): false|string
+    protected function getInputHtml(): bool|string
     {
         static $key;
 

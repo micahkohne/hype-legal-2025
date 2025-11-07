@@ -8,10 +8,10 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-namespace RectorPrefix202507\Symfony\Component\Finder\Iterator;
+namespace RectorPrefix202308\Symfony\Component\Finder\Iterator;
 
-use RectorPrefix202507\Symfony\Component\Finder\Exception\AccessDeniedException;
-use RectorPrefix202507\Symfony\Component\Finder\SplFileInfo;
+use RectorPrefix202308\Symfony\Component\Finder\Exception\AccessDeniedException;
+use RectorPrefix202308\Symfony\Component\Finder\SplFileInfo;
 /**
  * Extends the \RecursiveDirectoryIterator to support relative paths.
  *
@@ -21,12 +21,27 @@ use RectorPrefix202507\Symfony\Component\Finder\SplFileInfo;
  */
 class RecursiveDirectoryIterator extends \RecursiveDirectoryIterator
 {
-    private bool $ignoreUnreadableDirs;
-    private bool $ignoreFirstRewind = \true;
+    /**
+     * @var bool
+     */
+    private $ignoreUnreadableDirs;
+    /**
+     * @var bool
+     */
+    private $ignoreFirstRewind = \true;
     // these 3 properties take part of the performance optimization to avoid redoing the same work in all iterations
-    private string $rootPath;
-    private string $subPath;
-    private string $directorySeparator = '/';
+    /**
+     * @var string
+     */
+    private $rootPath;
+    /**
+     * @var string
+     */
+    private $subPath;
+    /**
+     * @var string
+     */
+    private $directorySeparator = '/';
     /**
      * @throws \RuntimeException
      */
@@ -56,8 +71,7 @@ class RecursiveDirectoryIterator extends \RecursiveDirectoryIterator
             $subPathname .= $this->directorySeparator;
         }
         $subPathname .= $this->getFilename();
-        $basePath = $this->rootPath;
-        if ('/' !== $basePath && \substr_compare($basePath, $this->directorySeparator, -\strlen($this->directorySeparator)) !== 0 && \substr_compare($basePath, '/', -\strlen('/')) !== 0) {
+        if ('/' !== ($basePath = $this->rootPath)) {
             $basePath .= $this->directorySeparator;
         }
         return new SplFileInfo($basePath . $subPathname, $this->subPath, $subPathname);

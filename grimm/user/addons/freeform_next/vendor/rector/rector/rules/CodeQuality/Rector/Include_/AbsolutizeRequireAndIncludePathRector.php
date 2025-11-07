@@ -3,35 +3,22 @@
 declare (strict_types=1);
 namespace Rector\CodeQuality\Rector\Include_;
 
-use RectorPrefix202507\Nette\Utils\Strings;
+use RectorPrefix202308\Nette\Utils\Strings;
 use PhpParser\Node;
 use PhpParser\Node\Expr\BinaryOp\Concat;
 use PhpParser\Node\Expr\Include_;
 use PhpParser\Node\Scalar\MagicConst\Dir;
 use PhpParser\Node\Scalar\String_;
-use Rector\PhpParser\Node\Value\ValueResolver;
-use Rector\Rector\AbstractRector;
-use Rector\Util\StringUtils;
+use Rector\Core\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
+ * @changelog https://github.com/symplify/CodingStandard#includerequire-should-be-followed-by-absolute-path
+ *
  * @see \Rector\Tests\CodeQuality\Rector\Include_\AbsolutizeRequireAndIncludePathRector\AbsolutizeRequireAndIncludePathRectorTest
  */
 final class AbsolutizeRequireAndIncludePathRector extends AbstractRector
 {
-    /**
-     * @readonly
-     */
-    private ValueResolver $valueResolver;
-    /**
-     * @var string
-     * @see https://regex101.com/r/N8oLqv/1
-     */
-    private const WINDOWS_DRIVE_REGEX = '#^[a-zA-z]\\:[\\/\\\\]#';
-    public function __construct(ValueResolver $valueResolver)
-    {
-        $this->valueResolver = $valueResolver;
-    }
     public function getRuleDefinition() : RuleDefinition
     {
         return new RuleDefinition('include/require to absolute path. This Rector might introduce backwards incompatible code, when the include/require being changed depends on the current working directory.', [new CodeSample(<<<'CODE_SAMPLE'
@@ -87,17 +74,18 @@ CODE_SAMPLE
             return null;
         }
         // skip absolute paths
-        if (\strncmp($includeValue, '/', \strlen('/')) === 0 || \strncmp($includeValue, '\\', \strlen('\\')) === 0) {
+        if (\strncmp($includeValue, '/', \strlen('/')) === 0) {
             return null;
         }
         if (\strpos($includeValue, 'config/') !== \false) {
             return null;
         }
-        if (StringUtils::isMatch($includeValue, self::WINDOWS_DRIVE_REGEX)) {
-            return null;
-        }
         // add preslash to string
-        $node->expr->value = \strncmp($includeValue, './', \strlen('./')) === 0 ? Strings::substring($includeValue, 1) : '/' . $includeValue;
+        if (\strncmp($includeValue, './', \strlen('./')) === 0) {
+            $node->expr->value = Strings::substring($includeValue, 1);
+        } else {
+            $node->expr->value = '/' . $includeValue;
+        }
         $node->expr = $this->prefixWithDirConstant($node->expr);
         return $node;
     }

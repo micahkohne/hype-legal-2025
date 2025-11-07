@@ -13,24 +13,26 @@ use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\Ternary;
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Name;
-use PhpParser\Node\Scalar\Int_;
+use PhpParser\Node\Scalar\LNumber;
 use PhpParser\Node\Scalar\String_;
+use Rector\Core\Rector\AbstractRector;
+use Rector\Core\ValueObject\PhpVersionFeature;
 use Rector\Php70\EregToPcreTransformer;
-use Rector\Rector\AbstractRector;
-use Rector\ValueObject\PhpVersionFeature;
 use Rector\VersionBonding\Contract\MinPhpVersionInterface;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
-use RectorPrefix202507\Webmozart\Assert\Assert;
 /**
+ * @changelog http://php.net/reference.pcre.pattern.posix https://stackoverflow.com/a/17033826/1348344 https://docstore.mik.ua/orelly/webprog/pcook/ch13_02.htm
+ *
  * @see \Rector\Tests\Php70\Rector\FuncCall\EregToPregMatchRector\EregToPregMatchRectorTest
  */
 final class EregToPregMatchRector extends AbstractRector implements MinPhpVersionInterface
 {
     /**
      * @readonly
+     * @var \Rector\Php70\EregToPcreTransformer
      */
-    private EregToPcreTransformer $eregToPcreTransformer;
+    private $eregToPcreTransformer;
     /**
      * @var array<string, string>
      */
@@ -89,8 +91,7 @@ final class EregToPregMatchRector extends AbstractRector implements MinPhpVersio
         $pattern = $string->value;
         $pattern = $this->eregToPcreTransformer->transform($pattern, $this->isCaseInsensitiveFunction($functionName));
         $firstArg = $funcCall->getArgs()[0];
-        Assert::isInstanceOf($firstArg->value, String_::class);
-        $firstArg->value->value = $pattern;
+        $firstArg->value = new String_($pattern);
     }
     private function processVariablePattern(FuncCall $funcCall, Variable $variable, string $functionName) : void
     {
@@ -120,10 +121,10 @@ final class EregToPregMatchRector extends AbstractRector implements MinPhpVersio
             return;
         }
         // 3rd argument - $limit, 0 → 1
-        if (!$funcCall->args[2]->value instanceof Int_) {
+        if (!$funcCall->args[2]->value instanceof LNumber) {
             return;
         }
-        /** @var Int_ $limitNumberNode */
+        /** @var LNumber $limitNumberNode */
         $limitNumberNode = $funcCall->args[2]->value;
         if ($limitNumberNode->value !== 0) {
             return;
@@ -133,7 +134,7 @@ final class EregToPregMatchRector extends AbstractRector implements MinPhpVersio
     private function createTernaryWithStrlenOfFirstMatch(FuncCall $funcCall) : Ternary
     {
         $thirdArg = $funcCall->getArgs()[2];
-        $arrayDimFetch = new ArrayDimFetch($thirdArg->value, new Int_(0));
+        $arrayDimFetch = new ArrayDimFetch($thirdArg->value, new LNumber(0));
         $strlenFuncCall = $this->nodeFactory->createFuncCall('strlen', [$arrayDimFetch]);
         return new Ternary($funcCall, $strlenFuncCall, $this->nodeFactory->createFalse());
     }

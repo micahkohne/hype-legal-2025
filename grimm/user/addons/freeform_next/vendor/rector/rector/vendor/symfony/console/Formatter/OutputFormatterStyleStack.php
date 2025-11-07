@@ -8,10 +8,10 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-namespace RectorPrefix202507\Symfony\Component\Console\Formatter;
+namespace RectorPrefix202308\Symfony\Component\Console\Formatter;
 
-use RectorPrefix202507\Symfony\Component\Console\Exception\InvalidArgumentException;
-use RectorPrefix202507\Symfony\Contracts\Service\ResetInterface;
+use RectorPrefix202308\Symfony\Component\Console\Exception\InvalidArgumentException;
+use RectorPrefix202308\Symfony\Contracts\Service\ResetInterface;
 /**
  * @author Jean-François Simon <contact@jfsimon.fr>
  */
@@ -20,9 +20,12 @@ class OutputFormatterStyleStack implements ResetInterface
     /**
      * @var OutputFormatterStyleInterface[]
      */
-    private array $styles = [];
-    private OutputFormatterStyleInterface $emptyStyle;
-    public function __construct(?OutputFormatterStyleInterface $emptyStyle = null)
+    private $styles = [];
+    /**
+     * @var \Symfony\Component\Console\Formatter\OutputFormatterStyleInterface
+     */
+    private $emptyStyle;
+    public function __construct(OutputFormatterStyleInterface $emptyStyle = null)
     {
         $this->emptyStyle = $emptyStyle ?? new OutputFormatterStyle();
         $this->reset();
@@ -50,7 +53,7 @@ class OutputFormatterStyleStack implements ResetInterface
      *
      * @throws InvalidArgumentException When style tags incorrectly nested
      */
-    public function pop(?OutputFormatterStyleInterface $style = null) : OutputFormatterStyleInterface
+    public function pop(OutputFormatterStyleInterface $style = null) : OutputFormatterStyleInterface
     {
         if (!$this->styles) {
             return $this->emptyStyle;

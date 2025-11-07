@@ -18,24 +18,27 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
+use PHPStan\Type\TypeWithClassName;
+use Rector\Core\ValueObject\MethodName;
 use Rector\Naming\Naming\PropertyNaming;
 use Rector\NodeNameResolver\NodeNameResolver;
-use Rector\StaticTypeMapper\Resolver\ClassNameFromObjectTypeResolver;
-use Rector\ValueObject\MethodName;
 final class TypeProvidingExprFromClassResolver
 {
     /**
      * @readonly
+     * @var \PHPStan\Reflection\ReflectionProvider
      */
-    private ReflectionProvider $reflectionProvider;
+    private $reflectionProvider;
     /**
      * @readonly
+     * @var \Rector\NodeNameResolver\NodeNameResolver
      */
-    private NodeNameResolver $nodeNameResolver;
+    private $nodeNameResolver;
     /**
      * @readonly
+     * @var \Rector\Naming\Naming\PropertyNaming
      */
-    private PropertyNaming $propertyNaming;
+    private $propertyNaming;
     public function __construct(ReflectionProvider $reflectionProvider, NodeNameResolver $nodeNameResolver, PropertyNaming $propertyNaming)
     {
         $this->reflectionProvider = $reflectionProvider;
@@ -66,7 +69,7 @@ final class TypeProvidingExprFromClassResolver
     {
         $methodReflections = $this->getClassMethodReflections($classReflection);
         foreach ($methodReflections as $methodReflection) {
-            $functionVariant = ParametersAcceptorSelector::combineAcceptors($methodReflection->getVariants());
+            $functionVariant = ParametersAcceptorSelector::selectSingle($methodReflection->getVariants());
             $returnType = $functionVariant->getReturnType();
             if (!$this->isMatchingType($returnType, $objectType)) {
                 continue;
@@ -104,8 +107,7 @@ final class TypeProvidingExprFromClassResolver
             return \false;
         }
         $readableType = TypeCombinator::removeNull($readableType);
-        $className = ClassNameFromObjectTypeResolver::resolve($readableType);
-        if ($className === null) {
+        if (!$readableType instanceof TypeWithClassName) {
             return \false;
         }
         return $readableType->equals($objectType);

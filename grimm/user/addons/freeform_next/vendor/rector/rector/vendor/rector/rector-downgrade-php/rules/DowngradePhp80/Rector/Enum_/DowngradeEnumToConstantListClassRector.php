@@ -18,11 +18,9 @@ use PHPStan\PhpDocParser\Ast\Type\NullableTypeNode;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use Rector\BetterPhpDocParser\PhpDocInfo\PhpDocInfo;
-use Rector\BetterPhpDocParser\PhpDocInfo\PhpDocInfoFactory;
-use Rector\Comments\NodeDocBlock\DocBlockUpdater;
+use Rector\Core\Rector\AbstractRector;
 use Rector\DowngradePhp80\NodeAnalyzer\EnumAnalyzer;
 use Rector\NodeFactory\ClassFromEnumFactory;
-use Rector\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -32,31 +30,24 @@ final class DowngradeEnumToConstantListClassRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\NodeFactory\ClassFromEnumFactory
      */
-    private ClassFromEnumFactory $classFromEnumFactory;
+    private $classFromEnumFactory;
     /**
      * @readonly
+     * @var \PHPStan\Reflection\ReflectionProvider
      */
-    private ReflectionProvider $reflectionProvider;
+    private $reflectionProvider;
     /**
      * @readonly
+     * @var \Rector\DowngradePhp80\NodeAnalyzer\EnumAnalyzer
      */
-    private EnumAnalyzer $enumAnalyzer;
-    /**
-     * @readonly
-     */
-    private DocBlockUpdater $docBlockUpdater;
-    /**
-     * @readonly
-     */
-    private PhpDocInfoFactory $phpDocInfoFactory;
-    public function __construct(ClassFromEnumFactory $classFromEnumFactory, ReflectionProvider $reflectionProvider, EnumAnalyzer $enumAnalyzer, DocBlockUpdater $docBlockUpdater, PhpDocInfoFactory $phpDocInfoFactory)
+    private $enumAnalyzer;
+    public function __construct(ClassFromEnumFactory $classFromEnumFactory, ReflectionProvider $reflectionProvider, EnumAnalyzer $enumAnalyzer)
     {
         $this->classFromEnumFactory = $classFromEnumFactory;
         $this->reflectionProvider = $reflectionProvider;
         $this->enumAnalyzer = $enumAnalyzer;
-        $this->docBlockUpdater = $docBlockUpdater;
-        $this->phpDocInfoFactory = $phpDocInfoFactory;
     }
     public function getRuleDefinition() : RuleDefinition
     {
@@ -95,7 +86,7 @@ CODE_SAMPLE
             return $this->classFromEnumFactory->createFromEnum($node);
         }
         $hasChanged = \false;
-        $classMethodPhpDocInfo = $this->phpDocInfoFactory->createFromNodeOrEmpty($node);
+        $phpDocInfo = $this->phpDocInfoFactory->createFromNodeOrEmpty($node);
         foreach ($node->params as $param) {
             if ($param->type instanceof Name) {
                 $paramType = $param->type;
@@ -118,22 +109,21 @@ CODE_SAMPLE
             }
             $this->refactorParamType($classLikeReflection, $isNullable, $param);
             $hasChanged = \true;
-            $this->decorateParamDocType($classLikeReflection, $param, $classMethodPhpDocInfo, $isNullable, $node);
+            $this->decorateParamDocType($classLikeReflection, $param, $phpDocInfo, $isNullable);
         }
         if ($hasChanged) {
             return $node;
         }
         return null;
     }
-    private function decorateParamDocType(ClassReflection $classReflection, Param $param, PhpDocInfo $phpDocInfo, bool $isNullable, ClassMethod $classMethod) : void
+    private function decorateParamDocType(ClassReflection $classReflection, Param $param, PhpDocInfo $phpDocInfo, bool $isNullable) : void
     {
         $constFetchNode = new ConstFetchNode('\\' . $classReflection->getName(), '*');
         $constTypeNode = new ConstTypeNode($constFetchNode);
         $paramName = '$' . $this->getName($param);
         $paramTypeNode = $isNullable ? new NullableTypeNode($constTypeNode) : $constTypeNode;
-        $paramTagValueNode = new ParamTagValueNode($paramTypeNode, \false, $paramName, '', \false);
+        $paramTagValueNode = new ParamTagValueNode($paramTypeNode, \false, $paramName, '');
         $phpDocInfo->addTagValueNode($paramTagValueNode);
-        $this->docBlockUpdater->updateRefactoredNodeWithPhpDocInfo($classMethod);
     }
     private function refactorParamType(ClassReflection $classReflection, bool $isNullable, Param $param) : void
     {

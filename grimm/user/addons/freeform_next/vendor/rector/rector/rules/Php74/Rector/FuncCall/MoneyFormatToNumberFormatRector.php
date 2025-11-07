@@ -9,32 +9,29 @@ use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Name;
-use PhpParser\Node\Scalar\Int_;
+use PhpParser\Node\Scalar\LNumber;
 use PhpParser\Node\Scalar\String_;
-use Rector\NodeAnalyzer\ArgsAnalyzer;
-use Rector\PhpParser\Node\Value\ValueResolver;
-use Rector\Rector\AbstractRector;
-use Rector\ValueObject\PhpVersionFeature;
+use Rector\Core\NodeAnalyzer\ArgsAnalyzer;
+use Rector\Core\Rector\AbstractRector;
+use Rector\Core\ValueObject\PhpVersionFeature;
 use Rector\VersionBonding\Contract\MinPhpVersionInterface;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
+ * @changelog https://www.php.net/manual/en/function.money-format.php#warning
+ *
  * @see \Rector\Tests\Php74\Rector\FuncCall\MoneyFormatToNumberFormatRector\MoneyFormatToNumberFormatRectorTest
  */
 final class MoneyFormatToNumberFormatRector extends AbstractRector implements MinPhpVersionInterface
 {
     /**
      * @readonly
+     * @var \Rector\Core\NodeAnalyzer\ArgsAnalyzer
      */
-    private ArgsAnalyzer $argsAnalyzer;
-    /**
-     * @readonly
-     */
-    private ValueResolver $valueResolver;
-    public function __construct(ArgsAnalyzer $argsAnalyzer, ValueResolver $valueResolver)
+    private $argsAnalyzer;
+    public function __construct(ArgsAnalyzer $argsAnalyzer)
     {
         $this->argsAnalyzer = $argsAnalyzer;
-        $this->valueResolver = $valueResolver;
     }
     public function provideMinPhpVersion() : int
     {
@@ -80,9 +77,9 @@ CODE_SAMPLE
     }
     private function warpInNumberFormatFuncCall(FuncCall $funcCall, Expr $expr) : FuncCall
     {
-        $roundFuncCall = $this->nodeFactory->createFuncCall('round', [$expr, new Int_(2), new ConstFetch(new Name('PHP_ROUND_HALF_ODD'))]);
+        $roundFuncCall = $this->nodeFactory->createFuncCall('round', [$expr, new LNumber(2), new ConstFetch(new Name('PHP_ROUND_HALF_ODD'))]);
         $funcCall->name = new Name('number_format');
-        $funcCall->args = [new Arg($roundFuncCall), new Arg(new Int_(2)), new Arg(new String_('.')), new Arg(new String_(''))];
+        $funcCall->args = [new Arg($roundFuncCall), new Arg(new LNumber(2)), new Arg(new String_('.')), new Arg(new String_(''))];
         return $funcCall;
     }
 }

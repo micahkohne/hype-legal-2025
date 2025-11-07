@@ -4,16 +4,13 @@ declare (strict_types=1);
 namespace Rector\CodeQuality\Rector\If_;
 
 use PhpParser\Node;
-use PhpParser\Node\Expr\BinaryOp;
 use PhpParser\Node\Expr\BinaryOp\BooleanAnd;
 use PhpParser\Node\Stmt\Else_;
 use PhpParser\Node\Stmt\If_;
 use PHPStan\PhpDocParser\Ast\PhpDoc\VarTagValueNode;
 use Rector\BetterPhpDocParser\Comment\CommentsMerger;
 use Rector\BetterPhpDocParser\PhpDocInfo\PhpDocInfo;
-use Rector\BetterPhpDocParser\PhpDocInfo\PhpDocInfoFactory;
-use Rector\NodeTypeResolver\Node\AttributeKey;
-use Rector\Rector\AbstractRector;
+use Rector\Core\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -23,20 +20,16 @@ final class CombineIfRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\BetterPhpDocParser\Comment\CommentsMerger
      */
-    private CommentsMerger $commentsMerger;
-    /**
-     * @readonly
-     */
-    private PhpDocInfoFactory $phpDocInfoFactory;
-    public function __construct(CommentsMerger $commentsMerger, PhpDocInfoFactory $phpDocInfoFactory)
+    private $commentsMerger;
+    public function __construct(CommentsMerger $commentsMerger)
     {
         $this->commentsMerger = $commentsMerger;
-        $this->phpDocInfoFactory = $phpDocInfoFactory;
     }
     public function getRuleDefinition() : RuleDefinition
     {
-        return new RuleDefinition('Merge nested if statements', [new CodeSample(<<<'CODE_SAMPLE'
+        return new RuleDefinition('Merges nested if statements', [new CodeSample(<<<'CODE_SAMPLE'
 class SomeClass
 {
     public function run()
@@ -81,14 +74,6 @@ CODE_SAMPLE
         $subIf = $node->stmts[0];
         if ($this->hasVarTag($subIf)) {
             return null;
-        }
-        $node->cond->setAttribute(AttributeKey::ORIGINAL_NODE, null);
-        $cond = $node->cond;
-        while ($cond instanceof BinaryOp) {
-            if (!$cond->right instanceof BinaryOp) {
-                $cond->right->setAttribute(AttributeKey::ORIGINAL_NODE, null);
-            }
-            $cond = $cond->right;
         }
         $node->cond = new BooleanAnd($node->cond, $subIf->cond);
         $node->stmts = $subIf->stmts;

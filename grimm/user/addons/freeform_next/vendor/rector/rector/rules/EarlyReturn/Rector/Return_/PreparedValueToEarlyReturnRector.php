@@ -6,21 +6,15 @@ namespace Rector\EarlyReturn\Rector\Return_;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Assign;
-use PhpParser\Node\Expr\AssignOp;
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Stmt;
-use PhpParser\Node\Stmt\Do_;
 use PhpParser\Node\Stmt\Expression;
-use PhpParser\Node\Stmt\For_;
-use PhpParser\Node\Stmt\Foreach_;
 use PhpParser\Node\Stmt\If_;
 use PhpParser\Node\Stmt\Return_;
-use PhpParser\Node\Stmt\While_;
-use Rector\Contract\PhpParser\Node\StmtsAwareInterface;
+use Rector\Core\Contract\PhpParser\Node\StmtsAwareInterface;
+use Rector\Core\NodeManipulator\IfManipulator;
+use Rector\Core\Rector\AbstractRector;
 use Rector\EarlyReturn\ValueObject\BareSingleAssignIf;
-use Rector\NodeManipulator\IfManipulator;
-use Rector\PhpParser\Node\BetterNodeFinder;
-use Rector\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -30,16 +24,12 @@ final class PreparedValueToEarlyReturnRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\Core\NodeManipulator\IfManipulator
      */
-    private IfManipulator $ifManipulator;
-    /**
-     * @readonly
-     */
-    private BetterNodeFinder $betterNodeFinder;
-    public function __construct(IfManipulator $ifManipulator, BetterNodeFinder $betterNodeFinder)
+    private $ifManipulator;
+    public function __construct(IfManipulator $ifManipulator)
     {
         $this->ifManipulator = $ifManipulator;
-        $this->betterNodeFinder = $betterNodeFinder;
     }
     public function getRuleDefinition() : RuleDefinition
     {
@@ -96,29 +86,19 @@ CODE_SAMPLE
         if ($node->stmts === null) {
             return null;
         }
-        /** @var If_[] $ifs */
-        $ifs = [];
+        /** @var BareSingleAssignIf[] $bareSingleAssignIfs */
+        $bareSingleAssignIfs = [];
         $initialAssign = null;
         $initialAssignPosition = null;
         foreach ($node->stmts as $key => $stmt) {
-            if ($stmt instanceof Expression && $stmt->expr instanceof AssignOp) {
-                return null;
-            }
-            if (($stmt instanceof For_ || $stmt instanceof Foreach_ || $stmt instanceof While_ || $stmt instanceof Do_) && $initialAssign instanceof Assign) {
-                $isReassignInLoop = (bool) $this->betterNodeFinder->findFirst($stmt, fn(Node $node): bool => $node instanceof Assign && $this->nodeComparator->areNodesEqual($node->var, $initialAssign->var));
-                if ($isReassignInLoop) {
-                    return null;
-                }
-            }
-            if ($stmt instanceof If_) {
-                $ifs[$key] = $stmt;
+            $bareSingleAssignIf = $this->matchBareSingleAssignIf($stmt, $key, $node);
+            if ($bareSingleAssignIf instanceof BareSingleAssignIf) {
+                $bareSingleAssignIfs[] = $bareSingleAssignIf;
                 continue;
             }
             if ($stmt instanceof Expression && $stmt->expr instanceof Assign) {
                 $initialAssign = $stmt->expr;
                 $initialAssignPosition = $key;
-                $ifs = [];
-                continue;
             }
             if (!$stmt instanceof Return_) {
                 continue;
@@ -134,32 +114,15 @@ CODE_SAMPLE
             if (!$initialAssign instanceof Assign) {
                 return null;
             }
-            $matchingBareSingleAssignIfs = $this->getMatchingBareSingleAssignIfs($ifs, $node);
-            if ($matchingBareSingleAssignIfs === []) {
+            if ($bareSingleAssignIfs === []) {
                 return null;
             }
-            if (!$this->isVariableSharedInAssignIfsAndReturn($matchingBareSingleAssignIfs, $return->expr, $initialAssign)) {
+            if (!$this->isVariableSharedInAssignIfsAndReturn($bareSingleAssignIfs, $return->expr, $initialAssign)) {
                 return null;
             }
-            return $this->refactorToDirectReturns($node, $initialAssignPosition, $matchingBareSingleAssignIfs, $initialAssign, $return);
+            return $this->refactorToDirectReturns($node, $initialAssignPosition, $bareSingleAssignIfs, $initialAssign, $return);
         }
         return null;
-    }
-    /**
-     * @param If_[] $ifs
-     * @return BareSingleAssignIf[]
-     */
-    private function getMatchingBareSingleAssignIfs(array $ifs, StmtsAwareInterface $stmtsAware) : array
-    {
-        $bareSingleAssignIfs = [];
-        foreach ($ifs as $key => $if) {
-            $bareSingleAssignIf = $this->matchBareSingleAssignIf($if, $key, $stmtsAware);
-            if (!$bareSingleAssignIf instanceof BareSingleAssignIf) {
-                return [];
-            }
-            $bareSingleAssignIfs[] = $bareSingleAssignIf;
-        }
-        return $bareSingleAssignIfs;
     }
     /**
      * @param BareSingleAssignIf[] $bareSingleAssignIfs
@@ -171,7 +134,9 @@ CODE_SAMPLE
         }
         foreach ($bareSingleAssignIfs as $bareSingleAssignIf) {
             $assign = $bareSingleAssignIf->getAssign();
-            $isVariableUsed = (bool) $this->betterNodeFinder->findFirst([$bareSingleAssignIf->getIfCondExpr(), $assign->expr], fn(Node $node): bool => $this->nodeComparator->areNodesEqual($node, $returnedExpr));
+            $isVariableUsed = (bool) $this->betterNodeFinder->findFirst([$bareSingleAssignIf->getIfCondExpr(), $assign->expr], function (Node $node) use($returnedExpr) : bool {
+                return $this->nodeComparator->areNodesEqual($node, $returnedExpr);
+            });
             if ($isVariableUsed) {
                 return \false;
             }

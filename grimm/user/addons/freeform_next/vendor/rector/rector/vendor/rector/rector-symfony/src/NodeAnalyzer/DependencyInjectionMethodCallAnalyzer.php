@@ -7,8 +7,8 @@ use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\Property;
 use PHPStan\Type\ObjectType;
+use Rector\Core\NodeManipulator\PropertyManipulator;
 use Rector\Naming\Naming\PropertyNaming;
-use Rector\NodeManipulator\PropertyManipulator;
 use Rector\NodeNameResolver\NodeNameResolver;
 use Rector\Php80\NodeAnalyzer\PromotedPropertyResolver;
 use Rector\PostRector\ValueObject\PropertyMetadata;
@@ -16,24 +16,29 @@ final class DependencyInjectionMethodCallAnalyzer
 {
     /**
      * @readonly
+     * @var \Rector\Naming\Naming\PropertyNaming
      */
-    private PropertyNaming $propertyNaming;
+    private $propertyNaming;
     /**
      * @readonly
+     * @var \Rector\Symfony\NodeAnalyzer\ServiceTypeMethodCallResolver
      */
-    private \Rector\Symfony\NodeAnalyzer\ServiceTypeMethodCallResolver $serviceTypeMethodCallResolver;
+    private $serviceTypeMethodCallResolver;
     /**
      * @readonly
+     * @var \Rector\Php80\NodeAnalyzer\PromotedPropertyResolver
      */
-    private PromotedPropertyResolver $promotedPropertyResolver;
+    private $promotedPropertyResolver;
     /**
      * @readonly
+     * @var \Rector\NodeNameResolver\NodeNameResolver
      */
-    private NodeNameResolver $nodeNameResolver;
+    private $nodeNameResolver;
     /**
      * @readonly
+     * @var \Rector\Core\NodeManipulator\PropertyManipulator
      */
-    private PropertyManipulator $propertyManipulator;
+    private $propertyManipulator;
     public function __construct(PropertyNaming $propertyNaming, \Rector\Symfony\NodeAnalyzer\ServiceTypeMethodCallResolver $serviceTypeMethodCallResolver, PromotedPropertyResolver $promotedPropertyResolver, NodeNameResolver $nodeNameResolver, PropertyManipulator $propertyManipulator)
     {
         $this->propertyNaming = $propertyNaming;

@@ -10,11 +10,10 @@ class PluginExtension
      * @param string $className
      * @param string $methodName
      * @param string $hookName
-     * @param array  $settings
      * @param int    $priority
      * @param bool   $enabled
      */
-    public function __construct(private $methodName, private $hookName, private readonly array $settings = [], private $priority = 5, private $enabled = true)
+    public function __construct(private $methodName, private $hookName, private array $settings = [], private $priority = 5, private $enabled = true)
     {
     }
 

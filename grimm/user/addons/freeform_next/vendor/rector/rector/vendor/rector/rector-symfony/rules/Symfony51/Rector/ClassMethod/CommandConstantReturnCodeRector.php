@@ -5,13 +5,12 @@ namespace Rector\Symfony\Symfony51\Rector\ClassMethod;
 
 use PhpParser\Node;
 use PhpParser\Node\Expr\ClassConstFetch;
-use PhpParser\Node\Scalar\Int_;
+use PhpParser\Node\Scalar\LNumber;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Return_;
 use PHPStan\Reflection\ClassReflection;
-use Rector\PhpParser\Node\BetterNodeFinder;
-use Rector\Rector\AbstractRector;
-use Rector\Reflection\ReflectionResolver;
+use Rector\Core\Rector\AbstractRector;
+use Rector\Core\Reflection\ReflectionResolver;
 use Rector\Symfony\ValueObject\ConstantMap\SymfonyCommandConstantMap;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
@@ -24,16 +23,12 @@ final class CommandConstantReturnCodeRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\Core\Reflection\ReflectionResolver
      */
-    private ReflectionResolver $reflectionResolver;
-    /**
-     * @readonly
-     */
-    private BetterNodeFinder $betterNodeFinder;
-    public function __construct(ReflectionResolver $reflectionResolver, BetterNodeFinder $betterNodeFinder)
+    private $reflectionResolver;
+    public function __construct(ReflectionResolver $reflectionResolver)
     {
         $this->reflectionResolver = $reflectionResolver;
-        $this->betterNodeFinder = $betterNodeFinder;
     }
     public function getRuleDefinition() : RuleDefinition
     {
@@ -75,17 +70,17 @@ CODE_SAMPLE
         if (!$classReflection instanceof ClassReflection) {
             return null;
         }
-        if (!$classReflection->is('Symfony\\Component\\Console\\Command\\Command')) {
+        if (!$classReflection->isSubclassOf('Symfony\\Component\\Console\\Command\\Command')) {
             return null;
         }
-        if (!$this->isName($node, 'execute')) {
+        if (!$this->nodeNameResolver->isName($node, 'execute')) {
             return null;
         }
         $hasChanged = \false;
         /** @var Return_[] $returns */
         $returns = $this->betterNodeFinder->findInstancesOfInFunctionLikeScoped($node, [Return_::class]);
         foreach ($returns as $return) {
-            if (!$return->expr instanceof Int_) {
+            if (!$return->expr instanceof LNumber) {
                 continue;
             }
             $classConstFetch = $this->convertNumberToConstant($return->expr);
@@ -100,11 +95,11 @@ CODE_SAMPLE
         }
         return null;
     }
-    private function convertNumberToConstant(Int_ $int) : ?ClassConstFetch
+    private function convertNumberToConstant(LNumber $lNumber) : ?ClassConstFetch
     {
-        if (!isset(SymfonyCommandConstantMap::RETURN_TO_CONST[$int->value])) {
+        if (!isset(SymfonyCommandConstantMap::RETURN_TO_CONST[$lNumber->value])) {
             return null;
         }
-        return $this->nodeFactory->createClassConstFetch('Symfony\\Component\\Console\\Command\\Command', SymfonyCommandConstantMap::RETURN_TO_CONST[$int->value]);
+        return $this->nodeFactory->createClassConstFetch('Symfony\\Component\\Console\\Command\\Command', SymfonyCommandConstantMap::RETURN_TO_CONST[$lNumber->value]);
     }
 }

@@ -3,12 +3,12 @@
 declare (strict_types=1);
 namespace Rector\CodeQuality\Rector\Concat;
 
-use RectorPrefix202507\Nette\Utils\Strings;
+use RectorPrefix202308\Nette\Utils\Strings;
 use PhpParser\Node;
 use PhpParser\Node\Expr\BinaryOp\Concat;
 use PhpParser\Node\Scalar\String_;
-use Rector\Rector\AbstractRector;
-use Rector\Util\StringUtils;
+use Rector\Core\Rector\AbstractRector;
+use Rector\Core\Util\StringUtils;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -66,18 +66,13 @@ CODE_SAMPLE
         if (!$node->right instanceof String_) {
             return null;
         }
-        $leftStartLine = $node->left->getStartLine();
-        $rightStartLine = $node->right->getStartLine();
-        if ($leftStartLine > 0 && $rightStartLine > 0 && $rightStartLine > $leftStartLine) {
-            return null;
-        }
         return $this->joinConcatIfStrings($node->left, $node->right);
     }
     private function joinConcatIfStrings(String_ $leftString, String_ $rightString) : ?String_
     {
         $leftValue = $leftString->value;
         $rightValue = $rightString->value;
-        if (\strpos($leftValue, "\n") !== \false || \strpos($rightValue, "\n") !== \false) {
+        if ($leftValue === "\n" || $rightValue === "\n") {
             return null;
         }
         $joinedStringValue = $leftValue . $rightValue;

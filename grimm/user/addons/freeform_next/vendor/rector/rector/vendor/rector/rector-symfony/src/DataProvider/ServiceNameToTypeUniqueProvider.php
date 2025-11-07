@@ -7,8 +7,9 @@ final class ServiceNameToTypeUniqueProvider
 {
     /**
      * @readonly
+     * @var \Rector\Symfony\DataProvider\ServiceMapProvider
      */
-    private \Rector\Symfony\DataProvider\ServiceMapProvider $serviceMapProvider;
+    private $serviceMapProvider;
     public function __construct(\Rector\Symfony\DataProvider\ServiceMapProvider $serviceMapProvider)
     {
         $this->serviceMapProvider = $serviceMapProvider;

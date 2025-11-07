@@ -1,7 +1,7 @@
 <?php
 
 declare (strict_types=1);
-namespace Rector\ValueObject;
+namespace Rector\Core\ValueObject;
 
 /**
  * @api
@@ -56,8 +56,4 @@ final class MethodName
      * @var string
      */
     public const INVOKE = '__invoke';
-    /**
-     * @var string
-     */
-    public const ISSET = '__isset';
 }

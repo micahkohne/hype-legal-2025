@@ -18,26 +18,18 @@ use PhpParser\Node\Expr;
 class PrintableNewAnonClassNode extends Expr
 {
     /** @var Node\AttributeGroup[] PHP attribute groups */
-    public array $attrGroups;
+    public $attrGroups;
     /** @var int Modifiers */
-    public int $flags;
-    /** @var (Node\Arg|Node\VariadicPlaceholder)[] Arguments */
-    public array $args;
+    public $flags;
+    /** @var Node\Arg[] Arguments */
+    public $args;
     /** @var null|Node\Name Name of extended class */
-    public ?Node\Name $extends;
+    public $extends;
     /** @var Node\Name[] Names of implemented interfaces */
-    public array $implements;
+    public $implements;
     /** @var Node\Stmt[] Statements */
-    public array $stmts;
-    /**
-     * @param Node\AttributeGroup[] $attrGroups PHP attribute groups
-     * @param (Node\Arg|Node\VariadicPlaceholder)[] $args Arguments
-     * @param Node\Name|null $extends Name of extended class
-     * @param Node\Name[] $implements Names of implemented interfaces
-     * @param Node\Stmt[] $stmts Statements
-     * @param array<string, mixed> $attributes Attributes
-     */
-    public function __construct(array $attrGroups, int $flags, array $args, ?Node\Name $extends, array $implements, array $stmts, array $attributes)
+    public $stmts;
+    public function __construct(array $attrGroups, int $flags, array $args, Node\Name $extends = null, array $implements, array $stmts, array $attributes)
     {
         parent::__construct($attributes);
         $this->attrGroups = $attrGroups;
@@ -47,7 +39,7 @@ class PrintableNewAnonClassNode extends Expr
         $this->implements = $implements;
         $this->stmts = $stmts;
     }
-    public static function fromNewNode(Expr\New_ $newNode) : self
+    public static function fromNewNode(Expr\New_ $newNode)
     {
         $class = $newNode->class;
         \assert($class instanceof Node\Stmt\Class_);

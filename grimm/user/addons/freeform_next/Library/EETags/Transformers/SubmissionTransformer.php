@@ -14,12 +14,10 @@ class SubmissionTransformer
     private static ?array $fieldsByFormId = null;
 
     /**
-     * @param SubmissionModel           $model
      * @param int                       $count
      * @param int                       $totalResults
      * @param int                       $absoluteTotal
      * @param SubmissionAttributes|null $attributes
-     *
      * @return array
      */
     public function transformSubmission(
@@ -27,8 +25,8 @@ class SubmissionTransformer
         $count = 1,
         $totalResults = 1,
         $absoluteTotal = 1,
-        ?SubmissionAttributes $attributes = null
-    ): array {
+        SubmissionAttributes $attributes = null
+    ) {
         $prefix        = 'submission:';
         $absoluteCount = $count;
 
@@ -41,9 +39,9 @@ class SubmissionTransformer
             if ($field instanceof FileUploadField)
             {
                 $fieldValue = $model->getFieldValue($field->getHandle()) ?: [];
-                if(count($fieldValue))
+                if(is_countable($fieldValue) ? count($fieldValue) : 0)
                 {
-                    $attachmentCount += count($fieldValue);
+                    $attachmentCount += is_countable($fieldValue) ? count($fieldValue) : 0;
                 }
             }
         }
@@ -74,9 +72,6 @@ class SubmissionTransformer
     }
 
     /**
-     * @param SubmissionModel $model
-     * @param string          $prefix
-     *
      * @return array
      */
     private function getFields(SubmissionModel $model, string $prefix = 'field:'): array
@@ -102,9 +97,6 @@ class SubmissionTransformer
     }
 
     /**
-     * @param SubmissionModel $model
-     * @param string          $prefix
-     *
      * @return array
      */
     private function getSeparateFieldInfo(SubmissionModel $model, string $prefix = 'submission:'): array
@@ -125,8 +117,6 @@ class SubmissionTransformer
     }
 
     /**
-     * @param SubmissionModel $model
-     *
      * @return AbstractField[]
      */
     private function getFieldList(SubmissionModel $model)

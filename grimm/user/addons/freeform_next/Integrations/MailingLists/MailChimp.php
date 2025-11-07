@@ -11,7 +11,6 @@
 
 namespace Solspace\Addons\FreeformNext\Integrations\MailingLists;
 
-use Override;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\BadResponseException;
 use Solspace\Addons\FreeformNext\Library\Exceptions\Integrations\IntegrationException;
@@ -23,12 +22,12 @@ use Solspace\Addons\FreeformNext\Library\Integrations\SettingBlueprint;
 
 class MailChimp extends AbstractMailingListIntegration
 {
-    const TITLE        = 'MailChimp';
-    const LOG_CATEGORY = 'MailChimp';
+    public const TITLE        = 'MailChimp';
+    public const LOG_CATEGORY = 'MailChimp';
 
-    const SETTING_API_KEY       = 'api_key';
-    const SETTING_DOUBLE_OPT_IN = 'double_opt_in';
-    const SETTING_DATA_CENTER   = 'data_center';
+    public const SETTING_API_KEY       = 'api_key';
+    public const SETTING_DOUBLE_OPT_IN = 'double_opt_in';
+    public const SETTING_DATA_CENTER   = 'data_center';
 
     /**
      * Returns a list of additional settings for this integration
@@ -36,7 +35,6 @@ class MailChimp extends AbstractMailingListIntegration
      *
      * @return SettingBlueprint[]
      */
-    #[Override]
     public static function getSettingBlueprints(): array
     {
         return [
@@ -160,7 +158,7 @@ class MailChimp extends AbstractMailingListIntegration
     /**
      * A method that initiates the authentication
      */
-    public function initiateAuthentication()
+    public function initiateAuthentication(): void
     {
     }
 
@@ -185,7 +183,7 @@ class MailChimp extends AbstractMailingListIntegration
      */
     public function onBeforeSave(IntegrationStorageInterface $model): void
     {
-        if (preg_match('/([a-zA-Z]+\d+)$/', (string) $this->getSetting(self::SETTING_API_KEY), $matches)) {
+        if (preg_match('/([a-zA-Z]+\d+)$/', $this->getSetting(self::SETTING_API_KEY), $matches)) {
             $dataCenter = $matches[1];
             $this->setSetting(self::SETTING_DATA_CENTER, $dataCenter);
         } else {
@@ -267,7 +265,7 @@ class MailChimp extends AbstractMailingListIntegration
      * @return FieldObject[]
      * @throws IntegrationException
      */
-    protected function fetchFields($listId): array
+    protected function fetchFields($listId)
     {
         $client = new Client();
 

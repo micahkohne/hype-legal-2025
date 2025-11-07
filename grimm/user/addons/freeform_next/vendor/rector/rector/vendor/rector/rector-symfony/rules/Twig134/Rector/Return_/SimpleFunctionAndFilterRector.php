@@ -5,9 +5,9 @@ namespace Rector\Symfony\Twig134\Rector\Return_;
 
 use PhpParser\Node;
 use PhpParser\Node\Arg;
-use PhpParser\Node\ArrayItem;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Array_;
+use PhpParser\Node\Expr\ArrayItem;
 use PhpParser\Node\Expr\New_;
 use PhpParser\Node\Name\FullyQualified;
 use PhpParser\Node\Scalar\String_;
@@ -16,9 +16,8 @@ use PhpParser\Node\Stmt\Return_;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
-use Rector\PhpParser\Node\Value\ValueResolver;
-use Rector\Rector\AbstractRector;
-use Rector\Reflection\ReflectionResolver;
+use Rector\Core\Rector\AbstractRector;
+use Rector\Core\Reflection\ReflectionResolver;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -30,20 +29,16 @@ final class SimpleFunctionAndFilterRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\Core\Reflection\ReflectionResolver
      */
-    private ReflectionResolver $reflectionResolver;
+    private $reflectionResolver;
     /**
-     * @readonly
-     */
-    private ValueResolver $valueResolver;
-    /**
-     * @var array<string, class-string>
+     * @var array<string, class-string>>
      */
     private const OLD_TO_NEW_CLASSES = ['Twig_Function_Method' => 'Twig_SimpleFunction', 'Twig_Filter_Method' => 'Twig_SimpleFilter'];
-    public function __construct(ReflectionResolver $reflectionResolver, ValueResolver $valueResolver)
+    public function __construct(ReflectionResolver $reflectionResolver)
     {
         $this->reflectionResolver = $reflectionResolver;
-        $this->valueResolver = $valueResolver;
     }
     public function getRuleDefinition() : RuleDefinition
     {
@@ -132,10 +127,10 @@ CODE_SAMPLE
         if (!$classReflection instanceof ClassReflection) {
             return \true;
         }
-        if (!$classReflection->is('Twig_Extension')) {
+        if (!$classReflection->isSubclassOf('Twig_Extension')) {
             return \true;
         }
-        return !$this->isNames($classMethod, ['getFunctions', 'getFilters']);
+        return !$this->nodeNameResolver->isNames($classMethod, ['getFunctions', 'getFilters']);
     }
     private function processArrayItem(ArrayItem $arrayItem, Type $newNodeType, bool &$hasChanged) : void
     {

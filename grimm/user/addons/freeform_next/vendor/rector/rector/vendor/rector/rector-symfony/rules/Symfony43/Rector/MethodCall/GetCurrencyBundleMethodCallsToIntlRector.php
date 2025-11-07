@@ -8,7 +8,7 @@ use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Name\FullyQualified;
 use PHPStan\Type\ObjectType;
-use Rector\Rector\AbstractRector;
+use Rector\Core\Rector\AbstractRector;
 use Rector\Symfony\ValueObject\IntlBundleClassToNewClass;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
@@ -23,7 +23,7 @@ final class GetCurrencyBundleMethodCallsToIntlRector extends AbstractRector
     /**
      * @var IntlBundleClassToNewClass[]
      */
-    private array $intlBundleClassesToNewClasses = [];
+    private $intlBundleClassesToNewClasses = [];
     public function __construct()
     {
         $this->intlBundleClassesToNewClasses[] = new IntlBundleClassToNewClass('Symfony\\Component\\Intl\\ResourceBundle\\LanguageBundleInterface', 'Symfony\\Component\\Intl\\Languages', ['getLanguageNames' => 'getNames', 'getLanguageName' => 'getName']);

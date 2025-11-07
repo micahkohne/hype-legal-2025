@@ -7,9 +7,8 @@ use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\NullableType;
 use PhpParser\Node\Stmt\Property;
+use Rector\Core\Rector\AbstractRector;
 use Rector\NodeManipulator\PropertyDecorator;
-use Rector\PhpParser\Node\Value\ValueResolver;
-use Rector\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -19,16 +18,12 @@ final class DowngradeTypedPropertyRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\NodeManipulator\PropertyDecorator
      */
-    private PropertyDecorator $propertyDecorator;
-    /**
-     * @readonly
-     */
-    private ValueResolver $valueResolver;
-    public function __construct(PropertyDecorator $propertyDecorator, ValueResolver $valueResolver)
+    private $propertyDecorator;
+    public function __construct(PropertyDecorator $propertyDecorator)
     {
         $this->propertyDecorator = $propertyDecorator;
-        $this->valueResolver = $valueResolver;
     }
     /**
      * @return array<class-string<Node>>

@@ -16,7 +16,7 @@ use Symfony\Component\Filesystem\Filesystem;
 
 abstract class FileObject
 {
-    const HELP_LINK = 'https://solspace.com/';
+    public const HELP_LINK = 'https://solspace.com/';
 
     private static ?Filesystem $filesystem = null;
 
@@ -63,7 +63,7 @@ abstract class FileObject
      *
      * @return void
      */
-    abstract public function copy($target, $prefix = null, $callable = null, $filePrefix = null);
+    abstract public function copy($target, ?string $prefix = null, null|callable|array $callable = null, ?string $filePrefix = null);
 
     /**
      * @return string

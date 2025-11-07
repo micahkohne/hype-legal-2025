@@ -20,14 +20,14 @@ use Solspace\Addons\FreeformNext\Library\Codepack\Components\AssetsFileComponent
 
 class Codepack
 {
-    const MANIFEST_NAME = 'manifest.json';
+    public const MANIFEST_NAME = 'manifest.json';
 
     /** @var string */
     private $location;
 
-    private readonly Manifest $manifest;
+    private Manifest $manifest;
 
-    private readonly TemplatesFileComponent $templates;
+    private TemplatesFileComponent $templates;
 
     /** @var AssetsFileComponent */
     private $assets;
@@ -40,7 +40,7 @@ class Codepack
     public static function getCleanPrefix($prefix): string
     {
         $prefix = preg_replace('/\/+/', '/', $prefix);
-        $prefix = trim((string) $prefix, '/');
+        $prefix = trim($prefix, '/');
 
         return $prefix;
     }

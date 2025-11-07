@@ -2,7 +2,6 @@
 
 namespace Solspace\Addons\FreeformNext\Repositories;
 
-use Override;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Fields\FileUploadField;
 
 class FileRepository extends Repository
@@ -10,15 +9,12 @@ class FileRepository extends Repository
     /**
      * @return FileRepository
      */
-    #[Override]
     public static function getInstance()
     {
         return parent::getInstance();
     }
 
     /**
-     * @param FileUploadField $field
-     *
      * @return array|null
      */
     public function getAssetSourceSettingsFor(FileUploadField $field)
@@ -30,7 +26,7 @@ class FileRepository extends Repository
             ->get()
             ->result_array();
 
-        if (count($results) > 0) {
+        if ((is_countable($results) ? count($results) : 0) > 0) {
             $result = $results[0];
 
             $result['url']         = parse_config_variables($result['url']);

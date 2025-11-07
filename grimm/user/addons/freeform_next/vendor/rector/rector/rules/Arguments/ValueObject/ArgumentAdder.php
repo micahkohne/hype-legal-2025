@@ -5,25 +5,29 @@ namespace Rector\Arguments\ValueObject;
 
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
-use Rector\Validation\RectorAssert;
+use Rector\Core\Validation\RectorAssert;
 final class ArgumentAdder
 {
     /**
      * @readonly
+     * @var string
      */
-    private string $class;
+    private $class;
     /**
      * @readonly
+     * @var string
      */
-    private string $method;
+    private $method;
     /**
      * @readonly
+     * @var int
      */
-    private int $position;
+    private $position;
     /**
      * @readonly
+     * @var string|null
      */
-    private ?string $argumentName = null;
+    private $argumentName;
     /**
      * @var mixed|null
      */
@@ -35,8 +39,9 @@ final class ArgumentAdder
     private $argumentType = null;
     /**
      * @readonly
+     * @var string|null
      */
-    private ?string $scope = null;
+    private $scope;
     /**
      * @param mixed|null $argumentDefaultValue
      */

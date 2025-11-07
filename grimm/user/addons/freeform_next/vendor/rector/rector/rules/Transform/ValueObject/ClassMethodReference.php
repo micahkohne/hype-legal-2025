@@ -3,17 +3,19 @@
 declare (strict_types=1);
 namespace Rector\Transform\ValueObject;
 
-use Rector\Validation\RectorAssert;
+use Rector\Core\Validation\RectorAssert;
 final class ClassMethodReference
 {
     /**
      * @readonly
+     * @var string
      */
-    private string $class;
+    private $class;
     /**
      * @readonly
+     * @var string
      */
-    private string $method;
+    private $method;
     public function __construct(string $class, string $method)
     {
         $this->class = $class;

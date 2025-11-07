@@ -3,9 +3,9 @@
 declare (strict_types=1);
 namespace Rector\Symfony\NodeAnalyzer;
 
-use PhpParser\Node\ArrayItem;
 use PhpParser\Node\Attribute;
 use PhpParser\Node\Expr\Array_;
+use PhpParser\Node\Expr\ArrayItem;
 use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\Stmt\ClassMethod;
 use PHPStan\Type\IntegerType;
@@ -22,12 +22,14 @@ final class RouteRequiredParamNameToTypesResolver
 {
     /**
      * @readonly
+     * @var \Rector\Doctrine\NodeAnalyzer\AttrinationFinder
      */
-    private AttrinationFinder $attrinationFinder;
+    private $attrinationFinder;
     /**
      * @readonly
+     * @var \Rector\NodeNameResolver\NodeNameResolver
      */
-    private NodeNameResolver $nodeNameResolver;
+    private $nodeNameResolver;
     public function __construct(AttrinationFinder $attrinationFinder, NodeNameResolver $nodeNameResolver)
     {
         $this->attrinationFinder = $attrinationFinder;

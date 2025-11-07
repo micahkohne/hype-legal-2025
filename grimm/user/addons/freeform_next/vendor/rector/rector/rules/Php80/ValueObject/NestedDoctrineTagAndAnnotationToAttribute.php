@@ -8,12 +8,14 @@ final class NestedDoctrineTagAndAnnotationToAttribute
 {
     /**
      * @readonly
+     * @var \Rector\BetterPhpDocParser\PhpDoc\DoctrineAnnotationTagValueNode
      */
-    private DoctrineAnnotationTagValueNode $doctrineAnnotationTagValueNode;
+    private $doctrineAnnotationTagValueNode;
     /**
      * @readonly
+     * @var \Rector\Php80\ValueObject\NestedAnnotationToAttribute
      */
-    private \Rector\Php80\ValueObject\NestedAnnotationToAttribute $nestedAnnotationToAttribute;
+    private $nestedAnnotationToAttribute;
     public function __construct(DoctrineAnnotationTagValueNode $doctrineAnnotationTagValueNode, \Rector\Php80\ValueObject\NestedAnnotationToAttribute $nestedAnnotationToAttribute)
     {
         $this->doctrineAnnotationTagValueNode = $doctrineAnnotationTagValueNode;

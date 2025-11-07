@@ -13,13 +13,13 @@ namespace Solspace\Addons\FreeformNext\Library\Integrations;
 
 class SettingBlueprint
 {
-    const TYPE_INTERNAL = 'internal';
-    const TYPE_CONFIG   = 'config';
-    const TYPE_TEXT     = 'text';
-    const TYPE_PASSWORD = 'password';
-    const TYPE_BOOL     = 'bool';
+    public const TYPE_INTERNAL = 'internal';
+    public const TYPE_CONFIG   = 'config';
+    public const TYPE_TEXT     = 'text';
+    public const TYPE_PASSWORD = 'password';
+    public const TYPE_BOOL     = 'bool';
 
-    private readonly bool $required;
+    private bool $required;
 
     /**
      * @return array

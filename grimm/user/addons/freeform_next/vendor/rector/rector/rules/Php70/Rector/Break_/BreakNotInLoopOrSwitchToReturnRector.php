@@ -10,22 +10,26 @@ use PhpParser\Node\Stmt\Break_;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\Return_;
 use PhpParser\Node\Stmt\Switch_;
-use PhpParser\NodeVisitor;
+use PhpParser\NodeTraverser;
+use Rector\Core\Rector\AbstractRector;
+use Rector\Core\ValueObject\PhpVersionFeature;
 use Rector\NodeNestingScope\ContextAnalyzer;
-use Rector\Rector\AbstractRector;
-use Rector\ValueObject\PhpVersionFeature;
 use Rector\VersionBonding\Contract\MinPhpVersionInterface;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
+ * @changelog https://stackoverflow.com/questions/3618030/php-fatal-error-cannot-break-continue https://stackoverflow.com/questions/11988281/why-does-cannot-break-continue-1-level-comes-in-php
+ *
+ * @changelog https://3v4l.org/Qtelt
  * @see \Rector\Tests\Php70\Rector\Break_\BreakNotInLoopOrSwitchToReturnRector\BreakNotInLoopOrSwitchToReturnRectorTest
  */
 final class BreakNotInLoopOrSwitchToReturnRector extends AbstractRector implements MinPhpVersionInterface
 {
     /**
      * @readonly
+     * @var \Rector\NodeNestingScope\ContextAnalyzer
      */
-    private ContextAnalyzer $contextAnalyzer;
+    private $contextAnalyzer;
     /**
      * @var string
      */
@@ -84,7 +88,7 @@ CODE_SAMPLE
         if ($node instanceof Switch_) {
             $this->traverseNodesWithCallable($node->cases, static function (Node $subNode) : ?int {
                 if ($subNode instanceof Class_ || $subNode instanceof FunctionLike && !$subNode instanceof ArrowFunction) {
-                    return NodeVisitor::DONT_TRAVERSE_CURRENT_AND_CHILDREN;
+                    return NodeTraverser::DONT_TRAVERSE_CURRENT_AND_CHILDREN;
                 }
                 if (!$subNode instanceof Break_) {
                     return null;
@@ -103,6 +107,6 @@ CODE_SAMPLE
         if ($this->contextAnalyzer->isInIf($node)) {
             return new Return_();
         }
-        return NodeVisitor::REMOVE_NODE;
+        return NodeTraverser::REMOVE_NODE;
     }
 }

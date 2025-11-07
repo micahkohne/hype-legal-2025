@@ -3,21 +3,24 @@
 declare (strict_types=1);
 namespace Rector\Transform\ValueObject;
 
-use Rector\Validation\RectorAssert;
+use Rector\Core\Validation\RectorAssert;
 final class StringToClassConstant
 {
     /**
      * @readonly
+     * @var string
      */
-    private string $string;
+    private $string;
     /**
      * @readonly
+     * @var string
      */
-    private string $class;
+    private $class;
     /**
      * @readonly
+     * @var string
      */
-    private string $constant;
+    private $constant;
     public function __construct(string $string, string $class, string $constant)
     {
         $this->string = $string;

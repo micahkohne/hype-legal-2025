@@ -6,16 +6,15 @@ use Solspace\Addons\FreeformNext\Library\Composer\Components\Validation\Errors\C
 
 class NumericConstraint implements ConstraintInterface
 {
-    private readonly ?int $min;
+    private ?int $min = null;
 
-    private readonly ?int $max;
+    private ?int $max = null;
 
-    private readonly ?int $decimalCount;
+    private ?int $decimalCount = null;
 
-    /** @var string */
-    private $decimalSeparator;
+    private string $decimalSeparator;
 
-    private readonly bool $allowNegativeNumbers;
+    private bool $allowNegativeNumbers;
 
     /**
      * NumericConstraint constructor.
@@ -66,7 +65,7 @@ class NumericConstraint implements ConstraintInterface
 
         $pattern = "/^-?\d*({$thousandsSeparator}\d{3})*({$decimalSeparator}\d+)?$/";
 
-        if (!preg_match($pattern, (string) $value, $matches)) {
+        if (!preg_match($pattern, $value, $matches)) {
             $violationList->addError($this->message);
 
             return $violationList;

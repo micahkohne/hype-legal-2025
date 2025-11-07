@@ -5,50 +5,52 @@ namespace Rector\DeadCode\Rector\If_;
 
 use PhpParser\Node;
 use PhpParser\Node\Expr;
-use PhpParser\Node\Expr\ArrayDimFetch;
 use PhpParser\Node\Expr\BinaryOp\BooleanAnd;
-use PhpParser\Node\Expr\Empty_;
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\Foreach_;
 use PhpParser\Node\Stmt\If_;
 use PHPStan\Analyser\Scope;
-use Rector\Contract\PhpParser\Node\StmtsAwareInterface;
+use Rector\Core\Contract\PhpParser\Node\StmtsAwareInterface;
+use Rector\Core\NodeAnalyzer\PropertyFetchAnalyzer;
+use Rector\Core\NodeManipulator\IfManipulator;
+use Rector\Core\Php\ReservedKeywordAnalyzer;
+use Rector\Core\Rector\AbstractScopeAwareRector;
 use Rector\DeadCode\NodeManipulator\CountManipulator;
 use Rector\DeadCode\UselessIfCondBeforeForeachDetector;
-use Rector\NodeAnalyzer\PropertyFetchAnalyzer;
-use Rector\NodeManipulator\IfManipulator;
 use Rector\NodeTypeResolver\Node\AttributeKey;
-use Rector\Php\ReservedKeywordAnalyzer;
-use Rector\PHPStan\ScopeFetcher;
-use Rector\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
  * @see \Rector\Tests\DeadCode\Rector\If_\RemoveUnusedNonEmptyArrayBeforeForeachRector\RemoveUnusedNonEmptyArrayBeforeForeachRectorTest
  */
-final class RemoveUnusedNonEmptyArrayBeforeForeachRector extends AbstractRector
+final class RemoveUnusedNonEmptyArrayBeforeForeachRector extends AbstractScopeAwareRector
 {
     /**
      * @readonly
+     * @var \Rector\DeadCode\NodeManipulator\CountManipulator
      */
-    private CountManipulator $countManipulator;
+    private $countManipulator;
     /**
      * @readonly
+     * @var \Rector\Core\NodeManipulator\IfManipulator
      */
-    private IfManipulator $ifManipulator;
+    private $ifManipulator;
     /**
      * @readonly
+     * @var \Rector\DeadCode\UselessIfCondBeforeForeachDetector
      */
-    private UselessIfCondBeforeForeachDetector $uselessIfCondBeforeForeachDetector;
+    private $uselessIfCondBeforeForeachDetector;
     /**
      * @readonly
+     * @var \Rector\Core\Php\ReservedKeywordAnalyzer
      */
-    private ReservedKeywordAnalyzer $reservedKeywordAnalyzer;
+    private $reservedKeywordAnalyzer;
     /**
      * @readonly
+     * @var \Rector\Core\NodeAnalyzer\PropertyFetchAnalyzer
      */
-    private PropertyFetchAnalyzer $propertyFetchAnalyzer;
+    private $propertyFetchAnalyzer;
     public function __construct(CountManipulator $countManipulator, IfManipulator $ifManipulator, UselessIfCondBeforeForeachDetector $uselessIfCondBeforeForeachDetector, ReservedKeywordAnalyzer $reservedKeywordAnalyzer, PropertyFetchAnalyzer $propertyFetchAnalyzer)
     {
         $this->countManipulator = $countManipulator;
@@ -96,12 +98,11 @@ CODE_SAMPLE
     }
     /**
      * @param If_|StmtsAwareInterface $node
-     * @return Foreach_|StmtsAwareInterface|null
+     * @return Stmt[]|Foreach_|StmtsAwareInterface|null
      */
-    public function refactor(Node $node) : ?\PhpParser\Node
+    public function refactorWithScope(Node $node, Scope $scope)
     {
         if ($node instanceof If_) {
-            $scope = ScopeFetcher::fetch($node);
             return $this->refactorIf($node, $scope);
         }
         return $this->refactorStmtsAware($node);
@@ -114,15 +115,18 @@ CODE_SAMPLE
         /** @var Foreach_ $foreach */
         $foreach = $if->stmts[0];
         $foreachExpr = $foreach->expr;
-        if ($this->shouldSkipForeachExpr($foreachExpr, $scope)) {
-            return \false;
+        if ($foreachExpr instanceof Variable) {
+            $variableName = $this->nodeNameResolver->getName($foreachExpr);
+            if (\is_string($variableName) && $this->reservedKeywordAnalyzer->isNativeVariable($variableName)) {
+                return \false;
+            }
         }
         $ifCond = $if->cond;
         if ($ifCond instanceof BooleanAnd) {
             return $this->isUselessBooleanAnd($ifCond, $foreachExpr);
         }
         if (($ifCond instanceof Variable || $this->propertyFetchAnalyzer->isPropertyFetch($ifCond)) && $this->nodeComparator->areNodesEqual($ifCond, $foreachExpr)) {
-            $ifType = $scope->getNativeType($ifCond);
+            $ifType = $scope->getType($ifCond);
             return $ifType->isArray()->yes();
         }
         if ($this->uselessIfCondBeforeForeachDetector->isMatchingNotIdenticalEmptyArray($if, $foreachExpr)) {
@@ -164,17 +168,6 @@ CODE_SAMPLE
             if (!$this->uselessIfCondBeforeForeachDetector->isMatchingEmptyAndForeachedExpr($previousStmt, $stmt->expr)) {
                 continue;
             }
-            /** @var Empty_ $empty */
-            $empty = $previousStmt->cond;
-            // scope need to be pulled from Empty_ node to ensure it get correct type
-            $scope = $empty->getAttribute(AttributeKey::SCOPE);
-            if (!$scope instanceof Scope) {
-                continue;
-            }
-            $ifType = $scope->getNativeType($empty->expr);
-            if (!$ifType->isArray()->yes()) {
-                continue;
-            }
             unset($stmtsAware->stmts[$key - 1]);
             return $stmtsAware;
         }
@@ -192,26 +185,5 @@ CODE_SAMPLE
         $comments = \array_merge($ifComments, $stmtComments);
         $stmt->setAttribute(AttributeKey::COMMENTS, $comments);
         return $stmt;
-    }
-    private function shouldSkipForeachExpr(Expr $foreachExpr, Scope $scope) : bool
-    {
-        if ($foreachExpr instanceof ArrayDimFetch && $foreachExpr->dim instanceof Expr) {
-            $exprType = $this->nodeTypeResolver->getNativeType($foreachExpr->var);
-            $dimType = $this->nodeTypeResolver->getNativeType($foreachExpr->dim);
-            if (!$exprType->hasOffsetValueType($dimType)->yes()) {
-                return \true;
-            }
-        }
-        if ($foreachExpr instanceof Variable) {
-            $variableName = $this->getName($foreachExpr);
-            if (\is_string($variableName) && $this->reservedKeywordAnalyzer->isNativeVariable($variableName)) {
-                return \true;
-            }
-            $ifType = $scope->getNativeType($foreachExpr);
-            if (!$ifType->isArray()->yes()) {
-                return \true;
-            }
-        }
-        return \false;
     }
 }

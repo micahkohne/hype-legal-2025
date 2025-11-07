@@ -7,17 +7,17 @@ use PhpParser\Node\Expr;
 class Exit_ extends Expr
 {
     /* For use in "kind" attribute */
-    public const KIND_EXIT = 1;
-    public const KIND_DIE = 2;
+    const KIND_EXIT = 1;
+    const KIND_DIE = 2;
     /** @var null|Expr Expression */
-    public ?Expr $expr;
+    public $expr;
     /**
      * Constructs an exit() node.
      *
-     * @param null|Expr $expr Expression
-     * @param array<string, mixed> $attributes Additional attributes
+     * @param null|Expr $expr       Expression
+     * @param array                    $attributes Additional attributes
      */
-    public function __construct(?Expr $expr = null, array $attributes = [])
+    public function __construct(Expr $expr = null, array $attributes = [])
     {
         $this->attributes = $attributes;
         $this->expr = $expr;

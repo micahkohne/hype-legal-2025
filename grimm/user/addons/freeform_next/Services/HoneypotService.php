@@ -10,22 +10,18 @@ use Solspace\Addons\FreeformNext\Model\SpamReasonModel;
 
 class HoneypotService
 {
-    const FORM_HONEYPOT_KEY  = 'freeformHoneypotHashList';
-    const FORM_HONEYPOT_NAME = 'form_name_handle';
+    public const FORM_HONEYPOT_KEY  = 'freeformHoneypotHashList';
+    public const FORM_HONEYPOT_NAME = 'form_name_handle';
 
-    const MAX_HONEYPOT_TTL   = 10800; // 3 Hours
-    const MAX_HONEYPOT_COUNT = 100;   // Limit the number of maximum honeypot values per session
-
-    /** @var array */
-    private static $validHoneypots = [];
+    public const MAX_HONEYPOT_TTL   = 10800; // 3 Hours
+    public const MAX_HONEYPOT_COUNT = 100;   // Limit the number of maximum honeypot values per session
+    private static array $validHoneypots = [];
 
     /** @var Honeypot[] */
     private array $honeypotCache = [];
 
     /**
      * Adds honeypot javascript to forms
-     *
-     * @param FormRenderObject $renderObject
      */
     public function addFormJavascript(FormRenderObject $renderObject): void
     {
@@ -39,30 +35,26 @@ class HoneypotService
 
     /**
      * Assembles a honeypot field
-     *
-     * @param FormRenderObject $renderObject
      */
     public function addHoneyPotInputToForm(FormRenderObject $renderObject): void
     {
         $renderObject->appendToOutput($this->getHoneypotInput($renderObject->getForm()));
     }
 
-    /**
-     * @param Form $form
-     */
     public function validateFormHoneypot(Form $form): void
     {
         if (!$this->getSettingsService()->getSettingsModel()->isSpamProtectionEnabled()) {
             return;
         }
 
+        /** @var array $postValues */
         $postValues = $_POST;
 
         if(!$this->getSettingsService()->getSettingsModel()->isFreeformHoneypotEnhanced()) {
             if (array_key_exists(Honeypot::NAME_PREFIX, $postValues) && $postValues[Honeypot::NAME_PREFIX] === '') {
                 return;
             }
-        } else {
+		} else {
             foreach ($postValues as $key => $value) {
                 if (str_starts_with($key, Honeypot::NAME_PREFIX)) {
                     if (\in_array($key, self::$validHoneypots, true)) {
@@ -70,16 +62,15 @@ class HoneypotService
                     }
 
                     $honeypotList = $this->getHoneypotList();
-
                     foreach ($honeypotList as $honeypot) {
                         $hasMatchingName = $key === $honeypot->getName();
                         $hasMatchingHash = $value === $honeypot->getHash();
                         if ($hasMatchingName && $hasMatchingHash) {
                             self::$validHoneypots[] = $key;
 
-                              $this->removeHoneypot($honeypot);
+                            $this->removeHoneypot($honeypot);
 
-                              return;
+                            return;
                         }
                     }
                 }
@@ -98,8 +89,6 @@ class HoneypotService
     }
 
     /**
-     * @param Form $form
-     *
      * @return string
      */
     public function getHoneypotJavascriptScript(Form $form): string
@@ -110,8 +99,6 @@ class HoneypotService
     }
 
     /**
-     * @param Form $form
-     *
      * @return Honeypot
      */
     public function getHoneypot(Form $form)
@@ -147,7 +134,7 @@ class HoneypotService
      */
     private function getHoneypotList()
     {
-        $sessionHoneypotList = json_decode((string) $this->getSession()->get(self::FORM_HONEYPOT_KEY, '[]'), true);
+        $sessionHoneypotList = json_decode($this->getSession()->get(self::FORM_HONEYPOT_KEY, '[]'), true);
         if (!empty($sessionHoneypotList)) {
             foreach ($sessionHoneypotList as $index => $unserialized) {
                 $sessionHoneypotList[$index] = Honeypot::createFromUnserializedData($unserialized);
@@ -158,11 +145,9 @@ class HoneypotService
     }
 
     /**
-     * @param array $honeypotList
-     *
      * @return array
      */
-    private function weedOutOldHoneypots(array $honeypotList): array
+    private function weedOutOldHoneypots(array $honeypotList)
     {
 		if (!$this->isEnhanced()) {
 			return [];
@@ -187,8 +172,6 @@ class HoneypotService
 
     /**
      * Removes a honeypot from the list once it has been validated
-     *
-     * @param Honeypot $honeypot
      */
     private function removeHoneypot(Honeypot $honeypot): void
     {
@@ -205,9 +188,6 @@ class HoneypotService
         $this->updateHoneypotList($list);
     }
 
-    /**
-     * @param array $honeypotList
-     */
     private function updateHoneypotList(array $honeypotList): void
     {
         $this->getSession()->set(self::FORM_HONEYPOT_KEY, json_encode($honeypotList));
@@ -236,8 +216,6 @@ class HoneypotService
     }
 
     /**
-     * @param Form $form
-     *
      * @return string
      */
     public function getHoneypotInput(Form $form): string
@@ -245,7 +223,7 @@ class HoneypotService
         static $honeypotHashes = [];
 
         if (!isset($honeypotHashes[$form->getHash()])) {
-            $random                           = time() . mt_rand(0, 999) . (time() + 999);
+            $random                           = time() . random_int(0, 999) . (time() + 999);
             $honeypotHashes[$form->getHash()] = substr(sha1($random), 0, 6);
         }
 

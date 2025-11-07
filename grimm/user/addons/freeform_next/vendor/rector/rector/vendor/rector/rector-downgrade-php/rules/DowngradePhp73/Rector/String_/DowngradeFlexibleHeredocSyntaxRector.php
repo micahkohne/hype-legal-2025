@@ -4,11 +4,11 @@ declare (strict_types=1);
 namespace Rector\DowngradePhp73\Rector\String_;
 
 use PhpParser\Node;
-use PhpParser\Node\Scalar\InterpolatedString;
+use PhpParser\Node\Scalar\Encapsed;
 use PhpParser\Node\Scalar\String_;
+use Rector\Core\Rector\AbstractRector;
 use Rector\DowngradePhp73\Tokenizer\FollowedByNewlineOnlyMaybeWithSemicolonAnalyzer;
 use Rector\NodeTypeResolver\Node\AttributeKey;
-use Rector\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -18,8 +18,9 @@ final class DowngradeFlexibleHeredocSyntaxRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\DowngradePhp73\Tokenizer\FollowedByNewlineOnlyMaybeWithSemicolonAnalyzer
      */
-    private FollowedByNewlineOnlyMaybeWithSemicolonAnalyzer $followedByNewlineOnlyMaybeWithSemicolonAnalyzer;
+    private $followedByNewlineOnlyMaybeWithSemicolonAnalyzer;
     /**
      * @var int[]
      */
@@ -51,10 +52,10 @@ CODE_SAMPLE
      */
     public function getNodeTypes() : array
     {
-        return [String_::class, InterpolatedString::class];
+        return [String_::class, Encapsed::class];
     }
     /**
-     * @param InterpolatedString|String_ $node
+     * @param Encapsed|String_ $node
      */
     public function refactor(Node $node) : ?Node
     {
@@ -67,12 +68,8 @@ CODE_SAMPLE
         if ($docIndentation === '' && $this->followedByNewlineOnlyMaybeWithSemicolonAnalyzer->isFollowed($this->file, $node)) {
             return null;
         }
-        $node->setAttribute(AttributeKey::DOC_INDENTATION, '__REMOVED__');
+        $node->setAttribute(AttributeKey::DOC_INDENTATION, '');
         $node->setAttribute(AttributeKey::ORIGINAL_NODE, null);
-        $tokens = $this->file->getOldTokens();
-        if (isset($tokens[$node->getEndTokenPos()], $tokens[$node->getEndTokenPos() + 1])) {
-            $tokens[$node->getEndTokenPos() + 1]->text = "\n" . $tokens[$node->getEndTokenPos() + 1]->text;
-        }
         return $node;
     }
 }

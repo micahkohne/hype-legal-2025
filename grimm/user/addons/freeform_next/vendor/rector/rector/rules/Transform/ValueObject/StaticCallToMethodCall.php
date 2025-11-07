@@ -7,25 +7,29 @@ use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Name;
 use PHPStan\Type\ObjectType;
-use Rector\Validation\RectorAssert;
+use Rector\Core\Validation\RectorAssert;
 final class StaticCallToMethodCall
 {
     /**
      * @readonly
+     * @var string
      */
-    private string $staticClass;
+    private $staticClass;
     /**
      * @readonly
+     * @var string
      */
-    private string $staticMethod;
+    private $staticMethod;
     /**
      * @readonly
+     * @var string
      */
-    private string $classType;
+    private $classType;
     /**
      * @readonly
+     * @var string
      */
-    private string $methodName;
+    private $methodName;
     public function __construct(string $staticClass, string $staticMethod, string $classType, string $methodName)
     {
         $this->staticClass = $staticClass;

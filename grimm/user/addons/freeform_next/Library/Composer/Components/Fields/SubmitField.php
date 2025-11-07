@@ -22,13 +22,13 @@ class SubmitField extends AbstractField implements SingleValueInterface, InputOn
 {
     use HashAsHandleTrait;
 
-    const PREVIOUS_PAGE_INPUT_NAME = "form_previous_page_button";
-    const SUBMIT_INPUT_NAME        = "form_page_submit";
+    public const PREVIOUS_PAGE_INPUT_NAME = "form_previous_page_button";
+    public const SUBMIT_INPUT_NAME        = "form_page_submit";
 
-    const POSITION_LEFT   = "left";
-    const POSITION_CENTER = "center";
-    const POSITION_RIGHT  = "right";
-    const POSITION_SPREAD = "spread";
+    public const POSITION_LEFT   = "left";
+    public const POSITION_CENTER = "center";
+    public const POSITION_RIGHT  = "right";
+    public const POSITION_SPREAD = "spread";
 
     use SingleStaticValueTrait;
 

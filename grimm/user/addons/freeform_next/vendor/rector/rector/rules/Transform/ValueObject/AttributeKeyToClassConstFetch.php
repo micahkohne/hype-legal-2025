@@ -7,21 +7,24 @@ final class AttributeKeyToClassConstFetch
 {
     /**
      * @readonly
+     * @var string
      */
-    private string $attributeClass;
+    private $attributeClass;
     /**
      * @readonly
+     * @var string
      */
-    private string $attributeKey;
+    private $attributeKey;
     /**
      * @readonly
+     * @var string
      */
-    private string $constantClass;
+    private $constantClass;
     /**
      * @var array<string, string>
      * @readonly
      */
-    private array $valuesToConstantsMap;
+    private $valuesToConstantsMap;
     /**
      * @param array<string, string> $valuesToConstantsMap
      */

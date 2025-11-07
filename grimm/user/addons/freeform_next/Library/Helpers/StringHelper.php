@@ -18,22 +18,19 @@ class StringHelper
      * with their respective value counterparts from $values array
      *
      * @param string $string
-     * @param array  $values
      *
      * @return string
      */
     public static function replaceValues($string, array $values)
     {
         foreach (self::flattenArrayValues($values) as $key => $value) {
-            $string = preg_replace("/\{$key\}/", (string) $value, (string) $string);
+            $string = preg_replace("/\{$key\}/", $value, $string);
         }
 
         return $string;
     }
 
     /**
-     * @param array $values
-     *
      * @return array
      */
     public static function flattenArrayValues(array $values): array
@@ -60,7 +57,7 @@ class StringHelper
      */
     public static function humanize($string): string
     {
-        $string = trim(strtolower((string) preg_replace(['/([A-Z])/', "/[_\\s]+/"], ['_$1', ' '], $string)));
+        $string = trim(strtolower(preg_replace(['/([A-Z])/', "/[_\\s]+/"], ['_$1', ' '], $string)));
 
         return $string;
     }
@@ -83,7 +80,6 @@ class StringHelper
 
     /**
      * @param string $string
-     * @param array  $noStrip
      *
      * @return mixed|string
      */
@@ -91,7 +87,7 @@ class StringHelper
     {
         // non-alpha and non-numeric characters become spaces
         $string = preg_replace('/[^a-z0-9' . implode("", $noStrip) . ']+/i', ' ', $string);
-        $string = trim((string) $string);
+        $string = trim($string);
         // uppercase the first character of each word
         $string = ucwords($string);
         $string = str_replace(' ', '', $string);
@@ -105,13 +101,12 @@ class StringHelper
      * Returns the truncated string
      *
      * @param int    $truncateLength
-     * @param string $truncator
      *
      * @return string
      */
     public static function truncateString($string, $truncateLength = 30, string $truncator = '...'): string
     {
-        $string       = trim((string) $string);
+        $string       = trim($string);
         $stringLength = strlen($string);
 
         if ($stringLength > $truncateLength + strlen($truncator)) {

@@ -114,7 +114,7 @@ class FreeformHelper
             $columns = $args[1];
 
             if ($version === FREEFORM_EXPRESS) {
-                $columns = array_slice($columns, 0, count($columns) - 2, true);
+                $columns = array_slice($columns, 0, (is_countable($columns) ? count($columns) : 0) - 2, true);
             }
 
             $return = $columns;
@@ -126,8 +126,8 @@ class FreeformHelper
                 $newColumns = [];
 
                 foreach ($columns as $column) {
-                    $data = array_slice($column, 0, count($column) - 2, true);
-                    $data[1]['content'] = strip_tags((string) $data[1]['content'], '<span>');
+                    $data = array_slice($column, 0, (is_countable($column) ? count($column) : 0) - 2, true);
+                    $data[1]['content'] = strip_tags($data[1]['content'], '<span>');
 
                     $newColumns[] = $data;
                 }

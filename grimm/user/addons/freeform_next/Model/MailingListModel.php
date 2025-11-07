@@ -3,7 +3,7 @@
 namespace Solspace\Addons\FreeformNext\Model;
 
 use DateTime;
-use ExpressionEngine\Service\Model\Model;
+use EllisLab\ExpressionEngine\Service\Model\Model;
 use Solspace\Addons\FreeformNext\Library\Integrations\DataObjects\FieldObject;
 
 /**
@@ -20,8 +20,8 @@ class MailingListModel extends Model
 {
     use TimestampableTrait;
 
-    const MODEL = 'freeform_next:MailingListModel';
-    const TABLE = 'freeform_next_mailing_lists';
+    public const MODEL = 'freeform_next:MailingListModel';
+    public const TABLE = 'freeform_next_mailing_lists';
 
     protected static $_primary_key = 'id';
     protected static $_table_name  = self::TABLE;

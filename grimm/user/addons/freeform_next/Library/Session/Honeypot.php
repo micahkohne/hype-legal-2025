@@ -12,23 +12,18 @@
 namespace Solspace\Addons\FreeformNext\Library\Session;
 
 use JsonSerializable;
-
 class Honeypot implements JsonSerializable
 {
-    const NAME_PREFIX = "freeform_form_handle";
+    public const NAME_PREFIX = "freeform_form_handle";
 
-    /** @var string */
-    private $name;
+    private string $name;
 
-    /** @var string */
-    private $hash;
+    private string $hash;
 
     /** @var int */
     private $timestamp;
 
     /**
-     * @param array $data
-     *
      * @return Honeypot
      */
     public static function createFromUnserializedData(array $data): \Solspace\Addons\FreeformNext\Library\Session\Honeypot
@@ -54,7 +49,7 @@ class Honeypot implements JsonSerializable
     /**
      * @return string
      */
-    public function getName()
+    public function getName(): string
     {
         return $this->name;
     }
@@ -62,7 +57,7 @@ class Honeypot implements JsonSerializable
     /**
      * @return string
      */
-    public function getHash()
+    public function getHash(): string
     {
         return $this->hash;
     }
@@ -100,8 +95,6 @@ class Honeypot implements JsonSerializable
     }
 
     /**
-     * @param int $length
-     *
      * @return string
      */
     private function generateHash(int $length = 9): string

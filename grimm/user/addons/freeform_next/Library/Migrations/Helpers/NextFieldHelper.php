@@ -25,7 +25,7 @@ use Solspace\Addons\FreeformNext\Library\Logging\LoggerInterface;
 
 class NextFieldHelper
 {
-    const STRICT_MODE = true;
+    public const STRICT_MODE = true;
 
     /** @var array */
     public $errors;
@@ -46,7 +46,7 @@ class NextFieldHelper
         return true;
     }
 
-    public function saveField($classicField)
+    public function saveField(array $classicField)
     {
         $this->classicFieldHelper = $this->getClassicFieldHelper();
         $data = $this->convertData($classicField);
@@ -167,7 +167,7 @@ class NextFieldHelper
         return true;
     }
 
-    private function convertData(array $classicField): false|array
+    private function convertData(array $classicField): bool|array
     {
         if ($classicField['field_type'] == 'text' && ($this->containsEmail($classicField['field_name']) || $this->containsEmailValidation($classicField))) {
             $classicField['field_type'] = 'email';
@@ -224,7 +224,7 @@ class NextFieldHelper
 
     private function containsEmail($handle): bool
     {
-        if (str_contains((string) $handle, 'email')) {
+        if (str_contains($handle, 'email')) {
             return true;
         }
 
@@ -249,10 +249,7 @@ class NextFieldHelper
         return $classicField['field_type'];
     }
 
-    /**
-     * @return mixed[]
-     */
-    private function setTypes(array $classicField): array
+    private function setTypes(array $classicField)
     {
         $nextTypeName = $this->getNextFieldTypeFromClassicFieldType($this->getClassicFieldType($classicField));
 
@@ -471,10 +468,7 @@ class NextFieldHelper
         return '';
     }
 
-    /**
-     * @return mixed[]
-     */
-    private function getDataValues($data): array
+    private function getDataValues($data)
     {
         $values = [];
 
@@ -489,10 +483,7 @@ class NextFieldHelper
         return $values;
     }
 
-    /**
-     * @return mixed[]
-     */
-    private function getDataLabels($data): array
+    private function getDataLabels($data)
     {
         $labels = [];
 
@@ -508,7 +499,7 @@ class NextFieldHelper
     }
 
     /**
-     * @return list<'0'>
+     * @return '0'[]
      */
     private function getEmptyDataArray($data): array
     {
@@ -521,14 +512,14 @@ class NextFieldHelper
         return $array;
     }
 
-    private function getCountriesValues($nextValueField, array $classicField): array
+    private function getCountriesValues($nextValueField, array $classicField)
     {
         $countries = $classicField['countries'];
 
         return $this->getDataValues($countries);
     }
 
-    private function getCountriesLabels($nextValueField, array $classicField): array
+    private function getCountriesLabels($nextValueField, array $classicField)
     {
         $countries = $classicField['countries'];
 
@@ -542,14 +533,14 @@ class NextFieldHelper
         return $this->getEmptyDataArray($countries);
     }
 
-    private function getStatesValues($nextValueField, array $classicField): array
+    private function getStatesValues($nextValueField, array $classicField)
     {
         $states = $classicField['states'];
 
         return $this->getDataValues($states);
     }
 
-    private function getStatesLabels($nextValueField, array $classicField): array
+    private function getStatesLabels($nextValueField, array $classicField)
     {
         $states = $classicField['states'];
 
@@ -563,14 +554,14 @@ class NextFieldHelper
         return $this->getEmptyDataArray($states);
     }
 
-    private function getProvincesValues($nextValueField, array $classicField): array
+    private function getProvincesValues($nextValueField, array $classicField)
     {
         $states = $classicField['provinces'];
 
         return $this->getDataValues($states);
     }
 
-    private function getProvincesLabels($nextValueField, array $classicField): array
+    private function getProvincesLabels($nextValueField, array $classicField)
     {
         $states = $classicField['provinces'];
 
@@ -585,12 +576,10 @@ class NextFieldHelper
     }
 
     /* Files */
-    /**
-     * @return 'gif'[]|'image'[]|'pdf'[]
-     */
-    private function getNextFileAllowedTypes($value): array
+
+    private function getNextFileAllowedTypes($value)
     {
-        $legacyTypes = explode("|", (string) $value);
+        $legacyTypes = explode("|", $value);
 
         if (!$legacyTypes) {
             return [];
@@ -623,9 +612,7 @@ class NextFieldHelper
 
 
     /* Radio */
-    /**
-     * @return '0'[]
-     */
+
     private function getNextRadioCheckedByDefault($value, array $classicField): array
     {
         $channelField = $this->classicFieldHelper->isCustomValuesChannelRadio($classicField);
@@ -637,7 +624,7 @@ class NextFieldHelper
         $valuesInTextArea = $this->classicFieldHelper->isCustomValuesTextAreaRadio($classicField);
 
         if ($valuesInTextArea) {
-            $value = explode("\n", (string) $value);
+            $value = explode("\n", $value);
         }
 
         $values = [];
@@ -653,9 +640,6 @@ class NextFieldHelper
         return $values;
     }
 
-    /**
-     * @return mixed[]
-     */
     private function getNextRadioLabels($value, array $classicField): array
     {
         $channelField = $this->classicFieldHelper->isCustomValuesChannelRadio($classicField);
@@ -667,7 +651,7 @@ class NextFieldHelper
         $valuesInTextArea = $this->classicFieldHelper->isCustomValuesTextAreaRadio($classicField);
 
         if ($valuesInTextArea) {
-            return  explode("\n", (string) $value);
+            return  explode("\n", $value);
         }
 
         $labels = [];
@@ -683,9 +667,6 @@ class NextFieldHelper
         return $labels;
     }
 
-    /**
-     * @return mixed[]
-     */
     private function getNextRadioValues($value, array $classicField): array
     {
         $channelField = $this->classicFieldHelper->isCustomValuesChannelRadio($classicField);
@@ -697,7 +678,7 @@ class NextFieldHelper
         $valuesInTextArea = $this->classicFieldHelper->isCustomValuesTextAreaRadio($classicField);
 
         if ($valuesInTextArea) {
-            return $arr = explode("\n", (string) $value);
+            return $arr = explode("\n", $value);
         }
 
         $values = [];
@@ -737,9 +718,7 @@ class NextFieldHelper
 
 
     /* Multiselect */
-    /**
-     * @return '0'[]
-     */
+
     private function getNextMultiselectCheckedByDefault($value, array $classicField): array
     {
         $channelField = $this->classicFieldHelper->isCustomValuesChannelMultiselect($classicField);
@@ -751,7 +730,7 @@ class NextFieldHelper
         $valuesInTextArea = $this->classicFieldHelper->isCustomValuesTextAreaMultiselect($classicField);
 
         if ($valuesInTextArea) {
-            $value = explode("\n", (string) $value);
+            $value = explode("\n", $value);
         }
 
         $values = [];
@@ -767,9 +746,6 @@ class NextFieldHelper
         return $values;
     }
 
-    /**
-     * @return mixed[]
-     */
     private function getNextMultiselectLabels($value, array $classicField): array
     {
         $channelField = $this->classicFieldHelper->isCustomValuesChannelMultiselect($classicField);
@@ -781,7 +757,7 @@ class NextFieldHelper
         $valuesInTextArea = $this->classicFieldHelper->isCustomValuesTextAreaMultiselect($classicField);
 
         if ($valuesInTextArea) {
-            return $arr = explode("\n", (string) $value);
+            return $arr = explode("\n", $value);
         }
 
         $labels = [];
@@ -797,9 +773,6 @@ class NextFieldHelper
         return $labels;
     }
 
-    /**
-     * @return mixed[]
-     */
     private function getNextMultiselectValues($value, array $classicField): array
     {
         $channelField = $this->classicFieldHelper->isCustomValuesChannelMultiselect($classicField);
@@ -811,7 +784,7 @@ class NextFieldHelper
         $valuesInTextArea = $this->classicFieldHelper->isCustomValuesTextAreaMultiselect($classicField);
 
         if ($valuesInTextArea) {
-            return $arr = explode("\n", (string) $value);
+            return $arr = explode("\n", $value);
         }
 
         $values = [];
@@ -851,9 +824,7 @@ class NextFieldHelper
 
 
     /* Checkbox Group */
-    /**
-     * @return '0'[]
-     */
+
     private function getNextCheckoutboxGroupCheckedByDefault($value, array $classicField): array
     {
         $channelField = $this->classicFieldHelper->isCustomValuesChannelCheckboxGroup($classicField);
@@ -865,7 +836,7 @@ class NextFieldHelper
         $valuesInTextArea = $this->classicFieldHelper->isCustomValuesTextAreaCheckboxGroup($classicField);
 
         if ($valuesInTextArea) {
-            $value = explode("\n", (string) $value);
+            $value = explode("\n", $value);
         }
 
         $values = [];
@@ -881,9 +852,6 @@ class NextFieldHelper
         return $values;
     }
 
-    /**
-     * @return mixed[]
-     */
     private function getNextCheckboxGroupLabels($value, array $classicField): array
     {
         $channelField = $this->classicFieldHelper->isCustomValuesChannelCheckboxGroup($classicField);
@@ -895,7 +863,7 @@ class NextFieldHelper
         $valuesInTextArea = $this->classicFieldHelper->isCustomValuesTextAreaCheckboxGroup($classicField);
 
         if ($valuesInTextArea) {
-            return $arr = explode("\n", (string) $value);
+            return $arr = explode("\n", $value);
         }
 
         $labels = [];
@@ -911,9 +879,6 @@ class NextFieldHelper
         return $labels;
     }
 
-    /**
-     * @return mixed[]
-     */
     private function getNextCheckboxGroupValues($value, array $classicField): array
     {
         $channelField = $this->classicFieldHelper->isCustomValuesChannelCheckboxGroup($classicField);
@@ -925,7 +890,7 @@ class NextFieldHelper
         $valuesInTextArea = $this->classicFieldHelper->isCustomValuesTextAreaCheckboxGroup($classicField);
 
         if ($valuesInTextArea) {
-            return $arr = explode("\n", (string) $value);
+            return $arr = explode("\n", $value);
         }
 
         $values = [];
@@ -965,9 +930,7 @@ class NextFieldHelper
 
 
     /* Labels */
-    /**
-     * @return int[]|'0'[]
-     */
+
     private function getNextSelectCheckedByDefault($value, array $classicField): array
     {
         $channelField = $this->classicFieldHelper->isCustomChannelForSelect($classicField);
@@ -979,7 +942,7 @@ class NextFieldHelper
         $valuesInTextArea = $this->classicFieldHelper->isCustomValuesTextAreaSelect($classicField);
 
         if ($valuesInTextArea) {
-            $value = explode("\n", (string) $value);
+            $value = explode("\n", $value);
         }
 
         $values = [];
@@ -995,9 +958,6 @@ class NextFieldHelper
         return $values;
     }
 
-    /**
-     * @return mixed[]
-     */
     private function getNextSelectLabels($value, array $classicField): array
     {
         $channelField = $this->classicFieldHelper->isCustomChannelForSelect($classicField);
@@ -1009,7 +969,7 @@ class NextFieldHelper
         $valuesInTextArea = $this->classicFieldHelper->isCustomValuesTextAreaSelect($classicField);
 
         if ($valuesInTextArea) {
-            return  explode("\n", (string) $value);
+            return  explode("\n", $value);
         }
 
         $labels = [];
@@ -1025,9 +985,6 @@ class NextFieldHelper
         return $labels;
     }
 
-    /**
-     * @return mixed[]
-     */
     private function getNextSelectValues($value, array $classicField): array
     {
         $channelField = $this->classicFieldHelper->isCustomChannelForSelect($classicField);
@@ -1039,7 +996,7 @@ class NextFieldHelper
         $valuesInTextArea = $this->classicFieldHelper->isCustomValuesTextAreaSelect($classicField);
 
         if ($valuesInTextArea) {
-            return explode("\n", (string) $value);
+            return explode("\n", $value);
         }
 
         $values = [];
@@ -1085,7 +1042,7 @@ class NextFieldHelper
         return false;
     }
 
-    private function addToErrors(string $message): void
+    private function addToErrors(string $message)
     {
         $this->errors[] = $message;
 

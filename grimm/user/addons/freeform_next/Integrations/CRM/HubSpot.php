@@ -11,7 +11,6 @@
 
 namespace Solspace\Addons\FreeformNext\Integrations\CRM;
 
-use Override;
 use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\BadResponseException;
@@ -24,9 +23,9 @@ use Solspace\Addons\FreeformNext\Library\Logging\LoggerInterface;
 
 class HubSpot extends AbstractCRMIntegration
 {
-    const TITLE           = 'HubSpot (legacy)';
-    const SETTING_API_KEY = 'api_key';
-    const LOG_CATEGORY    = 'HubSpot_legacy';
+    public const TITLE           = 'HubSpot (legacy)';
+    public const SETTING_API_KEY = 'api_key';
+    public const LOG_CATEGORY    = 'HubSpot_legacy';
 
     /**
      * Returns a list of additional settings for this integration
@@ -34,7 +33,6 @@ class HubSpot extends AbstractCRMIntegration
      *
      * @return SettingBlueprint[]
      */
-    #[Override]
     public static function getSettingBlueprints(): array
     {
         return [
@@ -55,7 +53,7 @@ class HubSpot extends AbstractCRMIntegration
      *
      * @return bool
      */
-    public function pushObject(array $keyValueList, $formFields = NULL): bool
+    public function pushObject(array $keyValueList, ?array $formFields = NULL): bool
     {
         $client = new Client();
 
@@ -189,7 +187,7 @@ class HubSpot extends AbstractCRMIntegration
      *
      * @return FieldObject[]
      */
-    public function fetchFields(): array
+    public function fetchFields()
     {
         $fieldList = [];
         $this->extractCustomFields(
@@ -228,7 +226,7 @@ class HubSpot extends AbstractCRMIntegration
     /**
      * A method that initiates the authentication
      */
-    public function initiateAuthentication()
+    public function initiateAuthentication(): void
     {
     }
 
@@ -250,11 +248,6 @@ class HubSpot extends AbstractCRMIntegration
         return 'https://api.hubapi.com/';
     }
 
-    /**
-     * @param string $endpoint
-     * @param string $dataType
-     * @param array  $fieldList
-     */
     private function extractCustomFields(string $endpoint, string $dataType, array &$fieldList): void
     {
         $client = new Client();

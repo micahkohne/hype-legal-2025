@@ -3,7 +3,7 @@
 namespace Solspace\Addons\FreeformNext\Model;
 
 use DateTime;
-use ExpressionEngine\Service\Model\Model;
+use EllisLab\ExpressionEngine\Service\Model\Model;
 
 /**
  * @property int       $id
@@ -18,8 +18,8 @@ use ExpressionEngine\Service\Model\Model;
  */
 class CrmFieldModel extends Model
 {
-    const MODEL = 'freeform_next:CrmFieldModel';
-    const TABLE = 'freeform_next_crm_fields';
+    public const MODEL = 'freeform_next:CrmFieldModel';
+    public const TABLE = 'freeform_next_crm_fields';
 
     protected static $_primary_key = 'id';
     protected static $_table_name  = self::TABLE;

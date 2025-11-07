@@ -2,7 +2,6 @@
 
 namespace Solspace\Addons\FreeformNext\Library\Pro\Fields;
 
-use Override;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\AbstractField;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Fields\Interfaces\SingleValueInterface;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Fields\Traits\SingleValueTrait;
@@ -11,8 +10,8 @@ use Solspace\Addons\FreeformNext\Library\Helpers\HashHelper;
 
 class RatingField extends AbstractField implements SingleValueInterface
 {
-    const MIN_VALUE = 3;
-    const MAX_VALUE = 10;
+    public const MIN_VALUE = 3;
+    public const MAX_VALUE = 10;
 
     use SingleValueTrait;
 
@@ -81,7 +80,6 @@ class RatingField extends AbstractField implements SingleValueInterface
     /**
      * @inheritDoc
      */
-    #[Override]
     public function getConstraints(): array
     {
         return [

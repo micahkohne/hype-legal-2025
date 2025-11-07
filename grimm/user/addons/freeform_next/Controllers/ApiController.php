@@ -25,16 +25,15 @@ use Stringy\Stringy;
 
 class ApiController extends Controller
 {
-    const TYPE_FIELDS            = 'fields';
-    const TYPE_NOTIFICATIONS     = 'notifications';
-    const TYPE_RESET_SPAM        = 'reset_spam';
-    const TYPE_DUPLICATE         = 'duplicate';
-    const TYPE_SUBMISSION_LAYOUT = 'submission_layout';
-    const TYPE_SUBMISSION_EXPORT = 'submission_export';
+    public const TYPE_FIELDS            = 'fields';
+    public const TYPE_NOTIFICATIONS     = 'notifications';
+    public const TYPE_RESET_SPAM        = 'reset_spam';
+    public const TYPE_DUPLICATE         = 'duplicate';
+    public const TYPE_SUBMISSION_LAYOUT = 'submission_layout';
+    public const TYPE_SUBMISSION_EXPORT = 'submission_export';
 
     /**
      * @param string $type
-     * @param array  $args
      *
      * @return View
      * @throws FreeformException
@@ -78,8 +77,6 @@ class ApiController extends Controller
     }
 
     /**
-     * @param array $args
-     *
      * @return View
      */
     public function notifications(array $args = [])
@@ -122,7 +119,6 @@ class ApiController extends Controller
                             "Template '{name}' already exists",
                             ['name' => $templateName . $extension]
                         );
-
                     } else {
                         try {
                             file_put_contents($templatePath, $settings->getEmailTemplateContent());
@@ -242,7 +238,6 @@ class ApiController extends Controller
     }
 
     /**
-     * @param array $args
      *
      * @return View
      * @throws FreeformException
@@ -279,7 +274,7 @@ class ApiController extends Controller
             $headers[] = $item->getLabel();
         }
 
-        fputcsv($output, $headers, escape: '\\');
+        fputcsv($output, $headers);
 
         $limit  = 20;
         $offset = 0;
@@ -307,13 +302,13 @@ class ApiController extends Controller
                     }
 
                     if ($isRemoveNewlines) {
-                        $value = trim((string) preg_replace('/\s+/', ' ', (string) $value));
+                        $value = trim(preg_replace('/\s+/', ' ', $value));
                     }
 
                     $row[] = $value;
                 }
 
-                fputcsv($output, $row, escape: '\\');
+                fputcsv($output, $row);
             }
 
             $attributes->setOffset($attributes->getOffset() + $limit);
@@ -345,15 +340,15 @@ class ApiController extends Controller
     {
         $newHandleBase = $newForm->handle;
 
-        if (str_contains((string) $newForm->handle, '_copy_')) {
-            $newHandleBase = substr((string) $newForm->handle, 0, strpos((string) $newForm->handle, "_copy"));
+        if (str_contains($newForm->handle, '_copy_')) {
+            $newHandleBase = substr($newForm->handle, 0, strpos($newForm->handle, "_copy"));
         }
 
         $newHandle = $newHandleBase . '_copy_' . time();
 
         $composer = $newForm->getComposer();
         $composerJson = $composer->getComposerStateJSON();
-        $composerState = json_decode((string) $composerJson, true);
+        $composerState = json_decode($composerJson, true);
         $composerState['composer']['properties']['form']['handle'] = $newHandle;
         $newForm->layoutJson = json_encode($composerState);
         $newForm->setProperty('handle', $newHandle);
@@ -391,7 +386,7 @@ class ApiController extends Controller
         return $newForm;
     }
 
-    private function getProtectedProperty(string $property, $object): mixed
+    private function getProtectedProperty($property, $object)
     {
         $reflectionClass = new ReflectionClass($object::class);
         $reflectionProperty = $reflectionClass->getProperty($property);

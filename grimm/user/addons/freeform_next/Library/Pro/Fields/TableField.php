@@ -11,9 +11,9 @@ class TableField extends AbstractField implements MultipleValueInterface, MultiD
 {
     use MultipleValueTrait;
 
-    const COLUMN_TYPE_STRING   = 'string';
-    const COLUMN_TYPE_SELECT   = 'select';
-    const COLUMN_TYPE_CHECKBOX = 'checkbox';
+    public const COLUMN_TYPE_STRING   = 'string';
+    public const COLUMN_TYPE_SELECT   = 'select';
+    public const COLUMN_TYPE_CHECKBOX = 'checkbox';
 
     /** @var array */
     protected $layout;
@@ -83,7 +83,7 @@ class TableField extends AbstractField implements MultipleValueInterface, MultiD
      *
      * @return TableField
      */
-    public function setAddButtonLabel($addButtonLabel): static
+    public function setAddButtonLabel($addButtonLabel)
     {
         $this->addButtonLabel = $addButtonLabel;
 
@@ -103,7 +103,7 @@ class TableField extends AbstractField implements MultipleValueInterface, MultiD
      *
      * @return TableField
      */
-    public function setAddButtonMarkup($addButtonMarkup): static
+    public function setAddButtonMarkup($addButtonMarkup)
     {
         $this->addButtonMarkup = $addButtonMarkup;
 
@@ -125,7 +125,7 @@ class TableField extends AbstractField implements MultipleValueInterface, MultiD
      *
      * @return TableField
      */
-    public function setRemoveButtonLabel($removeButtonLabel): static
+    public function setRemoveButtonLabel($removeButtonLabel)
     {
         $this->removeButtonLabel = $removeButtonLabel;
 
@@ -145,7 +145,7 @@ class TableField extends AbstractField implements MultipleValueInterface, MultiD
      *
      * @return TableField
      */
-    public function setRemoveButtonMarkup($removeButtonMarkup): static
+    public function setRemoveButtonMarkup($removeButtonMarkup)
     {
         $this->removeButtonMarkup = $removeButtonMarkup;
 
@@ -157,7 +157,7 @@ class TableField extends AbstractField implements MultipleValueInterface, MultiD
      *
      * @return $this|AbstractField
      */
-    public function setValue($value): static
+    public function setValue($value)
     {
         $layout = $this->getLayout();
 
@@ -231,7 +231,7 @@ class TableField extends AbstractField implements MultipleValueInterface, MultiD
         foreach ($layout as $column) {
             $label = $column['label'] ?? '';
 
-            $output .= '<th>' . htmlentities((string) $label) . '</th>';
+            $output .= '<th>' . htmlentities($label, ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401, 'UTF-8') . '</th>';
         }
         $output .= '<th>&nbsp;</th></tr>';
         $output .= '</thead>';
@@ -244,7 +244,7 @@ class TableField extends AbstractField implements MultipleValueInterface, MultiD
                 $type         = $column['type'] ?? self::COLUMN_TYPE_STRING;
                 $defaultValue = $column['value'] ?? '';
                 $value        = $row[$index] ?? $defaultValue;
-                $value        = htmlentities($value);
+                $value        = htmlentities($value, ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401, 'UTF-8');
 
                 $output .= '<td>';
 
@@ -261,7 +261,7 @@ class TableField extends AbstractField implements MultipleValueInterface, MultiD
                         break;
 
                     case self::COLUMN_TYPE_SELECT:
-                        $options = explode(';', (string) $defaultValue);
+                        $options = explode(';', $defaultValue);
                         $output  .= '<select'
                             . " name=\"{$handle}[$rowIndex][$index]\""
                             . 'class="' . $attributes->getTableSelectInputClass() . '"'

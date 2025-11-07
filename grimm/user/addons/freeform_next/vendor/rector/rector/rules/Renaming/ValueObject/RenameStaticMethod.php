@@ -4,25 +4,29 @@ declare (strict_types=1);
 namespace Rector\Renaming\ValueObject;
 
 use PHPStan\Type\ObjectType;
-use Rector\Validation\RectorAssert;
+use Rector\Core\Validation\RectorAssert;
 final class RenameStaticMethod
 {
     /**
      * @readonly
+     * @var string
      */
-    private string $oldClass;
+    private $oldClass;
     /**
      * @readonly
+     * @var string
      */
-    private string $oldMethod;
+    private $oldMethod;
     /**
      * @readonly
+     * @var string
      */
-    private string $newClass;
+    private $newClass;
     /**
      * @readonly
+     * @var string
      */
-    private string $newMethod;
+    private $newMethod;
     public function __construct(string $oldClass, string $oldMethod, string $newClass, string $newMethod)
     {
         $this->oldClass = $oldClass;

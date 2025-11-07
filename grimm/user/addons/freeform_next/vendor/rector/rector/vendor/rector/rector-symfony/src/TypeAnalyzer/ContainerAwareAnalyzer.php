@@ -3,27 +3,27 @@
 declare (strict_types=1);
 namespace Rector\Symfony\TypeAnalyzer;
 
-use PhpParser\Node\Expr;
+use PhpParser\Node;
 use PHPStan\Type\ObjectType;
 use Rector\NodeTypeResolver\NodeTypeResolver;
-use Rector\Symfony\Enum\SymfonyClass;
 final class ContainerAwareAnalyzer
 {
     /**
      * @readonly
+     * @var \Rector\NodeTypeResolver\NodeTypeResolver
      */
-    private NodeTypeResolver $nodeTypeResolver;
+    private $nodeTypeResolver;
     /**
      * @var ObjectType[]
      */
-    private array $getMethodAwareObjectTypes = [];
+    private $getMethodAwareObjectTypes = [];
     public function __construct(NodeTypeResolver $nodeTypeResolver)
     {
         $this->nodeTypeResolver = $nodeTypeResolver;
-        $this->getMethodAwareObjectTypes = [new ObjectType(SymfonyClass::ABSTRACT_CONTROLLER), new ObjectType(SymfonyClass::CONTROLLER), new ObjectType(SymfonyClass::CONTROLLER_TRAIT)];
+        $this->getMethodAwareObjectTypes = [new ObjectType('Symfony\\Bundle\\FrameworkBundle\\Controller\\AbstractController'), new ObjectType('Symfony\\Bundle\\FrameworkBundle\\Controller\\Controller'), new ObjectType('Symfony\\Bundle\\FrameworkBundle\\Controller\\ControllerTrait')];
     }
-    public function isGetMethodAwareType(Expr $expr) : bool
+    public function isGetMethodAwareType(Node $node) : bool
     {
-        return $this->nodeTypeResolver->isObjectTypes($expr, $this->getMethodAwareObjectTypes);
+        return $this->nodeTypeResolver->isObjectTypes($node, $this->getMethodAwareObjectTypes);
     }
 }

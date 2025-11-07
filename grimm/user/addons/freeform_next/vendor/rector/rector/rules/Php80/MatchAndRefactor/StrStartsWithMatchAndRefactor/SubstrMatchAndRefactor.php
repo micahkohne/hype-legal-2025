@@ -9,32 +9,36 @@ use PhpParser\Node\Expr\BinaryOp\Identical;
 use PhpParser\Node\Expr\BinaryOp\NotEqual;
 use PhpParser\Node\Expr\BinaryOp\NotIdentical;
 use PhpParser\Node\Expr\FuncCall;
-use PhpParser\Node\Scalar\Int_;
+use PhpParser\Node\Scalar\LNumber;
 use PhpParser\Node\Scalar\String_;
+use Rector\Core\PhpParser\Comparing\NodeComparator;
+use Rector\Core\PhpParser\Node\Value\ValueResolver;
 use Rector\NodeNameResolver\NodeNameResolver;
 use Rector\Php80\Contract\StrStartWithMatchAndRefactorInterface;
 use Rector\Php80\NodeFactory\StrStartsWithFuncCallFactory;
 use Rector\Php80\ValueObject\StrStartsWith;
-use Rector\PhpParser\Comparing\NodeComparator;
-use Rector\PhpParser\Node\Value\ValueResolver;
 final class SubstrMatchAndRefactor implements StrStartWithMatchAndRefactorInterface
 {
     /**
      * @readonly
+     * @var \Rector\NodeNameResolver\NodeNameResolver
      */
-    private NodeNameResolver $nodeNameResolver;
+    private $nodeNameResolver;
     /**
      * @readonly
+     * @var \Rector\Core\PhpParser\Node\Value\ValueResolver
      */
-    private ValueResolver $valueResolver;
+    private $valueResolver;
     /**
      * @readonly
+     * @var \Rector\Core\PhpParser\Comparing\NodeComparator
      */
-    private NodeComparator $nodeComparator;
+    private $nodeComparator;
     /**
      * @readonly
+     * @var \Rector\Php80\NodeFactory\StrStartsWithFuncCallFactory
      */
-    private StrStartsWithFuncCallFactory $strStartsWithFuncCallFactory;
+    private $strStartsWithFuncCallFactory;
     public function __construct(NodeNameResolver $nodeNameResolver, ValueResolver $valueResolver, NodeComparator $nodeComparator, StrStartsWithFuncCallFactory $strStartsWithFuncCallFactory)
     {
         $this->nodeNameResolver = $nodeNameResolver;
@@ -104,17 +108,17 @@ final class SubstrMatchAndRefactor implements StrStartWithMatchAndRefactorInterf
         if (!$this->valueResolver->isValue($secondArg->value, 0)) {
             return \false;
         }
-        $expr = $strStartsWith->getNeedleExpr();
-        if (!$expr instanceof String_) {
+        $hardcodedStringNeedle = $strStartsWith->getNeedleExpr();
+        if (!$hardcodedStringNeedle instanceof String_) {
             return \false;
         }
         if (\count($substrFuncCall->getArgs()) < 3) {
             return \false;
         }
         $lNumberLength = $substrFuncCall->getArgs()[2]->value;
-        if (!$lNumberLength instanceof Int_) {
+        if (!$lNumberLength instanceof LNumber) {
             return \false;
         }
-        return $lNumberLength->value === \strlen($expr->value);
+        return $lNumberLength->value === \strlen($hardcodedStringNeedle->value);
     }
 }

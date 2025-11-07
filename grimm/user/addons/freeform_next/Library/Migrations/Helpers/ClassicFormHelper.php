@@ -90,6 +90,6 @@ class ClassicFormHelper extends AddonBuilder
     {
         $composer = $this->model('composer')->get_row($composerId);
 
-        return json_decode((string) $composer['composer_data'], TRUE);
+        return json_decode($composer['composer_data'], TRUE);
     }
 }

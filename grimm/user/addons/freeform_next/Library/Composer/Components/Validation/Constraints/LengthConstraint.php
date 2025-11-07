@@ -6,9 +6,9 @@ use Solspace\Addons\FreeformNext\Library\Composer\Components\Validation\Errors\C
 
 class LengthConstraint implements ConstraintInterface
 {
-    private readonly ?int $min;
+    private ?int $min = null;
 
-    private readonly ?int $max;
+    private ?int $max = null;
 
     /**
      * NumericConstraint constructor.
@@ -37,7 +37,7 @@ class LengthConstraint implements ConstraintInterface
     {
         $violationList = new ConstraintViolationList();
 
-        $length     = strlen((string) $value);
+        $length     = strlen($value);
         $minEnabled = $this->min !== null;
         $maxEnabled = $this->max !== null;
 

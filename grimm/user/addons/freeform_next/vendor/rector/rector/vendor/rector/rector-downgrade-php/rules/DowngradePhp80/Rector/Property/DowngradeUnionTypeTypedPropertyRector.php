@@ -6,8 +6,8 @@ namespace Rector\DowngradePhp80\Rector\Property;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Property;
 use PhpParser\Node\UnionType;
+use Rector\Core\Rector\AbstractRector;
 use Rector\NodeManipulator\PropertyDecorator;
-use Rector\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -17,8 +17,9 @@ final class DowngradeUnionTypeTypedPropertyRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\NodeManipulator\PropertyDecorator
      */
-    private PropertyDecorator $PropertyDecorator;
+    private $PropertyDecorator;
     public function __construct(PropertyDecorator $PropertyDecorator)
     {
         $this->PropertyDecorator = $PropertyDecorator;
@@ -66,7 +67,7 @@ CODE_SAMPLE
     }
     private function shouldRemoveProperty(Property $property) : bool
     {
-        if (!$property->type instanceof Node) {
+        if ($property->type === null) {
             return \false;
         }
         // Check it is the union type

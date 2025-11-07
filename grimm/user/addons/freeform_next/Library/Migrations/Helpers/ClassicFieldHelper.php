@@ -102,7 +102,7 @@ class ClassicFieldHelper extends AddonBuilder
         return $fields;
     }
 
-    public function isCustomValuesEnabledForSelect($classicField)
+    public function isCustomValuesEnabledForSelect($classicField): bool
     {
         $settings = $this->getSettings($classicField);
 
@@ -113,7 +113,7 @@ class ClassicFieldHelper extends AddonBuilder
         return false;
     }
 
-    public function isCustomChannelForSelect($classicField)
+    public function isCustomChannelForSelect($classicField): bool
     {
         $settings = $this->getSettings($classicField);
 
@@ -124,7 +124,7 @@ class ClassicFieldHelper extends AddonBuilder
         return false;
     }
 
-    public function isCustomValuesTextAreaSelect($classicField)
+    public function isCustomValuesTextAreaSelect($classicField): bool
     {
         $settings = $this->getSettings($classicField);
 
@@ -135,7 +135,7 @@ class ClassicFieldHelper extends AddonBuilder
         return false;
     }
 
-    public function isCustomValuesEnabledForCheckboxGroup($classicField)
+    public function isCustomValuesEnabledForCheckboxGroup($classicField): bool
     {
         $settings = $this->getSettings($classicField);
 
@@ -146,7 +146,7 @@ class ClassicFieldHelper extends AddonBuilder
         return false;
     }
 
-    public function isCustomValuesTextAreaCheckboxGroup($classicField)
+    public function isCustomValuesTextAreaCheckboxGroup($classicField): bool
     {
         $settings = $this->getSettings($classicField);
 
@@ -157,7 +157,7 @@ class ClassicFieldHelper extends AddonBuilder
         return false;
     }
 
-    public function isCustomValuesChannelCheckboxGroup($classicField)
+    public function isCustomValuesChannelCheckboxGroup($classicField): bool
     {
         $settings = $this->getSettings($classicField);
 
@@ -168,7 +168,7 @@ class ClassicFieldHelper extends AddonBuilder
         return false;
     }
 
-    public function isCustomValuesEnabledForMultiselect($classicField)
+    public function isCustomValuesEnabledForMultiselect($classicField): bool
     {
         $settings = $this->getSettings($classicField);
 
@@ -179,7 +179,7 @@ class ClassicFieldHelper extends AddonBuilder
         return false;
     }
 
-    public function isCustomValuesTextAreaMultiselect($classicField)
+    public function isCustomValuesTextAreaMultiselect($classicField): bool
     {
         $settings = $this->getSettings($classicField);
 
@@ -190,7 +190,7 @@ class ClassicFieldHelper extends AddonBuilder
         return false;
     }
 
-    public function isCustomValuesChannelMultiselect($classicField)
+    public function isCustomValuesChannelMultiselect($classicField): bool
     {
         $settings = $this->getSettings($classicField);
 
@@ -201,7 +201,7 @@ class ClassicFieldHelper extends AddonBuilder
         return false;
     }
 
-    public function isCustomValuesEnabledForRadio($classicField)
+    public function isCustomValuesEnabledForRadio($classicField): bool
     {
         $settings = $this->getSettings($classicField);
 
@@ -212,7 +212,7 @@ class ClassicFieldHelper extends AddonBuilder
         return false;
     }
 
-    public function isCustomValuesTextAreaRadio($classicField)
+    public function isCustomValuesTextAreaRadio($classicField): bool
     {
         $settings = $this->getSettings($classicField);
 
@@ -223,7 +223,7 @@ class ClassicFieldHelper extends AddonBuilder
         return false;
     }
 
-    public function isCustomValuesChannelRadio($classicField)
+    public function isCustomValuesChannelRadio($classicField): bool
     {
         $settings = $this->getSettings($classicField);
 
@@ -236,6 +236,6 @@ class ClassicFieldHelper extends AddonBuilder
 
     public function getSettings($classicField)
     {
-        return json_decode((string) $classicField['settings'], true);
+        return json_decode($classicField['settings'], true);
     }
 }

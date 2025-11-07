@@ -2,7 +2,6 @@
 
 namespace Solspace\Addons\FreeformNext\Repositories;
 
-use Override;
 use Solspace\Addons\FreeformNext\Model\IntegrationModel;
 
 class IntegrationRepository extends Repository
@@ -10,7 +9,6 @@ class IntegrationRepository extends Repository
     /**
      * @return IntegrationRepository
      */
-    #[Override]
     public static function getInstance()
     {
         return parent::getInstance();

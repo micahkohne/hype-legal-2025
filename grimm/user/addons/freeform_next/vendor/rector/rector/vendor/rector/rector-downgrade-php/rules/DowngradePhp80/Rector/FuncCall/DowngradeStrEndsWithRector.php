@@ -12,8 +12,8 @@ use PhpParser\Node\Expr\BooleanNot;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\UnaryMinus;
 use PhpParser\Node\Name;
-use PhpParser\Node\Scalar\Int_;
-use Rector\Rector\AbstractRector;
+use PhpParser\Node\Scalar\LNumber;
+use Rector\Core\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -40,12 +40,12 @@ final class DowngradeStrEndsWithRector extends AbstractRector
     public function refactor(Node $node) : ?Node
     {
         if ($node instanceof FuncCall && $this->isName($node->name, 'str_ends_with')) {
-            return new Identical($this->createSubstrCompareFuncCall($node), new Int_(0));
+            return new Identical($this->createSubstrCompareFuncCall($node), new LNumber(0));
         }
         if ($node instanceof BooleanNot) {
             $funcCall = $node->expr;
             if ($funcCall instanceof FuncCall && $this->isName($funcCall->name, 'str_ends_with')) {
-                return new NotIdentical($this->createSubstrCompareFuncCall($funcCall), new Int_(0));
+                return new NotIdentical($this->createSubstrCompareFuncCall($funcCall), new LNumber(0));
             }
         }
         return null;

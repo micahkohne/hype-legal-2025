@@ -13,12 +13,11 @@ use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Stmt\Foreach_;
 use PhpParser\Node\Stmt\If_;
 use PhpParser\Node\Stmt\Return_;
-use PhpParser\NodeFinder;
-use Rector\Contract\PhpParser\Node\StmtsAwareInterface;
-use Rector\NodeManipulator\BinaryOpManipulator;
+use PHPStan\Type\ObjectType;
+use Rector\Core\Contract\PhpParser\Node\StmtsAwareInterface;
+use Rector\Core\NodeManipulator\BinaryOpManipulator;
+use Rector\Core\Rector\AbstractRector;
 use Rector\Php71\ValueObject\TwoNodeMatch;
-use Rector\PhpParser\Node\Value\ValueResolver;
-use Rector\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -28,21 +27,12 @@ final class ForeachToInArrayRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\Core\NodeManipulator\BinaryOpManipulator
      */
-    private BinaryOpManipulator $binaryOpManipulator;
-    /**
-     * @readonly
-     */
-    private ValueResolver $valueResolver;
-    /**
-     * @readonly
-     */
-    private NodeFinder $nodeFinder;
-    public function __construct(BinaryOpManipulator $binaryOpManipulator, ValueResolver $valueResolver, NodeFinder $nodeFinder)
+    private $binaryOpManipulator;
+    public function __construct(BinaryOpManipulator $binaryOpManipulator)
     {
         $this->binaryOpManipulator = $binaryOpManipulator;
-        $this->valueResolver = $valueResolver;
-        $this->nodeFinder = $nodeFinder;
     }
     public function getRuleDefinition() : RuleDefinition
     {
@@ -99,12 +89,6 @@ CODE_SAMPLE
             if (!$twoNodeMatch instanceof TwoNodeMatch) {
                 return null;
             }
-            $variableNodes = $this->nodeFinder->findInstanceOf($twoNodeMatch->getSecondExpr(), Variable::class);
-            foreach ($variableNodes as $variableNode) {
-                if ($this->nodeComparator->areNodesEqual($variableNode, $foreach->valueVar)) {
-                    return null;
-                }
-            }
             $comparedExpr = $twoNodeMatch->getSecondExpr();
             if (!$this->isIfBodyABoolReturnNode($firstNodeInsideForeach)) {
                 return null;
@@ -147,7 +131,8 @@ CODE_SAMPLE
         if (!$foreach->stmts[0] instanceof If_) {
             return \true;
         }
-        return !$this->nodeTypeResolver->getNativeType($foreach->expr)->isArray()->yes();
+        $foreachValueStaticType = $this->getType($foreach->expr);
+        return $foreachValueStaticType instanceof ObjectType;
     }
     private function shouldSkipIf(If_ $if) : bool
     {
@@ -162,18 +147,20 @@ CODE_SAMPLE
      */
     private function matchNodes($binaryOp, Expr $expr) : ?TwoNodeMatch
     {
-        return $this->binaryOpManipulator->matchFirstAndSecondConditionNode($binaryOp, Variable::class, fn(Node $node, Node $otherNode): bool => $this->nodeComparator->areNodesEqual($otherNode, $expr));
+        return $this->binaryOpManipulator->matchFirstAndSecondConditionNode($binaryOp, Variable::class, function (Node $node, Node $otherNode) use($expr) : bool {
+            return $this->nodeComparator->areNodesEqual($otherNode, $expr);
+        });
     }
     private function isIfBodyABoolReturnNode(If_ $if) : bool
     {
-        $ifStatement = $if->stmts[0];
-        if (!$ifStatement instanceof Return_) {
+        $ifStatment = $if->stmts[0];
+        if (!$ifStatment instanceof Return_) {
             return \false;
         }
-        if (!$ifStatement->expr instanceof Expr) {
+        if (!$ifStatment->expr instanceof Expr) {
             return \false;
         }
-        return $this->valueResolver->isTrueOrFalse($ifStatement->expr);
+        return $this->valueResolver->isTrueOrFalse($ifStatment->expr);
     }
     /**
      * @param \PhpParser\Node\Expr\BinaryOp\Identical|\PhpParser\Node\Expr\BinaryOp\Equal $binaryOp

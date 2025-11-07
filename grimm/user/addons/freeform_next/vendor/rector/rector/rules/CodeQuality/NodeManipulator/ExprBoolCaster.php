@@ -11,28 +11,32 @@ use PhpParser\Node\Expr\Cast\Bool_;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
+use Rector\Core\PhpParser\Node\NodeFactory;
 use Rector\NodeTypeResolver\NodeTypeResolver;
 use Rector\NodeTypeResolver\PHPStan\Type\StaticTypeAnalyzer;
-use Rector\PhpParser\Node\NodeFactory;
 use Rector\PHPStanStaticTypeMapper\Utils\TypeUnwrapper;
 final class ExprBoolCaster
 {
     /**
      * @readonly
+     * @var \Rector\NodeTypeResolver\NodeTypeResolver
      */
-    private NodeTypeResolver $nodeTypeResolver;
+    private $nodeTypeResolver;
     /**
      * @readonly
+     * @var \Rector\PHPStanStaticTypeMapper\Utils\TypeUnwrapper
      */
-    private TypeUnwrapper $typeUnwrapper;
+    private $typeUnwrapper;
     /**
      * @readonly
+     * @var \Rector\NodeTypeResolver\PHPStan\Type\StaticTypeAnalyzer
      */
-    private StaticTypeAnalyzer $staticTypeAnalyzer;
+    private $staticTypeAnalyzer;
     /**
      * @readonly
+     * @var \Rector\Core\PhpParser\Node\NodeFactory
      */
-    private NodeFactory $nodeFactory;
+    private $nodeFactory;
     public function __construct(NodeTypeResolver $nodeTypeResolver, TypeUnwrapper $typeUnwrapper, StaticTypeAnalyzer $staticTypeAnalyzer, NodeFactory $nodeFactory)
     {
         $this->nodeTypeResolver = $nodeTypeResolver;

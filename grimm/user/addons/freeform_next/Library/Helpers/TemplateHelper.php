@@ -26,8 +26,6 @@ class TemplateHelper
 
     /**
      * @param string          $string
-     * @param Form            $form
-     * @param SubmissionModel $submissionModel
      * @param bool            $skipHelperFields
      *
      * @return string

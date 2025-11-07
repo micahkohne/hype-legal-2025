@@ -11,17 +11,16 @@ use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Interface_;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\StringType;
-use Rector\Contract\Rector\ConfigurableRectorInterface;
+use Rector\Core\Contract\Rector\ConfigurableRectorInterface;
+use Rector\Core\Php\PhpVersionProvider;
+use Rector\Core\Rector\AbstractRector;
+use Rector\Core\ValueObject\PhpVersionFeature;
 use Rector\NodeTypeResolver\TypeComparator\TypeComparator;
-use Rector\Php\PhpVersionProvider;
 use Rector\PHPStanStaticTypeMapper\Enum\TypeKind;
-use Rector\Rector\AbstractRector;
-use Rector\StaticTypeMapper\StaticTypeMapper;
 use Rector\TypeDeclaration\ValueObject\AddParamTypeDeclaration;
-use Rector\ValueObject\PhpVersionFeature;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\ConfiguredCodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
-use RectorPrefix202507\Webmozart\Assert\Assert;
+use RectorPrefix202308\Webmozart\Assert\Assert;
 /**
  * @see \Rector\Tests\TypeDeclaration\Rector\ClassMethod\AddParamTypeDeclarationRector\AddParamTypeDeclarationRectorTest
  */
@@ -29,26 +28,26 @@ final class AddParamTypeDeclarationRector extends AbstractRector implements Conf
 {
     /**
      * @readonly
+     * @var \Rector\NodeTypeResolver\TypeComparator\TypeComparator
      */
-    private TypeComparator $typeComparator;
+    private $typeComparator;
     /**
      * @readonly
+     * @var \Rector\Core\Php\PhpVersionProvider
      */
-    private PhpVersionProvider $phpVersionProvider;
-    /**
-     * @readonly
-     */
-    private StaticTypeMapper $staticTypeMapper;
+    private $phpVersionProvider;
     /**
      * @var AddParamTypeDeclaration[]
      */
-    private array $addParamTypeDeclarations = [];
-    private bool $hasChanged = \false;
-    public function __construct(TypeComparator $typeComparator, PhpVersionProvider $phpVersionProvider, StaticTypeMapper $staticTypeMapper)
+    private $addParamTypeDeclarations = [];
+    /**
+     * @var bool
+     */
+    private $hasChanged = \false;
+    public function __construct(TypeComparator $typeComparator, PhpVersionProvider $phpVersionProvider)
     {
         $this->typeComparator = $typeComparator;
         $this->phpVersionProvider = $phpVersionProvider;
-        $this->staticTypeMapper = $staticTypeMapper;
     }
     public function getRuleDefinition() : RuleDefinition
     {
@@ -87,9 +86,8 @@ CODE_SAMPLE
             if ($this->shouldSkip($node, $classMethod)) {
                 continue;
             }
-            $methodName = $this->getName($classMethod);
             foreach ($this->addParamTypeDeclarations as $addParamTypeDeclaration) {
-                if (!$this->nodeNameResolver->isStringName($methodName, $addParamTypeDeclaration->getMethodName())) {
+                if (!$this->isName($classMethod, $addParamTypeDeclaration->getMethodName())) {
                     continue;
                 }
                 if (!$this->isObjectType($node, $addParamTypeDeclaration->getObjectType())) {
@@ -137,7 +135,7 @@ CODE_SAMPLE
     private function refactorParameter(Param $param, AddParamTypeDeclaration $addParamTypeDeclaration) : void
     {
         // already set → no change
-        if ($param->type instanceof Node) {
+        if ($param->type !== null) {
             $currentParamType = $this->staticTypeMapper->mapPhpParserNodePHPStanType($param->type);
             if ($this->typeComparator->areTypesEqual($currentParamType, $addParamTypeDeclaration->getParamType())) {
                 return;

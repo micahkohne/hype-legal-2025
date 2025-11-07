@@ -7,7 +7,6 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\Assign;
 use PhpParser\Node\Expr\Closure;
 use PhpParser\Node\Expr\MethodCall;
-use PhpParser\Node\Expr\PropertyFetch;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Stmt;
@@ -15,17 +14,22 @@ use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Expression;
 use PhpParser\Node\Stmt\Function_;
 use PhpParser\Node\Stmt\Nop;
-use Rector\Contract\Rector\HTMLAverseRectorInterface;
-use Rector\Rector\AbstractRector;
+use Rector\Core\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
  * @see \Rector\Tests\CodingStyle\Rector\ClassMethod\NewlineBeforeNewAssignSetRector\NewlineBeforeNewAssignSetRectorTest
  */
-final class NewlineBeforeNewAssignSetRector extends AbstractRector implements HTMLAverseRectorInterface
+final class NewlineBeforeNewAssignSetRector extends AbstractRector
 {
-    private ?string $previousStmtVariableName = null;
-    private ?string $previousPreviousStmtVariableName = null;
+    /**
+     * @var string|null
+     */
+    private $previousStmtVariableName;
+    /**
+     * @var string|null
+     */
+    private $previousPreviousStmtVariableName;
     public function getRuleDefinition() : RuleDefinition
     {
         return new RuleDefinition('Add extra space before new assign set', [new CodeSample(<<<'CODE_SAMPLE'
@@ -37,10 +41,6 @@ final class SomeClass
         $value->setValue(5);
         $value2 = new Value;
         $value2->setValue(1);
-        $foo = new Value;
-        $foo->bar = 5;
-        $bar = new Value;
-        $bar->foo = 1;
     }
 }
 CODE_SAMPLE
@@ -54,12 +54,6 @@ final class SomeClass
 
         $value2 = new Value;
         $value2->setValue(1);
-
-        $foo = new Value;
-        $foo->bar = 5;
-
-        $bar = new Value;
-        $bar->foo = 1;
     }
 }
 CODE_SAMPLE
@@ -114,17 +108,7 @@ CODE_SAMPLE
                 return null;
             }
             if (!$stmtExpr->var instanceof MethodCall && !$stmtExpr->var instanceof StaticCall) {
-                $nodeVar = $stmtExpr->var;
-                if ($nodeVar instanceof PropertyFetch) {
-                    do {
-                        $previous = $nodeVar;
-                        $nodeVar = $nodeVar->var;
-                    } while ($nodeVar instanceof PropertyFetch);
-                    if ($this->getName($nodeVar) === 'this') {
-                        $nodeVar = $previous;
-                    }
-                }
-                return $this->getName($nodeVar);
+                return $this->getName($stmtExpr->var);
             }
         }
         return null;
@@ -149,7 +133,7 @@ CODE_SAMPLE
             return \false;
         }
         // local method call
-        return $this->isName($node->var, 'this');
+        return $this->nodeNameResolver->isName($node->var, 'this');
     }
     private function isNewVariableThanBefore(?string $currentStmtVariableName) : bool
     {
@@ -177,6 +161,6 @@ CODE_SAMPLE
         }
         $previousNode = $node->stmts[$key - 1];
         $currentNode = $node->stmts[$key];
-        return \abs($currentNode->getStartLine() - $previousNode->getStartLine()) >= 2;
+        return \abs($currentNode->getLine() - $previousNode->getLine()) >= 2;
     }
 }

@@ -3,22 +3,25 @@
 declare (strict_types=1);
 namespace Rector\Strict\Rector;
 
-use Rector\Contract\Rector\ConfigurableRectorInterface;
-use Rector\Rector\AbstractRector;
-use RectorPrefix202507\Webmozart\Assert\Assert;
+use Rector\Core\Contract\Rector\ConfigurableRectorInterface;
+use Rector\Core\Rector\AbstractScopeAwareRector;
+use RectorPrefix202308\Webmozart\Assert\Assert;
 /**
  * @see \Rector\Tests\Strict\Rector\BooleanNot\BooleanInBooleanNotRuleFixerRector\BooleanInBooleanNotRuleFixerRectorTest
  *
  * @internal
  */
-abstract class AbstractFalsyScalarRuleFixerRector extends AbstractRector implements ConfigurableRectorInterface
+abstract class AbstractFalsyScalarRuleFixerRector extends AbstractScopeAwareRector implements ConfigurableRectorInterface
 {
     /**
      * @api
      * @var string
      */
     public const TREAT_AS_NON_EMPTY = 'treat_as_non_empty';
-    protected bool $treatAsNonEmpty = \false;
+    /**
+     * @var bool
+     */
+    protected $treatAsNonEmpty = \false;
     /**
      * @param mixed[] $configuration
      */

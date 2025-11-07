@@ -19,5 +19,5 @@ interface RequestInterface
      *
      * @return mixed
      */
-    public function getPost($key, $defaultValue = null);
+    public function getPost($key, mixed $defaultValue = null);
 }

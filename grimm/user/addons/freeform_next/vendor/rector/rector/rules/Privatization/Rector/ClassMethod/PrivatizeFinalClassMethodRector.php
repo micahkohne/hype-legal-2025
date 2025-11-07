@@ -4,45 +4,41 @@ declare (strict_types=1);
 namespace Rector\Privatization\Rector\ClassMethod;
 
 use PhpParser\Node;
-use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassMethod;
+use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ClassReflection;
-use Rector\PhpParser\Node\BetterNodeFinder;
-use Rector\PHPStan\ScopeFetcher;
+use Rector\Core\Rector\AbstractScopeAwareRector;
 use Rector\Privatization\Guard\OverrideByParentClassGuard;
 use Rector\Privatization\NodeManipulator\VisibilityManipulator;
 use Rector\Privatization\VisibilityGuard\ClassMethodVisibilityGuard;
-use Rector\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
  * @see \Rector\Tests\Privatization\Rector\ClassMethod\PrivatizeFinalClassMethodRector\PrivatizeFinalClassMethodRectorTest
  */
-final class PrivatizeFinalClassMethodRector extends AbstractRector
+final class PrivatizeFinalClassMethodRector extends AbstractScopeAwareRector
 {
     /**
      * @readonly
+     * @var \Rector\Privatization\VisibilityGuard\ClassMethodVisibilityGuard
      */
-    private ClassMethodVisibilityGuard $classMethodVisibilityGuard;
+    private $classMethodVisibilityGuard;
     /**
      * @readonly
+     * @var \Rector\Privatization\NodeManipulator\VisibilityManipulator
      */
-    private VisibilityManipulator $visibilityManipulator;
+    private $visibilityManipulator;
     /**
      * @readonly
+     * @var \Rector\Privatization\Guard\OverrideByParentClassGuard
      */
-    private OverrideByParentClassGuard $overrideByParentClassGuard;
-    /**
-     * @readonly
-     */
-    private BetterNodeFinder $betterNodeFinder;
-    public function __construct(ClassMethodVisibilityGuard $classMethodVisibilityGuard, VisibilityManipulator $visibilityManipulator, OverrideByParentClassGuard $overrideByParentClassGuard, BetterNodeFinder $betterNodeFinder)
+    private $overrideByParentClassGuard;
+    public function __construct(ClassMethodVisibilityGuard $classMethodVisibilityGuard, VisibilityManipulator $visibilityManipulator, OverrideByParentClassGuard $overrideByParentClassGuard)
     {
         $this->classMethodVisibilityGuard = $classMethodVisibilityGuard;
         $this->visibilityManipulator = $visibilityManipulator;
         $this->overrideByParentClassGuard = $overrideByParentClassGuard;
-        $this->betterNodeFinder = $betterNodeFinder;
     }
     public function getRuleDefinition() : RuleDefinition
     {
@@ -74,7 +70,7 @@ CODE_SAMPLE
     /**
      * @param Class_ $node
      */
-    public function refactor(Node $node) : ?Node
+    public function refactorWithScope(Node $node, Scope $scope) : ?Node
     {
         if (!$node->isFinal()) {
             return null;
@@ -82,7 +78,6 @@ CODE_SAMPLE
         if (!$this->overrideByParentClassGuard->isLegal($node)) {
             return null;
         }
-        $scope = ScopeFetcher::fetch($node);
         $classReflection = $scope->getClassReflection();
         if (!$classReflection instanceof ClassReflection) {
             return null;
@@ -108,25 +103,9 @@ CODE_SAMPLE
     }
     private function shouldSkipClassMethod(ClassMethod $classMethod) : bool
     {
-        // edge case in nette framework
-        /** @var string $methodName */
-        $methodName = $this->getName($classMethod->name);
-        if (\strncmp($methodName, 'createComponent', \strlen('createComponent')) === 0) {
+        if ($this->isName($classMethod, 'createComponent*')) {
             return \true;
         }
-        if (!$classMethod->isProtected()) {
-            return \true;
-        }
-        if ($classMethod->isMagic()) {
-            return \true;
-        }
-        // if has parent call, its probably overriding parent one → skip it
-        $hasParentCall = (bool) $this->betterNodeFinder->findFirst((array) $classMethod->stmts, function (Node $node) : bool {
-            if (!$node instanceof StaticCall) {
-                return \false;
-            }
-            return $this->isName($node->class, 'parent');
-        });
-        return $hasParentCall;
+        return !$classMethod->isProtected();
     }
 }

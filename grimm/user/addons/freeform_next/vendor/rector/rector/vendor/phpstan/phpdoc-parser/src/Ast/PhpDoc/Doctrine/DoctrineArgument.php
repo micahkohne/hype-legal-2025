@@ -13,7 +13,8 @@ use PHPStan\PhpDocParser\Ast\Type\IdentifierTypeNode;
 class DoctrineArgument implements Node
 {
     use NodeAttributes;
-    public ?IdentifierTypeNode $key = null;
+    /** @var IdentifierTypeNode|null */
+    public $key;
     /** @var ValueType */
     public $value;
     /**

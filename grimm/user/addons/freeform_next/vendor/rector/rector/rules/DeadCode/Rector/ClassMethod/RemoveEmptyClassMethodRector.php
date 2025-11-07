@@ -7,17 +7,11 @@ use PhpParser\Node;
 use PhpParser\Node\Name\FullyQualified;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassMethod;
-use PHPStan\PhpDocParser\Ast\PhpDoc\DeprecatedTagValueNode;
-use Rector\BetterPhpDocParser\PhpDocInfo\PhpDocInfo;
-use Rector\BetterPhpDocParser\PhpDocInfo\PhpDocInfoFactory;
-use Rector\Configuration\Parameter\FeatureFlags;
-use Rector\DeadCode\NodeAnalyzer\IsClassMethodUsedAnalyzer;
+use Rector\Core\NodeAnalyzer\ParamAnalyzer;
+use Rector\Core\NodeManipulator\ClassMethodManipulator;
+use Rector\Core\Rector\AbstractRector;
+use Rector\Core\ValueObject\MethodName;
 use Rector\DeadCode\NodeManipulator\ControllerClassMethodManipulator;
-use Rector\NodeAnalyzer\ParamAnalyzer;
-use Rector\NodeManipulator\ClassMethodManipulator;
-use Rector\PHPStan\ScopeFetcher;
-use Rector\Rector\AbstractRector;
-use Rector\ValueObject\MethodName;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -27,31 +21,24 @@ final class RemoveEmptyClassMethodRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\Core\NodeManipulator\ClassMethodManipulator
      */
-    private ClassMethodManipulator $classMethodManipulator;
+    private $classMethodManipulator;
     /**
      * @readonly
+     * @var \Rector\DeadCode\NodeManipulator\ControllerClassMethodManipulator
      */
-    private ControllerClassMethodManipulator $controllerClassMethodManipulator;
+    private $controllerClassMethodManipulator;
     /**
      * @readonly
+     * @var \Rector\Core\NodeAnalyzer\ParamAnalyzer
      */
-    private ParamAnalyzer $paramAnalyzer;
-    /**
-     * @readonly
-     */
-    private PhpDocInfoFactory $phpDocInfoFactory;
-    /**
-     * @readonly
-     */
-    private IsClassMethodUsedAnalyzer $isClassMethodUsedAnalyzer;
-    public function __construct(ClassMethodManipulator $classMethodManipulator, ControllerClassMethodManipulator $controllerClassMethodManipulator, ParamAnalyzer $paramAnalyzer, PhpDocInfoFactory $phpDocInfoFactory, IsClassMethodUsedAnalyzer $isClassMethodUsedAnalyzer)
+    private $paramAnalyzer;
+    public function __construct(ClassMethodManipulator $classMethodManipulator, ControllerClassMethodManipulator $controllerClassMethodManipulator, ParamAnalyzer $paramAnalyzer)
     {
         $this->classMethodManipulator = $classMethodManipulator;
         $this->controllerClassMethodManipulator = $controllerClassMethodManipulator;
         $this->paramAnalyzer = $paramAnalyzer;
-        $this->phpDocInfoFactory = $phpDocInfoFactory;
-        $this->isClassMethodUsedAnalyzer = $isClassMethodUsedAnalyzer;
     }
     public function getRuleDefinition() : RuleDefinition
     {
@@ -93,7 +80,7 @@ CODE_SAMPLE
             if ($stmt->isAbstract()) {
                 continue;
             }
-            if ($stmt->isFinal() && !$node->isFinal() && FeatureFlags::treatClassesAsFinal() === \false) {
+            if ($stmt->isFinal() && !$node->isFinal()) {
                 continue;
             }
             if ($this->shouldSkipNonFinalNonPrivateClassMethod($node, $stmt)) {
@@ -112,8 +99,8 @@ CODE_SAMPLE
     }
     private function shouldSkipNonFinalNonPrivateClassMethod(Class_ $class, ClassMethod $classMethod) : bool
     {
-        if ($class->isFinal() || FeatureFlags::treatClassesAsFinal()) {
-            return $class->isAbstract();
+        if ($class->isFinal()) {
+            return \false;
         }
         if ($classMethod->isMagic()) {
             return \false;
@@ -125,11 +112,6 @@ CODE_SAMPLE
     }
     private function shouldSkipClassMethod(Class_ $class, ClassMethod $classMethod) : bool
     {
-        // is method called somewhere else in the class?
-        $scope = ScopeFetcher::fetch($class);
-        if ($this->isClassMethodUsedAnalyzer->isClassMethodUsed($class, $classMethod, $scope)) {
-            return \true;
-        }
         if ($this->classMethodManipulator->isNamedConstructor($classMethod)) {
             return \true;
         }
@@ -139,24 +121,12 @@ CODE_SAMPLE
         if ($this->paramAnalyzer->hasPropertyPromotion($classMethod->params)) {
             return \true;
         }
-        if ($this->hasDeprecatedAnnotation($classMethod)) {
+        if ($this->controllerClassMethodManipulator->isControllerClassMethodWithBehaviorAnnotation($class, $classMethod)) {
             return \true;
         }
-        if ($this->controllerClassMethodManipulator->isControllerClassMethod($class, $classMethod)) {
-            return \true;
-        }
-        if ($this->isName($classMethod, MethodName::CONSTRUCT)) {
-            // has parent class?
+        if ($this->nodeNameResolver->isName($classMethod, MethodName::CONSTRUCT)) {
             return $class->extends instanceof FullyQualified;
         }
-        return $this->isName($classMethod, MethodName::INVOKE);
-    }
-    private function hasDeprecatedAnnotation(ClassMethod $classMethod) : bool
-    {
-        $phpDocInfo = $this->phpDocInfoFactory->createFromNode($classMethod);
-        if (!$phpDocInfo instanceof PhpDocInfo) {
-            return \false;
-        }
-        return $phpDocInfo->hasByType(DeprecatedTagValueNode::class);
+        return $this->nodeNameResolver->isName($classMethod, MethodName::INVOKE);
     }
 }

@@ -4,19 +4,13 @@ declare (strict_types=1);
 namespace Rector\TypeDeclaration\Rector\ClassMethod;
 
 use PhpParser\Node;
-use PhpParser\Node\Expr\ClassConstFetch;
-use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\Stmt\ClassMethod;
-use PhpParser\Node\Stmt\Return_;
+use PHPStan\Analyser\Scope;
 use PHPStan\Type\Type;
-use Rector\NodeTypeResolver\PHPStan\Type\TypeFactory;
-use Rector\PhpParser\Node\BetterNodeFinder;
-use Rector\PHPStan\ScopeFetcher;
+use Rector\Core\Rector\AbstractScopeAwareRector;
+use Rector\Core\ValueObject\PhpVersion;
 use Rector\PHPStanStaticTypeMapper\Enum\TypeKind;
-use Rector\Rector\AbstractRector;
-use Rector\StaticTypeMapper\StaticTypeMapper;
-use Rector\TypeDeclaration\NodeAnalyzer\ReturnAnalyzer;
-use Rector\ValueObject\PhpVersion;
+use Rector\TypeDeclaration\TypeAnalyzer\StrictReturnClassConstReturnTypeAnalyzer;
 use Rector\VendorLocker\NodeVendorLocker\ClassMethodReturnTypeOverrideGuard;
 use Rector\VersionBonding\Contract\MinPhpVersionInterface;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
@@ -24,35 +18,22 @@ use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
  * @see \Rector\Tests\TypeDeclaration\Rector\ClassMethod\ReturnTypeFromStrictConstantReturnRector\ReturnTypeFromStrictConstantReturnRectorTest
  */
-final class ReturnTypeFromStrictConstantReturnRector extends AbstractRector implements MinPhpVersionInterface
+final class ReturnTypeFromStrictConstantReturnRector extends AbstractScopeAwareRector implements MinPhpVersionInterface
 {
     /**
      * @readonly
+     * @var \Rector\TypeDeclaration\TypeAnalyzer\StrictReturnClassConstReturnTypeAnalyzer
      */
-    private ClassMethodReturnTypeOverrideGuard $classMethodReturnTypeOverrideGuard;
+    private $strictReturnClassConstReturnTypeAnalyzer;
     /**
      * @readonly
+     * @var \Rector\VendorLocker\NodeVendorLocker\ClassMethodReturnTypeOverrideGuard
      */
-    private StaticTypeMapper $staticTypeMapper;
-    /**
-     * @readonly
-     */
-    private BetterNodeFinder $betterNodeFinder;
-    /**
-     * @readonly
-     */
-    private TypeFactory $typeFactory;
-    /**
-     * @readonly
-     */
-    private ReturnAnalyzer $returnAnalyzer;
-    public function __construct(ClassMethodReturnTypeOverrideGuard $classMethodReturnTypeOverrideGuard, StaticTypeMapper $staticTypeMapper, BetterNodeFinder $betterNodeFinder, TypeFactory $typeFactory, ReturnAnalyzer $returnAnalyzer)
+    private $classMethodReturnTypeOverrideGuard;
+    public function __construct(StrictReturnClassConstReturnTypeAnalyzer $strictReturnClassConstReturnTypeAnalyzer, ClassMethodReturnTypeOverrideGuard $classMethodReturnTypeOverrideGuard)
     {
+        $this->strictReturnClassConstReturnTypeAnalyzer = $strictReturnClassConstReturnTypeAnalyzer;
         $this->classMethodReturnTypeOverrideGuard = $classMethodReturnTypeOverrideGuard;
-        $this->staticTypeMapper = $staticTypeMapper;
-        $this->betterNodeFinder = $betterNodeFinder;
-        $this->typeFactory = $typeFactory;
-        $this->returnAnalyzer = $returnAnalyzer;
     }
     public function getRuleDefinition() : RuleDefinition
     {
@@ -90,20 +71,15 @@ CODE_SAMPLE
     /**
      * @param ClassMethod $node
      */
-    public function refactor(Node $node) : ?Node
+    public function refactorWithScope(Node $node, Scope $scope) : ?Node
     {
-        $scope = ScopeFetcher::fetch($node);
         if ($node->returnType instanceof Node) {
-            return null;
-        }
-        $returns = $this->betterNodeFinder->findReturnsScoped($node);
-        if (!$this->returnAnalyzer->hasOnlyReturnWithExpr($node, $returns)) {
             return null;
         }
         if ($this->classMethodReturnTypeOverrideGuard->shouldSkipClassMethod($node, $scope)) {
             return null;
         }
-        $matchedType = $this->matchAlwaysReturnConstFetch($returns);
+        $matchedType = $this->strictReturnClassConstReturnTypeAnalyzer->matchAlwaysReturnConstFetch($node);
         if (!$matchedType instanceof Type) {
             return null;
         }
@@ -120,19 +96,5 @@ CODE_SAMPLE
     public function provideMinPhpVersion() : int
     {
         return PhpVersion::PHP_70;
-    }
-    /**
-     * @param Return_[] $returns
-     */
-    private function matchAlwaysReturnConstFetch(array $returns) : ?Type
-    {
-        $classConstFetchTypes = [];
-        foreach ($returns as $return) {
-            if (!$return->expr instanceof ClassConstFetch && !$return->expr instanceof ConstFetch) {
-                return null;
-            }
-            $classConstFetchTypes[] = $this->nodeTypeResolver->getType($return->expr);
-        }
-        return $this->typeFactory->createMixedPassedOrUnionType($classConstFetchTypes);
     }
 }

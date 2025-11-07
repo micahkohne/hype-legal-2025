@@ -1,76 +1,63 @@
 <?php
 
 declare (strict_types=1);
-namespace Rector\Console\Command;
+namespace Rector\Core\Console\Command;
 
-use RectorPrefix202507\Nette\Utils\Json;
+use RectorPrefix202308\Nette\Utils\Json;
 use Rector\ChangesReporting\Output\ConsoleOutputFormatter;
-use Rector\Configuration\ConfigurationRuleFilter;
-use Rector\Configuration\OnlyRuleResolver;
-use Rector\Configuration\Option;
-use Rector\Contract\Rector\RectorInterface;
+use Rector\Core\Configuration\Option;
+use Rector\Core\Contract\Rector\RectorInterface;
 use Rector\PostRector\Contract\Rector\PostRectorInterface;
 use Rector\Skipper\SkipCriteriaResolver\SkippedClassResolver;
-use RectorPrefix202507\Symfony\Component\Console\Command\Command;
-use RectorPrefix202507\Symfony\Component\Console\Input\InputInterface;
-use RectorPrefix202507\Symfony\Component\Console\Input\InputOption;
-use RectorPrefix202507\Symfony\Component\Console\Output\OutputInterface;
-use RectorPrefix202507\Symfony\Component\Console\Style\SymfonyStyle;
+use RectorPrefix202308\Symfony\Component\Console\Command\Command;
+use RectorPrefix202308\Symfony\Component\Console\Input\InputInterface;
+use RectorPrefix202308\Symfony\Component\Console\Input\InputOption;
+use RectorPrefix202308\Symfony\Component\Console\Output\OutputInterface;
+use RectorPrefix202308\Symfony\Component\Console\Style\SymfonyStyle;
+use RectorPrefix202308\Symfony\Component\DependencyInjection\Argument\RewindableGenerator;
 final class ListRulesCommand extends Command
 {
     /**
      * @readonly
+     * @var \Symfony\Component\Console\Style\SymfonyStyle
      */
-    private SymfonyStyle $symfonyStyle;
+    private $symfonyStyle;
     /**
      * @readonly
+     * @var \Rector\Skipper\SkipCriteriaResolver\SkippedClassResolver
      */
-    private SkippedClassResolver $skippedClassResolver;
-    /**
-     * @readonly
-     */
-    private OnlyRuleResolver $onlyRuleResolver;
-    /**
-     * @readonly
-     */
-    private ConfigurationRuleFilter $configurationRuleFilter;
+    private $skippedClassResolver;
     /**
      * @var RectorInterface[]
-     * @readonly
      */
-    private array $rectors;
+    private $rectors = [];
     /**
-     * @param RectorInterface[] $rectors
+     * @param RewindableGenerator<RectorInterface>|RectorInterface[] $rectors
      */
-    public function __construct(SymfonyStyle $symfonyStyle, SkippedClassResolver $skippedClassResolver, OnlyRuleResolver $onlyRuleResolver, ConfigurationRuleFilter $configurationRuleFilter, array $rectors)
+    public function __construct(SymfonyStyle $symfonyStyle, SkippedClassResolver $skippedClassResolver, iterable $rectors)
     {
         $this->symfonyStyle = $symfonyStyle;
         $this->skippedClassResolver = $skippedClassResolver;
-        $this->onlyRuleResolver = $onlyRuleResolver;
-        $this->configurationRuleFilter = $configurationRuleFilter;
-        $this->rectors = $rectors;
         parent::__construct();
+        if ($rectors instanceof RewindableGenerator) {
+            $rectors = \iterator_to_array($rectors->getIterator());
+        }
+        $this->rectors = $rectors;
     }
     protected function configure() : void
     {
         $this->setName('list-rules');
         $this->setDescription('Show loaded Rectors');
-        $this->setAliases(['show-rules']);
         $this->addOption(Option::OUTPUT_FORMAT, null, InputOption::VALUE_REQUIRED, 'Select output format', ConsoleOutputFormatter::NAME);
-        $this->addOption(Option::ONLY, null, InputOption::VALUE_REQUIRED, 'Fully qualified rule class name');
     }
     protected function execute(InputInterface $input, OutputInterface $output) : int
     {
-        $onlyRule = $input->getOption(Option::ONLY);
-        if ($onlyRule !== null) {
-            $onlyRule = $this->onlyRuleResolver->resolve($onlyRule);
-        }
-        $rectorClasses = $this->resolveRectorClasses($onlyRule);
+        $rectorClasses = $this->resolveRectorClasses();
         $skippedClasses = $this->getSkippedCheckers();
         $outputFormat = $input->getOption(Option::OUTPUT_FORMAT);
         if ($outputFormat === 'json') {
             $data = ['rectors' => $rectorClasses, 'skipped-rectors' => $skippedClasses];
-            echo Json::encode($data, \true) . \PHP_EOL;
+            echo Json::encode($data, Json::PRETTY) . \PHP_EOL;
             return Command::SUCCESS;
         }
         $this->symfonyStyle->title('Loaded Rector rules');
@@ -79,22 +66,21 @@ final class ListRulesCommand extends Command
             $this->symfonyStyle->title('Skipped Rector rules');
             $this->symfonyStyle->listing($skippedClasses);
         }
-        $this->symfonyStyle->newLine();
-        $this->symfonyStyle->note(\sprintf('Loaded %d rules', \count($rectorClasses)));
         return Command::SUCCESS;
     }
     /**
      * @return array<class-string<RectorInterface>>
      */
-    private function resolveRectorClasses(?string $onlyRule) : array
+    private function resolveRectorClasses() : array
     {
-        $customRectors = \array_filter($this->rectors, static fn(RectorInterface $rector): bool => !$rector instanceof PostRectorInterface);
-        if ($onlyRule !== null) {
-            $customRectors = $this->configurationRuleFilter->filterOnlyRule($customRectors, $onlyRule);
-        }
-        $rectorClasses = \array_map(static fn(RectorInterface $rector): string => \get_class($rector), $customRectors);
+        $customRectors = \array_filter($this->rectors, static function (RectorInterface $rector) : bool {
+            return !$rector instanceof PostRectorInterface;
+        });
+        $rectorClasses = \array_map(static function (RectorInterface $rector) : string {
+            return \get_class($rector);
+        }, $customRectors);
         \sort($rectorClasses);
-        return \array_unique($rectorClasses);
+        return $rectorClasses;
     }
     /**
      * @return string[]

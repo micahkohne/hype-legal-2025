@@ -42,7 +42,7 @@ abstract class AbstractAttributes
      *
      * @throws FreeformException
      */
-    public function mergeAttributes(?array $attributes = null): void
+    public function mergeAttributes(?array $attributes = null)
     {
         if ($attributes) {
             foreach ($attributes as $key => $value) {
@@ -58,7 +58,6 @@ abstract class AbstractAttributes
     /**
      * Walk through the array and create an attribute string
      *
-     * @param array $array
      *
      * @return string
      */
@@ -96,11 +95,9 @@ abstract class AbstractAttributes
     }
 
     /**
-     * @param mixed $value
-     *
      * @return bool|null
      */
-    final protected function getBooleanValue($value = null)
+    final protected function getBooleanValue(?bool $value = null)
     {
         if ($value !== null) {
             return match (strtolower($value)) {

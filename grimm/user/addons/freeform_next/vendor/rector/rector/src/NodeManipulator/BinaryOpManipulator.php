@@ -1,7 +1,7 @@
 <?php
 
 declare (strict_types=1);
-namespace Rector\NodeManipulator;
+namespace Rector\Core\NodeManipulator;
 
 use PhpParser\Node;
 use PhpParser\Node\Expr;
@@ -9,15 +9,16 @@ use PhpParser\Node\Expr\BinaryOp;
 use PhpParser\Node\Expr\BinaryOp\BooleanAnd;
 use PhpParser\Node\Expr\BinaryOp\BooleanOr;
 use PhpParser\Node\Expr\BooleanNot;
-use Rector\Exception\ShouldNotHappenException;
+use Rector\Core\Exception\ShouldNotHappenException;
+use Rector\Core\PhpParser\Node\AssignAndBinaryMap;
 use Rector\Php71\ValueObject\TwoNodeMatch;
-use Rector\PhpParser\Node\AssignAndBinaryMap;
 final class BinaryOpManipulator
 {
     /**
      * @readonly
+     * @var \Rector\Core\PhpParser\Node\AssignAndBinaryMap
      */
-    private AssignAndBinaryMap $assignAndBinaryMap;
+    private $assignAndBinaryMap;
     public function __construct(AssignAndBinaryMap $assignAndBinaryMap)
     {
         $this->assignAndBinaryMap = $assignAndBinaryMap;
@@ -116,7 +117,9 @@ final class BinaryOpManipulator
         if (\is_callable($condition)) {
             return $condition;
         }
-        return static fn(Node $node): bool => $node instanceof $condition;
+        return static function (Node $node) use($condition) : bool {
+            return $node instanceof $condition;
+        };
     }
     /**
      * @return class-string<BinaryOp>|null

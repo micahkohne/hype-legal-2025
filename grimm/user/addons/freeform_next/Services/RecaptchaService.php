@@ -2,6 +2,7 @@
 
 namespace Solspace\Addons\FreeformNext\Services;
 
+use Throwable;
 use GuzzleHttp\Client;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Form;
 use Solspace\Addons\FreeformNext\Library\DataObjects\FormRenderObject;
@@ -13,8 +14,6 @@ class RecaptchaService
 {
     /**
      * Adds Recaptcha javascript to forms
-     *
-     * @param FormRenderObject $renderObject
      */
     public function addRecaptchaJavascriptToForm(FormRenderObject $renderObject): void
     {
@@ -46,8 +45,6 @@ class RecaptchaService
 
     /**
      * Assembles a Recaptcha field
-     *
-     * @param FormRenderObject $renderObject
      */
     public function addRecaptchaInputToForm(FormRenderObject $renderObject): void
     {
@@ -77,9 +74,6 @@ class RecaptchaService
         $renderObject->appendToOutput($this->getRecaptchaInput());
     }
 
-    /**
-     * @param Form $form
-     */
     public function validateFormRecaptcha(Form $form): void
     {
         // Only validate on the last page
@@ -111,7 +105,7 @@ class RecaptchaService
             $spamReasonMessage = end($errors);
         } else {
             try {
-                $client       = new \GuzzleHttp\Client();
+                $client       = new Client();
                 $postResponse = $client->post(
                     'https://www.google.com/recaptcha/api/siteverify',
                     [
@@ -178,7 +172,7 @@ class RecaptchaService
                     $errors[]          = lang('Spam test failed.');
                     $spamReasonMessage = end($errors);
                 }
-            } catch (\Throwable $e) {
+            } catch (Throwable) {
                 // Network/JSON failure ⇒ fail closed and mark as spam
                 $errors[]          = lang('Captcha verification failed.');
                 $spamReasonMessage = end($errors);
@@ -201,7 +195,6 @@ class RecaptchaService
     }
 
     /**
-     * @param Form $form
      * @return string
      */
     public function getRecaptchaJavascript(Form $form): string

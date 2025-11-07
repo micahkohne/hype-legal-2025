@@ -14,47 +14,39 @@ use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Expression;
-use PhpParser\Node\Stmt\Function_;
+use PHPStan\Analyser\Scope;
+use Rector\Core\NodeAnalyzer\VariableAnalyzer;
+use Rector\Core\Php\ReservedKeywordAnalyzer;
+use Rector\Core\Rector\AbstractScopeAwareRector;
 use Rector\DeadCode\SideEffect\SideEffectNodeDetector;
-use Rector\NodeAnalyzer\VariableAnalyzer;
-use Rector\NodeManipulator\StmtsManipulator;
-use Rector\Php\ReservedKeywordAnalyzer;
-use Rector\PhpParser\Node\BetterNodeFinder;
-use Rector\Rector\AbstractRector;
+use Rector\NodeTypeResolver\Node\AttributeKey;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
  * @see \Rector\Tests\DeadCode\Rector\Assign\RemoveUnusedVariableAssignRector\RemoveUnusedVariableAssignRectorTest
  */
-final class RemoveUnusedVariableAssignRector extends AbstractRector
+final class RemoveUnusedVariableAssignRector extends AbstractScopeAwareRector
 {
     /**
      * @readonly
+     * @var \Rector\Core\Php\ReservedKeywordAnalyzer
      */
-    private ReservedKeywordAnalyzer $reservedKeywordAnalyzer;
+    private $reservedKeywordAnalyzer;
     /**
      * @readonly
+     * @var \Rector\DeadCode\SideEffect\SideEffectNodeDetector
      */
-    private SideEffectNodeDetector $sideEffectNodeDetector;
+    private $sideEffectNodeDetector;
     /**
      * @readonly
+     * @var \Rector\Core\NodeAnalyzer\VariableAnalyzer
      */
-    private VariableAnalyzer $variableAnalyzer;
-    /**
-     * @readonly
-     */
-    private BetterNodeFinder $betterNodeFinder;
-    /**
-     * @readonly
-     */
-    private StmtsManipulator $stmtsManipulator;
-    public function __construct(ReservedKeywordAnalyzer $reservedKeywordAnalyzer, SideEffectNodeDetector $sideEffectNodeDetector, VariableAnalyzer $variableAnalyzer, BetterNodeFinder $betterNodeFinder, StmtsManipulator $stmtsManipulator)
+    private $variableAnalyzer;
+    public function __construct(ReservedKeywordAnalyzer $reservedKeywordAnalyzer, SideEffectNodeDetector $sideEffectNodeDetector, VariableAnalyzer $variableAnalyzer)
     {
         $this->reservedKeywordAnalyzer = $reservedKeywordAnalyzer;
         $this->sideEffectNodeDetector = $sideEffectNodeDetector;
         $this->variableAnalyzer = $variableAnalyzer;
-        $this->betterNodeFinder = $betterNodeFinder;
-        $this->stmtsManipulator = $stmtsManipulator;
     }
     public function getRuleDefinition() : RuleDefinition
     {
@@ -82,38 +74,38 @@ CODE_SAMPLE
      */
     public function getNodeTypes() : array
     {
-        return [ClassMethod::class, Function_::class];
+        return [ClassMethod::class];
     }
     /**
-     * @param ClassMethod|Function_ $node
-     * @return null|\PhpParser\Node\Stmt\ClassMethod|\PhpParser\Node\Stmt\Function_
+     * @param ClassMethod $node
      */
-    public function refactor(Node $node)
+    public function refactorWithScope(Node $node, Scope $scope) : ?ClassMethod
     {
-        $stmts = $node->stmts;
-        if ($stmts === null || $stmts === []) {
+        $classMethodStmts = $node->stmts;
+        if ($classMethodStmts === null) {
             return null;
         }
         // we cannot be sure here
-        if ($this->shouldSkip($stmts)) {
+        if ($this->containsCompactFuncCall($node)) {
             return null;
         }
-        $assignedVariableNamesByStmtPosition = $this->resolvedAssignedVariablesByStmtPosition($stmts);
+        if ($this->containsFileIncludes($node)) {
+            return null;
+        }
+        $assignedVariableNamesByStmtPosition = $this->resolvedAssignedVariablesByStmtPosition($classMethodStmts);
         $hasChanged = \false;
         foreach ($assignedVariableNamesByStmtPosition as $stmtPosition => $variableName) {
-            if ($this->stmtsManipulator->isVariableUsedInNextStmt($node, $stmtPosition + 1, $variableName)) {
+            if ($this->isVariableUsedInFollowingStmts($node, $stmtPosition, $variableName)) {
                 continue;
             }
             /** @var Expression<Assign> $currentStmt */
-            $currentStmt = $stmts[$stmtPosition];
+            $currentStmt = $classMethodStmts[$stmtPosition];
             /** @var Assign $assign */
             $assign = $currentStmt->expr;
-            if ($this->hasCallLikeInAssignExpr($assign)) {
+            if ($this->hasCallLikeInAssignExpr($assign, $scope)) {
                 // clean safely
                 $cleanAssignedExpr = $this->cleanCastedExpr($assign->expr);
-                $newExpression = new Expression($cleanAssignedExpr);
-                $this->mirrorComments($newExpression, $currentStmt);
-                $node->stmts[$stmtPosition] = $newExpression;
+                $node->stmts[$stmtPosition] = new Expression($cleanAssignedExpr);
             } else {
                 unset($node->stmts[$stmtPosition]);
             }
@@ -131,24 +123,49 @@ CODE_SAMPLE
         }
         return $this->cleanCastedExpr($expr->expr);
     }
-    private function hasCallLikeInAssignExpr(Expr $expr) : bool
+    private function hasCallLikeInAssignExpr(Expr $expr, Scope $scope) : bool
     {
-        return (bool) $this->betterNodeFinder->findFirst($expr, fn(Node $subNode): bool => $this->sideEffectNodeDetector->detectCallExpr($subNode));
+        return (bool) $this->betterNodeFinder->findFirst($expr, function (Node $subNode) use($scope) : bool {
+            return $this->sideEffectNodeDetector->detectCallExpr($subNode, $scope);
+        });
     }
-    /**
-     * @param Stmt[] $stmts
-     */
-    private function shouldSkip(array $stmts) : bool
+    private function isVariableUsedInFollowingStmts(ClassMethod $classMethod, int $assignStmtPosition, string $variableName) : bool
     {
-        return (bool) $this->betterNodeFinder->findFirst($stmts, function (Node $node) : bool {
-            if ($node instanceof Include_) {
+        if ($classMethod->stmts === null) {
+            return \false;
+        }
+        foreach ($classMethod->stmts as $key => $stmt) {
+            // do not look yet
+            if ($key <= $assignStmtPosition) {
+                continue;
+            }
+            $stmtScope = $stmt->getAttribute(AttributeKey::SCOPE);
+            if (!$stmtScope instanceof Scope) {
+                continue;
+            }
+            $foundVariable = $this->betterNodeFinder->findVariableOfName($stmt, $variableName);
+            if ($foundVariable instanceof Variable) {
                 return \true;
             }
+        }
+        return \false;
+    }
+    /**
+     * @param \PhpParser\Node\Stmt\ClassMethod|\PhpParser\Node $node
+     */
+    private function containsCompactFuncCall($node) : bool
+    {
+        $compactFuncCall = $this->betterNodeFinder->findFirst($node, function (Node $node) : bool {
             if (!$node instanceof FuncCall) {
                 return \false;
             }
             return $this->isName($node, 'compact');
         });
+        return $compactFuncCall instanceof FuncCall;
+    }
+    private function containsFileIncludes(ClassMethod $classMethod) : bool
+    {
+        return (bool) $this->betterNodeFinder->findInstancesOf($classMethod, [Include_::class]);
     }
     /**
      * @param array<int, Stmt> $stmts

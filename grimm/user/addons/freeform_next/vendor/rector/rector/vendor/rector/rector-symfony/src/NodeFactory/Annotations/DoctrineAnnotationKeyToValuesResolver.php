@@ -3,20 +3,22 @@
 declare (strict_types=1);
 namespace Rector\Symfony\NodeFactory\Annotations;
 
-use PhpParser\Node\ArrayItem;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Array_;
-use Rector\PhpParser\Node\Value\ValueResolver;
+use PhpParser\Node\Expr\ArrayItem;
+use Rector\Core\PhpParser\Node\Value\ValueResolver;
 final class DoctrineAnnotationKeyToValuesResolver
 {
     /**
      * @readonly
+     * @var \Rector\Core\PhpParser\Node\Value\ValueResolver
      */
-    private ValueResolver $valueResolver;
+    private $valueResolver;
     /**
      * @readonly
+     * @var \Rector\Symfony\NodeFactory\Annotations\StringValueQuoteWrapper
      */
-    private \Rector\Symfony\NodeFactory\Annotations\StringValueQuoteWrapper $stringValueQuoteWrapper;
+    private $stringValueQuoteWrapper;
     public function __construct(ValueResolver $valueResolver, \Rector\Symfony\NodeFactory\Annotations\StringValueQuoteWrapper $stringValueQuoteWrapper)
     {
         $this->valueResolver = $valueResolver;

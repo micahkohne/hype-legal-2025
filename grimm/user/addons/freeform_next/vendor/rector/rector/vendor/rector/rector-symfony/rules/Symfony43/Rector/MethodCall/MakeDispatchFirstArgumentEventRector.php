@@ -10,9 +10,8 @@ use PhpParser\Node\Expr\ClassConstFetch;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\MethodCall;
 use PHPStan\Type\ObjectType;
+use Rector\Core\Rector\AbstractRector;
 use Rector\NodeTypeResolver\TypeAnalyzer\StringTypeAnalyzer;
-use Rector\PhpParser\Node\Value\ValueResolver;
-use Rector\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -24,16 +23,12 @@ final class MakeDispatchFirstArgumentEventRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\NodeTypeResolver\TypeAnalyzer\StringTypeAnalyzer
      */
-    private StringTypeAnalyzer $stringTypeAnalyzer;
-    /**
-     * @readonly
-     */
-    private ValueResolver $valueResolver;
-    public function __construct(StringTypeAnalyzer $stringTypeAnalyzer, ValueResolver $valueResolver)
+    private $stringTypeAnalyzer;
+    public function __construct(StringTypeAnalyzer $stringTypeAnalyzer)
     {
         $this->stringTypeAnalyzer = $stringTypeAnalyzer;
-        $this->valueResolver = $valueResolver;
     }
     public function getRuleDefinition() : RuleDefinition
     {

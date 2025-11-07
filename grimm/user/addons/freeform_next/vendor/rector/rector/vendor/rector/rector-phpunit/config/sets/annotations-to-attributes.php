@@ -1,14 +1,13 @@
 <?php
 
 declare (strict_types=1);
-namespace RectorPrefix202507;
+namespace RectorPrefix202308;
 
 use Rector\Config\RectorConfig;
 use Rector\Php80\Rector\Class_\AnnotationToAttributeRector;
 use Rector\Php80\ValueObject\AnnotationToAttribute;
 use Rector\PHPUnit\AnnotationsToAttributes\Rector\Class_\AnnotationWithValueToAttributeRector;
 use Rector\PHPUnit\AnnotationsToAttributes\Rector\Class_\CoversAnnotationWithValueToAttributeRector;
-use Rector\PHPUnit\AnnotationsToAttributes\Rector\Class_\RequiresAnnotationWithValueToAttributeRector;
 use Rector\PHPUnit\AnnotationsToAttributes\Rector\Class_\TicketAnnotationToAttributeRector;
 use Rector\PHPUnit\AnnotationsToAttributes\Rector\ClassMethod\DataProviderAnnotationToAttributeRector;
 use Rector\PHPUnit\AnnotationsToAttributes\Rector\ClassMethod\DependsAnnotationWithValueToAttributeRector;
@@ -20,7 +19,6 @@ return static function (RectorConfig $rectorConfig) : void {
         TestWithAnnotationToAttributeRector::class,
         DataProviderAnnotationToAttributeRector::class,
         CoversAnnotationWithValueToAttributeRector::class,
-        RequiresAnnotationWithValueToAttributeRector::class,
         /**
          * Currently handle:
          *      - @depends Methodname
@@ -33,16 +31,14 @@ return static function (RectorConfig $rectorConfig) : void {
          */
         DependsAnnotationWithValueToAttributeRector::class,
     ]);
-    $rectorConfig->ruleWithConfiguration(AnnotationWithValueToAttributeRector::class, [new AnnotationWithValueToAttribute('backupGlobals', 'PHPUnit\\Framework\\Attributes\\BackupGlobals', ['enabled' => \true, 'disabled' => \false]), new AnnotationWithValueToAttribute('backupStaticAttributes', 'PHPUnit\\Framework\\Attributes\\BackupStaticProperties', ['enabled' => \true, 'disabled' => \false]), new AnnotationWithValueToAttribute('preserveGlobalState', 'PHPUnit\\Framework\\Attributes\\PreserveGlobalState', ['enabled' => \true, 'disabled' => \false]), new AnnotationWithValueToAttribute('depends', 'PHPUnit\\Framework\\Attributes\\Depends'), new AnnotationWithValueToAttribute('group', 'PHPUnit\\Framework\\Attributes\\Group'), new AnnotationWithValueToAttribute('uses', 'PHPUnit\\Framework\\Attributes\\UsesClass', [], \true), new AnnotationWithValueToAttribute('testDox', 'PHPUnit\\Framework\\Attributes\\TestDox'), new AnnotationWithValueToAttribute('testdox', 'PHPUnit\\Framework\\Attributes\\TestDox')]);
+    $rectorConfig->ruleWithConfiguration(AnnotationWithValueToAttributeRector::class, [new AnnotationWithValueToAttribute('backupGlobals', 'PHPUnit\\Framework\\Attributes\\BackupGlobals', ['enabled' => \true, 'disabled' => \false]), new AnnotationWithValueToAttribute('backupStaticAttributes', 'PHPUnit\\Framework\\Attributes\\BackupStaticProperties', ['enabled' => \true, 'disabled' => \false]), new AnnotationWithValueToAttribute('preserveGlobalState', 'PHPUnit\\Framework\\Attributes\\PreserveGlobalState', ['enabled' => \true, 'disabled' => \false]), new AnnotationWithValueToAttribute('depends', 'PHPUnit\\Framework\\Attributes\\Depends'), new AnnotationWithValueToAttribute('group', 'PHPUnit\\Framework\\Attributes\\Group'), new AnnotationWithValueToAttribute('uses', 'PHPUnit\\Framework\\Attributes\\UsesClass'), new AnnotationWithValueToAttribute('testDox', 'PHPUnit\\Framework\\Attributes\\TestDox'), new AnnotationWithValueToAttribute('testdox', 'PHPUnit\\Framework\\Attributes\\TestDox')]);
     $rectorConfig->ruleWithConfiguration(AnnotationToAttributeRector::class, [
         // @see https://github.com/sebastianbergmann/phpunit/issues/4502
         new AnnotationToAttribute('after', 'PHPUnit\\Framework\\Attributes\\After'),
         new AnnotationToAttribute('afterClass', 'PHPUnit\\Framework\\Attributes\\AfterClass'),
         new AnnotationToAttribute('before', 'PHPUnit\\Framework\\Attributes\\Before'),
         new AnnotationToAttribute('beforeClass', 'PHPUnit\\Framework\\Attributes\\BeforeClass'),
-        // CodeCoverageIgnore attribute is deprecated.
-        // @see https://github.com/rectorphp/rector-phpunit/pull/304
-        // new AnnotationToAttribute('codeCoverageIgnore', 'PHPUnit\Framework\Attributes\CodeCoverageIgnore'),
+        new AnnotationToAttribute('codeCoverageIgnore', 'PHPUnit\\Framework\\Attributes\\CodeCoverageIgnore'),
         new AnnotationToAttribute('coversNothing', 'PHPUnit\\Framework\\Attributes\\CoversNothing'),
         new AnnotationToAttribute('doesNotPerformAssertions', 'PHPUnit\\Framework\\Attributes\\DoesNotPerformAssertions'),
         new AnnotationToAttribute('large', 'PHPUnit\\Framework\\Attributes\\Large'),

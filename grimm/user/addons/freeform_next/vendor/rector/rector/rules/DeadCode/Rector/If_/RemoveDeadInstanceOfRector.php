@@ -5,8 +5,6 @@ namespace Rector\DeadCode\Rector\If_;
 
 use PhpParser\Node;
 use PhpParser\Node\Expr;
-use PhpParser\Node\Expr\Assign;
-use PhpParser\Node\Expr\BinaryOp\BooleanAnd;
 use PhpParser\Node\Expr\BooleanNot;
 use PhpParser\Node\Expr\CallLike;
 use PhpParser\Node\Expr\Instanceof_;
@@ -14,16 +12,11 @@ use PhpParser\Node\Expr\PropertyFetch;
 use PhpParser\Node\Expr\StaticPropertyFetch;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt;
-use PhpParser\Node\Stmt\Expression;
 use PhpParser\Node\Stmt\If_;
-use PhpParser\NodeVisitor;
-use PHPStan\Reflection\ClassReflection;
+use PhpParser\NodeTraverser;
 use PHPStan\Type\MixedType;
-use PHPStan\Type\ObjectType;
-use Rector\NodeManipulator\IfManipulator;
-use Rector\NodeTypeResolver\Node\AttributeKey;
-use Rector\Rector\AbstractRector;
-use Rector\Reflection\ReflectionResolver;
+use Rector\Core\NodeManipulator\IfManipulator;
+use Rector\Core\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -33,16 +26,12 @@ final class RemoveDeadInstanceOfRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\Core\NodeManipulator\IfManipulator
      */
-    private IfManipulator $ifManipulator;
-    /**
-     * @readonly
-     */
-    private ReflectionResolver $reflectionResolver;
-    public function __construct(IfManipulator $ifManipulator, ReflectionResolver $reflectionResolver)
+    private $ifManipulator;
+    public function __construct(IfManipulator $ifManipulator)
     {
         $this->ifManipulator = $ifManipulator;
-        $this->reflectionResolver = $reflectionResolver;
     }
     public function getRuleDefinition() : RuleDefinition
     {
@@ -73,7 +62,7 @@ CODE_SAMPLE
     }
     /**
      * @param If_ $node
-     * @return Stmt[]|null|int|If_
+     * @return Stmt[]|null|int
      */
     public function refactor(Node $node)
     {
@@ -82,9 +71,6 @@ CODE_SAMPLE
         }
         if ($node->cond instanceof BooleanNot && $node->cond->expr instanceof Instanceof_) {
             return $this->refactorStmtAndInstanceof($node, $node->cond->expr);
-        }
-        if ($node->cond instanceof BooleanAnd) {
-            return $this->refactorIfWithBooleanAnd($node);
         }
         if ($node->cond instanceof Instanceof_) {
             return $this->refactorStmtAndInstanceof($node, $node->cond);
@@ -96,22 +82,27 @@ CODE_SAMPLE
      */
     private function refactorStmtAndInstanceof(If_ $if, Instanceof_ $instanceof)
     {
-        if ($this->isInstanceofTheSameType($instanceof) !== \true) {
+        if (!$instanceof->class instanceof Name) {
+            return null;
+        }
+        // handle in another rule
+        if ($this->isPropertyFetch($instanceof->expr) || $instanceof->expr instanceof CallLike) {
+            return null;
+        }
+        $classType = $this->nodeTypeResolver->getType($instanceof->class);
+        $exprType = $this->nodeTypeResolver->getType($instanceof->expr);
+        $isSameStaticTypeOrSubtype = $classType->equals($exprType) || $classType->isSuperTypeOf($exprType)->yes();
+        if (!$isSameStaticTypeOrSubtype) {
             return null;
         }
         if ($this->shouldSkipFromNotTypedParam($instanceof)) {
             return null;
         }
-        if ($instanceof->expr instanceof Assign) {
-            $instanceof->expr->setAttribute(AttributeKey::WRAPPED_IN_PARENTHESES, \false);
-            $assignExpression = new Expression($instanceof->expr);
-            return \array_merge([$assignExpression], $if->stmts);
-        }
         if ($if->cond !== $instanceof) {
-            return NodeVisitor::REMOVE_NODE;
+            return NodeTraverser::REMOVE_NODE;
         }
         if ($if->stmts === []) {
-            return NodeVisitor::REMOVE_NODE;
+            return NodeTraverser::REMOVE_NODE;
         }
         // unwrap stmts
         return $if->stmts;
@@ -127,41 +118,5 @@ CODE_SAMPLE
             return \true;
         }
         return $expr instanceof StaticPropertyFetch;
-    }
-    private function isInstanceofTheSameType(Instanceof_ $instanceof) : ?bool
-    {
-        if (!$instanceof->class instanceof Name) {
-            return null;
-        }
-        // handled in another rule
-        if ($this->isPropertyFetch($instanceof->expr) || $instanceof->expr instanceof CallLike) {
-            return null;
-        }
-        $classReflection = $this->reflectionResolver->resolveClassReflection($instanceof);
-        if ($classReflection instanceof ClassReflection && $classReflection->isTrait()) {
-            return null;
-        }
-        $exprType = $this->nodeTypeResolver->getNativeType($instanceof->expr);
-        if (!$exprType instanceof ObjectType) {
-            return null;
-        }
-        $className = $instanceof->class->toString();
-        return $exprType->isInstanceOf($className)->yes();
-    }
-    private function refactorIfWithBooleanAnd(If_ $if) : ?\PhpParser\Node\Stmt\If_
-    {
-        if (!$if->cond instanceof BooleanAnd) {
-            return null;
-        }
-        $booleanAnd = $if->cond;
-        if (!$booleanAnd->left instanceof Instanceof_) {
-            return null;
-        }
-        $instanceof = $booleanAnd->left;
-        if ($this->isInstanceofTheSameType($instanceof) !== \true) {
-            return null;
-        }
-        $if->cond = $booleanAnd->right;
-        return $if;
     }
 }

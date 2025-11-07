@@ -8,11 +8,14 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-namespace RectorPrefix202507\Symfony\Component\Console\SignalRegistry;
+namespace RectorPrefix202308\Symfony\Component\Console\SignalRegistry;
 
 final class SignalRegistry
 {
-    private array $signalHandlers = [];
+    /**
+     * @var mixed[]
+     */
+    private $signalHandlers = [];
     public function __construct()
     {
         if (\function_exists('pcntl_async_signals')) {

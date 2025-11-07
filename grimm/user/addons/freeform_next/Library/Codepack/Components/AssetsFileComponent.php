@@ -15,21 +15,9 @@ use Solspace\Addons\FreeformNext\Library\Codepack\Exceptions\FileObject\FileNotF
 
 class AssetsFileComponent extends AbstractFileComponent
 {
-    private static array $modifiableFileExtensions = [
-        'css',
-        'scss',
-        'sass',
-        'less',
-        'js',
-        'coffee',
-    ];
+    private static array $modifiableFileExtensions = ['css', 'scss', 'sass', 'less', 'js', 'coffee'];
 
-    private static array $modifiableCssFiles = [
-        'css',
-        'scss',
-        'sass',
-        'less',
-    ];
+    private static array $modifiableCssFiles = ['css', 'scss', 'sass', 'less'];
 
     /**
      * @return string
@@ -51,12 +39,13 @@ class AssetsFileComponent extends AbstractFileComponent
      * If anything has to be done with a file once it's copied over
      * This method does it
      *
-     * @param string      $content
+     * @param string $content
      * @param string|null $prefix
      *
+     * @return string|null
      * @throws FileNotFoundException
      */
-    public function fileContentModification($content, $prefix = null): void
+    public function fileContentModification($content, ?string $prefix = null): ?string
     {
         if (!file_exists($content)) {
             throw new FileNotFoundException(
@@ -67,67 +56,68 @@ class AssetsFileComponent extends AbstractFileComponent
         $extension = strtolower(pathinfo($content, PATHINFO_EXTENSION));
 
         // Prevent from editing anything other than css and js files
-        if (!in_array($extension, self::modifiableFileExtensions, true)) {
-            return;
+        if (!in_array($extension, self::$modifiableFileExtensions, true)) {
+            return null;
         }
 
-        $content = file_get_contents($content);
+        $contents = file_get_contents($content);
+        if ($contents === false) {
+            // Couldn’t read; don’t proceed
+            return null;
+        }
 
         if (in_array($extension, self::$modifiableCssFiles, true)) {
-            $content = $this->updateImagesURL($content, $prefix);
-            //$content = $this->updateRelativePaths($content, $prefix);
-            $content = $this->replaceCustomPrefixCalls($content, $prefix);
+            $contents = $this->updateImagesURL($contents, $prefix);
+            //$contents = $this->updateRelativePaths($contents, $prefix);
+            $contents = $this->replaceCustomPrefixCalls($contents, $prefix);
         }
 
-        file_put_contents($content, $content);
+        file_put_contents($content, $contents);
+
+        return $contents;
     }
 
     /**
      * This pattern matches all url(/images[..]) with or without surrounding quotes
      * And replaces it with the prefixed asset path
      *
-     * @param string $content
-     * @param string $prefix
+     * @param mixed $content
+     * @param string|null $prefix
      *
-     * @return string
+     * @return string|array|null
      */
-    private function updateImagesURL(string|bool $content, string $prefix): string|array|null
+    private function updateImagesURL(mixed $content, ?string $prefix = null): string|array|null
     {
         $pattern = '/url\s*\(\s*([\'"]?)\/((?:images)\/[a-zA-Z1-9_\-\.\/]+)[\'"]?\s*\)/';
         $replace = 'url($1/assets/' . $prefix . '/$2$1)';
-        $content = preg_replace($pattern, $replace, $content);
 
-        return $content;
+        return preg_replace($pattern, $replace, $content);
     }
 
     /**
      * Updates all "../somePath/" urls to "../$prefix_somePath/" urls
      *
-     * @param string $content
-     * @param string $prefix
+     * @param mixed $content
+     * @param string|null $prefix
      *
-     * @return string
+     * @return string|array|null
      */
-    private function updateRelativePaths($content, string $prefix): string|array|null
+    private function updateRelativePaths(mixed $content, ?string $prefix = null): string|array|null
     {
         $pattern = '/([\(\'"])\.\.\/([^"\'())]+)([\'"\)])/';
         $replace = '$1../' . $prefix . '$2$3';
-        $content = preg_replace($pattern, $replace, $content);
 
-        return $content;
+        return preg_replace($pattern, $replace, $content);
     }
 
     /**
-     * @param string $content
-     * @param string $prefix
+     * @param mixed $content
+     * @param string|null $prefix
      *
-     * @return mixed
+     * @return string|array|null
      */
-    private function replaceCustomPrefixCalls(string|array|null $content, $prefix): string|array|null
+    private function replaceCustomPrefixCalls(mixed $content, ?string $prefix = null): string|array|null
     {
-        $pattern = '/(%prefix%)/';
-        $content = preg_replace($pattern, $prefix, $content);
-
-        return $content;
+        return preg_replace('/(%prefix%)/', $prefix, $content);
     }
 }

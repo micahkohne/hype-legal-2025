@@ -12,10 +12,9 @@
 namespace Solspace\Addons\FreeformNext\Library\Logging;
 
 use Logger;
-
 class EELogger implements LoggerInterface
 {
-    /** @var Logger[] */
+    /** @var \Logger[] */
     private static array $loggers = [];
 
     private static ?bool $loggerInitiated = null;
@@ -28,7 +27,7 @@ class EELogger implements LoggerInterface
 	/**
      * @param string $category
      *
-     * @return Logger
+     * @return \Logger
      */
     public static function get($category = self::DEFAULT_LOGGER_CATEGORY)
     {

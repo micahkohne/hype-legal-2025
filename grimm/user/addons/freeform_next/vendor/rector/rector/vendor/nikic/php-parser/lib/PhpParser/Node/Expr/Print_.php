@@ -7,12 +7,12 @@ use PhpParser\Node\Expr;
 class Print_ extends Expr
 {
     /** @var Expr Expression */
-    public Expr $expr;
+    public $expr;
     /**
      * Constructs an print() node.
      *
-     * @param Expr $expr Expression
-     * @param array<string, mixed> $attributes Additional attributes
+     * @param Expr  $expr       Expression
+     * @param array $attributes Additional attributes
      */
     public function __construct(Expr $expr, array $attributes = [])
     {

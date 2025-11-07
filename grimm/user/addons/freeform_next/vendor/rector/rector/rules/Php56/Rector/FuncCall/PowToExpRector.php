@@ -6,10 +6,8 @@ namespace Rector\Php56\Rector\FuncCall;
 use PhpParser\Node;
 use PhpParser\Node\Expr\BinaryOp\Pow;
 use PhpParser\Node\Expr\FuncCall;
-use PhpParser\Node\Expr\UnaryMinus;
-use Rector\NodeTypeResolver\Node\AttributeKey;
-use Rector\Rector\AbstractRector;
-use Rector\ValueObject\PhpVersionFeature;
+use Rector\Core\Rector\AbstractRector;
+use Rector\Core\ValueObject\PhpVersionFeature;
 use Rector\VersionBonding\Contract\MinPhpVersionInterface;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
@@ -20,7 +18,7 @@ final class PowToExpRector extends AbstractRector implements MinPhpVersionInterf
 {
     public function getRuleDefinition() : RuleDefinition
     {
-        return new RuleDefinition('Changes `pow(val, val2)` to `**` (exp) parameter', [new CodeSample('pow(1, 2);', '1**2;')]);
+        return new RuleDefinition('Changes pow(val, val2) to ** (exp) parameter', [new CodeSample('pow(1, 2);', '1**2;')]);
     }
     /**
      * @return array<class-string<Node>>
@@ -42,9 +40,6 @@ final class PowToExpRector extends AbstractRector implements MinPhpVersionInterf
         }
         $firstExpr = $node->getArgs()[0]->value;
         $secondExpr = $node->getArgs()[1]->value;
-        if ($firstExpr instanceof UnaryMinus) {
-            $firstExpr->setAttribute(AttributeKey::ORIGINAL_NODE, null);
-        }
         return new Pow($firstExpr, $secondExpr);
     }
     public function provideMinPhpVersion() : int

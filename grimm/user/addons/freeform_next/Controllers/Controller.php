@@ -19,11 +19,10 @@ abstract class Controller
 {
     /**
      * @param string $key
-     * @param mixed  $defaultValue
      *
      * @return mixed
      */
-    protected function getPost($key, $defaultValue = null)
+    protected function getPost($key, mixed $defaultValue = null)
     {
         $value = ee()->input->post($key);
 
@@ -39,7 +38,7 @@ abstract class Controller
      *
      * @return mixed
      */
-    protected function getLink(string $target)
+    protected function getLink($target)
     {
         return UrlHelper::getLink($target);
     }

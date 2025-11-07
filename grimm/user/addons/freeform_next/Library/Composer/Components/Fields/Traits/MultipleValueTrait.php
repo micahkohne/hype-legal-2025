@@ -74,11 +74,9 @@ trait MultipleValueTrait
     }
 
     /**
-     * @param mixed $value
-     *
      * @return $this
      */
-    public function setValue($value)
+    public function setValue(mixed $value)
     {
         if ($this instanceof MultipleValueInterface && !\is_array($value)) {
             if (null === $value) {

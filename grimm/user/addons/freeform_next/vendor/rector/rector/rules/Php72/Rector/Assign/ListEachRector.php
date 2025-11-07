@@ -4,27 +4,31 @@ declare (strict_types=1);
 namespace Rector\Php72\Rector\Assign;
 
 use PhpParser\Node;
-use PhpParser\Node\ArrayItem;
+use PhpParser\Node\Expr\ArrayItem;
 use PhpParser\Node\Expr\Assign;
+use PhpParser\Node\Expr\FuncCall;
+use PhpParser\Node\Expr\List_;
 use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\Expression;
-use Rector\Exception\ShouldNotHappenException;
-use Rector\NodeManipulator\AssignManipulator;
-use Rector\Php72\ValueObject\ListAndEach;
-use Rector\Rector\AbstractRector;
-use Rector\ValueObject\PhpVersionFeature;
+use Rector\Core\Exception\ShouldNotHappenException;
+use Rector\Core\NodeManipulator\AssignManipulator;
+use Rector\Core\Rector\AbstractRector;
+use Rector\Core\ValueObject\PhpVersionFeature;
 use Rector\VersionBonding\Contract\MinPhpVersionInterface;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
+ * @changelog https://wiki.php.net/rfc/deprecations_php_7_2#each
+ *
  * @see \Rector\Tests\Php72\Rector\Assign\ListEachRector\ListEachRectorTest
  */
 final class ListEachRector extends AbstractRector implements MinPhpVersionInterface
 {
     /**
      * @readonly
+     * @var \Rector\Core\NodeManipulator\AssignManipulator
      */
-    private AssignManipulator $assignManipulator;
+    private $assignManipulator;
     public function __construct(AssignManipulator $assignManipulator)
     {
         $this->assignManipulator = $assignManipulator;
@@ -61,55 +65,58 @@ CODE_SAMPLE
         if (!$node->expr instanceof Assign) {
             return null;
         }
-        $listAndEach = $this->assignManipulator->matchListAndEach($node->expr);
-        if (!$listAndEach instanceof ListAndEach) {
+        $assign = $node->expr;
+        if ($this->shouldSkipAssign($assign)) {
             return null;
         }
-        if ($this->shouldSkipAssign($listAndEach)) {
-            return null;
-        }
-        $list = $listAndEach->getList();
-        $eachFuncCall = $listAndEach->getEachFuncCall();
+        /** @var List_ $listNode */
+        $listNode = $assign->var;
+        /** @var FuncCall $eachFuncCall */
+        $eachFuncCall = $assign->expr;
         // only key: list($key, ) = each($values);
-        if ($list->items[0] instanceof ArrayItem && !$list->items[1] instanceof ArrayItem) {
+        if ($listNode->items[0] instanceof ArrayItem && !$listNode->items[1] instanceof ArrayItem) {
             $keyFuncCall = $this->nodeFactory->createFuncCall('key', $eachFuncCall->args);
-            $keyFuncCallAssign = new Assign($list->items[0]->value, $keyFuncCall);
+            $keyFuncCallAssign = new Assign($listNode->items[0]->value, $keyFuncCall);
             return new Expression($keyFuncCallAssign);
         }
         // only value: list(, $value) = each($values);
-        if ($list->items[1] instanceof ArrayItem && !$list->items[0] instanceof ArrayItem) {
+        if ($listNode->items[1] instanceof ArrayItem && !$listNode->items[0] instanceof ArrayItem) {
             $nextFuncCall = $this->nodeFactory->createFuncCall('next', $eachFuncCall->args);
             $currentFuncCall = $this->nodeFactory->createFuncCall('current', $eachFuncCall->args);
-            $secondArrayItem = $list->items[1];
+            $secondArrayItem = $listNode->items[1];
             $currentAssign = new Assign($secondArrayItem->value, $currentFuncCall);
             return [new Expression($currentAssign), new Expression($nextFuncCall)];
         }
         // both: list($key, $value) = each($values);
         $currentFuncCall = $this->nodeFactory->createFuncCall('current', $eachFuncCall->args);
-        $secondArrayItem = $list->items[1];
+        $secondArrayItem = $listNode->items[1];
         if (!$secondArrayItem instanceof ArrayItem) {
             throw new ShouldNotHappenException();
         }
         $currentAssign = new Assign($secondArrayItem->value, $currentFuncCall);
         $nextFuncCall = $this->nodeFactory->createFuncCall('next', $eachFuncCall->args);
         $keyFuncCall = $this->nodeFactory->createFuncCall('key', $eachFuncCall->args);
-        $firstArrayItem = $list->items[0];
+        $firstArrayItem = $listNode->items[0];
         if (!$firstArrayItem instanceof ArrayItem) {
             throw new ShouldNotHappenException();
         }
         $keyAssign = new Assign($firstArrayItem->value, $keyFuncCall);
         return [new Expression($keyAssign), new Expression($currentAssign), new Expression($nextFuncCall)];
     }
-    private function shouldSkipAssign(ListAndEach $listAndEach) : bool
+    private function shouldSkipAssign(Assign $assign) : bool
     {
-        $list = $listAndEach->getList();
-        if (\count($list->items) !== 2) {
+        if (!$this->assignManipulator->isListToEachAssign($assign)) {
+            return \true;
+        }
+        /** @var List_ $listNode */
+        $listNode = $assign->var;
+        if (\count($listNode->items) !== 2) {
             return \true;
         }
         // empty list → cannot handle
-        if ($list->items[0] instanceof ArrayItem) {
+        if ($listNode->items[0] instanceof ArrayItem) {
             return \false;
         }
-        return !$list->items[1] instanceof ArrayItem;
+        return !$listNode->items[1] instanceof ArrayItem;
     }
 }

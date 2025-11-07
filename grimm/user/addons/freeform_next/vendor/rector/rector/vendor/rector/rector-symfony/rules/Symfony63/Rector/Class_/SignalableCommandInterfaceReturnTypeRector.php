@@ -1,18 +1,16 @@
 <?php
 
-declare (strict_types=1);
 namespace Rector\Symfony\Symfony63\Rector\Class_;
 
+use Rector\Core\Rector\AbstractRector;
+use PhpParser\Node\Stmt\ClassMethod;
+use PHPStan\Type\UnionType;
+use PHPStan\Type\IntegerType;
+use PHPStan\Type\Constant\ConstantBooleanType;
+use PhpParser\Node\Stmt\Return_;
 use PhpParser\Node;
 use PhpParser\Node\Stmt\Class_;
-use PhpParser\Node\Stmt\ClassMethod;
-use PhpParser\Node\Stmt\Return_;
-use PHPStan\Type\Constant\ConstantBooleanType;
-use PHPStan\Type\IntegerType;
-use PHPStan\Type\UnionType;
 use Rector\PHPStanStaticTypeMapper\Enum\TypeKind;
-use Rector\Rector\AbstractRector;
-use Rector\StaticTypeMapper\StaticTypeMapper;
 use Rector\Symfony\NodeAnalyzer\ClassAnalyzer;
 use Rector\VendorLocker\ParentClassMethodTypeOverrideGuard;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
@@ -24,21 +22,18 @@ final class SignalableCommandInterfaceReturnTypeRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\Symfony\NodeAnalyzer\ClassAnalyzer
      */
-    private ClassAnalyzer $classAnalyzer;
+    private $classAnalyzer;
     /**
      * @readonly
+     * @var \Rector\VendorLocker\ParentClassMethodTypeOverrideGuard
      */
-    private ParentClassMethodTypeOverrideGuard $parentClassMethodTypeOverrideGuard;
-    /**
-     * @readonly
-     */
-    private StaticTypeMapper $staticTypeMapper;
-    public function __construct(ClassAnalyzer $classAnalyzer, ParentClassMethodTypeOverrideGuard $parentClassMethodTypeOverrideGuard, StaticTypeMapper $staticTypeMapper)
+    private $parentClassMethodTypeOverrideGuard;
+    public function __construct(ClassAnalyzer $classAnalyzer, ParentClassMethodTypeOverrideGuard $parentClassMethodTypeOverrideGuard)
     {
         $this->classAnalyzer = $classAnalyzer;
         $this->parentClassMethodTypeOverrideGuard = $parentClassMethodTypeOverrideGuard;
-        $this->staticTypeMapper = $staticTypeMapper;
     }
     public function getRuleDefinition() : RuleDefinition
     {
@@ -56,6 +51,9 @@ CODE_SAMPLE
 CODE_SAMPLE
 )]);
     }
+    /**
+     * @inheritDoc
+     */
     public function getNodeTypes() : array
     {
         return [Class_::class];

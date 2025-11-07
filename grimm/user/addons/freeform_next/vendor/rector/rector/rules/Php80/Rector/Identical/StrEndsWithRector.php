@@ -14,35 +14,30 @@ use PhpParser\Node\Expr\BinaryOp\NotIdentical;
 use PhpParser\Node\Expr\BooleanNot;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\UnaryMinus;
-use PhpParser\Node\Scalar\Int_;
+use PhpParser\Node\Scalar\LNumber;
 use PhpParser\Node\Scalar\String_;
-use Rector\NodeAnalyzer\BinaryOpAnalyzer;
-use Rector\PhpParser\Node\Value\ValueResolver;
-use Rector\Rector\AbstractRector;
-use Rector\ValueObject\FuncCallAndExpr;
-use Rector\ValueObject\PhpVersionFeature;
-use Rector\ValueObject\PolyfillPackage;
+use Rector\Core\NodeAnalyzer\BinaryOpAnalyzer;
+use Rector\Core\Rector\AbstractRector;
+use Rector\Core\ValueObject\FuncCallAndExpr;
+use Rector\Core\ValueObject\PhpVersionFeature;
 use Rector\VersionBonding\Contract\MinPhpVersionInterface;
-use Rector\VersionBonding\Contract\RelatedPolyfillInterface;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
+ * @changelog https://wiki.php.net/rfc/add_str_starts_with_and_ends_with_functions
+ *
  * @see \Rector\Tests\Php80\Rector\Identical\StrEndsWithRector\StrEndsWithRectorTest
  */
-final class StrEndsWithRector extends AbstractRector implements MinPhpVersionInterface, RelatedPolyfillInterface
+final class StrEndsWithRector extends AbstractRector implements MinPhpVersionInterface
 {
     /**
      * @readonly
+     * @var \Rector\Core\NodeAnalyzer\BinaryOpAnalyzer
      */
-    private BinaryOpAnalyzer $binaryOpAnalyzer;
-    /**
-     * @readonly
-     */
-    private ValueResolver $valueResolver;
-    public function __construct(BinaryOpAnalyzer $binaryOpAnalyzer, ValueResolver $valueResolver)
+    private $binaryOpAnalyzer;
+    public function __construct(BinaryOpAnalyzer $binaryOpAnalyzer)
     {
         $this->binaryOpAnalyzer = $binaryOpAnalyzer;
-        $this->valueResolver = $valueResolver;
     }
     public function provideMinPhpVersion() : int
     {
@@ -50,7 +45,7 @@ final class StrEndsWithRector extends AbstractRector implements MinPhpVersionInt
     }
     public function getRuleDefinition() : RuleDefinition
     {
-        return new RuleDefinition('Change helper functions to `str_ends_with()`', [new CodeSample(<<<'CODE_SAMPLE'
+        return new RuleDefinition('Change helper functions to str_ends_with()', [new CodeSample(<<<'CODE_SAMPLE'
 class SomeClass
 {
     public function run()
@@ -110,10 +105,6 @@ CODE_SAMPLE
     {
         return $this->refactorSubstr($node) ?? $this->refactorSubstrCompare($node);
     }
-    public function providePolyfillPackage() : string
-    {
-        return PolyfillPackage::PHP_80;
-    }
     /**
      * Covers:
      * $isMatch = substr($haystack, -strlen($needle)) === $needle;
@@ -159,18 +150,12 @@ CODE_SAMPLE
             return null;
         }
         $substrCompareFuncCall = $funcCallAndExpr->getFuncCall();
-        $args = $substrCompareFuncCall->getArgs();
-        if (\count($args) < 2) {
+        if (\count($substrCompareFuncCall->getArgs()) < 2) {
             return null;
         }
-        $haystack = $args[0]->value;
-        $needle = $args[1]->value;
-        $thirdArgValue = $args[2]->value;
-        $isCaseInsensitiveValue = isset($args[4]) ? $this->valueResolver->getValue($args[4]->value) : null;
-        // is case insensitive → not valid replacement
-        if ($isCaseInsensitiveValue === \true) {
-            return null;
-        }
+        $haystack = $substrCompareFuncCall->getArgs()[0]->value;
+        $needle = $substrCompareFuncCall->getArgs()[1]->value;
+        $thirdArgValue = $substrCompareFuncCall->getArgs()[2]->value;
         if (!$this->isUnaryMinusStrlenFuncCallArgValue($thirdArgValue, $needle) && !$this->isHardCodedLNumberAndString($thirdArgValue, $needle)) {
             return null;
         }
@@ -186,7 +171,7 @@ CODE_SAMPLE
             return \false;
         }
         $funcCall = $substrOffset->expr;
-        if (!$this->isName($funcCall, 'strlen')) {
+        if (!$this->nodeNameResolver->isName($funcCall, 'strlen')) {
             return \false;
         }
         if (!isset($funcCall->getArgs()[0])) {
@@ -202,7 +187,7 @@ CODE_SAMPLE
         if (!$substrOffset instanceof UnaryMinus) {
             return \false;
         }
-        if (!$substrOffset->expr instanceof Int_) {
+        if (!$substrOffset->expr instanceof LNumber) {
             return \false;
         }
         $lNumber = $substrOffset->expr;

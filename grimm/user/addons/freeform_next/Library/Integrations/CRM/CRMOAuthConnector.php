@@ -11,7 +11,6 @@
 
 namespace Solspace\Addons\FreeformNext\Library\Integrations\CRM;
 
-use Override;
 use stdClass;
 use GuzzleHttp\Client;
 use Solspace\Addons\FreeformNext\Library\Exceptions\Integrations\IntegrationException;
@@ -19,9 +18,9 @@ use Solspace\Addons\FreeformNext\Library\Integrations\SettingBlueprint;
 
 abstract class CRMOAuthConnector extends AbstractCRMIntegration
 {
-    const SETTING_CLIENT_ID     = "client_id";
-    const SETTING_CLIENT_SECRET = "client_secret";
-    const SETTING_RETURN_URI    = "return_uri";
+    public const SETTING_CLIENT_ID     = "client_id";
+    public const SETTING_CLIENT_SECRET = "client_secret";
+    public const SETTING_RETURN_URI    = "return_uri";
 
     /**
      * Returns a list of additional settings for this integration
@@ -29,7 +28,6 @@ abstract class CRMOAuthConnector extends AbstractCRMIntegration
      *
      * @return SettingBlueprint[]
      */
-    #[Override]
     public static function getSettingBlueprints()
     {
         return [
@@ -141,9 +139,6 @@ abstract class CRMOAuthConnector extends AbstractCRMIntegration
     {
     }
 
-    /**
-     * @param stdClass $responseData
-     */
     protected function onAfterFetchAccessToken(stdClass $responseData)
     {
     }

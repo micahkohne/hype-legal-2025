@@ -9,8 +9,8 @@ use PhpParser\Node\Expr\Closure;
 use PhpParser\Node\IntersectionType;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Function_;
+use Rector\Core\Rector\AbstractRector;
 use Rector\PhpDocDecorator\PhpDocFromTypeDeclarationDecorator;
-use Rector\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -22,8 +22,9 @@ final class DowngradePureIntersectionTypeRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\PhpDocDecorator\PhpDocFromTypeDeclarationDecorator
      */
-    private PhpDocFromTypeDeclarationDecorator $phpDocFromTypeDeclarationDecorator;
+    private $phpDocFromTypeDeclarationDecorator;
     public function __construct(PhpDocFromTypeDeclarationDecorator $phpDocFromTypeDeclarationDecorator)
     {
         $this->phpDocFromTypeDeclarationDecorator = $phpDocFromTypeDeclarationDecorator;

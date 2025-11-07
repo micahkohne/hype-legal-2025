@@ -26,9 +26,9 @@ class EETranslator implements TranslatorInterface
      * @param string $string
      * @param array  $variables
      *
-     * @return string
+     * @return ?string
      */
-    public function translate($string, array $variables = [])
+    public function translate($string, array $variables = []): ?string
     {
         $string = lang($string);
 

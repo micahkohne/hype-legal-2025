@@ -4,26 +4,30 @@ declare (strict_types=1);
 namespace Rector\Renaming\ValueObject;
 
 use PHPStan\Type\ObjectType;
+use Rector\Core\Validation\RectorAssert;
 use Rector\Renaming\Contract\RenameClassConstFetchInterface;
-use Rector\Validation\RectorAssert;
 final class RenameClassAndConstFetch implements RenameClassConstFetchInterface
 {
     /**
      * @readonly
+     * @var string
      */
-    private string $oldClass;
+    private $oldClass;
     /**
      * @readonly
+     * @var string
      */
-    private string $oldConstant;
+    private $oldConstant;
     /**
      * @readonly
+     * @var string
      */
-    private string $newClass;
+    private $newClass;
     /**
      * @readonly
+     * @var string
      */
-    private string $newConstant;
+    private $newConstant;
     public function __construct(string $oldClass, string $oldConstant, string $newClass, string $newConstant)
     {
         $this->oldClass = $oldClass;

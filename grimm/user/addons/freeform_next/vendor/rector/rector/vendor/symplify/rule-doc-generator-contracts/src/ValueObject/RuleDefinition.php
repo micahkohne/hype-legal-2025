@@ -3,6 +3,7 @@
 declare (strict_types=1);
 namespace Symplify\RuleDocGenerator\ValueObject;
 
+use RectorPrefix202308\Nette\Utils\Strings;
 use Symplify\RuleDocGenerator\Contract\CodeSampleInterface;
 use Symplify\RuleDocGenerator\Exception\PoorDocumentationException;
 use Symplify\RuleDocGenerator\Exception\ShouldNotHappenException;
@@ -11,14 +12,21 @@ final class RuleDefinition
 {
     /**
      * @readonly
+     * @var string
      */
-    private string $description;
-    private ?string $ruleClass = null;
-    private ?string $ruleFilePath = null;
+    private $description;
+    /**
+     * @var string|null
+     */
+    private $ruleClass;
+    /**
+     * @var string|null
+     */
+    private $ruleFilePath;
     /**
      * @var CodeSampleInterface[]
      */
-    private array $codeSamples = [];
+    private $codeSamples = [];
     /**
      * @param CodeSampleInterface[] $codeSamples
      */
@@ -62,8 +70,7 @@ final class RuleDefinition
         if ($this->ruleClass === null) {
             throw new ShouldNotHappenException();
         }
-        // get short class name
-        return \basename(\str_replace('\\', '/', $this->ruleClass));
+        return (string) Strings::after($this->ruleClass, '\\', -1);
     }
     /**
      * @return CodeSampleInterface[]

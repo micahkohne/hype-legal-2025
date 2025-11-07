@@ -8,12 +8,14 @@ final class ExtensionKeyAndConfiguration
 {
     /**
      * @readonly
+     * @var string
      */
-    private string $key;
+    private $key;
     /**
      * @readonly
+     * @var \PhpParser\Node\Expr\Array_
      */
-    private Array_ $array;
+    private $array;
     public function __construct(string $key, Array_ $array)
     {
         $this->key = $key;

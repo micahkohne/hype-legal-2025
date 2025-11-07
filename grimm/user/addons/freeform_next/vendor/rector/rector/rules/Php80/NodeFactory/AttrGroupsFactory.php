@@ -11,8 +11,9 @@ final class AttrGroupsFactory
 {
     /**
      * @readonly
+     * @var \Rector\PhpAttribute\NodeFactory\PhpAttributeGroupFactory
      */
-    private PhpAttributeGroupFactory $phpAttributeGroupFactory;
+    private $phpAttributeGroupFactory;
     public function __construct(PhpAttributeGroupFactory $phpAttributeGroupFactory)
     {
         $this->phpAttributeGroupFactory = $phpAttributeGroupFactory;

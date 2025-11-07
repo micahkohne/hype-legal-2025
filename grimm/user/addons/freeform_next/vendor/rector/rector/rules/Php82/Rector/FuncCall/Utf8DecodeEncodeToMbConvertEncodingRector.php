@@ -8,12 +8,14 @@ use PhpParser\Node\Arg;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Name;
 use PhpParser\Node\Scalar\String_;
-use Rector\Rector\AbstractRector;
-use Rector\ValueObject\PhpVersionFeature;
+use Rector\Core\Rector\AbstractRector;
+use Rector\Core\ValueObject\PhpVersionFeature;
 use Rector\VersionBonding\Contract\MinPhpVersionInterface;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
+ * @changelog https://wiki.php.net/rfc/remove_utf8_decode_and_utf8_encode
+ *
  * @see https://3v4l.org/Q14UR
  * @see \Rector\Tests\Php82\Rector\FuncCall\Utf8DecodeEncodeToMbConvertEncodingRector\Utf8DecodeEncodeToMbConvertEncodingRectorTest
  */
@@ -21,7 +23,7 @@ final class Utf8DecodeEncodeToMbConvertEncodingRector extends AbstractRector imp
 {
     public function getRuleDefinition() : RuleDefinition
     {
-        return new RuleDefinition('Change deprecated `utf8_decode()` and `utf8_encode()` to `mb_convert_encoding()`', [new CodeSample(<<<'CODE_SAMPLE'
+        return new RuleDefinition('Change deprecated utf8_decode and utf8_encode to mb_convert_encoding', [new CodeSample(<<<'CODE_SAMPLE'
 utf8_decode($value);
 utf8_encode($value);
 CODE_SAMPLE

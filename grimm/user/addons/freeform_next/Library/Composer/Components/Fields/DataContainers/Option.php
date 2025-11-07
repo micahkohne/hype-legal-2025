@@ -12,7 +12,6 @@
 namespace Solspace\Addons\FreeformNext\Library\Composer\Components\Fields\DataContainers;
 
 use JsonSerializable;
-
 class Option implements JsonSerializable
 {
     /**

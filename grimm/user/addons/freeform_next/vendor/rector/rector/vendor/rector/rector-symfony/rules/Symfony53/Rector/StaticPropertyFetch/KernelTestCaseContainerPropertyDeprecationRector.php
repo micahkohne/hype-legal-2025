@@ -6,19 +6,20 @@ namespace Rector\Symfony\Symfony53\Rector\StaticPropertyFetch;
 use PhpParser\Node;
 use PhpParser\Node\Expr\StaticPropertyFetch;
 use PhpParser\Node\Name;
-use Rector\Rector\AbstractRector;
+use Rector\Core\Rector\AbstractRector;
 use Rector\Symfony\NodeAnalyzer\SymfonyTestCaseAnalyzer;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
  * @see \Rector\Symfony\Tests\Symfony53\Rector\StaticPropertyFetch\KernelTestCaseContainerPropertyDeprecationRector\KernelTestCaseContainerPropertyDeprecationRectorTest
  */
-final class KernelTestCaseContainerPropertyDeprecationRector extends AbstractRector
+class KernelTestCaseContainerPropertyDeprecationRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\Symfony\NodeAnalyzer\SymfonyTestCaseAnalyzer
      */
-    private SymfonyTestCaseAnalyzer $symfonyTestCaseAnalyzer;
+    private $symfonyTestCaseAnalyzer;
     public function __construct(SymfonyTestCaseAnalyzer $symfonyTestCaseAnalyzer)
     {
         $this->symfonyTestCaseAnalyzer = $symfonyTestCaseAnalyzer;
@@ -64,7 +65,7 @@ CODE_SAMPLE
         if (!$this->symfonyTestCaseAnalyzer->isInKernelTestCase($node)) {
             return null;
         }
-        if ($this->getName($node->name) !== 'container') {
+        if ($this->nodeNameResolver->getName($node->name) !== 'container') {
             return null;
         }
         if (!$node->class instanceof Name || (string) $node->class !== 'self') {

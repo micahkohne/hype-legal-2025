@@ -1,7 +1,7 @@
 <?php
 
 declare (strict_types=1);
-namespace Rector\NodeAnalyzer;
+namespace Rector\Core\NodeAnalyzer;
 
 use PhpParser\Node;
 use PhpParser\Node\Expr\Assign;
@@ -16,38 +16,39 @@ use PhpParser\Node\Param;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Function_;
-use PhpParser\NodeVisitor;
-use Rector\NodeManipulator\FuncCallManipulator;
+use PhpParser\NodeTraverser;
+use Rector\Core\NodeManipulator\FuncCallManipulator;
+use Rector\Core\PhpParser\Comparing\NodeComparator;
+use Rector\Core\PhpParser\Node\BetterNodeFinder;
 use Rector\NodeNameResolver\NodeNameResolver;
 use Rector\PhpDocParser\NodeTraverser\SimpleCallableNodeTraverser;
-use Rector\PhpParser\Comparing\NodeComparator;
-use Rector\PhpParser\Node\BetterNodeFinder;
 final class ParamAnalyzer
 {
     /**
      * @readonly
+     * @var \Rector\Core\PhpParser\Comparing\NodeComparator
      */
-    private NodeComparator $nodeComparator;
+    private $nodeComparator;
     /**
      * @readonly
+     * @var \Rector\NodeNameResolver\NodeNameResolver
      */
-    private NodeNameResolver $nodeNameResolver;
+    private $nodeNameResolver;
     /**
      * @readonly
+     * @var \Rector\Core\NodeManipulator\FuncCallManipulator
      */
-    private FuncCallManipulator $funcCallManipulator;
+    private $funcCallManipulator;
     /**
      * @readonly
+     * @var \Rector\PhpDocParser\NodeTraverser\SimpleCallableNodeTraverser
      */
-    private SimpleCallableNodeTraverser $simpleCallableNodeTraverser;
+    private $simpleCallableNodeTraverser;
     /**
      * @readonly
+     * @var \Rector\Core\PhpParser\Node\BetterNodeFinder
      */
-    private BetterNodeFinder $betterNodeFinder;
-    /**
-     * @var string[]
-     */
-    private const VARIADIC_FUNCTION_NAMES = ['func_get_arg', 'func_get_args', 'func_num_args'];
+    private $betterNodeFinder;
     public function __construct(NodeComparator $nodeComparator, NodeNameResolver $nodeNameResolver, FuncCallManipulator $funcCallManipulator, SimpleCallableNodeTraverser $simpleCallableNodeTraverser, BetterNodeFinder $betterNodeFinder)
     {
         $this->nodeComparator = $nodeComparator;
@@ -58,37 +59,29 @@ final class ParamAnalyzer
     }
     public function isParamUsedInClassMethod(ClassMethod $classMethod, Param $param) : bool
     {
-        if ($param->isPromoted()) {
-            return \true;
-        }
         $isParamUsed = \false;
         if ($param->var instanceof Error) {
             return \false;
         }
         $this->simpleCallableNodeTraverser->traverseNodesWithCallable($classMethod->stmts, function (Node $node) use(&$isParamUsed, $param) : ?int {
-            if ($this->isVariadicFuncCall($node)) {
-                $isParamUsed = \true;
-                return NodeVisitor::STOP_TRAVERSAL;
+            if ($isParamUsed) {
+                return NodeTraverser::STOP_TRAVERSAL;
             }
             if ($this->isUsedAsArg($node, $param)) {
                 $isParamUsed = \true;
-                return NodeVisitor::STOP_TRAVERSAL;
             }
             // skip nested anonymous class
             if ($node instanceof Class_ || $node instanceof Function_) {
-                return NodeVisitor::DONT_TRAVERSE_CURRENT_AND_CHILDREN;
+                return NodeTraverser::DONT_TRAVERSE_CURRENT_AND_CHILDREN;
             }
             if ($node instanceof Variable && $this->nodeComparator->areNodesEqual($node, $param->var)) {
                 $isParamUsed = \true;
-                return NodeVisitor::STOP_TRAVERSAL;
             }
             if ($node instanceof Closure && $this->isVariableInClosureUses($node, $param->var)) {
                 $isParamUsed = \true;
-                return NodeVisitor::STOP_TRAVERSAL;
             }
             if ($this->isParamUsed($node, $param)) {
                 $isParamUsed = \true;
-                return NodeVisitor::STOP_TRAVERSAL;
             }
             return null;
         });
@@ -100,7 +93,7 @@ final class ParamAnalyzer
     public function hasPropertyPromotion(array $params) : bool
     {
         foreach ($params as $param) {
-            if ($param->isPromoted()) {
+            if ($param->flags !== 0) {
                 return \true;
             }
         }
@@ -111,7 +104,7 @@ final class ParamAnalyzer
         if ($param->variadic) {
             return \false;
         }
-        if (!$param->type instanceof Node) {
+        if ($param->type === null) {
             return \false;
         }
         return $param->type instanceof NullableType;
@@ -162,12 +155,5 @@ final class ParamAnalyzer
         }
         $arguments = $this->funcCallManipulator->extractArgumentsFromCompactFuncCalls([$node]);
         return $this->nodeNameResolver->isNames($param, $arguments);
-    }
-    private function isVariadicFuncCall(Node $node) : bool
-    {
-        if (!$node instanceof FuncCall) {
-            return \false;
-        }
-        return $this->nodeNameResolver->isNames($node, self::VARIADIC_FUNCTION_NAMES);
     }
 }

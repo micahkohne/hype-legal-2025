@@ -74,9 +74,9 @@ class CustomFieldAttributes extends AbstractAttributes
      * @param CustomFormAttributes|null $formAttributes
      */
     public function __construct(
-        private readonly AbstractField $field,
+        private AbstractField $field,
         ?array $attributes = null,
-        private readonly ?CustomFormAttributes $formAttributes = null
+        private ?CustomFormAttributes $formAttributes = null
     ) {
         parent::__construct($attributes);
     }

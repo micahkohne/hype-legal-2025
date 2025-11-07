@@ -21,15 +21,15 @@ use ExpressionEngine\Model\Member\Role;
 
 class SettingsController extends Controller
 {
-    const TYPE_STATUSES             = 'statuses';
-    const TYPE_LICENSE              = 'license';
-    const TYPE_GENERAL              = 'general';
-    const TYPE_SPAM_PROTECTION      = 'spam_protection';
-    const TYPE_PERMISSIONS          = 'permissions';
-    const TYPE_FORMATTING_TEMPLATES = 'formatting_templates';
-    const TYPE_EMAIL_TEMPLATES      = 'email_templates';
-    const TYPE_DEMO_TEMPLATES       = 'demo_templates';
-    const TYPE_RECAPTCHA            = 'recaptcha';
+    public const TYPE_STATUSES             = 'statuses';
+    public const TYPE_LICENSE              = 'license';
+    public const TYPE_GENERAL              = 'general';
+    public const TYPE_SPAM_PROTECTION      = 'spam_protection';
+    public const TYPE_PERMISSIONS          = 'permissions';
+    public const TYPE_FORMATTING_TEMPLATES = 'formatting_templates';
+    public const TYPE_EMAIL_TEMPLATES      = 'email_templates';
+    public const TYPE_DEMO_TEMPLATES       = 'demo_templates';
+    public const TYPE_RECAPTCHA            = 'recaptcha';
 
     private static array $allowedTypes = [
         self::TYPE_STATUSES,
@@ -44,13 +44,12 @@ class SettingsController extends Controller
     ];
 
     /**
-     * @param string $type
      * @param int    $id
      *
      * @return View
      * @throws FreeformException
      */
-    public function index($type, $id)
+    public function index(string $type, $id)
     {
         $canAccessSettings = $this->getPermissionsService()->canAccessSettings(ee()->session->userdata('group_id'));
 
@@ -91,7 +90,7 @@ class SettingsController extends Controller
      * @return View
      * @throws FreeformException
      */
-    public function statusesAction($id = null)
+    public function statusesAction(null|string|int $id = null)
     {
         $canAccessSettings = $this->getPermissionsService()->canAccessSettings(ee()->session->userdata('group_id'));
 
@@ -114,7 +113,7 @@ class SettingsController extends Controller
                 }
             }
 
-            return $this->getStatusController()->edit($id);
+            return $this->getStatusController()->edit($id, $validation);
         }
 
         return $this->getStatusController()->index();
@@ -491,7 +490,7 @@ class SettingsController extends Controller
             ],
         ];
 
-        $sections = array_merge($sections, $additionalSections);
+        $sections = [...$sections, ...$additionalSections];
 
         $fields = [
             'base_url'              => ee('CP/URL', $this->getActionUrl(__FUNCTION__)),
@@ -757,7 +756,7 @@ class SettingsController extends Controller
      *
      * @return bool
      */
-    private function handlePost($type): ?bool
+    private function handlePost(string $type): ?bool
     {
         if ($type == self::TYPE_PERMISSIONS) {
             $settings = $this->getPermissionsModel();
@@ -804,11 +803,9 @@ class SettingsController extends Controller
     }
 
     /**
-     * @param string $method
-     *
      * @return string
      */
-    private function getActionUrl(string $method)
+    private function getActionUrl(string $method): string
     {
         $target = (string) Stringy::create($method)->underscored();
         $target = str_replace('_action', '', $target);

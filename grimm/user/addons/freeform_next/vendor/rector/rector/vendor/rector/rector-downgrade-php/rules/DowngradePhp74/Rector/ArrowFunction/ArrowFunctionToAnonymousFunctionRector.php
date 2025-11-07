@@ -4,20 +4,15 @@ declare (strict_types=1);
 namespace Rector\DowngradePhp74\Rector\ArrowFunction;
 
 use PhpParser\Node;
-use PhpParser\Node\ClosureUse;
-use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\ArrowFunction;
 use PhpParser\Node\Expr\Assign;
 use PhpParser\Node\Expr\Closure;
-use PhpParser\Node\Expr\Throw_;
+use PhpParser\Node\Expr\ClosureUse;
 use PhpParser\Node\Expr\Variable;
-use PhpParser\Node\Stmt\Expression;
 use PhpParser\Node\Stmt\Return_;
-use PHPStan\Analyser\Scope;
-use Rector\NodeTypeResolver\Node\AttributeKey;
+use PhpParser\Node\Stmt\Throw_;
+use Rector\Core\Rector\AbstractRector;
 use Rector\Php72\NodeFactory\AnonymousFunctionFactory;
-use Rector\PhpParser\Node\BetterNodeFinder;
-use Rector\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -29,16 +24,12 @@ final class ArrowFunctionToAnonymousFunctionRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\Php72\NodeFactory\AnonymousFunctionFactory
      */
-    private AnonymousFunctionFactory $anonymousFunctionFactory;
-    /**
-     * @readonly
-     */
-    private BetterNodeFinder $betterNodeFinder;
-    public function __construct(AnonymousFunctionFactory $anonymousFunctionFactory, BetterNodeFinder $betterNodeFinder)
+    private $anonymousFunctionFactory;
+    public function __construct(AnonymousFunctionFactory $anonymousFunctionFactory)
     {
         $this->anonymousFunctionFactory = $anonymousFunctionFactory;
-        $this->betterNodeFinder = $betterNodeFinder;
     }
     public function getRuleDefinition() : RuleDefinition
     {
@@ -81,48 +72,25 @@ CODE_SAMPLE
         $stmts = [new Return_($node->expr)];
         $anonymousFunctionFactory = $this->anonymousFunctionFactory->create($node->params, $stmts, $node->returnType, $node->static);
         if ($node->expr instanceof Assign && $node->expr->expr instanceof Variable) {
-            $isFound = (bool) $this->betterNodeFinder->findFirst($anonymousFunctionFactory->uses, fn(Node $subNode): bool => $subNode instanceof Variable && $this->nodeComparator->areNodesEqual($subNode, $node->expr->expr));
+            $isFound = (bool) $this->betterNodeFinder->findFirst($anonymousFunctionFactory->uses, function (Node $subNode) use($node) : bool {
+                return $subNode instanceof Variable && $this->nodeComparator->areNodesEqual($subNode, $node->expr->expr);
+            });
             if (!$isFound) {
-                $isAlsoParam = \in_array($node->expr->expr->name, \array_map(static fn($param) => $param->var instanceof Variable ? $param->var->name : null, $node->params));
-                if (!$isAlsoParam) {
-                    $anonymousFunctionFactory->uses[] = new ClosureUse($node->expr->expr);
-                }
+                $anonymousFunctionFactory->uses[] = new ClosureUse($node->expr->expr);
             }
         }
         // downgrade "return throw"
-        $this->traverseNodesWithCallable($anonymousFunctionFactory, static function (Node $node) : ?Expression {
+        $this->traverseNodesWithCallable($anonymousFunctionFactory, static function (Node $node) : ?Throw_ {
             if (!$node instanceof Return_) {
                 return null;
             }
-            if (!$node->expr instanceof Throw_) {
+            if (!$node->expr instanceof Node\Expr\Throw_) {
                 return null;
             }
+            $throw = $node->expr;
             // throw expr to throw stmts
-            return new Expression($node->expr);
+            return new Throw_($throw->expr);
         });
-        $this->appendUsesFromInsertedVariable($node->expr, $anonymousFunctionFactory);
         return $anonymousFunctionFactory;
-    }
-    private function appendUsesFromInsertedVariable(Expr $expr, Closure $anonymousFunctionFactory) : void
-    {
-        $this->traverseNodesWithCallable($expr, function (Node $subNode) use($anonymousFunctionFactory) {
-            if (!$subNode instanceof Variable) {
-                return null;
-            }
-            $variableName = $this->getName($subNode);
-            if ($variableName === null) {
-                return null;
-            }
-            if ($subNode->hasAttribute(AttributeKey::ORIGINAL_NODE)) {
-                return null;
-            }
-            $scope = $subNode->getAttribute(AttributeKey::SCOPE);
-            if (!$scope instanceof Scope) {
-                return null;
-            }
-            if (!$scope->hasVariableType($variableName)->yes()) {
-                $anonymousFunctionFactory->uses[] = new ClosureUse(new Variable($variableName));
-            }
-        });
     }
 }

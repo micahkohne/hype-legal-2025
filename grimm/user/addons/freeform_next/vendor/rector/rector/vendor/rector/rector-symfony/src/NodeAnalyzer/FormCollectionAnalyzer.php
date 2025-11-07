@@ -5,18 +5,20 @@ namespace Rector\Symfony\NodeAnalyzer;
 
 use PhpParser\Node\Expr\ClassConstFetch;
 use PhpParser\Node\Expr\MethodCall;
+use Rector\Core\PhpParser\Node\Value\ValueResolver;
 use Rector\NodeNameResolver\NodeNameResolver;
-use Rector\PhpParser\Node\Value\ValueResolver;
 final class FormCollectionAnalyzer
 {
     /**
      * @readonly
+     * @var \Rector\Core\PhpParser\Node\Value\ValueResolver
      */
-    private ValueResolver $valueResolver;
+    private $valueResolver;
     /**
      * @readonly
+     * @var \Rector\NodeNameResolver\NodeNameResolver
      */
-    private NodeNameResolver $nodeNameResolver;
+    private $nodeNameResolver;
     public function __construct(ValueResolver $valueResolver, NodeNameResolver $nodeNameResolver)
     {
         $this->valueResolver = $valueResolver;

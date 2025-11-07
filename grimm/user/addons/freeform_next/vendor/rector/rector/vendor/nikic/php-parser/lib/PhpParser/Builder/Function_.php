@@ -9,11 +9,10 @@ use PhpParser\Node;
 use PhpParser\Node\Stmt;
 class Function_ extends \PhpParser\Builder\FunctionLike
 {
-    protected string $name;
-    /** @var list<Stmt> */
-    protected array $stmts = [];
-    /** @var list<Node\AttributeGroup> */
-    protected array $attributeGroups = [];
+    protected $name;
+    protected $stmts = [];
+    /** @var Node\AttributeGroup[] */
+    protected $attributeGroups = [];
     /**
      * Creates a function builder.
      *

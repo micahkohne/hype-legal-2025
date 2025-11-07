@@ -7,7 +7,8 @@ use PHPStan\PhpDocParser\Ast\NodeAttributes;
 class ConstExprFloatNode implements \PHPStan\PhpDocParser\Ast\ConstExpr\ConstExprNode
 {
     use NodeAttributes;
-    public string $value;
+    /** @var string */
+    public $value;
     public function __construct(string $value)
     {
         $this->value = $value;

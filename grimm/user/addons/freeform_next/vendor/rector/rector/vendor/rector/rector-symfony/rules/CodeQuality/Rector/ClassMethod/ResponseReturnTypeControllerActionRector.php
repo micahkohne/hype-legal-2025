@@ -4,70 +4,39 @@ declare (strict_types=1);
 namespace Rector\Symfony\CodeQuality\Rector\ClassMethod;
 
 use PhpParser\Node;
-use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\MethodCall;
-use PhpParser\Node\Expr\New_;
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Name\FullyQualified;
+use PhpParser\Node\NullableType;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Return_;
-use PHPStan\Type\ObjectType;
-use PHPStan\Type\Type;
-use PHPStan\Type\UnionType;
+use Rector\Core\Rector\AbstractRector;
 use Rector\Doctrine\NodeAnalyzer\AttrinationFinder;
-use Rector\Exception\ShouldNotHappenException;
-use Rector\PhpParser\Node\BetterNodeFinder;
-use Rector\PHPStanStaticTypeMapper\Enum\TypeKind;
-use Rector\Rector\AbstractRector;
-use Rector\StaticTypeMapper\StaticTypeMapper;
-use Rector\Symfony\CodeQuality\Enum\ResponseClass;
 use Rector\Symfony\Enum\SensioAttribute;
 use Rector\Symfony\Enum\SymfonyAnnotation;
 use Rector\Symfony\TypeAnalyzer\ControllerAnalyzer;
-use Rector\TypeDeclaration\NodeAnalyzer\ReturnAnalyzer;
-use Rector\TypeDeclaration\TypeInferer\ReturnTypeInferer;
-use Rector\ValueObject\PhpVersionFeature;
-use Rector\VersionBonding\Contract\MinPhpVersionInterface;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
  * @see \Rector\Symfony\Tests\CodeQuality\Rector\ClassMethod\ResponseReturnTypeControllerActionRector\ResponseReturnTypeControllerActionRectorTest
  */
-final class ResponseReturnTypeControllerActionRector extends AbstractRector implements MinPhpVersionInterface
+final class ResponseReturnTypeControllerActionRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\Symfony\TypeAnalyzer\ControllerAnalyzer
      */
-    private ControllerAnalyzer $controllerAnalyzer;
+    private $controllerAnalyzer;
     /**
      * @readonly
+     * @var \Rector\Doctrine\NodeAnalyzer\AttrinationFinder
      */
-    private AttrinationFinder $attrinationFinder;
-    /**
-     * @readonly
-     */
-    private BetterNodeFinder $betterNodeFinder;
-    /**
-     * @readonly
-     */
-    private ReturnAnalyzer $returnAnalyzer;
-    /**
-     * @readonly
-     */
-    private StaticTypeMapper $staticTypeMapper;
-    /**
-     * @readonly
-     */
-    private ReturnTypeInferer $returnTypeInferer;
-    public function __construct(ControllerAnalyzer $controllerAnalyzer, AttrinationFinder $attrinationFinder, BetterNodeFinder $betterNodeFinder, ReturnAnalyzer $returnAnalyzer, StaticTypeMapper $staticTypeMapper, ReturnTypeInferer $returnTypeInferer)
+    private $attrinationFinder;
+    public function __construct(ControllerAnalyzer $controllerAnalyzer, AttrinationFinder $attrinationFinder)
     {
         $this->controllerAnalyzer = $controllerAnalyzer;
         $this->attrinationFinder = $attrinationFinder;
-        $this->betterNodeFinder = $betterNodeFinder;
-        $this->returnAnalyzer = $returnAnalyzer;
-        $this->staticTypeMapper = $staticTypeMapper;
-        $this->returnTypeInferer = $returnTypeInferer;
     }
     public function getRuleDefinition() : RuleDefinition
     {
@@ -129,25 +98,10 @@ CODE_SAMPLE
             return null;
         }
         if ($this->attrinationFinder->hasByOne($node, SensioAttribute::TEMPLATE) || $this->attrinationFinder->hasByOne($node, SymfonyAnnotation::TWIG_TEMPLATE)) {
-            $returnType = $this->returnTypeInferer->inferFunctionLike($node);
-            $types = $returnType instanceof UnionType ? $returnType->getTypes() : [$returnType];
-            $objectType = new ObjectType('Symfony\\Component\\HttpFoundation\\Response');
-            foreach ($types as $type) {
-                if ($type instanceof ObjectType && $objectType->isSuperTypeOf($type)->yes()) {
-                    return null;
-                }
-            }
-            if ($returnType->isArray()->yes()) {
-                $node->returnType = new Identifier('array');
-                return $node;
-            }
-            return null;
+            $node->returnType = new NullableType(new Identifier('array'));
+            return $node;
         }
         return $this->refactorResponse($node);
-    }
-    public function provideMinPhpVersion() : int
-    {
-        return PhpVersionFeature::SCALAR_TYPES;
     }
     /**
      * @param array<string> $methods
@@ -174,69 +128,28 @@ CODE_SAMPLE
     {
         return $this->betterNodeFinder->hasInstancesOf($classMethod, [Return_::class]);
     }
-    private function refactorResponse(ClassMethod $classMethod) : ?ClassMethod
+    private function refactorResponse(ClassMethod $classMethod) : Node
     {
         if ($this->isResponseReturnMethod($classMethod, ['redirectToRoute', 'redirect'])) {
-            $classMethod->returnType = new FullyQualified(ResponseClass::REDIRECT);
+            $classMethod->returnType = new FullyQualified('Symfony\\Component\\HttpFoundation\\RedirectResponse');
             return $classMethod;
         }
         if ($this->isResponseReturnMethod($classMethod, ['file'])) {
-            $classMethod->returnType = new FullyQualified(ResponseClass::BINARY_FILE);
+            $classMethod->returnType = new FullyQualified('Symfony\\Component\\HttpFoundation\\BinaryFileResponse');
             return $classMethod;
         }
         if ($this->isResponseReturnMethod($classMethod, ['json'])) {
-            $classMethod->returnType = new FullyQualified(ResponseClass::JSON);
+            $classMethod->returnType = new FullyQualified('Symfony\\Component\\HttpFoundation\\JsonResponse');
             return $classMethod;
         }
         if ($this->isResponseReturnMethod($classMethod, ['stream'])) {
-            $classMethod->returnType = new FullyQualified(ResponseClass::STREAMED);
+            $classMethod->returnType = new FullyQualified('Symfony\\Component\\HttpFoundation\\StreamedResponse');
             return $classMethod;
         }
         if ($this->isResponseReturnMethod($classMethod, ['render', 'forward', 'renderForm'])) {
-            $classMethod->returnType = new FullyQualified(ResponseClass::BASIC);
+            $classMethod->returnType = new FullyQualified('Symfony\\Component\\HttpFoundation\\Response');
             return $classMethod;
         }
-        return $this->refatorWithNew($classMethod);
-    }
-    private function refatorWithNew(ClassMethod $classMethod) : ?ClassMethod
-    {
-        // early check
-        if (!$this->betterNodeFinder->hasInstancesOf($classMethod, [New_::class])) {
-            return null;
-        }
-        $returns = $this->betterNodeFinder->findReturnsScoped($classMethod);
-        if (!$this->returnAnalyzer->hasOnlyReturnWithExpr($classMethod, $returns)) {
-            return null;
-        }
-        $responseReturnType = $this->resolveResponseOnlyReturnType($returns);
-        if (!$responseReturnType instanceof Type) {
-            return null;
-        }
-        $returnType = $this->staticTypeMapper->mapPHPStanTypeToPhpParserNode($responseReturnType, TypeKind::RETURN);
-        if (!$returnType instanceof FullyQualified) {
-            return null;
-        }
-        $classMethod->returnType = $returnType;
         return $classMethod;
-    }
-    /**
-     * @param Return_[] $returns
-     */
-    private function resolveResponseOnlyReturnType(array $returns) : ?Type
-    {
-        $returnedTypes = [];
-        foreach ($returns as $return) {
-            if (!$return->expr instanceof Expr) {
-                // already validated above
-                throw new ShouldNotHappenException();
-            }
-            $returnedType = $this->getType($return->expr);
-            // we only accept response
-            if (!$returnedType instanceof ObjectType || !$returnedType->isInstanceOf(ResponseClass::BASIC)->yes()) {
-                return null;
-            }
-            $returnedTypes[] = $returnedType;
-        }
-        return \count($returnedTypes) > 1 ? new UnionType($returnedTypes) : $returnedTypes[0];
     }
 }

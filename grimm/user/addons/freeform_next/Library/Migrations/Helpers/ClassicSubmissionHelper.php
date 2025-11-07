@@ -12,7 +12,8 @@
 namespace Solspace\Addons\FreeformNext\Library\Migrations\Helpers;
 
 use stdClass;
-use Solspace\Addons\Calendar\Library\AddonBuilder;
+use Solspace\Addons\Freeform\Library\AddonBuilder;
+use EllisLab\ExpressionEngine\Library\CP\Table;
 use Solspace\Addons\FreeformNext\Repositories\FormRepository;
 
 class ClassicSubmissionHelper extends AddonBuilder
@@ -88,7 +89,7 @@ class ClassicSubmissionHelper extends AddonBuilder
         return $submissions;
     }
 
-    public function getNextForm($formId = null)
+    public function getNextForm(mixed $formId = null)
     {
         $forms = FormRepository::getInstance()->getAllForms();
 
@@ -105,7 +106,7 @@ class ClassicSubmissionHelper extends AddonBuilder
         return false;
     }
 
-    public function getFormsCount()
+    public function getFormsCount(): int
     {
         $forms = FormRepository::getInstance()->getAllForms();
 
@@ -317,7 +318,7 @@ class ClassicSubmissionHelper extends AddonBuilder
      * @return	string			unit time formatted to cp date formatting pref
      */
 
-    public function format_cp_date($date)
+    public function format_cp_date(mixed $date)
     {
         return $this->lib('Utils')->format_cp_date($date);
     }
@@ -334,7 +335,7 @@ class ClassicSubmissionHelper extends AddonBuilder
      * @return	string						html view for field in form
      */
 
-    protected function setup_select_fields($available_fields, $order = [])
+    protected function setup_select_fields($available_fields, $order = []): string
     {
         //---------------------------------------------
         //  Dependencies
@@ -354,11 +355,7 @@ class ClassicSubmissionHelper extends AddonBuilder
 
         sort($selected);
 
-        ee()->cp->add_js_script([
-            'plugin'	=> 'ee_interact.event',
-            'file'		=> 'fields/relationship/cp',
-            'ui'		=> 'sortable'
-        ]);
+        ee()->cp->add_js_script(['plugin'	=> 'ee_interact.event', 'file'		=> 'fields/relationship/cp', 'ui'		=> 'sortable']);
 
         // -------------------------------------
         //	fields ('entries')
@@ -427,21 +424,7 @@ class ClassicSubmissionHelper extends AddonBuilder
                 //other items
                 lang('items'),
             ],
-            [
-                lang('available_fields'),
-                lang('available_fields'),
-                lang('selected_fields'),
-                '',
-                '',
-                '',
-                '',
-                lang('no_fields'),
-                lang('no_fields_chosen'),
-                '',
-                '<div class="filters" style="display:none">',
-                'class="relate-actions" style="display:none"',
-                lang('fields'),
-            ],
+            [lang('available_fields'), lang('available_fields'), lang('selected_fields'), '', '', '', '', lang('no_fields'), lang('no_fields_chosen'), '', '<div class="filters" style="display:none">', 'class="relate-actions" style="display:none"', lang('fields')],
             $field_view
         );
 

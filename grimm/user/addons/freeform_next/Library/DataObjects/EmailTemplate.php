@@ -16,29 +16,29 @@ use Solspace\Addons\FreeformNext\Library\Helpers\StringHelper;
 
 class EmailTemplate
 {
-    const METADATA_PATTERN = "/{!--\s*__KEY__:\s*(.*)\s*--}/";
+    public const METADATA_PATTERN = "/{!--\s*__KEY__:\s*(.*)\s*--}/";
 
-    private readonly string $name;
+    private string $name;
 
-    private readonly string $fileName;
+    private string|array $fileName;
 
-    private readonly string $handle;
+    private string|array $handle;
 
-    private readonly ?string $description;
+    private ?string $description;
 
-    private readonly string|bool $templateData;
+    private string|bool $templateData;
 
-    private readonly ?string $fromEmail;
+    private ?string $fromEmail;
 
-    private readonly ?string $fromName;
+    private ?string $fromName;
 
-    private readonly ?string $replyToEmail;
+    private ?string $replyToEmail;
 
-    private readonly bool $includeAttachments;
+    private bool $includeAttachments;
 
-    private readonly ?string $subject;
+    private ?string $subject;
 
-    private readonly ?string $body;
+    private string|array|null $body = null;
 
     /**
      * EmailTemplate constructor.
@@ -146,9 +146,6 @@ class EmailTemplate
     }
 
     /**
-     * @param string $key
-     * @param bool   $required
-     *
      * @return null|string
      * @throws EmailTemplateException
      */

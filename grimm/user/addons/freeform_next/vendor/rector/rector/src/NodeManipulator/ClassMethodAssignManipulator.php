@@ -1,28 +1,30 @@
 <?php
 
 declare (strict_types=1);
-namespace Rector\NodeManipulator;
+namespace Rector\Core\NodeManipulator;
 
 use PhpParser\Node\Expr\Assign;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Expression;
 use PHPStan\Type\Type;
+use Rector\Core\PhpParser\Node\NodeFactory;
 use Rector\NodeNameResolver\NodeNameResolver;
-use Rector\PhpParser\Node\NodeFactory;
 final class ClassMethodAssignManipulator
 {
     /**
      * @readonly
+     * @var \Rector\Core\PhpParser\Node\NodeFactory
      */
-    private NodeFactory $nodeFactory;
+    private $nodeFactory;
     /**
      * @readonly
+     * @var \Rector\NodeNameResolver\NodeNameResolver
      */
-    private NodeNameResolver $nodeNameResolver;
+    private $nodeNameResolver;
     /**
-     * @var array<int, string[]>
+     * @var array<string, string[]>
      */
-    private array $alreadyAddedClassMethodNames = [];
+    private $alreadyAddedClassMethodNames = [];
     public function __construct(NodeFactory $nodeFactory, NodeNameResolver $nodeNameResolver)
     {
         $this->nodeFactory = $nodeFactory;
@@ -35,8 +37,8 @@ final class ClassMethodAssignManipulator
         }
         $classMethod->params[] = $this->nodeFactory->createParamFromNameAndType($name, $type);
         $classMethod->stmts[] = new Expression($assign);
-        $classMethodId = \spl_object_id($classMethod);
-        $this->alreadyAddedClassMethodNames[$classMethodId][] = $name;
+        $classMethodHash = \spl_object_hash($classMethod);
+        $this->alreadyAddedClassMethodNames[$classMethodHash][] = $name;
     }
     private function hasMethodParameter(ClassMethod $classMethod, string $name) : bool
     {
@@ -45,10 +47,10 @@ final class ClassMethodAssignManipulator
                 return \true;
             }
         }
-        $classMethodId = \spl_object_id($classMethod);
-        if (!isset($this->alreadyAddedClassMethodNames[$classMethodId])) {
+        $classMethodHash = \spl_object_hash($classMethod);
+        if (!isset($this->alreadyAddedClassMethodNames[$classMethodHash])) {
             return \false;
         }
-        return \in_array($name, $this->alreadyAddedClassMethodNames[$classMethodId], \true);
+        return \in_array($name, $this->alreadyAddedClassMethodNames[$classMethodHash], \true);
     }
 }

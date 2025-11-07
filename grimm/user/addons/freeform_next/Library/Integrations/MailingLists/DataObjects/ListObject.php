@@ -21,13 +21,12 @@ class ListObject implements JsonSerializable
     /**
      * ListObject constructor.
      *
-     * @param MailingListIntegrationInterface $mailingList
      * @param string                          $id
      * @param string                          $name
      * @param FieldObject[]                   $fields
      * @param int                             $memberCount
      */
-    public function __construct(private readonly MailingListIntegrationInterface $mailingList, private $id, private $name, private readonly array $fields = [], private $memberCount = 0)
+    public function __construct(private MailingListIntegrationInterface $mailingList, private $id, private $name, private array $fields = [], private $memberCount = 0)
     {
     }
 
@@ -64,8 +63,6 @@ class ListObject implements JsonSerializable
     }
 
     /**
-     * @param array  $emails
-     * @param array  $mappedValues
      *
      * @return bool
      */

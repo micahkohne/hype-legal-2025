@@ -1,7 +1,7 @@
 <?php
 
 declare (strict_types=1);
-namespace Rector\FileSystem;
+namespace Rector\Core\FileSystem;
 
 final class FilesystemTweaker
 {
@@ -18,26 +18,10 @@ final class FilesystemTweaker
         foreach ($paths as $path) {
             if (\strpos($path, '*') !== \false) {
                 $foundPaths = $this->foundInGlob($path);
-                $absolutePathsFound = $this->appendPaths($foundPaths, $absolutePathsFound);
+                $absolutePathsFound = \array_merge($absolutePathsFound, $foundPaths);
             } else {
-                $absolutePathsFound = $this->appendPaths([$path], $absolutePathsFound);
+                $absolutePathsFound[] = $path;
             }
-        }
-        return $absolutePathsFound;
-    }
-    /**
-     * @param string[] $foundPaths
-     * @param string[] $absolutePathsFound
-     * @return string[]
-     */
-    private function appendPaths(array $foundPaths, array $absolutePathsFound) : array
-    {
-        foreach ($foundPaths as $foundPath) {
-            $foundPath = \realpath($foundPath);
-            if ($foundPath === \false) {
-                continue;
-            }
-            $absolutePathsFound[] = $foundPath;
         }
         return $absolutePathsFound;
     }
@@ -48,6 +32,8 @@ final class FilesystemTweaker
     {
         /** @var string[] $paths */
         $paths = (array) \glob($path);
-        return \array_filter($paths, static fn(string $path): bool => \file_exists($path));
+        return \array_filter($paths, static function (string $path) : bool {
+            return \file_exists($path);
+        });
     }
 }

@@ -2,10 +2,10 @@
 
 namespace Solspace\Addons\FreeformNext\Library\Connections;
 
-use Craft;
-use ReflectionClass;
 use ReflectionException;
 use Throwable;
+use Craft;
+use ReflectionClass;
 use Solspace\Addons\FreeformNext\Library\DataObjects\ConnectionResult;
 use Solspace\Addons\FreeformNext\Library\Exceptions\Connections\ConnectionException;
 
@@ -18,7 +18,6 @@ abstract class AbstractConnection extends BaseConfiguration implements Connectio
     protected $mapping;
 
     /**
-     * @param array $configuration
      *
      * @return ConnectionInterface
      * @throws ConnectionException
@@ -110,7 +109,6 @@ abstract class AbstractConnection extends BaseConfiguration implements Connectio
 
     /**
      * @param Element $element
-     * @param array   $keyValuePairs
      */
     protected function beforeValidate(Element $element, array $keyValuePairs)
     {
@@ -118,8 +116,6 @@ abstract class AbstractConnection extends BaseConfiguration implements Connectio
 
     /**
      * @param Element          $element
-     * @param ConnectionResult $result
-     * @param array            $keyValuePairs
      */
     protected function afterConnect(Element $element, ConnectionResult $result, array $keyValuePairs)
     {
@@ -127,15 +123,12 @@ abstract class AbstractConnection extends BaseConfiguration implements Connectio
 
     /**
      * @param Element          $element
-     * @param ConnectionResult $result
-     * @param array            $keyValuePairs
      */
     protected function beforeConnect(Element $element, ConnectionResult $result, array $keyValuePairs)
     {
     }
 
     /**
-     * @param ConnectionResult $result
      * @param Element          $element
      */
     protected function attachErrors(ConnectionResult $result, Element $element)
@@ -165,8 +158,6 @@ abstract class AbstractConnection extends BaseConfiguration implements Connectio
     }
 
     /**
-     * @param array $keyValueMap
-     *
      * @return Element
      */
     abstract protected function buildElement(array $keyValueMap);

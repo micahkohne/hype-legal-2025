@@ -3,11 +3,11 @@
 declare (strict_types=1);
 namespace Rector\Symfony\CodeQuality\Rector\ClassMethod;
 
-use RectorPrefix202507\Nette\Utils\Strings;
+use RectorPrefix202308\Nette\Utils\Strings;
 use PhpParser\Node;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Stmt\ClassMethod;
-use Rector\Rector\AbstractRector;
+use Rector\Core\Rector\AbstractRector;
 use Rector\Symfony\Bridge\NodeAnalyzer\ControllerMethodAnalyzer;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
@@ -18,8 +18,9 @@ final class ActionSuffixRemoverRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\Symfony\Bridge\NodeAnalyzer\ControllerMethodAnalyzer
      */
-    private ControllerMethodAnalyzer $controllerMethodAnalyzer;
+    private $controllerMethodAnalyzer;
     public function __construct(ControllerMethodAnalyzer $controllerMethodAnalyzer)
     {
         $this->controllerMethodAnalyzer = $controllerMethodAnalyzer;
@@ -59,19 +60,13 @@ CODE_SAMPLE
         if (!$this->controllerMethodAnalyzer->isAction($node)) {
             return null;
         }
-        if ($node->name->toString() === 'getAction') {
-            return null;
-        }
-        return $this->removeSuffix($node, 'Action');
+        $this->removeSuffix($node, 'Action');
+        return $node;
     }
-    private function removeSuffix(ClassMethod $classMethod, string $suffixToRemove) : ?ClassMethod
+    private function removeSuffix(ClassMethod $classMethod, string $suffixToRemove) : void
     {
-        $name = $this->getName($classMethod);
+        $name = $this->nodeNameResolver->getName($classMethod);
         $newName = Strings::replace($name, \sprintf('#%s$#', $suffixToRemove), '');
-        if ($newName === $name) {
-            return null;
-        }
         $classMethod->name = new Identifier($newName);
-        return $classMethod;
     }
 }

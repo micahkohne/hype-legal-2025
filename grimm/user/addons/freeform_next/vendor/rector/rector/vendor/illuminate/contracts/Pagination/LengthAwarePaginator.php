@@ -1,14 +1,7 @@
 <?php
 
-namespace RectorPrefix202507\Illuminate\Contracts\Pagination;
+namespace RectorPrefix202308\Illuminate\Contracts\Pagination;
 
-/**
- * @template TKey of array-key
- *
- * @template-covariant TValue
- *
- * @extends Paginator<TKey, TValue>
- */
 interface LengthAwarePaginator extends Paginator
 {
     /**

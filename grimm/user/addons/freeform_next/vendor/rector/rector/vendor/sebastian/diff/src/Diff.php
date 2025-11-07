@@ -9,32 +9,25 @@ declare (strict_types=1);
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-namespace RectorPrefix202507\SebastianBergmann\Diff;
+namespace RectorPrefix202308\SebastianBergmann\Diff;
 
-use ArrayIterator;
-use IteratorAggregate;
-use Traversable;
-/**
- * @template-implements IteratorAggregate<int, Chunk>
- */
-final class Diff implements IteratorAggregate
+final class Diff
 {
     /**
-     * @var non-empty-string
+     * @var string
      */
-    private string $from;
+    private $from;
     /**
-     * @var non-empty-string
+     * @var string
      */
-    private string $to;
+    private $to;
     /**
-     * @var list<Chunk>
+     * @psalm-var list<Chunk>
+     * @var mixed[]
      */
-    private array $chunks;
+    private $chunks;
     /**
-     * @param non-empty-string $from
-     * @param non-empty-string $to
-     * @param list<Chunk>      $chunks
+     * @psalm-param list<Chunk> $chunks
      */
     public function __construct(string $from, string $to, array $chunks = [])
     {
@@ -42,36 +35,26 @@ final class Diff implements IteratorAggregate
         $this->to = $to;
         $this->chunks = $chunks;
     }
-    /**
-     * @return non-empty-string
-     */
-    public function from() : string
+    public function getFrom() : string
     {
         return $this->from;
     }
-    /**
-     * @return non-empty-string
-     */
-    public function to() : string
+    public function getTo() : string
     {
         return $this->to;
     }
     /**
-     * @return list<Chunk>
+     * @psalm-return list<Chunk>
      */
-    public function chunks() : array
+    public function getChunks() : array
     {
         return $this->chunks;
     }
     /**
-     * @param list<Chunk> $chunks
+     * @psalm-param list<Chunk> $chunks
      */
     public function setChunks(array $chunks) : void
     {
         $this->chunks = $chunks;
-    }
-    public function getIterator() : Traversable
-    {
-        return new ArrayIterator($this->chunks);
     }
 }

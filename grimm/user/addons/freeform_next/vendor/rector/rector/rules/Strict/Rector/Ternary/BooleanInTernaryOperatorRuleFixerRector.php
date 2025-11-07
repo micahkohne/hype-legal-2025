@@ -6,7 +6,7 @@ namespace Rector\Strict\Rector\Ternary;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Ternary;
-use Rector\PHPStan\ScopeFetcher;
+use PHPStan\Analyser\Scope;
 use Rector\Strict\NodeFactory\ExactCompareFactory;
 use Rector\Strict\Rector\AbstractFalsyScalarRuleFixerRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\ConfiguredCodeSample;
@@ -21,8 +21,9 @@ final class BooleanInTernaryOperatorRuleFixerRector extends AbstractFalsyScalarR
 {
     /**
      * @readonly
+     * @var \Rector\Strict\NodeFactory\ExactCompareFactory
      */
-    private ExactCompareFactory $exactCompareFactory;
+    private $exactCompareFactory;
     public function __construct(ExactCompareFactory $exactCompareFactory)
     {
         $this->exactCompareFactory = $exactCompareFactory;
@@ -60,13 +61,12 @@ CODE_SAMPLE
     /**
      * @param Ternary $node
      */
-    public function refactor(Node $node) : ?Ternary
+    public function refactorWithScope(Node $node, Scope $scope) : ?Ternary
     {
         // skip short ternary
         if (!$node->if instanceof Expr) {
             return null;
         }
-        $scope = ScopeFetcher::fetch($node);
         $exprType = $scope->getNativeType($node->cond);
         $expr = $this->exactCompareFactory->createNotIdenticalFalsyCompare($exprType, $node->cond, $this->treatAsNonEmpty);
         if (!$expr instanceof Expr) {

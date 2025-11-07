@@ -7,11 +7,10 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassMethod;
-use Rector\PhpParser\Node\BetterNodeFinder;
+use Rector\Core\Rector\AbstractRector;
 use Rector\PHPUnit\NodeAnalyzer\TestsNodeAnalyzer;
 use Rector\PHPUnit\NodeFinder\DataProviderClassMethodFinder;
 use Rector\Privatization\NodeManipulator\VisibilityManipulator;
-use Rector\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -21,26 +20,24 @@ final class StaticDataProviderClassMethodRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\PHPUnit\NodeAnalyzer\TestsNodeAnalyzer
      */
-    private TestsNodeAnalyzer $testsNodeAnalyzer;
+    private $testsNodeAnalyzer;
     /**
      * @readonly
+     * @var \Rector\PHPUnit\NodeFinder\DataProviderClassMethodFinder
      */
-    private DataProviderClassMethodFinder $dataProviderClassMethodFinder;
+    private $dataProviderClassMethodFinder;
     /**
      * @readonly
+     * @var \Rector\Privatization\NodeManipulator\VisibilityManipulator
      */
-    private VisibilityManipulator $visibilityManipulator;
-    /**
-     * @readonly
-     */
-    private BetterNodeFinder $betterNodeFinder;
-    public function __construct(TestsNodeAnalyzer $testsNodeAnalyzer, DataProviderClassMethodFinder $dataProviderClassMethodFinder, VisibilityManipulator $visibilityManipulator, BetterNodeFinder $betterNodeFinder)
+    private $visibilityManipulator;
+    public function __construct(TestsNodeAnalyzer $testsNodeAnalyzer, DataProviderClassMethodFinder $dataProviderClassMethodFinder, VisibilityManipulator $visibilityManipulator)
     {
         $this->testsNodeAnalyzer = $testsNodeAnalyzer;
         $this->dataProviderClassMethodFinder = $dataProviderClassMethodFinder;
         $this->visibilityManipulator = $visibilityManipulator;
-        $this->betterNodeFinder = $betterNodeFinder;
     }
     public function getRuleDefinition() : RuleDefinition
     {
@@ -120,6 +117,8 @@ CODE_SAMPLE
         if ($classMethod->stmts === null) {
             return \false;
         }
-        return (bool) $this->betterNodeFinder->findFirst($classMethod->stmts, fn(Node $node): bool => $node instanceof Variable && $this->isName($node, 'this'));
+        return (bool) $this->betterNodeFinder->findFirst($classMethod->stmts, function (Node $node) : bool {
+            return $node instanceof Variable && $this->nodeNameResolver->isName($node, 'this');
+        });
     }
 }

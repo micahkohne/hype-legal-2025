@@ -4,21 +4,24 @@ declare (strict_types=1);
 namespace Rector\Visibility\ValueObject;
 
 use PHPStan\Type\ObjectType;
-use Rector\Validation\RectorAssert;
+use Rector\Core\Validation\RectorAssert;
 final class ChangeConstantVisibility
 {
     /**
      * @readonly
+     * @var string
      */
-    private string $class;
+    private $class;
     /**
      * @readonly
+     * @var string
      */
-    private string $constant;
+    private $constant;
     /**
      * @readonly
+     * @var int
      */
-    private int $visibility;
+    private $visibility;
     public function __construct(string $class, string $constant, int $visibility)
     {
         $this->class = $class;

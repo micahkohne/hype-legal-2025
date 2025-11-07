@@ -11,7 +11,6 @@
 
 namespace Solspace\Addons\FreeformNext\Repositories;
 
-use Override;
 use Solspace\Addons\FreeformNext\Model\FormModel;
 use Solspace\Addons\FreeformNext\Model\SubmissionModel;
 
@@ -26,7 +25,6 @@ class FormRepository extends Repository
     /**
      * @return FormRepository
      */
-    #[Override]
     public static function getInstance()
     {
         return parent::getInstance();
@@ -37,7 +35,7 @@ class FormRepository extends Repository
      *
      * @return FormModel|null
      */
-    public function getOrCreateForm($id = null)
+    public function getOrCreateForm(mixed $id = null)
     {
         $model = null;
         if ($id) {
@@ -57,7 +55,7 @@ class FormRepository extends Repository
      *
      * @return FormModel[]
      */
-    public function getAllForms($ids = null, $handles = null)
+    public function getAllForms(?string $ids = null, ?string $handles = null)
     {
         $query = ee('Model')
             ->get(FormModel::MODEL);
@@ -114,8 +112,6 @@ class FormRepository extends Repository
     }
 
     /**
-     * @param array $ids
-     *
      * @return FormModel[]
      */
     public function getFormByIdList(array $ids)
@@ -161,8 +157,6 @@ class FormRepository extends Repository
     }
 
     /**
-     * @param array $formIds
-     *
      * @return array
      */
     public function getFormSubmissionCount(array $formIds): array

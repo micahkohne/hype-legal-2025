@@ -1,73 +1,62 @@
 <?php
 
 declare (strict_types=1);
-namespace Rector\NodeManipulator;
+namespace Rector\Core\NodeManipulator;
 
 use PhpParser\Node;
 use PhpParser\Node\Expr\Assign;
-use PhpParser\Node\Expr\ErrorSuppress;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\List_;
 use PhpParser\Node\Expr\PropertyFetch;
 use PhpParser\Node\Expr\StaticPropertyFetch;
 use PhpParser\Node\FunctionLike;
-use Rector\NodeAnalyzer\PropertyFetchAnalyzer;
+use Rector\Core\NodeAnalyzer\PropertyFetchAnalyzer;
+use Rector\Core\PhpParser\Node\BetterNodeFinder;
 use Rector\NodeNameResolver\NodeNameResolver;
-use Rector\NodeNestingScope\ContextAnalyzer;
-use Rector\Php72\ValueObject\ListAndEach;
-use Rector\PhpParser\Node\BetterNodeFinder;
+use Rector\NodeTypeResolver\Node\AttributeKey;
 final class AssignManipulator
 {
     /**
      * @readonly
+     * @var \Rector\NodeNameResolver\NodeNameResolver
      */
-    private NodeNameResolver $nodeNameResolver;
+    private $nodeNameResolver;
     /**
      * @readonly
+     * @var \Rector\Core\PhpParser\Node\BetterNodeFinder
      */
-    private BetterNodeFinder $betterNodeFinder;
+    private $betterNodeFinder;
     /**
      * @readonly
+     * @var \Rector\Core\NodeAnalyzer\PropertyFetchAnalyzer
      */
-    private PropertyFetchAnalyzer $propertyFetchAnalyzer;
-    /**
-     * @readonly
-     */
-    private ContextAnalyzer $contextAnalyzer;
-    public function __construct(NodeNameResolver $nodeNameResolver, BetterNodeFinder $betterNodeFinder, PropertyFetchAnalyzer $propertyFetchAnalyzer, ContextAnalyzer $contextAnalyzer)
+    private $propertyFetchAnalyzer;
+    public function __construct(NodeNameResolver $nodeNameResolver, BetterNodeFinder $betterNodeFinder, PropertyFetchAnalyzer $propertyFetchAnalyzer)
     {
         $this->nodeNameResolver = $nodeNameResolver;
         $this->betterNodeFinder = $betterNodeFinder;
         $this->propertyFetchAnalyzer = $propertyFetchAnalyzer;
-        $this->contextAnalyzer = $contextAnalyzer;
     }
     /**
      * Matches:
-     * list([1, 2]) = each($items)
+     * each() = [1, 2];
      */
-    public function matchListAndEach(Assign $assign) : ?ListAndEach
+    public function isListToEachAssign(Assign $assign) : bool
     {
-        // could be behind error suppress
-        if ($assign->expr instanceof ErrorSuppress) {
-            $errorSuppress = $assign->expr;
-            $bareExpr = $errorSuppress->expr;
-        } else {
-            $bareExpr = $assign->expr;
-        }
-        if (!$bareExpr instanceof FuncCall) {
-            return null;
+        if (!$assign->expr instanceof FuncCall) {
+            return \false;
         }
         if (!$assign->var instanceof List_) {
-            return null;
+            return \false;
         }
-        if (!$this->nodeNameResolver->isName($bareExpr, 'each')) {
-            return null;
+        return $this->nodeNameResolver->isName($assign->expr, 'each');
+    }
+    public function isLeftPartOfAssign(Node $node) : bool
+    {
+        if ($node->getAttribute(AttributeKey::IS_BEING_ASSIGNED) === \true) {
+            return \true;
         }
-        // no placeholders
-        if ($bareExpr->isFirstClassCallable()) {
-            return null;
-        }
-        return new ListAndEach($assign->var, $bareExpr);
+        return $node->getAttribute(AttributeKey::IS_ASSIGNED_TO) === \true;
     }
     /**
      * @api doctrine
@@ -79,7 +68,7 @@ final class AssignManipulator
             if (!$this->propertyFetchAnalyzer->isLocalPropertyFetch($node)) {
                 return \false;
             }
-            return $this->contextAnalyzer->isLeftPartOfAssign($node);
+            return $this->isLeftPartOfAssign($node);
         });
     }
 }

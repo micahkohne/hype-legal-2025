@@ -11,7 +11,6 @@
 
 namespace Solspace\Addons\FreeformNext\Integrations\MailingLists;
 
-use Override;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\BadResponseException;
 use Solspace\Addons\FreeformNext\Library\Exceptions\Integrations\IntegrationException;
@@ -24,11 +23,11 @@ use Solspace\Addons\FreeformNext\Library\Logging\LoggerInterface;
 
 class CampaignMonitor extends AbstractMailingListIntegration
 {
-    const TITLE        = 'Campaign Monitor';
-    const LOG_CATEGORY = 'CampaignMonitor';
+    public const TITLE        = 'Campaign Monitor';
+    public const LOG_CATEGORY = 'CampaignMonitor';
 
-    const SETTING_API_KEY   = 'api_key';
-    const SETTING_CLIENT_ID = 'client_id';
+    public const SETTING_API_KEY   = 'api_key';
+    public const SETTING_CLIENT_ID = 'client_id';
 
     /**
      * Returns a list of additional settings for this integration
@@ -36,7 +35,6 @@ class CampaignMonitor extends AbstractMailingListIntegration
      *
      * @return SettingBlueprint[]
      */
-    #[Override]
     public static function getSettingBlueprints(): array
     {
         return [
@@ -63,7 +61,6 @@ class CampaignMonitor extends AbstractMailingListIntegration
      *
      * @return string
      */
-    #[Override]
     public function getServiceProvider(): string
     {
         return 'Campaign Monitor';
@@ -167,7 +164,7 @@ class CampaignMonitor extends AbstractMailingListIntegration
     /**
      * A method that initiates the authentication
      */
-    public function initiateAuthentication()
+    public function initiateAuthentication(): void
     {
     }
 
@@ -261,7 +258,7 @@ class CampaignMonitor extends AbstractMailingListIntegration
      * @return FieldObject[]
      * @throws IntegrationException
      */
-    protected function fetchFields($listId): array
+    protected function fetchFields($listId)
     {
         $client   = new Client();
         $endpoint = $this->getEndpoint("/lists/$listId/customfields.json");

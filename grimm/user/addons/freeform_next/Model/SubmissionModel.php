@@ -11,7 +11,8 @@
 
 namespace Solspace\Addons\FreeformNext\Model;
 
-use ExpressionEngine\Service\Model\Model;
+use DateTime;
+use EllisLab\ExpressionEngine\Service\Model\Model;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\AbstractField;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Form;
 use Solspace\Addons\FreeformNext\Library\Exceptions\FreeformException;
@@ -42,10 +43,10 @@ class SubmissionModel extends Model
 {
     use TimestampableTrait;
 
-    const MODEL = 'freeform_next:SubmissionModel';
-    const TABLE = 'freeform_next_submissions';
+    public const MODEL = 'freeform_next:SubmissionModel';
+    public const TABLE = 'freeform_next_submissions';
 
-    const FIELD_COLUMN_PREFIX = 'field_';
+    public const FIELD_COLUMN_PREFIX = 'field_';
 
     /** @var AbstractField[] */
     private static $fieldMetadata = [];
@@ -88,8 +89,6 @@ class SubmissionModel extends Model
     /**
      * Creates a Field object with default settings
      *
-     * @param Form  $form
-     * @param array $fetchedValues
      *
      * @return SubmissionModel
      */
@@ -135,8 +134,6 @@ class SubmissionModel extends Model
     /**
      * Creates a Field object with default settings
      *
-     * @param Form  $form
-     * @param array $fetchedValues
      *
      * @return SubmissionModel
      */
@@ -281,11 +278,10 @@ class SubmissionModel extends Model
 
     /**
      * @param string $handle
-     * @param mixed  $value
      *
      * @return $this
      */
-    public function setFieldValue($handle, $value): static
+    public function setFieldValue($handle, mixed $value)
     {
         $this->fieldValues[$handle] = $value;
 
@@ -318,7 +314,7 @@ class SubmissionModel extends Model
                     $insertData
                 );
         } else {
-            if (!empty($this->dateCreated)) {
+            if ($this->dateCreated instanceof DateTime) {
                 if (is_string($this->dateCreated)) {
                     $dateCreated = $this->dateCreated;
                 } else {
@@ -356,12 +352,10 @@ class SubmissionModel extends Model
     }
 
     /**
-     * @param Form $form
      * @param      $savableFields
-     *
      * @return $this
      */
-    public function setTitle(Form $form, ?array $savableFields): static
+    public function setTitle(Form $form, $savableFields)
     {
         $this->title = '';
 
@@ -378,12 +372,9 @@ class SubmissionModel extends Model
     }
 
     /**
-     * @param int   $fieldId
-     * @param mixed $value
-     *
      * @return $this
      */
-    private function setFieldColumnValue(int $fieldId, $value): static
+    private function setFieldColumnValue(int $fieldId, mixed $value)
     {
         $field = self::getFieldMetadataById($this->formId, $fieldId);
 

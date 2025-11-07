@@ -7,7 +7,7 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\ClassConstFetch;
 use PhpParser\Node\Scalar\String_;
 use PHPStan\Type\ObjectType;
-use Rector\Rector\AbstractRector;
+use Rector\Core\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -21,8 +21,9 @@ final class ConsoleExceptionToErrorEventConstantRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \PHPStan\Type\ObjectType
      */
-    private ObjectType $consoleEventsObjectType;
+    private $consoleEventsObjectType;
     public function __construct()
     {
         $this->consoleEventsObjectType = new ObjectType('Symfony\\Component\\Console\\ConsoleEvents');

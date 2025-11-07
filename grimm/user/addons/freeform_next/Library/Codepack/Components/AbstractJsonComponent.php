@@ -54,7 +54,7 @@ abstract class AbstractJsonComponent implements ComponentInterface
      *
      * @param string $prefix
      */
-    abstract public function install($prefix = null);
+    abstract public function install(?string $prefix = null);
 
     /**
      * This is the method that sets all vital properties
@@ -63,7 +63,6 @@ abstract class AbstractJsonComponent implements ComponentInterface
     abstract protected function setProperties();
 
     /**
-     * @param string $location
      *
      * @return bool
      * @throws CodepackException

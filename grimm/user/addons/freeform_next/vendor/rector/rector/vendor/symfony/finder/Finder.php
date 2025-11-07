@@ -8,20 +8,20 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-namespace RectorPrefix202507\Symfony\Component\Finder;
+namespace RectorPrefix202308\Symfony\Component\Finder;
 
-use RectorPrefix202507\Symfony\Component\Finder\Comparator\DateComparator;
-use RectorPrefix202507\Symfony\Component\Finder\Comparator\NumberComparator;
-use RectorPrefix202507\Symfony\Component\Finder\Exception\DirectoryNotFoundException;
-use RectorPrefix202507\Symfony\Component\Finder\Iterator\CustomFilterIterator;
-use RectorPrefix202507\Symfony\Component\Finder\Iterator\DateRangeFilterIterator;
-use RectorPrefix202507\Symfony\Component\Finder\Iterator\DepthRangeFilterIterator;
-use RectorPrefix202507\Symfony\Component\Finder\Iterator\ExcludeDirectoryFilterIterator;
-use RectorPrefix202507\Symfony\Component\Finder\Iterator\FilecontentFilterIterator;
-use RectorPrefix202507\Symfony\Component\Finder\Iterator\FilenameFilterIterator;
-use RectorPrefix202507\Symfony\Component\Finder\Iterator\LazyIterator;
-use RectorPrefix202507\Symfony\Component\Finder\Iterator\SizeRangeFilterIterator;
-use RectorPrefix202507\Symfony\Component\Finder\Iterator\SortableIterator;
+use RectorPrefix202308\Symfony\Component\Finder\Comparator\DateComparator;
+use RectorPrefix202308\Symfony\Component\Finder\Comparator\NumberComparator;
+use RectorPrefix202308\Symfony\Component\Finder\Exception\DirectoryNotFoundException;
+use RectorPrefix202308\Symfony\Component\Finder\Iterator\CustomFilterIterator;
+use RectorPrefix202308\Symfony\Component\Finder\Iterator\DateRangeFilterIterator;
+use RectorPrefix202308\Symfony\Component\Finder\Iterator\DepthRangeFilterIterator;
+use RectorPrefix202308\Symfony\Component\Finder\Iterator\ExcludeDirectoryFilterIterator;
+use RectorPrefix202308\Symfony\Component\Finder\Iterator\FilecontentFilterIterator;
+use RectorPrefix202308\Symfony\Component\Finder\Iterator\FilenameFilterIterator;
+use RectorPrefix202308\Symfony\Component\Finder\Iterator\LazyIterator;
+use RectorPrefix202308\Symfony\Component\Finder\Iterator\SizeRangeFilterIterator;
+use RectorPrefix202308\Symfony\Component\Finder\Iterator\SortableIterator;
 /**
  * Finder allows to build rules to find files and directories.
  *
@@ -42,30 +42,86 @@ class Finder implements \IteratorAggregate, \Countable
     public const IGNORE_VCS_FILES = 1;
     public const IGNORE_DOT_FILES = 2;
     public const IGNORE_VCS_IGNORED_FILES = 4;
-    private int $mode = 0;
-    private array $names = [];
-    private array $notNames = [];
-    private array $exclude = [];
-    private array $filters = [];
-    private array $pruneFilters = [];
-    private array $depths = [];
-    private array $sizes = [];
-    private bool $followLinks = \false;
-    private bool $reverseSorting = \false;
+    /**
+     * @var int
+     */
+    private $mode = 0;
+    /**
+     * @var mixed[]
+     */
+    private $names = [];
+    /**
+     * @var mixed[]
+     */
+    private $notNames = [];
+    /**
+     * @var mixed[]
+     */
+    private $exclude = [];
+    /**
+     * @var mixed[]
+     */
+    private $filters = [];
+    /**
+     * @var mixed[]
+     */
+    private $depths = [];
+    /**
+     * @var mixed[]
+     */
+    private $sizes = [];
+    /**
+     * @var bool
+     */
+    private $followLinks = \false;
+    /**
+     * @var bool
+     */
+    private $reverseSorting = \false;
     /**
      * @var \Closure|int|false
      */
     private $sort = \false;
-    private int $ignore = 0;
-    private array $dirs = [];
-    private array $dates = [];
-    private array $iterators = [];
-    private array $contains = [];
-    private array $notContains = [];
-    private array $paths = [];
-    private array $notPaths = [];
-    private bool $ignoreUnreadableDirs = \false;
-    private static array $vcsPatterns = ['.svn', '_svn', 'CVS', '_darcs', '.arch-params', '.monotone', '.bzr', '.git', '.hg'];
+    /**
+     * @var int
+     */
+    private $ignore = 0;
+    /**
+     * @var mixed[]
+     */
+    private $dirs = [];
+    /**
+     * @var mixed[]
+     */
+    private $dates = [];
+    /**
+     * @var mixed[]
+     */
+    private $iterators = [];
+    /**
+     * @var mixed[]
+     */
+    private $contains = [];
+    /**
+     * @var mixed[]
+     */
+    private $notContains = [];
+    /**
+     * @var mixed[]
+     */
+    private $paths = [];
+    /**
+     * @var mixed[]
+     */
+    private $notPaths = [];
+    /**
+     * @var bool
+     */
+    private $ignoreUnreadableDirs = \false;
+    /**
+     * @var mixed[]
+     */
+    private static $vcsPatterns = ['.svn', '_svn', 'CVS', '_darcs', '.arch-params', '.monotone', '.bzr', '.git', '.hg'];
     public function __construct()
     {
         $this->ignore = static::IGNORE_VCS_FILES | static::IGNORE_DOT_FILES;
@@ -526,20 +582,13 @@ class Finder implements \IteratorAggregate, \Countable
      * The anonymous function receives a \SplFileInfo and must return false
      * to remove files.
      *
-     * @param \Closure(SplFileInfo): bool $closure
-     * @param bool                        $prune   Whether to skip traversing directories further
-     *
      * @return $this
      *
      * @see CustomFilterIterator
      */
     public function filter(\Closure $closure)
     {
-        $prune = 1 < \func_num_args() ? \func_get_arg(1) : \false;
         $this->filters[] = $closure;
-        if ($prune) {
-            $this->pruneFilters[] = $closure;
-        }
         return $this;
     }
     /**
@@ -612,7 +661,9 @@ class Finder implements \IteratorAggregate, \Countable
         }
         $iterator = new \AppendIterator();
         foreach ($this->dirs as $dir) {
-            $iterator->append(new \IteratorIterator(new LazyIterator(fn() => $this->searchInDirectory($dir))));
+            $iterator->append(new \IteratorIterator(new LazyIterator(function () use($dir) {
+                return $this->searchInDirectory($dir);
+            })));
         }
         foreach ($this->iterators as $it) {
             $iterator->append($it);
@@ -670,9 +721,6 @@ class Finder implements \IteratorAggregate, \Countable
     {
         $exclude = $this->exclude;
         $notPaths = $this->notPaths;
-        if ($this->pruneFilters) {
-            $exclude = \array_merge($exclude, $this->pruneFilters);
-        }
         if (static::IGNORE_VCS_FILES === (static::IGNORE_VCS_FILES & $this->ignore)) {
             $exclude = \array_merge($exclude, self::$vcsPatterns);
         }

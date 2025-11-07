@@ -10,7 +10,7 @@ class UnionTypeNode implements \PHPStan\PhpDocParser\Ast\Type\TypeNode
 {
     use NodeAttributes;
     /** @var TypeNode[] */
-    public array $types;
+    public $types;
     /**
      * @param TypeNode[] $types
      */

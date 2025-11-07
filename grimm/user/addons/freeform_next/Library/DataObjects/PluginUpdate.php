@@ -3,7 +3,6 @@
 namespace Solspace\Addons\FreeformNext\Library\DataObjects;
 
 use DateTime;
-
 class PluginUpdate
 {
     private array $bugfixes;
@@ -17,10 +16,8 @@ class PluginUpdate
      *
      * @param string    $version
      * @param string    $downloadUrl
-     * @param DateTime $date
-     * @param array     $items
      */
-    public function __construct(private $version, private $downloadUrl, private readonly DateTime $date, array $items)
+    public function __construct(private $version, private $downloadUrl, private DateTime $date, array $items)
     {
         $this->bugfixes = [];
         $this->features = [];
@@ -29,13 +26,10 @@ class PluginUpdate
         $this->parseItems($items);
     }
 
-    /**
-     * @param array $items
-     */
     private function parseItems(array $items): void
     {
         foreach ($items as $item) {
-            if (preg_match('/\[(\w+)\]\s*(.*)/', (string) $item, $matches)) {
+            if (preg_match('/\[(\w+)\]\s*(.*)/', $item, $matches)) {
                 [$match, $type, $string] = $matches;
 
                 switch (strtolower($type)) {

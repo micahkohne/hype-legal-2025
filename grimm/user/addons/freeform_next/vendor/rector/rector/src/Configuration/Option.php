@@ -1,7 +1,7 @@
 <?php
 
 declare (strict_types=1);
-namespace Rector\Configuration;
+namespace Rector\Core\Configuration;
 
 use Rector\Caching\Contract\ValueObject\Storage\CacheStorageInterface;
 use Rector\Caching\ValueObject\Storage\FileCacheStorage;
@@ -47,11 +47,6 @@ final class Option
      */
     public const AUTO_IMPORT_NAMES = 'auto_import_names';
     /**
-     * @internal Use @see \Rector\Config\RectorConfig::polyfillPackages() instead
-     * @var string
-     */
-    public const POLYFILL_PACKAGES = 'polyfill_packages';
-    /**
      * @internal Use @see \Rector\Config\RectorConfig::importNames() instead
      * @var string
      */
@@ -72,18 +67,9 @@ final class Option
      */
     public const SYMFONY_CONTAINER_PHP_PATH_PARAMETER = 'symfony_container_php_path';
     /**
-     * @internal Use @see \Rector\Config\RectorConfig::newLineOnFluentCall()
-     * @var string
-     */
-    public const NEW_LINE_ON_FLUENT_CALL = 'new_line_on_fluent_call';
-    /**
      * @var string
      */
     public const CLEAR_CACHE = 'clear-cache';
-    /**
-     * @var string
-     */
-    public const ONLY = 'only';
     /**
      * @internal Use @see \Rector\Config\RectorConfig::parallel() instead
      * @var string
@@ -115,7 +101,7 @@ final class Option
      */
     public const CACHE_DIR = 'cache_dir';
     /**
-     * Cache backend. Most of the time we cache in files, but in ephemeral environment (e.g. CI), a faster `MemoryCacheStorage` can be useful.
+     * Cache backend. Most of the time we cache in files, but in ephemeral environment (e.g. CI), a faster `MemoryCacheStorage` can be usefull.
      * @internal Use RectorConfig::cacheClass() instead
      *
      * @var class-string<CacheStorageInterface>
@@ -138,7 +124,7 @@ final class Option
      * @internal Use @see \Rector\Config\RectorConfig::phpstanConfig() instead
      * @var string
      */
-    public const PHPSTAN_FOR_RECTOR_PATHS = 'phpstan_for_rector_paths';
+    public const PHPSTAN_FOR_RECTOR_PATH = 'phpstan_for_rector_path';
     /**
      * @var string
      */
@@ -194,81 +180,4 @@ final class Option
      * @var string
      */
     public const CONTAINER_CACHE_DIRECTORY = 'container-cache-directory';
-    /**
-     * @internal For cache invalidation in case of change
-     * @var string
-     */
-    public const REGISTERED_RECTOR_RULES = 'registered_rector_rules';
-    /**
-     * @internal For cache invalidation in case of change
-     * @var string
-     */
-    public const REGISTERED_RECTOR_SETS = 'registered_rector_sets';
-    /**
-     * @internal For verify RectorConfigBuilder instance recreated
-     * @var string
-     */
-    public const IS_RECTORCONFIG_BUILDER_RECREATED = 'is_rectorconfig_builder_recreated';
-    /**
-     * @internal For verify skipped rules exists in registered rules
-     * @var string
-     */
-    public const SKIPPED_RECTOR_RULES = 'skipped_rector_rules';
-    /**
-     * @internal For collect skipped start with short open tag files to be reported
-     * @var string
-     */
-    public const SKIPPED_START_WITH_SHORT_OPEN_TAG_FILES = 'skipped_start_with_short_open_tag_files';
-    /**
-     * @internal For reporting with absolute paths instead of relative paths (default behaviour)
-     * @see \Rector\Config\RectorConfig::reportingRealPath()
-     * @var string
-     */
-    public const ABSOLUTE_FILE_PATH = 'absolute_file_path';
-    /**
-     * @internal To add editor links to console output
-     * @see \Rector\Config\RectorConfig::editorUrl()
-     * @var string
-     */
-    public const EDITOR_URL = 'editor_url';
-    /**
-     * @internal Use @see \Rector\Config\RectorConfig::treatClassesAsFinal() method
-     * @var string
-     */
-    public const TREAT_CLASSES_AS_FINAL = 'treat_classes_as_final';
-    /**
-     * @internal To report composer based loaded sets
-     * @see \Rector\Configuration\RectorConfigBuilder::withComposerBased()
-     * @var string
-     */
-    public const COMPOSER_BASED_SETS = 'composer_based_sets';
-    /**
-     * @internal To filter files by specific suffix
-     */
-    public const ONLY_SUFFIX = 'only-suffix';
-    /**
-     * @internal To report overflow levels in ->with*Level() methods
-     */
-    public const LEVEL_OVERFLOWS = 'level_overflows';
-    /**
-     * @internal To avoid registering rules via ->withRules(), that are already loaded in sets,
-     * and keep rector.php clean
-     */
-    public const ROOT_STANDALONE_REGISTERED_RULES = 'root_standalone_registered_rules';
-    /**
-     * @internal The other half of ROOT_STANDALONE_REGISTERED_RULES to compare
-     */
-    public const SET_REGISTERED_RULES = 'set_registered_rules';
-    /**
-     * @internal to allow process file without extension if explicitly registered
-     */
-    public const FILES_WITHOUT_EXTENSION = 'files_without_extension';
-    /**
-     * @experimental
-     *
-     * Limit changes to first X applied rules
-     *
-     * @var string
-     */
-    public const KAIZEN = 'kaizen';
 }

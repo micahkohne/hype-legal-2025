@@ -5,14 +5,15 @@ namespace Rector\Php74\Rector\ArrayDimFetch;
 
 use PhpParser\Node;
 use PhpParser\Node\Expr\ArrayDimFetch;
+use Rector\Core\Rector\AbstractRector;
+use Rector\Core\ValueObject\Application\File;
+use Rector\Core\ValueObject\PhpVersionFeature;
 use Rector\NodeTypeResolver\Node\AttributeKey;
-use Rector\Rector\AbstractRector;
-use Rector\ValueObject\Application\File;
-use Rector\ValueObject\PhpVersionFeature;
 use Rector\VersionBonding\Contract\MinPhpVersionInterface;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
+ * @changelog https://www.php.net/manual/en/migration74.deprecated.php
  * @see \Rector\Tests\Php74\Rector\ArrayDimFetch\CurlyToSquareBracketArrayStringRector\CurlyToSquareBracketArrayStringRectorTest
  */
 final class CurlyToSquareBracketArrayStringRector extends AbstractRector implements MinPhpVersionInterface
@@ -62,9 +63,9 @@ CODE_SAMPLE
     {
         $oldTokens = $file->getOldTokens();
         $endTokenPost = $arrayDimFetch->getEndTokenPos();
-        if (isset($oldTokens[$endTokenPost]) && (string) $oldTokens[$endTokenPost] === '}') {
-            $startTokenPos = $arrayDimFetch->getStartTokenPos();
-            return !(isset($oldTokens[$startTokenPos]) && (string) $oldTokens[$startTokenPos] === '${');
+        if (isset($oldTokens[$endTokenPost]) && $oldTokens[$endTokenPost] === '}') {
+            $startTokenPost = $arrayDimFetch->getStartTokenPos();
+            return !(isset($oldTokens[$startTokenPost][1]) && $oldTokens[$startTokenPost][1] === '${');
         }
         return \false;
     }

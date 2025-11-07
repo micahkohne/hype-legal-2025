@@ -4,11 +4,11 @@ declare (strict_types=1);
 namespace Rector\Symfony\Symfony30\Rector\MethodCall;
 
 use PhpParser\Node;
-use PhpParser\Node\ArrayItem;
 use PhpParser\Node\Expr\Array_;
+use PhpParser\Node\Expr\ArrayItem;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Scalar\String_;
-use Rector\Rector\AbstractRector;
+use Rector\Core\Rector\AbstractRector;
 use Rector\Symfony\NodeAnalyzer\FormAddMethodCallAnalyzer;
 use Rector\Symfony\NodeAnalyzer\FormOptionsArrayMatcher;
 use Rector\Symfony\NodeManipulator\ArrayManipulator;
@@ -21,16 +21,19 @@ final class ReadOnlyOptionToAttributeRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\Symfony\NodeManipulator\ArrayManipulator
      */
-    private ArrayManipulator $arrayManipulator;
+    private $arrayManipulator;
     /**
      * @readonly
+     * @var \Rector\Symfony\NodeAnalyzer\FormAddMethodCallAnalyzer
      */
-    private FormAddMethodCallAnalyzer $formAddMethodCallAnalyzer;
+    private $formAddMethodCallAnalyzer;
     /**
      * @readonly
+     * @var \Rector\Symfony\NodeAnalyzer\FormOptionsArrayMatcher
      */
-    private FormOptionsArrayMatcher $formOptionsArrayMatcher;
+    private $formOptionsArrayMatcher;
     public function __construct(ArrayManipulator $arrayManipulator, FormAddMethodCallAnalyzer $formAddMethodCallAnalyzer, FormOptionsArrayMatcher $formOptionsArrayMatcher)
     {
         $this->arrayManipulator = $arrayManipulator;

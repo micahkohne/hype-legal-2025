@@ -9,10 +9,10 @@ use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\NullsafeMethodCall;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Identifier;
-use PHPStan\Type\ObjectType;
-use Rector\Rector\AbstractRector;
+use Rector\Core\Rector\AbstractRector;
+use Rector\Core\ValueObject\PhpVersionFeature;
+use Rector\StaticTypeMapper\ValueObject\Type\FullyQualifiedObjectType;
 use Rector\TypeDeclaration\TypeAnalyzer\ReturnStrictTypeAnalyzer;
-use Rector\ValueObject\PhpVersionFeature;
 use Rector\VersionBonding\Contract\MinPhpVersionInterface;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
@@ -25,8 +25,9 @@ final class CleanupUnneededNullsafeOperatorRector extends AbstractRector impleme
 {
     /**
      * @readonly
+     * @var \Rector\TypeDeclaration\TypeAnalyzer\ReturnStrictTypeAnalyzer
      */
-    private ReturnStrictTypeAnalyzer $returnStrictTypeAnalyzer;
+    private $returnStrictTypeAnalyzer;
     public function __construct(ReturnStrictTypeAnalyzer $returnStrictTypeAnalyzer)
     {
         $this->returnStrictTypeAnalyzer = $returnStrictTypeAnalyzer;
@@ -83,8 +84,12 @@ CODE_SAMPLE
         if (!$node->var instanceof FuncCall && !$node->var instanceof MethodCall && !$node->var instanceof StaticCall) {
             return null;
         }
-        $returnType = $this->returnStrictTypeAnalyzer->resolveMethodCallReturnType($node->var);
-        if (!$returnType instanceof ObjectType) {
+        $returnNode = $this->returnStrictTypeAnalyzer->resolveMethodCallReturnNode($node->var);
+        if (!$returnNode instanceof Node) {
+            return null;
+        }
+        $type = $this->getType($returnNode);
+        if (!$type instanceof FullyQualifiedObjectType) {
             return null;
         }
         return new MethodCall($node->var, $node->name, $node->args);

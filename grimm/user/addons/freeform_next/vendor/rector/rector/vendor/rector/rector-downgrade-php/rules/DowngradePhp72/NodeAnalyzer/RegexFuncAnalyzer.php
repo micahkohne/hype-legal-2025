@@ -12,8 +12,9 @@ final class RegexFuncAnalyzer
 {
     /**
      * @readonly
+     * @var \Rector\NodeNameResolver\NodeNameResolver
      */
-    private NodeNameResolver $nodeNameResolver;
+    private $nodeNameResolver;
     /**
      * @var string[]
      */

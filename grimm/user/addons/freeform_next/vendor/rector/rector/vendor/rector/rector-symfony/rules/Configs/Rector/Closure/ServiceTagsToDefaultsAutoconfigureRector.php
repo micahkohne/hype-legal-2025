@@ -10,8 +10,7 @@ use PhpParser\Node\Expr\Closure;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Stmt\Expression;
-use Rector\PhpParser\Node\Value\ValueResolver;
-use Rector\Rector\AbstractRector;
+use Rector\Core\Rector\AbstractRector;
 use Rector\Symfony\NodeAnalyzer\SymfonyPhpClosureDetector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
@@ -22,12 +21,9 @@ final class ServiceTagsToDefaultsAutoconfigureRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\Symfony\NodeAnalyzer\SymfonyPhpClosureDetector
      */
-    private SymfonyPhpClosureDetector $symfonyPhpClosureDetector;
-    /**
-     * @readonly
-     */
-    private ValueResolver $valueResolver;
+    private $symfonyPhpClosureDetector;
     /**
      * @var string[]
      */
@@ -39,10 +35,9 @@ final class ServiceTagsToDefaultsAutoconfigureRector extends AbstractRector
         'monolog.logger',
         'security.voter',
     ];
-    public function __construct(SymfonyPhpClosureDetector $symfonyPhpClosureDetector, ValueResolver $valueResolver)
+    public function __construct(SymfonyPhpClosureDetector $symfonyPhpClosureDetector)
     {
         $this->symfonyPhpClosureDetector = $symfonyPhpClosureDetector;
-        $this->valueResolver = $valueResolver;
     }
     public function getRuleDefinition() : RuleDefinition
     {

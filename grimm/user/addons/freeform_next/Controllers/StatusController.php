@@ -3,7 +3,7 @@
 namespace Solspace\Addons\FreeformNext\Controllers;
 
 use Exception;
-use ExpressionEngine\Library\CP\Table;
+use EllisLab\ExpressionEngine\Library\CP\Table;
 use Solspace\Addons\FreeformNext\Library\Exceptions\FreeformException;
 use Solspace\Addons\FreeformNext\Library\Helpers\ExtensionHelper;
 use Solspace\Addons\FreeformNext\Library\Helpers\FreeformHelper;
@@ -42,7 +42,7 @@ class StatusController extends Controller
                 'name'  => 'id_list[]',
                 'value' => $status->id,
                 'data'  => [
-                    'confirm' => lang('status') . ': <b>' . htmlentities('test', ENT_QUOTES) . '</b>',
+                    'confirm' => lang('status') . ': <b>' . htmlentities('test', ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401, 'UTF-8') . '</b>',
                 ],
             ];
 

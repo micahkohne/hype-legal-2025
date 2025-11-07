@@ -21,7 +21,6 @@ interface FileUploadHandlerInterface
      *
      * All unfinalized files will be deleted after a certain amount of time
      *
-     * @param FileUploadField $field
      *
      * @return FileUploadResponse
      */

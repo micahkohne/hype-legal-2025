@@ -1,9 +1,9 @@
 <?php
 
-namespace RectorPrefix202507\React\Socket;
+namespace RectorPrefix202308\React\Socket;
 
-use RectorPrefix202507\Evenement\EventEmitter;
-use RectorPrefix202507\React\EventLoop\LoopInterface;
+use RectorPrefix202308\Evenement\EventEmitter;
+use RectorPrefix202308\React\EventLoop\LoopInterface;
 final class SocketServer extends EventEmitter implements ServerInterface
 {
     private $server;
@@ -29,12 +29,8 @@ final class SocketServer extends EventEmitter implements ServerInterface
      * @throws \InvalidArgumentException if the listening address is invalid
      * @throws \RuntimeException if listening on this address fails (already in use etc.)
      */
-    public function __construct($uri, array $context = array(), $loop = null)
+    public function __construct($uri, array $context = array(), LoopInterface $loop = null)
     {
-        if ($loop !== null && !$loop instanceof LoopInterface) {
-            // manual type check to support legacy PHP < 7.1
-            throw new \InvalidArgumentException('Argument #3 ($loop) expected null|React\\EventLoop\\LoopInterface');
-        }
         // apply default options if not explicitly given
         $context += array('tcp' => array(), 'tls' => array(), 'unix' => array());
         $scheme = 'tcp';
@@ -137,7 +133,7 @@ final class SocketServer extends EventEmitter implements ServerInterface
             }
             // if we reach this, no matching errno constant could be found (unlikely when `ext-sockets` is available)
             // go through list of all possible errno values from 1 to `MAX_ERRNO` and see if they match the given `$errstr`
-            for ($errno = 1, $max = \defined('MAX_ERRNO') ? \MAX_ERRNO : 4095; $errno <= $max; ++$errno) {
+            for ($errno = 1, $max = \defined('RectorPrefix202308\\MAX_ERRNO') ? \RectorPrefix202308\MAX_ERRNO : 4095; $errno <= $max; ++$errno) {
                 if ($strerror($errno) === $errstr) {
                     return $errno;
                 }

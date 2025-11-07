@@ -4,21 +4,24 @@ declare (strict_types=1);
 namespace Rector\Transform\ValueObject;
 
 use PHPStan\Type\ObjectType;
-use Rector\Validation\RectorAssert;
+use Rector\Core\Validation\RectorAssert;
 final class MethodCallToPropertyFetch
 {
     /**
      * @readonly
+     * @var string
      */
-    private string $oldType;
+    private $oldType;
     /**
      * @readonly
+     * @var string
      */
-    private string $oldMethod;
+    private $oldMethod;
     /**
      * @readonly
+     * @var string
      */
-    private string $newProperty;
+    private $newProperty;
     public function __construct(string $oldType, string $oldMethod, string $newProperty)
     {
         $this->oldType = $oldType;

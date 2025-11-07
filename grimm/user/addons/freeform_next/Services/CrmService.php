@@ -160,8 +160,6 @@ class CrmService implements CRMHandlerInterface
 
     /**
      * Update the access token of an integration
-     *
-     * @param AbstractCRMIntegration $integration
      */
     public function updateAccessToken(AbstractCRMIntegration $integration): void
     {
@@ -316,7 +314,7 @@ class CrmService implements CRMHandlerInterface
     /**
      * @return array
      */
-    public function getAllCrmServiceProviders(): array
+    public function getAllCrmServiceProviders()
     {
         if (null === self::$integrations) {
             $interface    = CRMIntegrationInterface::class;

@@ -8,10 +8,10 @@ use PhpParser\Node\Name\FullyQualified;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\TraitUse;
 use PHPStan\Reflection\ClassReflection;
-use Rector\PhpParser\Node\BetterNodeFinder;
+use Rector\Core\NodeManipulator\ClassManipulator;
+use Rector\Core\Rector\AbstractRector;
+use Rector\Core\Reflection\ReflectionResolver;
 use Rector\PHPUnit\NodeAnalyzer\TestsNodeAnalyzer;
-use Rector\Rector\AbstractRector;
-use Rector\Reflection\ReflectionResolver;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -25,25 +25,22 @@ final class AddProphecyTraitRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\PHPUnit\NodeAnalyzer\TestsNodeAnalyzer
      */
-    private TestsNodeAnalyzer $testsNodeAnalyzer;
+    private $testsNodeAnalyzer;
     /**
      * @readonly
+     * @var \Rector\Core\Reflection\ReflectionResolver
      */
-    private ReflectionResolver $reflectionResolver;
-    /**
-     * @readonly
-     */
-    private BetterNodeFinder $betterNodeFinder;
+    private $reflectionResolver;
     /**
      * @var string
      */
     private const PROPHECY_TRAIT = 'Prophecy\\PhpUnit\\ProphecyTrait';
-    public function __construct(TestsNodeAnalyzer $testsNodeAnalyzer, ReflectionResolver $reflectionResolver, BetterNodeFinder $betterNodeFinder)
+    public function __construct(TestsNodeAnalyzer $testsNodeAnalyzer, ReflectionResolver $reflectionResolver)
     {
         $this->testsNodeAnalyzer = $testsNodeAnalyzer;
         $this->reflectionResolver = $reflectionResolver;
-        $this->betterNodeFinder = $betterNodeFinder;
     }
     public function getRuleDefinition() : RuleDefinition
     {
@@ -95,7 +92,9 @@ CODE_SAMPLE
     }
     private function shouldSkipClass(Class_ $class) : bool
     {
-        $hasProphesizeMethodCall = (bool) $this->betterNodeFinder->findFirst($class, fn(Node $node): bool => $this->testsNodeAnalyzer->isAssertMethodCallName($node, 'prophesize'));
+        $hasProphesizeMethodCall = (bool) $this->betterNodeFinder->findFirst($class, function (Node $node) : bool {
+            return $this->testsNodeAnalyzer->isAssertMethodCallName($node, 'prophesize');
+        });
         if (!$hasProphesizeMethodCall) {
             return \true;
         }

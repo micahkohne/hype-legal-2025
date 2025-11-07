@@ -13,17 +13,16 @@ use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Name;
 use PhpParser\Node\Scalar\String_;
-use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\Expression;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\ObjectType;
-use Rector\Exception\ShouldNotHappenException;
-use Rector\PhpParser\Node\Value\ValueResolver;
-use Rector\Rector\AbstractRector;
+use Rector\Core\Exception\ShouldNotHappenException;
+use Rector\Core\Rector\AbstractRector;
+use Rector\NodeTypeResolver\Node\AttributeKey;
 use Rector\Symfony\MinimalSharedStringSolver;
 use Rector\Symfony\NodeAnalyzer\SymfonyPhpClosureDetector;
 use Rector\Symfony\ValueObject\ClassNameAndFilePath;
-use RectorPrefix202507\Symfony\Component\Filesystem\Filesystem;
+use RectorPrefix202308\Symfony\Component\Filesystem\Filesystem;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -33,30 +32,29 @@ final class ServiceSettersToSettersAutodiscoveryRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\Symfony\NodeAnalyzer\SymfonyPhpClosureDetector
      */
-    private SymfonyPhpClosureDetector $symfonyPhpClosureDetector;
+    private $symfonyPhpClosureDetector;
     /**
      * @readonly
+     * @var \PHPStan\Reflection\ReflectionProvider
      */
-    private ReflectionProvider $reflectionProvider;
+    private $reflectionProvider;
     /**
      * @readonly
+     * @var \Symfony\Component\Filesystem\Filesystem
      */
-    private Filesystem $filesystem;
+    private $filesystem;
     /**
      * @readonly
+     * @var \Rector\Symfony\MinimalSharedStringSolver
      */
-    private ValueResolver $valueResolver;
-    /**
-     * @readonly
-     */
-    private MinimalSharedStringSolver $minimalSharedStringSolver;
-    public function __construct(SymfonyPhpClosureDetector $symfonyPhpClosureDetector, ReflectionProvider $reflectionProvider, Filesystem $filesystem, ValueResolver $valueResolver)
+    private $minimalSharedStringSolver;
+    public function __construct(SymfonyPhpClosureDetector $symfonyPhpClosureDetector, ReflectionProvider $reflectionProvider, Filesystem $filesystem)
     {
         $this->symfonyPhpClosureDetector = $symfonyPhpClosureDetector;
         $this->reflectionProvider = $reflectionProvider;
         $this->filesystem = $filesystem;
-        $this->valueResolver = $valueResolver;
         $this->minimalSharedStringSolver = new MinimalSharedStringSolver();
     }
     public function getRuleDefinition() : RuleDefinition
@@ -104,20 +102,27 @@ CODE_SAMPLE
         if (!$this->symfonyPhpClosureDetector->detect($node)) {
             return null;
         }
-        /** @var array<Expression<MethodCall>> $bareServicesSetMethodCallExpressions */
-        $bareServicesSetMethodCallExpressions = $this->collectServiceSetMethodCallExpressions($node);
-        if ($bareServicesSetMethodCallExpressions === []) {
+        /** @var array<Expression<MethodCall>> $bareServicesSetMethodCalls */
+        $bareServicesSetMethodCalls = $this->collectServiceSetMethodCallExpressions($node);
+        if ($bareServicesSetMethodCalls === []) {
             return null;
         }
-        $classNamesAndFilesPaths = $this->createClassNamesAndFilePaths($bareServicesSetMethodCallExpressions);
-        $classNames = \array_map(static fn(ClassNameAndFilePath $classNameAndFilePath): string => $classNameAndFilePath->getClassName(), $classNamesAndFilesPaths);
+        $classNamesAndFilesPaths = $this->createClassNamesAndFilePaths($bareServicesSetMethodCalls);
+        $classNames = \array_map(function (ClassNameAndFilePath $classNameAndFilePath) {
+            return $classNameAndFilePath->getClassName();
+        }, $classNamesAndFilesPaths);
         $sharedNamespace = $this->minimalSharedStringSolver->solve(...$classNames);
         $firstClassNameAndFilePath = $classNamesAndFilesPaths[0];
         $classFilePath = $firstClassNameAndFilePath->getFilePath();
         $directoryConcat = $this->createAbsolutePathConcat($classFilePath);
         $loadMethodCall = $this->createServicesLoadMethodCall($sharedNamespace, $directoryConcat);
         $node->stmts[] = new Expression($loadMethodCall);
-        $this->removeServicesSetMethodCalls($node, $bareServicesSetMethodCallExpressions);
+        // remove all method calls
+        foreach ($bareServicesSetMethodCalls as $bareServiceSetMethodCall) {
+            /** @var Expression $bareServiceSetMethodCall */
+            $stmtsKey = $bareServiceSetMethodCall->getAttribute(AttributeKey::STMT_KEY);
+            unset($node->stmts[$stmtsKey]);
+        }
         return $node;
     }
     public function isBareServicesSetMethodCall(MethodCall $methodCall) : bool
@@ -195,19 +200,5 @@ CODE_SAMPLE
     {
         $args = [new Arg(new String_($sharedNamespace)), new Arg($directoryConcat)];
         return new MethodCall(new Variable('services'), 'load', $args);
-    }
-    /**
-     * @param Stmt[] $stmtsToRemove
-     */
-    private function removeServicesSetMethodCalls(Closure $closure, array $stmtsToRemove) : void
-    {
-        foreach ($closure->stmts as $key => $stmt) {
-            foreach ($stmtsToRemove as $stmtToRemove) {
-                if ($stmt === $stmtToRemove) {
-                    unset($closure->stmts[$key]);
-                    continue 2;
-                }
-            }
-        }
     }
 }

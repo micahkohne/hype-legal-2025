@@ -14,16 +14,19 @@ final class GetterTypeDeclarationPropertyTypeInferer
 {
     /**
      * @readonly
+     * @var \Rector\TypeDeclaration\FunctionLikeReturnTypeResolver
      */
-    private FunctionLikeReturnTypeResolver $functionLikeReturnTypeResolver;
+    private $functionLikeReturnTypeResolver;
     /**
      * @readonly
+     * @var \Rector\TypeDeclaration\NodeAnalyzer\ClassMethodAndPropertyAnalyzer
      */
-    private ClassMethodAndPropertyAnalyzer $classMethodAndPropertyAnalyzer;
+    private $classMethodAndPropertyAnalyzer;
     /**
      * @readonly
+     * @var \Rector\NodeNameResolver\NodeNameResolver
      */
-    private NodeNameResolver $nodeNameResolver;
+    private $nodeNameResolver;
     public function __construct(FunctionLikeReturnTypeResolver $functionLikeReturnTypeResolver, ClassMethodAndPropertyAnalyzer $classMethodAndPropertyAnalyzer, NodeNameResolver $nodeNameResolver)
     {
         $this->functionLikeReturnTypeResolver = $functionLikeReturnTypeResolver;

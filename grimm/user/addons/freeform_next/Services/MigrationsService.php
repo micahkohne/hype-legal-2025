@@ -35,11 +35,11 @@ use Solspace\Addons\FreeformNext\Repositories\StatusRepository;
 
 class MigrationsService
 {
-    const STATUS__FIELDS = 'status-fields';
-    const STATUS__FORM_STATUSES = 'form-statuses';
-    const STATUS__FORM_NOTIFICATIONS = 'form-notifications';
-    const STATUS__FORMS = 'status-forms';
-    const STATUS__SUBMISSIONS = 'status-submissions';
+    public const STATUS__FIELDS = 'status-fields';
+    public const STATUS__FORM_STATUSES = 'form-statuses';
+    public const STATUS__FORM_NOTIFICATIONS = 'form-notifications';
+    public const STATUS__FORMS = 'status-forms';
+    public const STATUS__SUBMISSIONS = 'status-submissions';
 
     /** @var MigrationResultObject */
     public $result;
@@ -68,7 +68,7 @@ class MigrationsService
     /**
      * @return bool
      */
-    public function isFreeformNextFreshlyInstalled()
+    public function isFreeformNextFreshlyInstalled(): bool
     {
         $forms    = FormRepository::getInstance()->getAllForms();
         $fields   = FieldRepository::getInstance()->getAllFields();
@@ -82,7 +82,7 @@ class MigrationsService
     /**
      * @return bool
      */
-    public function isExpressCompatible()
+    public function isExpressCompatible(): bool
     {
         if (FreeformHelper::get('version') !== FREEFORM_EXPRESS) {
             return true;
@@ -214,7 +214,7 @@ class MigrationsService
      *
      * @return bool|FieldModel
      */
-    public function saveNextField($classicField)
+    public function saveNextField(array $classicField)
     {
         $nextFieldHelper = $this->getNextFieldHelper();
 
@@ -259,7 +259,7 @@ class MigrationsService
      *
      * @return bool|NotificationModel
      */
-    public function saveNextFormNotification($notification)
+    public function saveNextFormNotification(array $notification)
     {
         $nextFormNotificationHelper = $this->getNextFormNotificationHelper();
 
@@ -416,7 +416,7 @@ class MigrationsService
      * @param null $page
      * @return MigrationResultObject
      */
-    public function runStage($stage, $formId = null, $page = null)
+    public function runStage($stage, mixed $formId = null, mixed $page = null)
     {
         $this->result = new MigrationResultObject();
 
@@ -453,7 +453,7 @@ class MigrationsService
     /**
      * @return array
      */
-    private function getSubmissionInfo(): array
+    private function getSubmissionInfo()
     {
         if (!$this->classicSubmissionHelper) {
             return [];
@@ -493,7 +493,7 @@ class MigrationsService
      *
      * @return bool
      */
-    private function isFinished($stage)
+    private function isFinished($stage): bool
     {
         if (!$this->result->isMigrationSuccessful()) {
             return false;

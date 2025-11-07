@@ -9,20 +9,18 @@ use PhpParser\Node\Stmt\ClassMethod;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
-use Rector\BetterPhpDocParser\PhpDocInfo\PhpDocInfoFactory;
 use Rector\BetterPhpDocParser\PhpDocManipulator\PhpDocTypeChanger;
+use Rector\Core\Rector\AbstractRector;
+use Rector\Core\Reflection\ReflectionResolver;
+use Rector\Core\ValueObject\MethodName;
+use Rector\Core\ValueObject\PhpVersionFeature;
 use Rector\DeadCode\PhpDoc\TagRemover\VarTagRemover;
 use Rector\PHPStanStaticTypeMapper\DoctrineTypeAnalyzer;
 use Rector\PHPStanStaticTypeMapper\Enum\TypeKind;
-use Rector\Rector\AbstractRector;
-use Rector\Reflection\ReflectionResolver;
-use Rector\StaticTypeMapper\StaticTypeMapper;
 use Rector\TypeDeclaration\AlreadyAssignDetector\ConstructorAssignDetector;
 use Rector\TypeDeclaration\Guard\PropertyTypeOverrideGuard;
 use Rector\TypeDeclaration\TypeAnalyzer\PropertyTypeDefaultValueAnalyzer;
 use Rector\TypeDeclaration\TypeInferer\PropertyTypeInferer\TrustedClassMethodPropertyTypeInferer;
-use Rector\ValueObject\MethodName;
-use Rector\ValueObject\PhpVersionFeature;
 use Rector\VersionBonding\Contract\MinPhpVersionInterface;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
@@ -33,45 +31,45 @@ final class TypedPropertyFromStrictConstructorRector extends AbstractRector impl
 {
     /**
      * @readonly
+     * @var \Rector\TypeDeclaration\TypeInferer\PropertyTypeInferer\TrustedClassMethodPropertyTypeInferer
      */
-    private TrustedClassMethodPropertyTypeInferer $trustedClassMethodPropertyTypeInferer;
+    private $trustedClassMethodPropertyTypeInferer;
     /**
      * @readonly
+     * @var \Rector\DeadCode\PhpDoc\TagRemover\VarTagRemover
      */
-    private VarTagRemover $varTagRemover;
+    private $varTagRemover;
     /**
      * @readonly
+     * @var \Rector\BetterPhpDocParser\PhpDocManipulator\PhpDocTypeChanger
      */
-    private PhpDocTypeChanger $phpDocTypeChanger;
+    private $phpDocTypeChanger;
     /**
      * @readonly
+     * @var \Rector\TypeDeclaration\AlreadyAssignDetector\ConstructorAssignDetector
      */
-    private ConstructorAssignDetector $constructorAssignDetector;
+    private $constructorAssignDetector;
     /**
      * @readonly
+     * @var \Rector\TypeDeclaration\Guard\PropertyTypeOverrideGuard
      */
-    private PropertyTypeOverrideGuard $propertyTypeOverrideGuard;
+    private $propertyTypeOverrideGuard;
     /**
      * @readonly
+     * @var \Rector\Core\Reflection\ReflectionResolver
      */
-    private ReflectionResolver $reflectionResolver;
+    private $reflectionResolver;
     /**
      * @readonly
+     * @var \Rector\PHPStanStaticTypeMapper\DoctrineTypeAnalyzer
      */
-    private DoctrineTypeAnalyzer $doctrineTypeAnalyzer;
+    private $doctrineTypeAnalyzer;
     /**
      * @readonly
+     * @var \Rector\TypeDeclaration\TypeAnalyzer\PropertyTypeDefaultValueAnalyzer
      */
-    private PropertyTypeDefaultValueAnalyzer $propertyTypeDefaultValueAnalyzer;
-    /**
-     * @readonly
-     */
-    private PhpDocInfoFactory $phpDocInfoFactory;
-    /**
-     * @readonly
-     */
-    private StaticTypeMapper $staticTypeMapper;
-    public function __construct(TrustedClassMethodPropertyTypeInferer $trustedClassMethodPropertyTypeInferer, VarTagRemover $varTagRemover, PhpDocTypeChanger $phpDocTypeChanger, ConstructorAssignDetector $constructorAssignDetector, PropertyTypeOverrideGuard $propertyTypeOverrideGuard, ReflectionResolver $reflectionResolver, DoctrineTypeAnalyzer $doctrineTypeAnalyzer, PropertyTypeDefaultValueAnalyzer $propertyTypeDefaultValueAnalyzer, PhpDocInfoFactory $phpDocInfoFactory, StaticTypeMapper $staticTypeMapper)
+    private $propertyTypeDefaultValueAnalyzer;
+    public function __construct(TrustedClassMethodPropertyTypeInferer $trustedClassMethodPropertyTypeInferer, VarTagRemover $varTagRemover, PhpDocTypeChanger $phpDocTypeChanger, ConstructorAssignDetector $constructorAssignDetector, PropertyTypeOverrideGuard $propertyTypeOverrideGuard, ReflectionResolver $reflectionResolver, DoctrineTypeAnalyzer $doctrineTypeAnalyzer, PropertyTypeDefaultValueAnalyzer $propertyTypeDefaultValueAnalyzer)
     {
         $this->trustedClassMethodPropertyTypeInferer = $trustedClassMethodPropertyTypeInferer;
         $this->varTagRemover = $varTagRemover;
@@ -81,8 +79,6 @@ final class TypedPropertyFromStrictConstructorRector extends AbstractRector impl
         $this->reflectionResolver = $reflectionResolver;
         $this->doctrineTypeAnalyzer = $doctrineTypeAnalyzer;
         $this->propertyTypeDefaultValueAnalyzer = $propertyTypeDefaultValueAnalyzer;
-        $this->phpDocInfoFactory = $phpDocInfoFactory;
-        $this->staticTypeMapper = $staticTypeMapper;
     }
     public function getRuleDefinition() : RuleDefinition
     {
@@ -154,7 +150,7 @@ CODE_SAMPLE
                 continue;
             }
             $propertyProperty = $property->props[0];
-            $propertyName = $this->getName($property);
+            $propertyName = $this->nodeNameResolver->getName($property);
             if ($this->constructorAssignDetector->isPropertyAssigned($node, $propertyName)) {
                 $propertyProperty->default = null;
                 $hasChanged = \true;

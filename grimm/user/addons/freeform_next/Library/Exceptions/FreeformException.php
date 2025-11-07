@@ -12,7 +12,6 @@
 namespace Solspace\Addons\FreeformNext\Library\Exceptions;
 
 use Exception;
-
 class FreeformException extends Exception
 {
 }

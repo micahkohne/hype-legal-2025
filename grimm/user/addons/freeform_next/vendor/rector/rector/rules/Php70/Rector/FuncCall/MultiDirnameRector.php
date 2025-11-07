@@ -6,9 +6,9 @@ namespace Rector\Php70\Rector\FuncCall;
 use PhpParser\Node;
 use PhpParser\Node\Arg;
 use PhpParser\Node\Expr\FuncCall;
-use PhpParser\Node\Scalar\Int_;
-use Rector\Rector\AbstractRector;
-use Rector\ValueObject\PhpVersionFeature;
+use PhpParser\Node\Scalar\LNumber;
+use Rector\Core\Rector\AbstractRector;
+use Rector\Core\ValueObject\PhpVersionFeature;
 use Rector\VersionBonding\Contract\MinPhpVersionInterface;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
@@ -21,7 +21,10 @@ final class MultiDirnameRector extends AbstractRector implements MinPhpVersionIn
      * @var string
      */
     private const DIRNAME = 'dirname';
-    private int $nestingLevel = 0;
+    /**
+     * @var int
+     */
+    private $nestingLevel = 0;
     public function getRuleDefinition() : RuleDefinition
     {
         return new RuleDefinition('Changes multiple dirname() calls to one with nesting level', [new CodeSample('dirname(dirname($path));', 'dirname($path, 2);')]);
@@ -44,17 +47,15 @@ final class MultiDirnameRector extends AbstractRector implements MinPhpVersionIn
         }
         $activeFuncCallNode = $node;
         $lastFuncCallNode = $node;
-        $shouldUpdate = \false;
         while (($activeFuncCallNode = $this->matchNestedDirnameFuncCall($activeFuncCallNode)) instanceof FuncCall) {
             $lastFuncCallNode = $activeFuncCallNode;
-            $shouldUpdate = \true;
         }
         // nothing to improve
-        if (!$shouldUpdate || $this->shouldSkip()) {
+        if ($this->shouldSkip()) {
             return null;
         }
         $node->args[0] = $lastFuncCallNode->args[0];
-        $node->args[1] = new Arg(new Int_($this->nestingLevel));
+        $node->args[1] = new Arg(new LNumber($this->nestingLevel));
         return $node;
     }
     public function provideMinPhpVersion() : int
@@ -79,10 +80,10 @@ final class MultiDirnameRector extends AbstractRector implements MinPhpVersionIn
         }
         // dirname($path, <LEVEL>);
         if (\count($args) === 2) {
-            if (!$args[1]->value instanceof Int_) {
+            if (!$args[1]->value instanceof LNumber) {
                 return null;
             }
-            /** @var Int_ $levelNumber */
+            /** @var LNumber $levelNumber */
             $levelNumber = $args[1]->value;
             $this->nestingLevel += $levelNumber->value;
         } else {

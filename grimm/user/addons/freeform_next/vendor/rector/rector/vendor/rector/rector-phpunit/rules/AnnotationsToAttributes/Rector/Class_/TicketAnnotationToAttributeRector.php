@@ -3,8 +3,8 @@
 declare (strict_types=1);
 namespace Rector\PHPUnit\AnnotationsToAttributes\Rector\Class_;
 
-use PhpParser\Node;
 use PhpParser\Node\Arg;
+use PhpParser\Node;
 use PhpParser\Node\Attribute;
 use PhpParser\Node\AttributeGroup;
 use PhpParser\Node\Name\FullyQualified;
@@ -13,16 +13,17 @@ use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassMethod;
 use PHPStan\PhpDocParser\Ast\PhpDoc\GenericTagValueNode;
 use PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocTagNode;
-use PHPStan\Reflection\ReflectionProvider;
+use RectorPrefix202308\PHPUnit\Framework\Attributes\Ticket;
 use Rector\BetterPhpDocParser\PhpDocInfo\PhpDocInfo;
-use Rector\BetterPhpDocParser\PhpDocInfo\PhpDocInfoFactory;
 use Rector\BetterPhpDocParser\PhpDocManipulator\PhpDocTagRemover;
-use Rector\Comments\NodeDocBlock\DocBlockUpdater;
-use Rector\PHPUnit\NodeAnalyzer\TestsNodeAnalyzer;
-use Rector\Rector\AbstractRector;
-use Rector\ValueObject\PhpVersionFeature;
+use Rector\Core\Contract\Rector\ConfigurableRectorInterface;
+use Rector\Core\Rector\AbstractRector;
+use Rector\Core\ValueObject\PhpVersionFeature;
+use Rector\PhpAttribute\NodeFactory\PhpAttributeGroupFactory;
+use Rector\PHPUnit\ValueObject\AnnotationWithValueToAttribute;
 use Rector\VersionBonding\Contract\MinPhpVersionInterface;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
+use Symplify\RuleDocGenerator\ValueObject\CodeSample\ConfiguredCodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
  * @changelog https://docs.phpunit.de/en/10.0/annotations.html#ticket
@@ -33,35 +34,12 @@ final class TicketAnnotationToAttributeRector extends AbstractRector implements 
 {
     /**
      * @readonly
+     * @var \Rector\BetterPhpDocParser\PhpDocManipulator\PhpDocTagRemover
      */
-    private PhpDocTagRemover $phpDocTagRemover;
-    /**
-     * @readonly
-     */
-    private DocBlockUpdater $docBlockUpdater;
-    /**
-     * @readonly
-     */
-    private PhpDocInfoFactory $phpDocInfoFactory;
-    /**
-     * @readonly
-     */
-    private ReflectionProvider $reflectionProvider;
-    /**
-     * @readonly
-     */
-    private TestsNodeAnalyzer $testsNodeAnalyzer;
-    /**
-     * @var string
-     */
-    private const TICKET_CLASS = 'PHPUnit\\Framework\\Attributes\\Ticket';
-    public function __construct(PhpDocTagRemover $phpDocTagRemover, DocBlockUpdater $docBlockUpdater, PhpDocInfoFactory $phpDocInfoFactory, ReflectionProvider $reflectionProvider, TestsNodeAnalyzer $testsNodeAnalyzer)
+    private $phpDocTagRemover;
+    public function __construct(PhpDocTagRemover $phpDocTagRemover)
     {
         $this->phpDocTagRemover = $phpDocTagRemover;
-        $this->docBlockUpdater = $docBlockUpdater;
-        $this->phpDocInfoFactory = $phpDocInfoFactory;
-        $this->reflectionProvider = $reflectionProvider;
-        $this->testsNodeAnalyzer = $testsNodeAnalyzer;
     }
     public function getRuleDefinition() : RuleDefinition
     {
@@ -102,13 +80,6 @@ CODE_SAMPLE
      */
     public function refactor(Node $node) : ?Node
     {
-        if (!$this->testsNodeAnalyzer->isInTestClass($node)) {
-            return null;
-        }
-        // make sure the attribute class exists
-        if (!$this->reflectionProvider->hasClass(self::TICKET_CLASS)) {
-            return null;
-        }
         $phpDocInfo = $this->phpDocInfoFactory->createFromNode($node);
         if (!$phpDocInfo instanceof PhpDocInfo) {
             return null;
@@ -131,14 +102,13 @@ CODE_SAMPLE
             $hasChanged = \true;
         }
         if ($hasChanged) {
-            $this->docBlockUpdater->updateRefactoredNodeWithPhpDocInfo($node);
             return $node;
         }
         return null;
     }
     private function createTicketAttribute(string $stringValue) : Attribute
     {
-        $fullyQualified = new FullyQualified(self::TICKET_CLASS);
+        $fullyQualified = new FullyQualified(Ticket::class);
         $ticketString = new String_($stringValue);
         $args = [new Arg($ticketString)];
         return new Attribute($fullyQualified, $args);

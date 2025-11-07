@@ -11,10 +11,10 @@ use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Function_;
 use PHPStan\Type\ObjectType;
+use Rector\Core\NodeManipulator\ClassDependencyManipulator;
+use Rector\Core\PhpParser\Node\NodeFactory;
 use Rector\Naming\Naming\PropertyNaming;
-use Rector\NodeManipulator\ClassDependencyManipulator;
 use Rector\NodeNameResolver\NodeNameResolver;
-use Rector\PhpParser\Node\NodeFactory;
 use Rector\PostRector\ValueObject\PropertyMetadata;
 use Rector\Transform\NodeFactory\PropertyFetchFactory;
 use Rector\Transform\NodeTypeAnalyzer\TypeProvidingExprFromClassResolver;
@@ -22,28 +22,34 @@ final class FuncCallStaticCallToMethodCallAnalyzer
 {
     /**
      * @readonly
+     * @var \Rector\Transform\NodeTypeAnalyzer\TypeProvidingExprFromClassResolver
      */
-    private TypeProvidingExprFromClassResolver $typeProvidingExprFromClassResolver;
+    private $typeProvidingExprFromClassResolver;
     /**
      * @readonly
+     * @var \Rector\Naming\Naming\PropertyNaming
      */
-    private PropertyNaming $propertyNaming;
+    private $propertyNaming;
     /**
      * @readonly
+     * @var \Rector\NodeNameResolver\NodeNameResolver
      */
-    private NodeNameResolver $nodeNameResolver;
+    private $nodeNameResolver;
     /**
      * @readonly
+     * @var \Rector\Core\PhpParser\Node\NodeFactory
      */
-    private NodeFactory $nodeFactory;
+    private $nodeFactory;
     /**
      * @readonly
+     * @var \Rector\Transform\NodeFactory\PropertyFetchFactory
      */
-    private PropertyFetchFactory $propertyFetchFactory;
+    private $propertyFetchFactory;
     /**
      * @readonly
+     * @var \Rector\Core\NodeManipulator\ClassDependencyManipulator
      */
-    private ClassDependencyManipulator $classDependencyManipulator;
+    private $classDependencyManipulator;
     public function __construct(TypeProvidingExprFromClassResolver $typeProvidingExprFromClassResolver, PropertyNaming $propertyNaming, NodeNameResolver $nodeNameResolver, NodeFactory $nodeFactory, PropertyFetchFactory $propertyFetchFactory, ClassDependencyManipulator $classDependencyManipulator)
     {
         $this->typeProvidingExprFromClassResolver = $typeProvidingExprFromClassResolver;

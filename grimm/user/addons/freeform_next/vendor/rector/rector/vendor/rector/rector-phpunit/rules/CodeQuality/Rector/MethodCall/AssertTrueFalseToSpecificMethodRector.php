@@ -11,9 +11,9 @@ use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Identifier;
 use PHPStan\Type\StringType;
+use Rector\Core\Rector\AbstractRector;
 use Rector\PHPUnit\NodeAnalyzer\TestsNodeAnalyzer;
 use Rector\PHPUnit\ValueObject\FunctionNameWithAssertMethods;
-use Rector\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -23,12 +23,13 @@ final class AssertTrueFalseToSpecificMethodRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\PHPUnit\NodeAnalyzer\TestsNodeAnalyzer
      */
-    private TestsNodeAnalyzer $testsNodeAnalyzer;
+    private $testsNodeAnalyzer;
     /**
      * @var array<string,array<array-key,string>>
      */
-    private const FUNCTION_NAME_WITH_ASSERT_METHOD_NAMES = ['is_readable' => ['is_readable', 'assertIsReadable', 'assertNotIsReadable'], 'array_key_exists' => ['array_key_exists', 'assertArrayHasKey', 'assertArrayNotHasKey'], 'array_search' => ['array_search', 'assertContains', 'assertNotContains'], 'in_array' => ['in_array', 'assertContains', 'assertNotContains'], 'empty' => ['empty', 'assertEmpty', 'assertNotEmpty'], 'file_exists' => ['file_exists', 'assertFileExists', 'assertFileNotExists'], 'is_dir' => ['is_dir', 'assertDirectoryExists', 'assertDirectoryNotExists'], 'is_infinite' => ['is_infinite', 'assertInfinite', 'assertFinite'], 'is_null' => ['is_null', 'assertNull', 'assertNotNull'], 'is_writable' => ['is_writable', 'assertIsWritable', 'assertNotIsWritable'], 'is_nan' => ['is_nan', 'assertNan', ''], 'is_a' => ['is_a', 'assertInstanceOf', 'assertNotInstanceOf'], 'str_contains' => ['str_contains', 'assertStringContainsString', 'assertStringNotContainsString']];
+    private const FUNCTION_NAME_WITH_ASSERT_METHOD_NAMES = ['is_readable' => ['is_readable', 'assertIsReadable', 'assertNotIsReadable'], 'array_key_exists' => ['array_key_exists', 'assertArrayHasKey', 'assertArrayNotHasKey'], 'array_search' => ['array_search', 'assertContains', 'assertNotContains'], 'in_array' => ['in_array', 'assertContains', 'assertNotContains'], 'empty' => ['empty', 'assertEmpty', 'assertNotEmpty'], 'file_exists' => ['file_exists', 'assertFileExists', 'assertFileNotExists'], 'is_dir' => ['is_dir', 'assertDirectoryExists', 'assertDirectoryNotExists'], 'is_infinite' => ['is_infinite', 'assertInfinite', 'assertFinite'], 'is_null' => ['is_null', 'assertNull', 'assertNotNull'], 'is_writable' => ['is_writable', 'assertIsWritable', 'assertNotIsWritable'], 'is_nan' => ['is_nan', 'assertNan', ''], 'is_a' => ['is_a', 'assertInstanceOf', 'assertNotInstanceOf']];
     public function __construct(TestsNodeAnalyzer $testsNodeAnalyzer)
     {
         $this->testsNodeAnalyzer = $testsNodeAnalyzer;
@@ -63,14 +64,16 @@ final class AssertTrueFalseToSpecificMethodRector extends AbstractRector
         if (!$firstArgumentValue instanceof FuncCall && !$firstArgumentValue instanceof Empty_) {
             return null;
         }
-        $firstArgumentName = $this->resolveFirstArgument($firstArgumentValue);
+        $firstArgumentName = $this->getName($firstArgumentValue);
         if ($firstArgumentName === null || !\array_key_exists($firstArgumentName, self::FUNCTION_NAME_WITH_ASSERT_METHOD_NAMES)) {
             return null;
         }
         if ($firstArgumentName === 'is_a') {
-            /** @var FuncCall $firstArgumentValue */
+            /**
+             * @var FuncCall $firstArgumentValue
+             * @var array<Arg> $args
+             **/
             $args = $firstArgumentValue->getArgs();
-            /** @var array<Arg> $args */
             if ($args === []) {
                 return null;
             }
@@ -84,13 +87,6 @@ final class AssertTrueFalseToSpecificMethodRector extends AbstractRector
         $this->renameMethod($node, $functionNameWithAssertMethods);
         $this->moveFunctionArgumentsUp($node);
         return $node;
-    }
-    /**
-     * @param \PhpParser\Node\Expr\FuncCall|\PhpParser\Node\Expr\Empty_ $firstArgumentValue
-     */
-    private function resolveFirstArgument($firstArgumentValue) : ?string
-    {
-        return $firstArgumentValue instanceof Empty_ ? 'empty' : $this->getName($firstArgumentValue);
     }
     /**
      * @param \PhpParser\Node\Expr\MethodCall|\PhpParser\Node\Expr\StaticCall $node
@@ -147,8 +143,7 @@ final class AssertTrueFalseToSpecificMethodRector extends AbstractRector
             unset($funcCallOrEmptyNodeArgs[2]);
             return \array_merge($funcCallOrEmptyNodeArgs, $oldArguments);
         }
-        if (\in_array($funcCallOrEmptyNodeName, ['is_a', 'str_contains'], \true)) {
-            // flip arguments
+        if ($funcCallOrEmptyNodeName === 'is_a') {
             $newArgs = [$funcCallOrEmptyNodeArgs[1], $funcCallOrEmptyNodeArgs[0]];
             return \array_merge($newArgs, $oldArguments);
         }

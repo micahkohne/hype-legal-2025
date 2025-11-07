@@ -8,8 +8,8 @@ use PhpParser\Node\Name\FullyQualified;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassMethod;
 use PHPStan\Type\ObjectType;
+use Rector\Core\Rector\AbstractRector;
 use Rector\NodeTypeResolver\Node\AttributeKey;
-use Rector\Rector\AbstractRector;
 use Rector\Symfony\NodeAnalyzer\ClassAnalyzer;
 use Rector\Symfony\NodeFactory\GetSubscribedEventsClassMethodFactory;
 use Rector\Symfony\NodeFactory\OnLogoutClassMethodFactory;
@@ -25,20 +25,24 @@ final class LogoutHandlerToLogoutEventSubscriberRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\Symfony\NodeFactory\OnLogoutClassMethodFactory
      */
-    private OnLogoutClassMethodFactory $onLogoutClassMethodFactory;
+    private $onLogoutClassMethodFactory;
     /**
      * @readonly
+     * @var \Rector\Symfony\NodeFactory\GetSubscribedEventsClassMethodFactory
      */
-    private GetSubscribedEventsClassMethodFactory $getSubscribedEventsClassMethodFactory;
+    private $getSubscribedEventsClassMethodFactory;
     /**
      * @readonly
+     * @var \Rector\Symfony\NodeAnalyzer\ClassAnalyzer
      */
-    private ClassAnalyzer $classAnalyzer;
+    private $classAnalyzer;
     /**
      * @readonly
+     * @var \PHPStan\Type\ObjectType
      */
-    private ObjectType $logoutHandlerObjectType;
+    private $logoutHandlerObjectType;
     public function __construct(OnLogoutClassMethodFactory $onLogoutClassMethodFactory, GetSubscribedEventsClassMethodFactory $getSubscribedEventsClassMethodFactory, ClassAnalyzer $classAnalyzer)
     {
         $this->onLogoutClassMethodFactory = $onLogoutClassMethodFactory;

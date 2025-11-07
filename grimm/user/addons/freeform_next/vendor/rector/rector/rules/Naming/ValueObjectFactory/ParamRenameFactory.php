@@ -12,8 +12,9 @@ final class ParamRenameFactory
 {
     /**
      * @readonly
+     * @var \Rector\NodeNameResolver\NodeNameResolver
      */
-    private NodeNameResolver $nodeNameResolver;
+    private $nodeNameResolver;
     public function __construct(NodeNameResolver $nodeNameResolver)
     {
         $this->nodeNameResolver = $nodeNameResolver;
@@ -27,6 +28,6 @@ final class ParamRenameFactory
         if ($currentName === null) {
             return null;
         }
-        return new ParamRename($currentName, $expectedName, $param->var, $functionLike);
+        return new ParamRename($currentName, $expectedName, $param, $param->var, $functionLike);
     }
 }

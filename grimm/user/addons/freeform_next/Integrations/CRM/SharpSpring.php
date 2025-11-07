@@ -11,7 +11,6 @@
 
 namespace Solspace\Addons\FreeformNext\Integrations\CRM;
 
-use Override;
 use Exception;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\BadResponseException;
@@ -26,10 +25,10 @@ use Solspace\Addons\FreeformNext\Library\Logging\LoggerInterface;
 
 class SharpSpring extends AbstractCRMIntegration {
 
-	const SETTING_SECRET_KEY = 'secret_key';
-	const SETTING_ACCOUNT_ID = 'account_id';
-	const TITLE = 'SharpSpring';
-	const LOG_CATEGORY = 'SharpSpring';
+	public const SETTING_SECRET_KEY = 'secret_key';
+	public const SETTING_ACCOUNT_ID = 'account_id';
+	public const TITLE = 'SharpSpring';
+	public const LOG_CATEGORY = 'SharpSpring';
 
 	/**
 	 * Returns a list of additional settings for this integration
@@ -37,8 +36,7 @@ class SharpSpring extends AbstractCRMIntegration {
 	 *
 	 * @return SettingBlueprint[]
 	 */
-	#[Override]
-    public static function getSettingBlueprints(): array
+	public static function getSettingBlueprints(): array
 	{
 		return [
 			new SettingBlueprint(
@@ -66,7 +64,7 @@ class SharpSpring extends AbstractCRMIntegration {
 	 * @return bool
 	 * @throws IntegrationException
 	 */
-	public function pushObject(array $keyValueList, $formFields = NULL)
+	public function pushObject(array $keyValueList, ?array $formFields = NULL): bool
 	{
 		$client = $this->getAuthorizedClient();
 
@@ -93,14 +91,14 @@ class SharpSpring extends AbstractCRMIntegration {
 			try
 			{
 				$payload  = $this->generatePayload('createLeads', ['objects' => [$contactProps]]);
-				$request  = $client->post(null, null);
+				$request  = $client->post(null, null, $payload);
 				$response = $request->send();
 
-				$data = json_decode((string) $response->getBody(true), true);
+				$data = json_decode($response->getBody(true), true);
 
 				$this->getLogger()->log(LoggerInterface::LEVEL_INFO, $response->getBody(true), self::LOG_CATEGORY);
 
-				return (isset($data['result']['error']) && (count($data['result']['error']) === 0));
+				return (isset($data['result']['error']) && ((is_countable($data['result']['error']) ? count($data['result']['error']) : 0) === 0));
 			} catch (BadResponseException $e)
 			{
 				if($e->getResponse())
@@ -142,7 +140,7 @@ class SharpSpring extends AbstractCRMIntegration {
 	 * @return FieldObject[]
 	 * @throws IntegrationException
 	 */
-	public function fetchFields(): array
+	public function fetchFields()
 	{
 		$client = new Client();
 		$auth   = $this->getAuthorizedClient();
@@ -238,7 +236,7 @@ class SharpSpring extends AbstractCRMIntegration {
 	/**
 	 * A method that initiates the authentication
 	 */
-	public function initiateAuthentication()
+	public function initiateAuthentication(): void
 	{
 	}
 
@@ -296,15 +294,13 @@ class SharpSpring extends AbstractCRMIntegration {
 	}
 
 	/**
-	 * Generate a properly formatted payload for SharpSpring API
-	 *
-	 * @param        $method
-	 * @param array  $params
-	 * @param string $id
-	 *
-	 * @return string
-	 */
-	private function generatePayload(string $method, array $params = ['where' => []], $id = 'freeform')
+  * Generate a properly formatted payload for SharpSpring API
+  *
+  * @param        $method
+  * @param string $id
+  * @return string
+  */
+ private function generatePayload(string $method, array $params = ['where' => []], $id = 'freeform')
 	{
 		return json_encode(
 			[
@@ -321,7 +317,7 @@ class SharpSpring extends AbstractCRMIntegration {
 	 *
 	 * @return void
 	 */
-	public function fetchAccessToken()
+	public function fetchAccessToken(): void
 	{
 	}
 

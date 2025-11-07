@@ -4,14 +4,14 @@ declare (strict_types=1);
 namespace Rector\DowngradePhp80\Rector\ClassMethod;
 
 use PhpParser\Node;
-use PhpParser\Node\ClosureUse;
 use PhpParser\Node\Expr\Closure;
+use PhpParser\Node\Expr\ClosureUse;
 use PhpParser\Node\Param;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Function_;
+use Rector\Core\Rector\AbstractRector;
 use Rector\DowngradePhp73\Tokenizer\FollowedByCommaAnalyzer;
-use Rector\DowngradePhp73\Tokenizer\TrailingCommaRemover;
-use Rector\Rector\AbstractRector;
+use Rector\NodeTypeResolver\Node\AttributeKey;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -21,16 +21,12 @@ final class DowngradeTrailingCommasInParamUseRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\DowngradePhp73\Tokenizer\FollowedByCommaAnalyzer
      */
-    private FollowedByCommaAnalyzer $followedByCommaAnalyzer;
-    /**
-     * @readonly
-     */
-    private TrailingCommaRemover $trailingCommaRemover;
-    public function __construct(FollowedByCommaAnalyzer $followedByCommaAnalyzer, TrailingCommaRemover $trailingCommaRemover)
+    private $followedByCommaAnalyzer;
+    public function __construct(FollowedByCommaAnalyzer $followedByCommaAnalyzer)
     {
         $this->followedByCommaAnalyzer = $followedByCommaAnalyzer;
-        $this->trailingCommaRemover = $trailingCommaRemover;
     }
     public function getRuleDefinition() : RuleDefinition
     {
@@ -110,12 +106,14 @@ CODE_SAMPLE
      */
     private function cleanTrailingComma($node, array $array) : ?Node
     {
-        $lastPosition = \array_key_last($array);
+        \end($array);
+        $lastPosition = \key($array);
         $last = $array[$lastPosition];
         if (!$this->followedByCommaAnalyzer->isFollowed($this->file, $last)) {
             return null;
         }
-        $this->trailingCommaRemover->remove($this->file, $last);
+        $node->setAttribute(AttributeKey::ORIGINAL_NODE, null);
+        $last->setAttribute(AttributeKey::FUNC_ARGS_TRAILING_COMMA, \false);
         return $node;
     }
 }

@@ -1,15 +1,15 @@
 <?php
 
 declare (strict_types=1);
-namespace Rector\NodeDecorator;
+namespace Rector\Core\NodeDecorator;
 
 use PhpParser\Node;
-use Rector\Contract\Rector\RectorInterface;
+use Rector\Core\Contract\Rector\RectorInterface;
 use Rector\NodeTypeResolver\Node\AttributeKey;
 final class CreatedByRuleDecorator
 {
     /**
-     * @param array<Node>|Node $node
+     * @param mixed[]|\PhpParser\Node $node
      * @param class-string<RectorInterface> $rectorClass
      */
     public function decorate($node, Node $originalNode, string $rectorClass) : void
@@ -45,7 +45,9 @@ final class CreatedByRuleDecorator
             return;
         }
         // filter out when exists, then append
-        $createdByRule = \array_filter($createdByRule, static fn(string $rectorRule): bool => $rectorRule !== $rectorClass);
+        $createdByRule = \array_filter($createdByRule, static function (string $rectorRule) use($rectorClass) : bool {
+            return $rectorRule !== $rectorClass;
+        });
         $node->setAttribute(AttributeKey::CREATED_BY_RULE, \array_merge($createdByRule, [$rectorClass]));
     }
 }

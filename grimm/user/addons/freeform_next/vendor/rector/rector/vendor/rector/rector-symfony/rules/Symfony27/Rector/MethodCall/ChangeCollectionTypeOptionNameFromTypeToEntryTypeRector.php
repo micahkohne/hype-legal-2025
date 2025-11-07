@@ -4,13 +4,12 @@ declare (strict_types=1);
 namespace Rector\Symfony\Symfony27\Rector\MethodCall;
 
 use PhpParser\Node;
-use PhpParser\Node\ArrayItem;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Array_;
+use PhpParser\Node\Expr\ArrayItem;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Scalar\String_;
-use Rector\PhpParser\Node\Value\ValueResolver;
-use Rector\Rector\AbstractRector;
+use Rector\Core\Rector\AbstractRector;
 use Rector\Symfony\NodeAnalyzer\FormAddMethodCallAnalyzer;
 use Rector\Symfony\NodeAnalyzer\FormCollectionAnalyzer;
 use Rector\Symfony\NodeAnalyzer\FormOptionsArrayMatcher;
@@ -25,30 +24,28 @@ final class ChangeCollectionTypeOptionNameFromTypeToEntryTypeRector extends Abst
 {
     /**
      * @readonly
+     * @var \Rector\Symfony\NodeAnalyzer\FormAddMethodCallAnalyzer
      */
-    private FormAddMethodCallAnalyzer $formAddMethodCallAnalyzer;
+    private $formAddMethodCallAnalyzer;
     /**
      * @readonly
+     * @var \Rector\Symfony\NodeAnalyzer\FormOptionsArrayMatcher
      */
-    private FormOptionsArrayMatcher $formOptionsArrayMatcher;
+    private $formOptionsArrayMatcher;
     /**
      * @readonly
+     * @var \Rector\Symfony\NodeAnalyzer\FormCollectionAnalyzer
      */
-    private FormCollectionAnalyzer $formCollectionAnalyzer;
-    /**
-     * @readonly
-     */
-    private ValueResolver $valueResolver;
+    private $formCollectionAnalyzer;
     /**
      * @var array<string, string>
      */
     private const OLD_TO_NEW_OPTION_NAME = ['type' => 'entry_type', 'options' => 'entry_options'];
-    public function __construct(FormAddMethodCallAnalyzer $formAddMethodCallAnalyzer, FormOptionsArrayMatcher $formOptionsArrayMatcher, FormCollectionAnalyzer $formCollectionAnalyzer, ValueResolver $valueResolver)
+    public function __construct(FormAddMethodCallAnalyzer $formAddMethodCallAnalyzer, FormOptionsArrayMatcher $formOptionsArrayMatcher, FormCollectionAnalyzer $formCollectionAnalyzer)
     {
         $this->formAddMethodCallAnalyzer = $formAddMethodCallAnalyzer;
         $this->formOptionsArrayMatcher = $formOptionsArrayMatcher;
         $this->formCollectionAnalyzer = $formCollectionAnalyzer;
-        $this->valueResolver = $valueResolver;
     }
     public function getRuleDefinition() : RuleDefinition
     {
@@ -110,15 +107,11 @@ CODE_SAMPLE
         if (!$optionsArray instanceof Array_) {
             return null;
         }
-        $hasChanged = $this->refactorOptionsArray($optionsArray);
-        if (!$hasChanged) {
-            return null;
-        }
+        $this->refactorOptionsArray($optionsArray);
         return $node;
     }
-    private function refactorOptionsArray(Array_ $optionsArray) : bool
+    private function refactorOptionsArray(Array_ $optionsArray) : void
     {
-        $hasChanged = \false;
         foreach ($optionsArray->items as $arrayItem) {
             if (!$arrayItem instanceof ArrayItem) {
                 continue;
@@ -131,9 +124,7 @@ CODE_SAMPLE
                     continue;
                 }
                 $arrayItem->key = new String_($newName);
-                $hasChanged = \true;
             }
         }
-        return $hasChanged;
     }
 }

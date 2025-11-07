@@ -4,34 +4,29 @@ declare (strict_types=1);
 namespace Rector\DeadCode\Rector\Array_;
 
 use PhpParser\Node;
-use PhpParser\Node\ArrayItem;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Array_;
+use PhpParser\Node\Expr\ArrayItem;
 use PhpParser\Node\Expr\PreDec;
 use PhpParser\Node\Expr\PreInc;
-use PhpParser\Node\Expr\Variable;
-use Rector\NodeAnalyzer\ExprAnalyzer;
-use Rector\PhpParser\Printer\BetterStandardPrinter;
-use Rector\Rector\AbstractRector;
+use Rector\Core\PhpParser\Printer\BetterStandardPrinter;
+use Rector\Core\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
+ * @changelog https://3v4l.org/SG0Wu
  * @see \Rector\Tests\DeadCode\Rector\Array_\RemoveDuplicatedArrayKeyRector\RemoveDuplicatedArrayKeyRectorTest
  */
 final class RemoveDuplicatedArrayKeyRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\Core\PhpParser\Printer\BetterStandardPrinter
      */
-    private BetterStandardPrinter $betterStandardPrinter;
-    /**
-     * @readonly
-     */
-    private ExprAnalyzer $exprAnalyzer;
-    public function __construct(BetterStandardPrinter $betterStandardPrinter, ExprAnalyzer $exprAnalyzer)
+    private $betterStandardPrinter;
+    public function __construct(BetterStandardPrinter $betterStandardPrinter)
     {
         $this->betterStandardPrinter = $betterStandardPrinter;
-        $this->exprAnalyzer = $exprAnalyzer;
     }
     public function getRuleDefinition() : RuleDefinition
     {
@@ -86,10 +81,6 @@ CODE_SAMPLE
                 continue;
             }
             if (!$arrayItem->key instanceof Expr) {
-                continue;
-            }
-            // local variable is mostly fine, other dynamic, just skip
-            if (!$arrayItem->key instanceof Variable && $this->exprAnalyzer->isDynamicExpr($arrayItem->key)) {
                 continue;
             }
             $keyValue = $this->betterStandardPrinter->print($arrayItem->key);

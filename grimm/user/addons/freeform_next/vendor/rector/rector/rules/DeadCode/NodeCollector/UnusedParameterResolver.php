@@ -5,13 +5,14 @@ namespace Rector\DeadCode\NodeCollector;
 
 use PhpParser\Node\Param;
 use PhpParser\Node\Stmt\ClassMethod;
-use Rector\NodeAnalyzer\ParamAnalyzer;
+use Rector\Core\NodeAnalyzer\ParamAnalyzer;
 final class UnusedParameterResolver
 {
     /**
      * @readonly
+     * @var \Rector\Core\NodeAnalyzer\ParamAnalyzer
      */
-    private ParamAnalyzer $paramAnalyzer;
+    private $paramAnalyzer;
     public function __construct(ParamAnalyzer $paramAnalyzer)
     {
         $this->paramAnalyzer = $paramAnalyzer;
@@ -24,6 +25,11 @@ final class UnusedParameterResolver
         /** @var array<int, Param> $unusedParameters */
         $unusedParameters = [];
         foreach ($classMethod->params as $i => $param) {
+            // skip property promotion
+            /** @var Param $param */
+            if ($param->flags !== 0) {
+                continue;
+            }
             if ($this->paramAnalyzer->isParamUsedInClassMethod($classMethod, $param)) {
                 continue;
             }

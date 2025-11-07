@@ -9,7 +9,7 @@ declare (strict_types=1);
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-namespace RectorPrefix202507\SebastianBergmann\Diff\Output;
+namespace RectorPrefix202308\SebastianBergmann\Diff\Output;
 
 use function array_merge;
 use function array_splice;
@@ -25,8 +25,8 @@ use function min;
 use function sprintf;
 use function stream_get_contents;
 use function substr;
-use RectorPrefix202507\SebastianBergmann\Diff\ConfigurationException;
-use RectorPrefix202507\SebastianBergmann\Diff\Differ;
+use RectorPrefix202308\SebastianBergmann\Diff\ConfigurationException;
+use RectorPrefix202308\SebastianBergmann\Diff\Differ;
 /**
  * Strict Unified diff output builder.
  *
@@ -34,7 +34,10 @@ use RectorPrefix202507\SebastianBergmann\Diff\Differ;
  */
 final class StrictUnifiedDiffOutputBuilder implements DiffOutputBuilderInterface
 {
-    private static array $default = [
+    /**
+     * @var mixed[]
+     */
+    private static $default = [
         'collapseRanges' => \true,
         // ranges of length one are rendered with the trailing `,1`
         'commonLineThreshold' => 6,
@@ -46,17 +49,28 @@ final class StrictUnifiedDiffOutputBuilder implements DiffOutputBuilderInterface
         'toFile' => null,
         'toFileDate' => null,
     ];
-    private bool $changed;
-    private bool $collapseRanges;
     /**
-     * @var positive-int
+     * @var bool
      */
-    private int $commonLineThreshold;
-    private string $header;
+    private $changed;
     /**
-     * @var positive-int
+     * @var bool
      */
-    private int $contextLines;
+    private $collapseRanges;
+    /**
+     * @psalm-var positive-int
+     * @var int
+     */
+    private $commonLineThreshold;
+    /**
+     * @var string
+     */
+    private $header;
+    /**
+     * @psalm-var positive-int
+     * @var int
+     */
+    private $contextLines;
     public function __construct(array $options = [])
     {
         $options = array_merge(self::$default, $options);
@@ -216,11 +230,11 @@ final class StrictUnifiedDiffOutputBuilder implements DiffOutputBuilderInterface
                 $this->changed = \true;
                 fwrite($output, $diff[$i][0]);
             }
-            // } elseif ($diff[$i][1] === Differ::DIFF_LINE_END_WARNING) { // custom comment inserted by PHPUnit/diff package
+            //} elseif ($diff[$i][1] === Differ::DIFF_LINE_END_WARNING) { // custom comment inserted by PHPUnit/diff package
             //  skip
-            // } else {
+            //} else {
             //  unknown/invalid
-            // }
+            //}
         }
     }
     private function assertString(array $options, string $option) : void

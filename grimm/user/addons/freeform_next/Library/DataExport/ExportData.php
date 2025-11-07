@@ -23,8 +23,9 @@ abstract class ExportData {
     protected $tempFile; // handle to temp file (for export file mode)
     protected $tempFilename; // file mode: the output file name; browser mode: file name for download; string mode: not used
 
-    public function __construct($exportTo = "browser", public $filename = "exportdata") {
-        if(!in_array($exportTo, ['browser','file','string'] )) {
+    public function __construct($exportTo = "browser", // temp file name and path (for export file mode)
+    public $filename = "exportdata") {
+        if(!in_array($exportTo, ['browser', 'file', 'string'] )) {
             throw new Exception("$exportTo is not a valid ExportData export type");
         }
         $this->exportTo = $exportTo;
@@ -86,7 +87,7 @@ abstract class ExportData {
                 $this->stringData .= $data;
                 break;
             case 'file':
-                fwrite($this->tempFile, (string) $data);
+                fwrite($this->tempFile, $data);
                 break;
         }
     }

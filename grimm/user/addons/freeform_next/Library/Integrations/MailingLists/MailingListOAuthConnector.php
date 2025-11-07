@@ -11,7 +11,6 @@
 
 namespace Solspace\Addons\FreeformNext\Library\Integrations\MailingLists;
 
-use Override;
 use stdClass;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\BadResponseException;
@@ -20,9 +19,9 @@ use Solspace\Addons\FreeformNext\Library\Integrations\SettingBlueprint;
 
 abstract class MailingListOAuthConnector extends AbstractMailingListIntegration
 {
-    const SETTING_CLIENT_ID     = "client_id";
-    const SETTING_CLIENT_SECRET = "client_secret";
-    const SETTING_RETURN_URI    = "return_uri";
+    public const SETTING_CLIENT_ID     = "client_id";
+    public const SETTING_CLIENT_SECRET = "client_secret";
+    public const SETTING_RETURN_URI    = "return_uri";
 
     /**
      * Returns a list of additional settings for this integration
@@ -30,7 +29,6 @@ abstract class MailingListOAuthConnector extends AbstractMailingListIntegration
      *
      * @return SettingBlueprint[]
      */
-    #[Override]
     public static function getSettingBlueprints()
     {
         $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https' : 'http';
@@ -140,9 +138,6 @@ abstract class MailingListOAuthConnector extends AbstractMailingListIntegration
     {
     }
 
-    /**
-     * @param stdClass $responseData
-     */
     protected function onAfterFetchAccessToken(stdClass $responseData)
     {
     }

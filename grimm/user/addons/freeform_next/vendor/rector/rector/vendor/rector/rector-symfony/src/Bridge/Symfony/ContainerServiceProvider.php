@@ -3,14 +3,17 @@
 declare (strict_types=1);
 namespace Rector\Symfony\Bridge\Symfony;
 
-use Rector\Configuration\Option;
-use Rector\Configuration\Parameter\SimpleParameterProvider;
-use Rector\Exception\ShouldNotHappenException;
-use RectorPrefix202507\Symfony\Component\DependencyInjection\Container;
-use RectorPrefix202507\Webmozart\Assert\Assert;
+use Rector\Core\Configuration\Option;
+use Rector\Core\Configuration\Parameter\SimpleParameterProvider;
+use Rector\Core\Exception\ShouldNotHappenException;
+use RectorPrefix202308\Symfony\Component\DependencyInjection\Container;
+use RectorPrefix202308\Webmozart\Assert\Assert;
 final class ContainerServiceProvider
 {
-    private ?object $container = null;
+    /**
+     * @var object|null
+     */
+    private $container;
     public function provideByName(string $serviceName) : object
     {
         /** @var Container $symfonyContainer */

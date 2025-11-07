@@ -1,10 +1,10 @@
 <?php
 
 declare (strict_types=1);
-namespace RectorPrefix202507;
+namespace RectorPrefix202308;
 
 use Rector\Config\RectorConfig;
-use Rector\ValueObject\PhpVersion;
+use Rector\Core\ValueObject\PhpVersion;
 use Rector\DowngradePhp72\Rector\ClassMethod\DowngradeParameterTypeWideningRector;
 use Rector\DowngradePhp72\Rector\ConstFetch\DowngradePhp72JsonConstRector;
 use Rector\DowngradePhp72\Rector\FuncCall\DowngradeJsonDecodeNullAssociativeArgRector;

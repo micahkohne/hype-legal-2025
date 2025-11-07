@@ -5,27 +5,29 @@ namespace Rector\DeadCode\Rector\ClassConst;
 
 use PhpParser\Node;
 use PhpParser\Node\Stmt\ClassConst;
-use PhpParser\NodeVisitor;
+use PhpParser\NodeTraverser;
+use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ClassReflection;
-use Rector\NodeManipulator\ClassConstManipulator;
-use Rector\PHPStan\ScopeFetcher;
-use Rector\Rector\AbstractRector;
-use Rector\Reflection\ReflectionResolver;
+use Rector\Core\NodeManipulator\ClassConstManipulator;
+use Rector\Core\Rector\AbstractScopeAwareRector;
+use Rector\Core\Reflection\ReflectionResolver;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
  * @see \Rector\Tests\DeadCode\Rector\ClassConst\RemoveUnusedPrivateClassConstantRector\RemoveUnusedPrivateClassConstantRectorTest
  */
-final class RemoveUnusedPrivateClassConstantRector extends AbstractRector
+final class RemoveUnusedPrivateClassConstantRector extends AbstractScopeAwareRector
 {
     /**
      * @readonly
+     * @var \Rector\Core\NodeManipulator\ClassConstManipulator
      */
-    private ClassConstManipulator $classConstManipulator;
+    private $classConstManipulator;
     /**
      * @readonly
+     * @var \Rector\Core\Reflection\ReflectionResolver
      */
-    private ReflectionResolver $reflectionResolver;
+    private $reflectionResolver;
     public function __construct(ClassConstManipulator $classConstManipulator, ReflectionResolver $reflectionResolver)
     {
         $this->classConstManipulator = $classConstManipulator;
@@ -63,9 +65,9 @@ CODE_SAMPLE
     /**
      * @param ClassConst $node
      */
-    public function refactor(Node $node) : ?int
+    public function refactorWithScope(Node $node, Scope $scope) : ?int
     {
-        if ($this->shouldSkipClassConst($node)) {
+        if ($this->shouldSkipClassConst($node, $scope)) {
             return null;
         }
         $classReflection = $this->reflectionResolver->resolveClassReflection($node);
@@ -75,9 +77,9 @@ CODE_SAMPLE
         if ($this->classConstManipulator->hasClassConstFetch($node, $classReflection)) {
             return null;
         }
-        return NodeVisitor::REMOVE_NODE;
+        return NodeTraverser::REMOVE_NODE;
     }
-    private function shouldSkipClassConst(ClassConst $classConst) : bool
+    private function shouldSkipClassConst(ClassConst $classConst, Scope $scope) : bool
     {
         if (!$classConst->isPrivate()) {
             return \true;
@@ -85,7 +87,6 @@ CODE_SAMPLE
         if (\count($classConst->consts) !== 1) {
             return \true;
         }
-        $scope = ScopeFetcher::fetch($classConst);
         $classReflection = $scope->getClassReflection();
         if (!$classReflection instanceof ClassReflection) {
             return \false;

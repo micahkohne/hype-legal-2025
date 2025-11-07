@@ -4,24 +4,17 @@ declare (strict_types=1);
 namespace Rector\CodeQuality\Rector\ClassMethod;
 
 use PhpParser\Node;
-use PhpParser\Node\Expr\Array_;
-use PhpParser\Node\Expr\ArrowFunction;
-use PhpParser\Node\Expr\Closure;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Expr\Variable;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassMethod;
-use PhpParser\NodeFinder;
-use PhpParser\NodeVisitor;
-use PHPStan\Analyser\Scope;
+use PhpParser\NodeTraverser;
 use PHPStan\Reflection\ClassReflection;
-use Rector\NodeCollector\NodeAnalyzer\ArrayCallableMethodMatcher;
-use Rector\NodeTypeResolver\Node\AttributeKey;
+use Rector\Core\Rector\AbstractRector;
+use Rector\Core\Reflection\ReflectionResolver;
 use Rector\Privatization\NodeManipulator\VisibilityManipulator;
 use Rector\Privatization\VisibilityGuard\ClassMethodVisibilityGuard;
-use Rector\Rector\AbstractRector;
-use Rector\Reflection\ReflectionResolver;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -31,26 +24,24 @@ final class LocallyCalledStaticMethodToNonStaticRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\Privatization\VisibilityGuard\ClassMethodVisibilityGuard
      */
-    private ClassMethodVisibilityGuard $classMethodVisibilityGuard;
+    private $classMethodVisibilityGuard;
     /**
      * @readonly
+     * @var \Rector\Privatization\NodeManipulator\VisibilityManipulator
      */
-    private VisibilityManipulator $visibilityManipulator;
+    private $visibilityManipulator;
     /**
      * @readonly
+     * @var \Rector\Core\Reflection\ReflectionResolver
      */
-    private ReflectionResolver $reflectionResolver;
-    /**
-     * @readonly
-     */
-    private ArrayCallableMethodMatcher $arrayCallableMethodMatcher;
-    public function __construct(ClassMethodVisibilityGuard $classMethodVisibilityGuard, VisibilityManipulator $visibilityManipulator, ReflectionResolver $reflectionResolver, ArrayCallableMethodMatcher $arrayCallableMethodMatcher)
+    private $reflectionResolver;
+    public function __construct(ClassMethodVisibilityGuard $classMethodVisibilityGuard, VisibilityManipulator $visibilityManipulator, ReflectionResolver $reflectionResolver)
     {
         $this->classMethodVisibilityGuard = $classMethodVisibilityGuard;
         $this->visibilityManipulator = $visibilityManipulator;
         $this->reflectionResolver = $reflectionResolver;
-        $this->arrayCallableMethodMatcher = $arrayCallableMethodMatcher;
     }
     public function getRuleDefinition() : RuleDefinition
     {
@@ -124,43 +115,13 @@ CODE_SAMPLE
         if ($this->isClassMethodCalledInAnotherStaticClassMethod($class, $classMethod)) {
             return null;
         }
-        if ($this->isNeverCalled($class, $classMethod)) {
-            return null;
-        }
         // replace all the calls
         $classMethodName = $this->getName($classMethod);
-        $className = $this->getName($class) ?? '';
-        $shouldSkip = \false;
-        $this->traverseNodesWithCallable($class->getMethods(), function (Node $node) use(&$shouldSkip, $classMethodName, $className) : ?int {
-            if (($node instanceof Closure || $node instanceof ArrowFunction) && $node->static) {
-                $this->traverseNodesWithCallable($node->getStmts(), function (Node $subNode) use(&$shouldSkip, $classMethodName, $className) : ?int {
-                    if (!$subNode instanceof StaticCall) {
-                        return null;
-                    }
-                    if (!$this->isNames($subNode->class, ['self', 'static', $className])) {
-                        return null;
-                    }
-                    if (!$this->isName($subNode->name, $classMethodName)) {
-                        return null;
-                    }
-                    $shouldSkip = \true;
-                    return NodeVisitor::STOP_TRAVERSAL;
-                });
-                if ($shouldSkip) {
-                    return NodeVisitor::STOP_TRAVERSAL;
-                }
-                return null;
-            }
-            return null;
-        });
-        if ($shouldSkip) {
-            return null;
-        }
-        $this->traverseNodesWithCallable($class->getMethods(), function (Node $node) use($classMethodName, $className) : ?MethodCall {
+        $this->traverseNodesWithCallable($class, function (Node $node) use($classMethodName) : ?MethodCall {
             if (!$node instanceof StaticCall) {
                 return null;
             }
-            if (!$this->isNames($node->class, ['self', 'static', $className])) {
+            if (!$this->isName($node->class, 'self')) {
                 return null;
             }
             if (!$this->isName($node->name, $classMethodName)) {
@@ -178,55 +139,31 @@ CODE_SAMPLE
      */
     private function isClassMethodCalledInAnotherStaticClassMethod(Class_ $class, ClassMethod $classMethod) : bool
     {
-        $currentClassNamespacedName = (string) $this->getName($class);
         $currentClassMethodName = $this->getName($classMethod);
         $isInsideStaticClassMethod = \false;
-        // check if called static call somewhere in class, but only in static methods
+        // check if called stati call somewhere in class, but only in static methods
         foreach ($class->getMethods() as $checkedClassMethod) {
             // not a problem
             if (!$checkedClassMethod->isStatic()) {
                 continue;
             }
-            $this->traverseNodesWithCallable($checkedClassMethod, function (Node $node) use($currentClassNamespacedName, $currentClassMethodName, &$isInsideStaticClassMethod) : ?int {
-                if ($node instanceof Array_) {
-                    $scope = $node->getAttribute(AttributeKey::SCOPE);
-                    if ($scope instanceof Scope && $this->arrayCallableMethodMatcher->match($node, $scope, $currentClassMethodName)) {
-                        $isInsideStaticClassMethod = \true;
-                        return NodeVisitor::STOP_TRAVERSAL;
-                    }
-                }
+            $this->traverseNodesWithCallable($checkedClassMethod, function (Node $node) use($currentClassMethodName, &$isInsideStaticClassMethod) : ?int {
                 if (!$node instanceof StaticCall) {
                     return null;
                 }
-                if (!$this->isNames($node->class, ['self', 'static', $currentClassNamespacedName])) {
+                if (!$this->isName($node->class, 'self')) {
                     return null;
                 }
                 if (!$this->isName($node->name, $currentClassMethodName)) {
                     return null;
                 }
                 $isInsideStaticClassMethod = \true;
-                return NodeVisitor::STOP_TRAVERSAL;
+                return NodeTraverser::STOP_TRAVERSAL;
             });
             if ($isInsideStaticClassMethod) {
                 return $isInsideStaticClassMethod;
             }
         }
         return \false;
-    }
-    /**
-     * In case of never called method call,
-     * it should be skipped and handled by another dead-code rule
-     */
-    private function isNeverCalled(Class_ $class, ClassMethod $classMethod) : bool
-    {
-        $currentMethodName = $this->getName($classMethod);
-        $nodeFinder = new NodeFinder();
-        $methodCall = $nodeFinder->findFirst($class, function (Node $node) use($currentMethodName) : bool {
-            if ($node instanceof MethodCall && $node->var instanceof Variable && $this->isName($node->var, 'this') && $this->isName($node->name, $currentMethodName)) {
-                return \true;
-            }
-            return $node instanceof StaticCall && $this->isNames($node->class, ['self', 'static']) && $this->isName($node->name, $currentMethodName);
-        });
-        return !$methodCall instanceof Node;
     }
 }

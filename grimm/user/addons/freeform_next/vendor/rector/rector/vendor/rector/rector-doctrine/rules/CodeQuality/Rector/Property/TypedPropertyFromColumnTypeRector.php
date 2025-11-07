@@ -9,14 +9,15 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\Type;
 use PHPStan\Type\TypeCombinator;
 use PHPStan\Type\UnionType;
-use Rector\BetterPhpDocParser\PhpDocInfo\PhpDocInfoFactory;
+use Rector\BetterPhpDocParser\PhpDocManipulator\PhpDocTypeChanger;
+use Rector\Core\Php\PhpVersionProvider;
+use Rector\Core\Rector\AbstractRector;
+use Rector\Core\ValueObject\PhpVersion;
+use Rector\Core\ValueObject\PhpVersionFeature;
 use Rector\Doctrine\NodeManipulator\ColumnPropertyTypeResolver;
 use Rector\Doctrine\NodeManipulator\NullabilityColumnPropertyTypeResolver;
 use Rector\PHPStanStaticTypeMapper\Enum\TypeKind;
-use Rector\Rector\AbstractRector;
-use Rector\StaticTypeMapper\StaticTypeMapper;
 use Rector\TypeDeclaration\NodeTypeAnalyzer\PropertyTypeDecorator;
-use Rector\ValueObject\PhpVersionFeature;
 use Rector\VersionBonding\Contract\MinPhpVersionInterface;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
@@ -27,31 +28,24 @@ final class TypedPropertyFromColumnTypeRector extends AbstractRector implements 
 {
     /**
      * @readonly
+     * @var \Rector\TypeDeclaration\NodeTypeAnalyzer\PropertyTypeDecorator
      */
-    private PropertyTypeDecorator $propertyTypeDecorator;
+    private $propertyTypeDecorator;
     /**
      * @readonly
+     * @var \Rector\Doctrine\NodeManipulator\ColumnPropertyTypeResolver
      */
-    private ColumnPropertyTypeResolver $columnPropertyTypeResolver;
+    private $columnPropertyTypeResolver;
     /**
      * @readonly
+     * @var \Rector\Doctrine\NodeManipulator\NullabilityColumnPropertyTypeResolver
      */
-    private NullabilityColumnPropertyTypeResolver $nullabilityColumnPropertyTypeResolver;
-    /**
-     * @readonly
-     */
-    private PhpDocInfoFactory $phpDocInfoFactory;
-    /**
-     * @readonly
-     */
-    private StaticTypeMapper $staticTypeMapper;
-    public function __construct(PropertyTypeDecorator $propertyTypeDecorator, ColumnPropertyTypeResolver $columnPropertyTypeResolver, NullabilityColumnPropertyTypeResolver $nullabilityColumnPropertyTypeResolver, PhpDocInfoFactory $phpDocInfoFactory, StaticTypeMapper $staticTypeMapper)
+    private $nullabilityColumnPropertyTypeResolver;
+    public function __construct(PropertyTypeDecorator $propertyTypeDecorator, ColumnPropertyTypeResolver $columnPropertyTypeResolver, NullabilityColumnPropertyTypeResolver $nullabilityColumnPropertyTypeResolver)
     {
         $this->propertyTypeDecorator = $propertyTypeDecorator;
         $this->columnPropertyTypeResolver = $columnPropertyTypeResolver;
         $this->nullabilityColumnPropertyTypeResolver = $nullabilityColumnPropertyTypeResolver;
-        $this->phpDocInfoFactory = $phpDocInfoFactory;
-        $this->staticTypeMapper = $staticTypeMapper;
     }
     public function getRuleDefinition() : RuleDefinition
     {
@@ -104,7 +98,7 @@ CODE_SAMPLE
             $propertyType = TypeCombinator::addNull($propertyType);
         }
         $typeNode = $this->staticTypeMapper->mapPHPStanTypeToPhpParserNode($propertyType, TypeKind::PROPERTY);
-        if (!$typeNode instanceof Node) {
+        if ($typeNode === null) {
             return null;
         }
         $phpDocInfo = $this->phpDocInfoFactory->createFromNodeOrEmpty($node);

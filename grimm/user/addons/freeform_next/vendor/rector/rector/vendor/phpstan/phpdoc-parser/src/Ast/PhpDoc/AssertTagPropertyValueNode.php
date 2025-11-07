@@ -9,14 +9,19 @@ use function trim;
 class AssertTagPropertyValueNode implements \PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocTagValueNode
 {
     use NodeAttributes;
-    public TypeNode $type;
-    public string $parameter;
-    public string $property;
-    public bool $isNegated;
-    public bool $isEquality;
+    /** @var TypeNode */
+    public $type;
+    /** @var string */
+    public $parameter;
+    /** @var string */
+    public $property;
+    /** @var bool */
+    public $isNegated;
+    /** @var bool */
+    public $isEquality;
     /** @var string (may be empty) */
-    public string $description;
-    public function __construct(TypeNode $type, string $parameter, string $property, bool $isNegated, string $description, bool $isEquality)
+    public $description;
+    public function __construct(TypeNode $type, string $parameter, string $property, bool $isNegated, string $description, bool $isEquality = \false)
     {
         $this->type = $type;
         $this->parameter = $parameter;

@@ -4,19 +4,19 @@ declare (strict_types=1);
 namespace PhpParser\Node\Stmt;
 
 use PhpParser\Node;
-use Rector\Contract\PhpParser\Node\StmtsAwareInterface;
+use Rector\Core\Contract\PhpParser\Node\StmtsAwareInterface;
 class ElseIf_ extends Node\Stmt implements StmtsAwareInterface
 {
     /** @var Node\Expr Condition */
-    public Node\Expr $cond;
+    public $cond;
     /** @var Node\Stmt[] Statements */
-    public array $stmts;
+    public $stmts;
     /**
      * Constructs an elseif node.
      *
-     * @param Node\Expr $cond Condition
-     * @param Node\Stmt[] $stmts Statements
-     * @param array<string, mixed> $attributes Additional attributes
+     * @param Node\Expr   $cond       Condition
+     * @param Node\Stmt[] $stmts      Statements
+     * @param array       $attributes Additional attributes
      */
     public function __construct(Node\Expr $cond, array $stmts = [], array $attributes = [])
     {

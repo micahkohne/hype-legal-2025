@@ -7,8 +7,8 @@ use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\BooleanNot;
 use PhpParser\Node\Expr\Ternary;
+use Rector\Core\Rector\AbstractRector;
 use Rector\NodeTypeResolver\Node\AttributeKey;
-use Rector\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -61,17 +61,10 @@ CODE_SAMPLE
             return null;
         }
         $node->cond = $node->cond->expr;
-        $else = clone $node->else;
-        $if = clone $node->if;
-        $node->else = $if;
-        $node->if = $else;
+        [$node->if, $node->else] = [$node->else, $node->if];
         if ($node->if instanceof Ternary) {
             $ternary = $node->if;
-            $ternary->setAttribute(AttributeKey::KIND, AttributeKey::WRAPPED_IN_PARENTHESES);
-            $ternary->setAttribute(AttributeKey::ORIGINAL_NODE, null);
-        }
-        if ($node->else instanceof Ternary) {
-            $ternary = $node->else;
+            $ternary->setAttribute(AttributeKey::KIND, 'wrapped_with_brackets');
             $ternary->setAttribute(AttributeKey::ORIGINAL_NODE, null);
         }
         return $node;

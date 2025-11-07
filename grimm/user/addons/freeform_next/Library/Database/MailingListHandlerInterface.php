@@ -21,8 +21,6 @@ interface MailingListHandlerInterface extends IntegrationHandlerInterface
     /**
      * Updates the mailing lists of a given mailing list integration
      *
-     * @param AbstractMailingListIntegration $integration
-     * @param array                          $mailingLists
      *
      * @return bool
      */
@@ -44,14 +42,12 @@ interface MailingListHandlerInterface extends IntegrationHandlerInterface
     /**
      * Returns all ListObjects of a particular mailing list integration
      *
-     * @param AbstractMailingListIntegration $integration
      *
      * @return ListObject[]
      */
     public function getLists(AbstractMailingListIntegration $integration);
 
     /**
-     * @param AbstractMailingListIntegration $integration
      * @param int                            $id
      *
      * @return ListObject
@@ -61,8 +57,6 @@ interface MailingListHandlerInterface extends IntegrationHandlerInterface
 
     /**
      * Flag the given mailing list integration so that it's updated the next time it's accessed
-     *
-     * @param AbstractMailingListIntegration $integration
      */
     public function flagMailingListIntegrationForUpdating(AbstractMailingListIntegration $integration);
 }

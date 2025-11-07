@@ -1,7 +1,7 @@
 <div class="">
     <div class="panel">
         <?php if (isset($form_url)):?>
-            <?=form_open($form_url, $form_attributes ?? [] )?>
+            <?=form_open($form_url, isset($form_attributes) ? $form_attributes : [] )?>
         <?php elseif (isset($footer) AND $footer['type'] == 'bulk_action_form'):?>
         <form><!-- currently EE's bulk action setup requires a form wrapper no matter what -->
             <?php endif;?>
@@ -15,7 +15,7 @@
 					<?php if ( ! empty($form_right_links)):?>
 						<fieldset class="tbl-search right title-bar__extra-tools">
 							<?php foreach ($form_right_links as $link_data):?>
-								<a <?php if (@$link_data['attrs'] && !str_contains((string) @$link_data['attrs'], 'class=')) : ?>class="btn tn action"<?php endif ?>
+								<a <?php if (@$link_data['attrs'] && strpos(@$link_data['attrs'], 'class=') === false) : ?>class="btn tn action"<?php endif ?>
 								   <?php echo @$link_data['attrs'] ?>
 								   class="tn button button--primary" href="<?=$link_data['link']?>">
 									<?=$link_data['title']?>
@@ -88,6 +88,6 @@
             <?php if (isset($form_url) || (isset($footer) AND $footer['type'] == 'bulk_action_form')):?>
         </form> <!-- end of wrapper -->
     <?php endif;?>
-		<?=$blocks['addonModals'] ?? ''?>
+		<?=isset($blocks['addonModals']) ? $blocks['addonModals'] : ''?>
     </div>
 </div>

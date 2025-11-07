@@ -15,38 +15,43 @@ use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\ObjectType;
 use Rector\CodingStyle\ValueObject\ObjectMagicMethods;
-use Rector\Enum\ObjectReference;
+use Rector\Core\Enum\ObjectReference;
+use Rector\Core\Rector\AbstractScopeAwareRector;
+use Rector\Core\Reflection\ReflectionResolver;
+use Rector\Core\ValueObject\PhpVersionFeature;
 use Rector\NodeCollector\ScopeResolver\ParentClassScopeResolver;
 use Rector\NodeCollector\StaticAnalyzer;
-use Rector\PHPStan\ScopeFetcher;
-use Rector\Rector\AbstractRector;
-use Rector\Reflection\ReflectionResolver;
-use Rector\ValueObject\PhpVersionFeature;
 use Rector\VersionBonding\Contract\MinPhpVersionInterface;
 use ReflectionMethod;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
+ * @changelog https://thephp.cc/news/2017/07/dont-call-instance-methods-statically https://3v4l.org/tQ32f https://3v4l.org/jB9jn
+ *
  * @see \Rector\Tests\Php70\Rector\StaticCall\StaticCallOnNonStaticToInstanceCallRector\StaticCallOnNonStaticToInstanceCallRectorTest
  */
-final class StaticCallOnNonStaticToInstanceCallRector extends AbstractRector implements MinPhpVersionInterface
+final class StaticCallOnNonStaticToInstanceCallRector extends AbstractScopeAwareRector implements MinPhpVersionInterface
 {
     /**
      * @readonly
+     * @var \Rector\NodeCollector\StaticAnalyzer
      */
-    private StaticAnalyzer $staticAnalyzer;
+    private $staticAnalyzer;
     /**
      * @readonly
+     * @var \PHPStan\Reflection\ReflectionProvider
      */
-    private ReflectionProvider $reflectionProvider;
+    private $reflectionProvider;
     /**
      * @readonly
+     * @var \Rector\Core\Reflection\ReflectionResolver
      */
-    private ReflectionResolver $reflectionResolver;
+    private $reflectionResolver;
     /**
      * @readonly
+     * @var \Rector\NodeCollector\ScopeResolver\ParentClassScopeResolver
      */
-    private ParentClassScopeResolver $parentClassScopeResolver;
+    private $parentClassScopeResolver;
     public function __construct(StaticAnalyzer $staticAnalyzer, ReflectionProvider $reflectionProvider, ReflectionResolver $reflectionResolver, ParentClassScopeResolver $parentClassScopeResolver)
     {
         $this->staticAnalyzer = $staticAnalyzer;
@@ -104,7 +109,7 @@ CODE_SAMPLE
     /**
      * @param StaticCall $node
      */
-    public function refactor(Node $node) : ?Node
+    public function refactorWithScope(Node $node, Scope $scope) : ?Node
     {
         if ($node->name instanceof Expr) {
             return null;
@@ -117,7 +122,6 @@ CODE_SAMPLE
         if ($className === null) {
             return null;
         }
-        $scope = ScopeFetcher::fetch($node);
         if ($this->shouldSkip($methodName, $className, $node, $scope)) {
             return null;
         }
@@ -158,7 +162,7 @@ CODE_SAMPLE
             return \true;
         }
         $reflection = $scope->getClassReflection();
-        if ($reflection instanceof ClassReflection && $reflection->is($className)) {
+        if ($reflection instanceof ClassReflection && $reflection->isSubclassOf($className)) {
             return \true;
         }
         $className = $this->getName($staticCall->class);

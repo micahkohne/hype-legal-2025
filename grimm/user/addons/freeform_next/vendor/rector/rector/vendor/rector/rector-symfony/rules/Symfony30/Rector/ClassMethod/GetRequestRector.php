@@ -11,9 +11,8 @@ use PhpParser\Node\Param;
 use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassMethod;
-use Rector\Exception\ShouldNotHappenException;
-use Rector\PhpParser\Node\BetterNodeFinder;
-use Rector\Rector\AbstractRector;
+use Rector\Core\Exception\ShouldNotHappenException;
+use Rector\Core\Rector\AbstractRector;
 use Rector\Symfony\Bridge\NodeAnalyzer\ControllerMethodAnalyzer;
 use Rector\Symfony\TypeAnalyzer\ControllerAnalyzer;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
@@ -25,26 +24,26 @@ final class GetRequestRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\Symfony\Bridge\NodeAnalyzer\ControllerMethodAnalyzer
      */
-    private ControllerMethodAnalyzer $controllerMethodAnalyzer;
+    private $controllerMethodAnalyzer;
     /**
      * @readonly
+     * @var \Rector\Symfony\TypeAnalyzer\ControllerAnalyzer
      */
-    private ControllerAnalyzer $controllerAnalyzer;
-    /**
-     * @readonly
-     */
-    private BetterNodeFinder $betterNodeFinder;
+    private $controllerAnalyzer;
     /**
      * @var string
      */
     private const REQUEST_CLASS = 'Symfony\\Component\\HttpFoundation\\Request';
-    private ?string $requestVariableAndParamName = null;
-    public function __construct(ControllerMethodAnalyzer $controllerMethodAnalyzer, ControllerAnalyzer $controllerAnalyzer, BetterNodeFinder $betterNodeFinder)
+    /**
+     * @var string|null
+     */
+    private $requestVariableAndParamName;
+    public function __construct(ControllerMethodAnalyzer $controllerMethodAnalyzer, ControllerAnalyzer $controllerAnalyzer)
     {
         $this->controllerMethodAnalyzer = $controllerMethodAnalyzer;
         $this->controllerAnalyzer = $controllerAnalyzer;
-        $this->betterNodeFinder = $betterNodeFinder;
     }
     public function getRuleDefinition() : RuleDefinition
     {
@@ -127,7 +126,7 @@ CODE_SAMPLE
             if (!$node->var instanceof Variable) {
                 return \false;
             }
-            return $this->isName($node->name, 'get');
+            return $this->nodeNameResolver->isName($node->name, 'get');
         });
         foreach ($getMethodCalls as $getMethodCall) {
             if ($this->isGetMethodCallWithRequestParameters($getMethodCall)) {
@@ -142,7 +141,7 @@ CODE_SAMPLE
         if (!$methodCall->var instanceof Variable) {
             return \false;
         }
-        if (!$this->isName($methodCall->var, 'this')) {
+        if (!$this->nodeNameResolver->isName($methodCall->var, 'this')) {
             return \false;
         }
         if (!$this->isName($methodCall->name, 'getRequest') && !$this->isGetMethodCallWithRequestParameters($methodCall)) {
@@ -162,7 +161,7 @@ CODE_SAMPLE
             if (!$this->isName($node->var, 'this')) {
                 return \false;
             }
-            return $this->isName($node->name, 'getRequest');
+            return $this->nodeNameResolver->isName($node->name, 'getRequest');
         });
     }
     private function isGetMethodCallWithRequestParameters(MethodCall $methodCall) : bool
@@ -195,7 +194,7 @@ CODE_SAMPLE
         }
         $fullyQualified = new FullyQualified(self::REQUEST_CLASS);
         $classMethod->params[] = new Param(new Variable($this->getRequestVariableAndParamName()), null, $fullyQualified);
-        $this->traverseNodesWithCallable((array) $classMethod->stmts, function (Node $node) use($classMethod) : ?Variable {
+        $this->traverseNodesWithCallable((array) $classMethod->stmts, function (Node $node) use($classMethod) {
             if (!$node instanceof MethodCall) {
                 return null;
             }

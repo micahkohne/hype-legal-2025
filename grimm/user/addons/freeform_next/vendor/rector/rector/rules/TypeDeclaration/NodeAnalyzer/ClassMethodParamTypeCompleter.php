@@ -5,30 +5,49 @@ namespace Rector\TypeDeclaration\NodeAnalyzer;
 
 use PhpParser\Node;
 use PhpParser\Node\Expr;
-use PhpParser\Node\Identifier;
+use PhpParser\Node\Name;
 use PhpParser\Node\Param;
 use PhpParser\Node\Stmt\ClassMethod;
+use PHPStan\Type\CallableType;
 use PHPStan\Type\MixedType;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\Type;
 use PHPStan\Type\UnionType;
+use Rector\Core\Php\PhpVersionProvider;
+use Rector\Core\ValueObject\PhpVersionFeature;
+use Rector\NodeTypeResolver\Node\AttributeKey;
 use Rector\PHPStanStaticTypeMapper\Enum\TypeKind;
+use Rector\PHPStanStaticTypeMapper\TypeAnalyzer\UnionTypeCommonTypeNarrower;
 use Rector\StaticTypeMapper\StaticTypeMapper;
 use Rector\VendorLocker\NodeVendorLocker\ClassMethodParamVendorLockResolver;
 final class ClassMethodParamTypeCompleter
 {
     /**
      * @readonly
+     * @var \Rector\StaticTypeMapper\StaticTypeMapper
      */
-    private StaticTypeMapper $staticTypeMapper;
+    private $staticTypeMapper;
     /**
      * @readonly
+     * @var \Rector\VendorLocker\NodeVendorLocker\ClassMethodParamVendorLockResolver
      */
-    private ClassMethodParamVendorLockResolver $classMethodParamVendorLockResolver;
-    public function __construct(StaticTypeMapper $staticTypeMapper, ClassMethodParamVendorLockResolver $classMethodParamVendorLockResolver)
+    private $classMethodParamVendorLockResolver;
+    /**
+     * @readonly
+     * @var \Rector\PHPStanStaticTypeMapper\TypeAnalyzer\UnionTypeCommonTypeNarrower
+     */
+    private $unionTypeCommonTypeNarrower;
+    /**
+     * @readonly
+     * @var \Rector\Core\Php\PhpVersionProvider
+     */
+    private $phpVersionProvider;
+    public function __construct(StaticTypeMapper $staticTypeMapper, ClassMethodParamVendorLockResolver $classMethodParamVendorLockResolver, UnionTypeCommonTypeNarrower $unionTypeCommonTypeNarrower, PhpVersionProvider $phpVersionProvider)
     {
         $this->staticTypeMapper = $staticTypeMapper;
         $this->classMethodParamVendorLockResolver = $classMethodParamVendorLockResolver;
+        $this->unionTypeCommonTypeNarrower = $unionTypeCommonTypeNarrower;
+        $this->phpVersionProvider = $phpVersionProvider;
     }
     /**
      * @param array<int, Type> $classParameterTypes
@@ -50,8 +69,7 @@ final class ClassMethodParamTypeCompleter
             if (!$this->isAcceptedByDefault($param, $argumentStaticType)) {
                 continue;
             }
-            // skip if param type already filled
-            if ($param->type instanceof Identifier) {
+            if ($param->type instanceof Name && $param->type->getAttribute(AttributeKey::VIRTUAL_NODE) === \true) {
                 continue;
             }
             // update parameter
@@ -86,6 +104,8 @@ final class ClassMethodParamTypeCompleter
         if ($this->isClosureAndCallableType($currentParameterStaticType, $argumentStaticType)) {
             return \true;
         }
+        // narrow union type in case its not supported yet
+        $argumentStaticType = $this->narrowUnionTypeIfNotSupported($argumentStaticType);
         // too many union types
         if ($this->isTooDetailedUnionType($currentParameterStaticType, $argumentStaticType, $maxUnionTypes)) {
             return \true;
@@ -103,10 +123,10 @@ final class ClassMethodParamTypeCompleter
     }
     private function isClosureAndCallableType(Type $parameterStaticType, Type $argumentStaticType) : bool
     {
-        if ($parameterStaticType->isCallable()->yes() && $this->isClosureObjectType($argumentStaticType)) {
+        if ($parameterStaticType instanceof CallableType && $this->isClosureObjectType($argumentStaticType)) {
             return \true;
         }
-        return $argumentStaticType->isCallable()->yes() && $this->isClosureObjectType($parameterStaticType);
+        return $argumentStaticType instanceof CallableType && $this->isClosureObjectType($parameterStaticType);
     }
     private function isClosureObjectType(Type $type) : bool
     {
@@ -124,6 +144,21 @@ final class ClassMethodParamTypeCompleter
             return \false;
         }
         return \count($newType->getTypes()) > $maxUnionTypes;
+    }
+    private function narrowUnionTypeIfNotSupported(Type $type) : Type
+    {
+        if (!$type instanceof UnionType) {
+            return $type;
+        }
+        // union is supported, so it's ok
+        if ($this->phpVersionProvider->isAtLeastPhpVersion(PhpVersionFeature::UNION_TYPES)) {
+            return $type;
+        }
+        $narrowedObjectType = $this->unionTypeCommonTypeNarrower->narrowToSharedObjectType($type);
+        if ($narrowedObjectType instanceof ObjectType) {
+            return $narrowedObjectType;
+        }
+        return $type;
     }
     private function isAcceptedByDefault(Param $param, Type $argumentStaticType) : bool
     {

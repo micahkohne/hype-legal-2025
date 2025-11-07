@@ -7,16 +7,19 @@ final class FunctionNameWithAssertMethods
 {
     /**
      * @readonly
+     * @var string
      */
-    private string $functionName;
+    private $functionName;
     /**
      * @readonly
+     * @var string
      */
-    private string $assetMethodName;
+    private $assetMethodName;
     /**
      * @readonly
+     * @var string
      */
-    private string $notAssertMethodName;
+    private $notAssertMethodName;
     public function __construct(string $functionName, string $assetMethodName, string $notAssertMethodName)
     {
         $this->functionName = $functionName;

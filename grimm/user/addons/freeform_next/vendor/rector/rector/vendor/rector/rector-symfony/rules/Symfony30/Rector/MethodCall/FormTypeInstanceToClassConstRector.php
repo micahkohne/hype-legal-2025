@@ -4,14 +4,13 @@ declare (strict_types=1);
 namespace Rector\Symfony\Symfony30\Rector\MethodCall;
 
 use PhpParser\Node;
-use PhpParser\Node\ArrayItem;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Array_;
+use PhpParser\Node\Expr\ArrayItem;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\New_;
 use PhpParser\Node\Name;
-use Rector\PhpParser\Node\Value\ValueResolver;
-use Rector\Rector\AbstractRector;
+use Rector\Core\Rector\AbstractRector;
 use Rector\Symfony\NodeAnalyzer\FormAddMethodCallAnalyzer;
 use Rector\Symfony\NodeAnalyzer\FormCollectionAnalyzer;
 use Rector\Symfony\NodeAnalyzer\FormInstanceToFormClassConstFetchConverter;
@@ -34,36 +33,36 @@ final class FormTypeInstanceToClassConstRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\Symfony\NodeAnalyzer\FormInstanceToFormClassConstFetchConverter
      */
-    private FormInstanceToFormClassConstFetchConverter $formInstanceToFormClassConstFetchConverter;
+    private $formInstanceToFormClassConstFetchConverter;
     /**
      * @readonly
+     * @var \Rector\Symfony\NodeAnalyzer\FormAddMethodCallAnalyzer
      */
-    private FormAddMethodCallAnalyzer $formAddMethodCallAnalyzer;
+    private $formAddMethodCallAnalyzer;
     /**
      * @readonly
+     * @var \Rector\Symfony\NodeAnalyzer\FormOptionsArrayMatcher
      */
-    private FormOptionsArrayMatcher $formOptionsArrayMatcher;
+    private $formOptionsArrayMatcher;
     /**
      * @readonly
+     * @var \Rector\Symfony\NodeAnalyzer\FormCollectionAnalyzer
      */
-    private FormCollectionAnalyzer $formCollectionAnalyzer;
+    private $formCollectionAnalyzer;
     /**
      * @readonly
+     * @var \Rector\Symfony\TypeAnalyzer\ControllerAnalyzer
      */
-    private ControllerAnalyzer $controllerAnalyzer;
-    /**
-     * @readonly
-     */
-    private ValueResolver $valueResolver;
-    public function __construct(FormInstanceToFormClassConstFetchConverter $formInstanceToFormClassConstFetchConverter, FormAddMethodCallAnalyzer $formAddMethodCallAnalyzer, FormOptionsArrayMatcher $formOptionsArrayMatcher, FormCollectionAnalyzer $formCollectionAnalyzer, ControllerAnalyzer $controllerAnalyzer, ValueResolver $valueResolver)
+    private $controllerAnalyzer;
+    public function __construct(FormInstanceToFormClassConstFetchConverter $formInstanceToFormClassConstFetchConverter, FormAddMethodCallAnalyzer $formAddMethodCallAnalyzer, FormOptionsArrayMatcher $formOptionsArrayMatcher, FormCollectionAnalyzer $formCollectionAnalyzer, ControllerAnalyzer $controllerAnalyzer)
     {
         $this->formInstanceToFormClassConstFetchConverter = $formInstanceToFormClassConstFetchConverter;
         $this->formAddMethodCallAnalyzer = $formAddMethodCallAnalyzer;
         $this->formOptionsArrayMatcher = $formOptionsArrayMatcher;
         $this->formCollectionAnalyzer = $formCollectionAnalyzer;
         $this->controllerAnalyzer = $controllerAnalyzer;
-        $this->valueResolver = $valueResolver;
     }
     public function getRuleDefinition() : RuleDefinition
     {

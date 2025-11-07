@@ -1,6 +1,6 @@
 <?php
 
-namespace RectorPrefix202507\Illuminate\Contracts\Validation;
+namespace RectorPrefix202308\Illuminate\Contracts\Validation;
 
 use Closure;
 /**
@@ -13,7 +13,7 @@ interface InvokableRule
      *
      * @param  string  $attribute
      * @param  mixed  $value
-     * @param  \Closure(string, ?string=): \Illuminate\Translation\PotentiallyTranslatedString  $fail
+     * @param  \Closure(string): \Illuminate\Translation\PotentiallyTranslatedString  $fail
      * @return void
      */
     public function __invoke(string $attribute, $value, Closure $fail);

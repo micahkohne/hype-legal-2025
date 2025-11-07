@@ -3,42 +3,28 @@
 declare (strict_types=1);
 namespace Rector\Php80\ValueObject;
 
+use Rector\Core\Validation\RectorAssert;
 use Rector\Php80\Contract\ValueObject\AnnotationToAttributeInterface;
-use Rector\Validation\RectorAssert;
-use RectorPrefix202507\Webmozart\Assert\Assert;
 final class AnnotationToAttribute implements AnnotationToAttributeInterface
 {
     /**
      * @readonly
+     * @var string
      */
-    private string $tag;
+    private $tag;
     /**
      * @readonly
+     * @var string|null
      */
-    private ?string $attributeClass = null;
-    /**
-     * @var string[]
-     * @readonly
-     */
-    private array $classReferenceFields = [];
-    /**
-     * @readonly
-     */
-    private bool $useValueAsAttributeArgument = \false;
-    /**
-     * @param string[] $classReferenceFields
-     */
-    public function __construct(string $tag, ?string $attributeClass = null, array $classReferenceFields = [], bool $useValueAsAttributeArgument = \false)
+    private $attributeClass;
+    public function __construct(string $tag, ?string $attributeClass = null)
     {
         $this->tag = $tag;
         $this->attributeClass = $attributeClass;
-        $this->classReferenceFields = $classReferenceFields;
-        $this->useValueAsAttributeArgument = $useValueAsAttributeArgument;
         RectorAssert::className($tag);
         if (\is_string($attributeClass)) {
             RectorAssert::className($attributeClass);
         }
-        Assert::allString($classReferenceFields);
     }
     public function getTag() : string
     {
@@ -50,16 +36,5 @@ final class AnnotationToAttribute implements AnnotationToAttributeInterface
             return $this->tag;
         }
         return $this->attributeClass;
-    }
-    /**
-     * @return string[]
-     */
-    public function getClassReferenceFields() : array
-    {
-        return $this->classReferenceFields;
-    }
-    public function getUseValueAsAttributeArgument() : bool
-    {
-        return $this->useValueAsAttributeArgument;
     }
 }

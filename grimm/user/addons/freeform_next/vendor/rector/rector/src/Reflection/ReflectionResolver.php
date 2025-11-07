@@ -1,13 +1,12 @@
 <?php
 
 declare (strict_types=1);
-namespace Rector\Reflection;
+namespace Rector\Core\Reflection;
 
 use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Expr\New_;
-use PhpParser\Node\Expr\NullsafeMethodCall;
 use PhpParser\Node\Expr\PropertyFetch;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Expr\StaticPropertyFetch;
@@ -15,53 +14,69 @@ use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassLike;
 use PhpParser\Node\Stmt\ClassMethod;
-use PhpParser\Node\Stmt\Function_;
 use PHPStan\Analyser\Scope;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Reflection\FunctionReflection;
 use PHPStan\Reflection\MethodReflection;
 use PHPStan\Reflection\Php\PhpPropertyReflection;
 use PHPStan\Reflection\ReflectionProvider;
-use PHPStan\Type\BenevolentUnionType;
-use PHPStan\Type\TypeCombinator;
-use Rector\Exception\ShouldNotHappenException;
-use Rector\NodeAnalyzer\ClassAnalyzer;
+use PHPStan\Type\TypeUtils;
+use PHPStan\Type\TypeWithClassName;
+use Rector\Core\Exception\ShouldNotHappenException;
+use Rector\Core\NodeAnalyzer\ClassAnalyzer;
+use Rector\Core\PhpParser\AstResolver;
+use Rector\Core\PHPStan\Reflection\TypeToCallReflectionResolver\TypeToCallReflectionResolverRegistry;
+use Rector\Core\ValueObject\MethodName;
 use Rector\NodeNameResolver\NodeNameResolver;
 use Rector\NodeTypeResolver\Node\AttributeKey;
 use Rector\NodeTypeResolver\NodeTypeResolver;
-use Rector\StaticTypeMapper\Resolver\ClassNameFromObjectTypeResolver;
-use Rector\StaticTypeMapper\ValueObject\Type\AliasedObjectType;
 use Rector\StaticTypeMapper\ValueObject\Type\ShortenedObjectType;
-use Rector\ValueObject\MethodName;
 final class ReflectionResolver
 {
     /**
      * @readonly
+     * @var \PHPStan\Reflection\ReflectionProvider
      */
-    private ReflectionProvider $reflectionProvider;
+    private $reflectionProvider;
     /**
      * @readonly
+     * @var \Rector\NodeTypeResolver\NodeTypeResolver
      */
-    private NodeTypeResolver $nodeTypeResolver;
+    private $nodeTypeResolver;
     /**
      * @readonly
+     * @var \Rector\NodeNameResolver\NodeNameResolver
      */
-    private NodeNameResolver $nodeNameResolver;
+    private $nodeNameResolver;
     /**
      * @readonly
+     * @var \Rector\Core\PHPStan\Reflection\TypeToCallReflectionResolver\TypeToCallReflectionResolverRegistry
      */
-    private ClassAnalyzer $classAnalyzer;
+    private $typeToCallReflectionResolverRegistry;
     /**
      * @readonly
+     * @var \Rector\Core\NodeAnalyzer\ClassAnalyzer
      */
-    private \Rector\Reflection\MethodReflectionResolver $methodReflectionResolver;
-    public function __construct(ReflectionProvider $reflectionProvider, NodeTypeResolver $nodeTypeResolver, NodeNameResolver $nodeNameResolver, ClassAnalyzer $classAnalyzer, \Rector\Reflection\MethodReflectionResolver $methodReflectionResolver)
+    private $classAnalyzer;
+    /**
+     * @readonly
+     * @var \Rector\Core\Reflection\MethodReflectionResolver
+     */
+    private $methodReflectionResolver;
+    /**
+     * @readonly
+     * @var \Rector\Core\PhpParser\AstResolver
+     */
+    private $astResolver;
+    public function __construct(ReflectionProvider $reflectionProvider, NodeTypeResolver $nodeTypeResolver, NodeNameResolver $nodeNameResolver, TypeToCallReflectionResolverRegistry $typeToCallReflectionResolverRegistry, ClassAnalyzer $classAnalyzer, \Rector\Core\Reflection\MethodReflectionResolver $methodReflectionResolver, AstResolver $astResolver)
     {
         $this->reflectionProvider = $reflectionProvider;
         $this->nodeTypeResolver = $nodeTypeResolver;
         $this->nodeNameResolver = $nodeNameResolver;
+        $this->typeToCallReflectionResolverRegistry = $typeToCallReflectionResolverRegistry;
         $this->classAnalyzer = $classAnalyzer;
         $this->methodReflectionResolver = $methodReflectionResolver;
+        $this->astResolver = $astResolver;
     }
     /**
      * @api
@@ -90,45 +105,23 @@ final class ReflectionResolver
         return $scope->getClassReflection();
     }
     /**
-     * @param \PhpParser\Node\Expr\MethodCall|\PhpParser\Node\Expr\NullsafeMethodCall|\PhpParser\Node\Expr\StaticCall|\PhpParser\Node\Expr\PropertyFetch|\PhpParser\Node\Expr\StaticPropertyFetch $node
+     * @param \PhpParser\Node\Expr\MethodCall|\PhpParser\Node\Expr\StaticCall|\PhpParser\Node\Expr\PropertyFetch|\PhpParser\Node\Expr\StaticPropertyFetch $node
      */
     public function resolveClassReflectionSourceObject($node) : ?ClassReflection
     {
-        $objectType = $node instanceof StaticCall || $node instanceof StaticPropertyFetch ? $this->nodeTypeResolver->getType($node->class) : $this->nodeTypeResolver->getType($node->var);
-        $className = ClassNameFromObjectTypeResolver::resolve($objectType);
-        if ($className === null) {
-            return null;
-        }
-        if (!$this->reflectionProvider->hasClass($className)) {
-            return null;
-        }
-        $classReflection = $this->reflectionProvider->getClass($className);
         if ($node instanceof PropertyFetch || $node instanceof StaticPropertyFetch) {
-            $propertyName = (string) $this->nodeNameResolver->getName($node->name);
-            if (!$classReflection->hasNativeProperty($propertyName)) {
+            $objectType = $node instanceof PropertyFetch ? $this->nodeTypeResolver->getType($node->var) : $this->nodeTypeResolver->getType($node->class);
+            if (!$objectType instanceof TypeWithClassName) {
                 return null;
             }
-            $property = $classReflection->getNativeProperty($propertyName);
-            if ($property->isPrivate()) {
-                return $classReflection;
+            $className = $objectType->getClassName();
+            if (!$this->reflectionProvider->hasClass($className)) {
+                return null;
             }
-            if ($this->reflectionProvider->hasClass($property->getDeclaringClass()->getName())) {
-                return $this->reflectionProvider->getClass($property->getDeclaringClass()->getName());
-            }
-            return $classReflection;
+            return $this->reflectionProvider->getClass($className);
         }
-        $methodName = (string) $this->nodeNameResolver->getName($node->name);
-        if (!$classReflection->hasNativeMethod($methodName)) {
-            return null;
-        }
-        $extendedMethodReflection = $classReflection->getNativeMethod($methodName);
-        if ($extendedMethodReflection->isPrivate()) {
-            return $classReflection;
-        }
-        if ($this->reflectionProvider->hasClass($extendedMethodReflection->getDeclaringClass()->getName())) {
-            return $this->reflectionProvider->getClass($extendedMethodReflection->getDeclaringClass()->getName());
-        }
-        return $classReflection;
+        $classMethod = $this->astResolver->resolveClassMethodFromCall($node);
+        return $this->resolveClassReflection($classMethod);
     }
     /**
      * @param class-string $className
@@ -140,12 +133,12 @@ final class ReflectionResolver
     public function resolveMethodReflectionFromStaticCall(StaticCall $staticCall) : ?MethodReflection
     {
         $objectType = $this->nodeTypeResolver->getType($staticCall->class);
-        if ($objectType instanceof ShortenedObjectType || $objectType instanceof AliasedObjectType) {
+        if ($objectType instanceof ShortenedObjectType) {
             /** @var array<class-string> $classNames */
             $classNames = [$objectType->getFullyQualifiedName()];
         } else {
             /** @var array<class-string> $classNames */
-            $classNames = $objectType->getObjectClassNames();
+            $classNames = TypeUtils::getDirectClassNames($objectType);
         }
         $methodName = $this->nodeNameResolver->getName($staticCall->name);
         if ($methodName === null) {
@@ -163,11 +156,7 @@ final class ReflectionResolver
     public function resolveMethodReflectionFromMethodCall(MethodCall $methodCall) : ?MethodReflection
     {
         $callerType = $this->nodeTypeResolver->getType($methodCall->var);
-        if ($callerType instanceof BenevolentUnionType) {
-            $callerType = TypeCombinator::removeFalsey($callerType);
-        }
-        $className = ClassNameFromObjectTypeResolver::resolve($callerType);
-        if ($className === null) {
+        if (!$callerType instanceof TypeWithClassName) {
             return null;
         }
         $methodName = $this->nodeNameResolver->getName($methodCall->name);
@@ -175,7 +164,7 @@ final class ReflectionResolver
             return null;
         }
         $scope = $methodCall->getAttribute(AttributeKey::SCOPE);
-        return $this->resolveMethodReflection($className, $methodName, $scope);
+        return $this->resolveMethodReflection($callerType->getClassName(), $methodName, $scope);
     }
     /**
      * @param \PhpParser\Node\Expr\MethodCall|\PhpParser\Node\Expr\FuncCall|\PhpParser\Node\Expr\StaticCall $call
@@ -201,27 +190,14 @@ final class ReflectionResolver
         $methodName = $this->nodeNameResolver->getName($classMethod);
         return $this->resolveMethodReflection($className, $methodName, $scope);
     }
-    public function resolveFunctionReflectionFromFunction(Function_ $function) : ?FunctionReflection
-    {
-        $name = $this->nodeNameResolver->getName($function);
-        if ($name === null) {
-            return null;
-        }
-        $functionName = new Name($name);
-        if ($this->reflectionProvider->hasFunction($functionName, null)) {
-            return $this->reflectionProvider->getFunction($functionName, null);
-        }
-        return null;
-    }
     public function resolveMethodReflectionFromNew(New_ $new) : ?MethodReflection
     {
         $newClassType = $this->nodeTypeResolver->getType($new->class);
-        $className = ClassNameFromObjectTypeResolver::resolve($newClassType);
-        if ($className === null) {
+        if (!$newClassType instanceof TypeWithClassName) {
             return null;
         }
         $scope = $new->getAttribute(AttributeKey::SCOPE);
-        return $this->resolveMethodReflection($className, MethodName::CONSTRUCT, $scope);
+        return $this->resolveMethodReflection($newClassType->getClassName(), MethodName::CONSTRUCT, $scope);
     }
     /**
      * @param \PhpParser\Node\Expr\PropertyFetch|\PhpParser\Node\Expr\StaticPropertyFetch $propertyFetch
@@ -233,15 +209,22 @@ final class ReflectionResolver
             return null;
         }
         $fetcheeType = $propertyFetch instanceof PropertyFetch ? $this->nodeTypeResolver->getType($propertyFetch->var) : $this->nodeTypeResolver->getType($propertyFetch->class);
-        $className = ClassNameFromObjectTypeResolver::resolve($fetcheeType);
-        if ($className === null) {
+        if (!$fetcheeType instanceof TypeWithClassName) {
             return null;
         }
-        if (!$this->reflectionProvider->hasClass($className)) {
+        if (!$this->reflectionProvider->hasClass($fetcheeType->getClassName())) {
             return null;
         }
-        $classReflection = $this->reflectionProvider->getClass($className);
-        if (!$classReflection->hasNativeProperty($propertyName)) {
+        $classReflection = $this->reflectionProvider->getClass($fetcheeType->getClassName());
+        if (!$classReflection->hasProperty($propertyName)) {
+            return null;
+        }
+        $scope = $propertyFetch->getAttribute(AttributeKey::SCOPE);
+        if ($scope instanceof Scope) {
+            $propertyReflection = $classReflection->getProperty($propertyName, $scope);
+            if ($propertyReflection instanceof PhpPropertyReflection) {
+                return $propertyReflection;
+            }
             return null;
         }
         return $classReflection->getNativeProperty($propertyName);
@@ -251,13 +234,18 @@ final class ReflectionResolver
      */
     private function resolveFunctionReflectionFromFuncCall(FuncCall $funcCall)
     {
-        if (!$funcCall->name instanceof Name) {
+        $scope = $funcCall->getAttribute(AttributeKey::SCOPE);
+        if ($funcCall->name instanceof Name) {
+            if ($this->reflectionProvider->hasFunction($funcCall->name, $scope)) {
+                return $this->reflectionProvider->getFunction($funcCall->name, $scope);
+            }
             return null;
         }
-        $functionName = new Name((string) $this->nodeNameResolver->getName($funcCall));
-        if ($this->reflectionProvider->hasFunction($functionName, null)) {
-            return $this->reflectionProvider->getFunction($functionName, null);
+        if (!$scope instanceof Scope) {
+            return null;
         }
-        return null;
+        // fallback to callable
+        $funcCallNameType = $scope->getType($funcCall->name);
+        return $this->typeToCallReflectionResolverRegistry->resolve($funcCallNameType, $scope);
     }
 }

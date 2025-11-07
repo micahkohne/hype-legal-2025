@@ -6,11 +6,10 @@ class Plugin
 {
     /**
      * @param string $name
-     * @param mixed  $default
      *
      * @return mixed
      */
-    public function getParam($name, $default = null)
+    public function getParam($name, mixed $default = null)
     {
         $param = ee()->TMPL->fetch_param($name);
 
@@ -23,11 +22,10 @@ class Plugin
 
     /**
      * @param string $name
-     * @param mixed  $default
      *
      * @return mixed
      */
-    public function getPost($name, $default = null)
+    public function getPost($name, mixed $default = null)
     {
         $value = ee()->input->post($name);
 
@@ -38,10 +36,7 @@ class Plugin
         return $value;
     }
 
-    /**
-     * @param mixed $object
-     */
-    public function returnJson($object): never
+    public function returnJson(mixed $object): void
     {
         echo json_encode($object);
         die();
@@ -49,10 +44,8 @@ class Plugin
 
     /**
      * Redirects to a given $url
-     *
-     * @param string $url
      */
-    public function redirect(string $url): never
+    public function redirect(string $url): void
     {
         header('Location: ' . $url);
         die();
@@ -75,7 +68,7 @@ class Plugin
     {
         $pattern = '/{if (?:freeform_next|submission|form):no_results}(.*?){\/if}/s';
 
-        if (preg_match($pattern, (string) ee()->TMPL->tagdata, $match)) {
+        if (preg_match($pattern, ee()->TMPL->tagdata, $match)) {
             return $match[1];
         }
 

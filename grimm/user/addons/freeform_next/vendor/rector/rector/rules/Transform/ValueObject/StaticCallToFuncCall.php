@@ -4,21 +4,24 @@ declare (strict_types=1);
 namespace Rector\Transform\ValueObject;
 
 use PHPStan\Type\ObjectType;
-use Rector\Validation\RectorAssert;
+use Rector\Core\Validation\RectorAssert;
 final class StaticCallToFuncCall
 {
     /**
      * @readonly
+     * @var string
      */
-    private string $class;
+    private $class;
     /**
      * @readonly
+     * @var string
      */
-    private string $method;
+    private $method;
     /**
      * @readonly
+     * @var string
      */
-    private string $function;
+    private $function;
     public function __construct(string $class, string $method, string $function)
     {
         $this->class = $class;

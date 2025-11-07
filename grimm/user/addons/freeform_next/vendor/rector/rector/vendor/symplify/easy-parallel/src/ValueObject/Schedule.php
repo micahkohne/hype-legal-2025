@@ -1,7 +1,7 @@
 <?php
 
 declare (strict_types=1);
-namespace RectorPrefix202507\Symplify\EasyParallel\ValueObject;
+namespace RectorPrefix202308\Symplify\EasyParallel\ValueObject;
 
 /**
  * From
@@ -13,13 +13,14 @@ final class Schedule
 {
     /**
      * @readonly
+     * @var int
      */
-    private int $numberOfProcesses;
+    private $numberOfProcesses;
     /**
      * @var array<array<string>>
      * @readonly
      */
-    private array $jobs;
+    private $jobs;
     /**
      * @param array<array<string>> $jobs
      */

@@ -9,9 +9,12 @@ use function trim;
 class TypeAliasImportTagValueNode implements \PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocTagValueNode
 {
     use NodeAttributes;
-    public string $importedAlias;
-    public IdentifierTypeNode $importedFrom;
-    public ?string $importedAs = null;
+    /** @var string */
+    public $importedAlias;
+    /** @var IdentifierTypeNode */
+    public $importedFrom;
+    /** @var string|null */
+    public $importedAs;
     public function __construct(string $importedAlias, IdentifierTypeNode $importedFrom, ?string $importedAs)
     {
         $this->importedAlias = $importedAlias;

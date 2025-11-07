@@ -1,6 +1,6 @@
 # Rector Rules for Doctrine
 
-See available [Doctrine rules](https://getrector.com/find-rule?activeRectorSetGroup=doctrine)
+See available [Doctrine rules](/docs/rector_rules_overview.md)
 
 ## Install
 
@@ -14,29 +14,18 @@ composer require rector/rector --dev
 
 ## Use Sets
 
-To add a set to your config, use `->withPreparedSets` method, and pick one of constants:
+To add a set to your config, use `Rector\Doctrine\Set\DoctrineSetList` class and pick one of constants:
 
 ```php
-use Rector\Config\RectorConfig;
-
-return RectorConfig::configure()
-    ->withPreparedSets(doctrineCodeQuality: true)
-    ->withComposerBased(doctrine: true);
-```
-
-If you're on PHP 7.x, you can use withSets() instead, for `doctrineCodeQuality` set, so you can define:
-
-```php
-use Rector\Config\RectorConfig;
 use Rector\Doctrine\Set\DoctrineSetList;
+use Rector\Config\RectorConfig;
 
-return RectorConfig::configure()
-    ->withSets([
+return static function (RectorConfig $rectorConfig): void {
+    $rectorConfig->sets([
         DoctrineSetList::DOCTRINE_CODE_QUALITY,
     ]);
+};
 ```
-
-See [documentation](https://getrector.com/documentation) for more.
 
 <br>
 

@@ -15,7 +15,7 @@ class ExportService
      *
      * @return array
      */
-    public function getExportDialogueTemplateVariables($formId = null): array
+    public function getExportDialogueTemplateVariables(?int $formId = null): array
     {
         /** @var Form[] $forms */
         $forms = [];

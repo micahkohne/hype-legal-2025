@@ -1,17 +1,17 @@
 <?php
 
 declare (strict_types=1);
-namespace Rector\Autoloading;
+namespace Rector\Core\Autoloading;
 
-use Rector\Configuration\Option;
-use Rector\Configuration\Parameter\SimpleParameterProvider;
-use Rector\Exception\ShouldNotHappenException;
+use Rector\Core\Configuration\Option;
+use Rector\Core\Configuration\Parameter\SimpleParameterProvider;
+use Rector\Core\Exception\ShouldNotHappenException;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 use SplFileInfo;
-use RectorPrefix202507\Webmozart\Assert\Assert;
+use RectorPrefix202308\Webmozart\Assert\Assert;
 /**
- * @see \Rector\Tests\Autoloading\BootstrapFilesIncluderTest
+ * @see \Rector\Core\Tests\Autoloading\BootstrapFilesIncluderTest
  */
 final class BootstrapFilesIncluder
 {
@@ -39,9 +39,9 @@ final class BootstrapFilesIncluder
             return;
         }
         $dir = new RecursiveDirectoryIterator($stubsRectorDirectory, RecursiveDirectoryIterator::SKIP_DOTS);
+        /** @var SplFileInfo[] $stubs */
         $stubs = new RecursiveIteratorIterator($dir);
         foreach ($stubs as $stub) {
-            /** @var SplFileInfo $stub */
             require_once $stub->getRealPath();
         }
     }

@@ -1,23 +1,23 @@
 <?php
 
 declare (strict_types=1);
-namespace Rector\Util;
+namespace Rector\Core\Util;
 
-use Rector\Exception\ShouldNotHappenException;
+use Rector\Core\Exception\ShouldNotHappenException;
 /**
- * @see \Rector\Tests\Util\FileHasherTest
+ * @see \Rector\Core\Tests\Util\FileHasherTest
  */
 final class FileHasher
 {
     /**
-     * cryptographic insecure hashing of a string
+     * cryptographic insecure hasing of a string
      */
     public function hash(string $string) : string
     {
         return \hash($this->getAlgo(), $string);
     }
     /**
-     * cryptographic insecure hashing of files
+     * cryptographic insecure hasing of files
      *
      * @param string[] $files
      */

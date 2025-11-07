@@ -8,36 +8,41 @@ use PhpParser\Node\Expr\Assign;
 use PhpParser\Node\Expr\Closure;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Function_;
+use Rector\Core\NodeManipulator\FunctionLikeManipulator;
+use Rector\Core\PhpParser\Node\BetterNodeFinder;
 use Rector\Naming\ExpectedNameResolver\MatchParamTypeExpectedNameResolver;
 use Rector\Naming\PhpArray\ArrayFilter;
-use Rector\NodeManipulator\FunctionLikeManipulator;
-use Rector\PhpParser\Node\BetterNodeFinder;
 final class ConflictingNameResolver
 {
     /**
      * @readonly
+     * @var \Rector\Naming\PhpArray\ArrayFilter
      */
-    private ArrayFilter $arrayFilter;
+    private $arrayFilter;
     /**
      * @readonly
+     * @var \Rector\Core\PhpParser\Node\BetterNodeFinder
      */
-    private BetterNodeFinder $betterNodeFinder;
+    private $betterNodeFinder;
     /**
      * @readonly
+     * @var \Rector\Naming\Naming\ExpectedNameResolver
      */
-    private \Rector\Naming\Naming\ExpectedNameResolver $expectedNameResolver;
+    private $expectedNameResolver;
     /**
      * @readonly
+     * @var \Rector\Naming\ExpectedNameResolver\MatchParamTypeExpectedNameResolver
      */
-    private MatchParamTypeExpectedNameResolver $matchParamTypeExpectedNameResolver;
+    private $matchParamTypeExpectedNameResolver;
     /**
      * @readonly
+     * @var \Rector\Core\NodeManipulator\FunctionLikeManipulator
      */
-    private FunctionLikeManipulator $functionLikeManipulator;
+    private $functionLikeManipulator;
     /**
-     * @var array<int, string[]>
+     * @var array<string, string[]>
      */
-    private array $conflictingVariableNamesByClassMethod = [];
+    private $conflictingVariableNamesByClassMethod = [];
     public function __construct(ArrayFilter $arrayFilter, BetterNodeFinder $betterNodeFinder, \Rector\Naming\Naming\ExpectedNameResolver $expectedNameResolver, MatchParamTypeExpectedNameResolver $matchParamTypeExpectedNameResolver, FunctionLikeManipulator $functionLikeManipulator)
     {
         $this->arrayFilter = $arrayFilter;
@@ -60,7 +65,7 @@ final class ConflictingNameResolver
             }
             $expectedNames[] = $expectedName;
         }
-        return $this->arrayFilter->filterWithAtLeastTwoOccurrences($expectedNames);
+        return $this->arrayFilter->filterWithAtLeastTwoOccurences($expectedNames);
     }
     /**
      * @param \PhpParser\Node\Stmt\ClassMethod|\PhpParser\Node\Stmt\Function_|\PhpParser\Node\Expr\Closure|\PhpParser\Node\Expr\ArrowFunction $functionLike
@@ -77,16 +82,16 @@ final class ConflictingNameResolver
     private function resolveConflictingVariableNamesForNew($functionLike) : array
     {
         // cache it!
-        $classMethodId = \spl_object_id($functionLike);
-        if (isset($this->conflictingVariableNamesByClassMethod[$classMethodId])) {
-            return $this->conflictingVariableNamesByClassMethod[$classMethodId];
+        $classMethodHash = \spl_object_hash($functionLike);
+        if (isset($this->conflictingVariableNamesByClassMethod[$classMethodHash])) {
+            return $this->conflictingVariableNamesByClassMethod[$classMethodHash];
         }
         $paramNames = $this->functionLikeManipulator->resolveParamNames($functionLike);
         $newAssignNames = $this->resolveForNewAssigns($functionLike);
         $nonNewAssignNames = $this->resolveForNonNewAssigns($functionLike);
         $protectedNames = \array_merge($paramNames, $newAssignNames, $nonNewAssignNames);
-        $protectedNames = $this->arrayFilter->filterWithAtLeastTwoOccurrences($protectedNames);
-        $this->conflictingVariableNamesByClassMethod[$classMethodId] = $protectedNames;
+        $protectedNames = $this->arrayFilter->filterWithAtLeastTwoOccurences($protectedNames);
+        $this->conflictingVariableNamesByClassMethod[$classMethodHash] = $protectedNames;
         return $protectedNames;
     }
     /**

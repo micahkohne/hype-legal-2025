@@ -47,7 +47,7 @@ class AdminNotificationProperties extends AbstractProperties
      *
      * @return array
      */
-    public function getRecipientArray(): array
+    public function getRecipientArray()
     {
         $recipients = $this->getRecipients();
 

@@ -4,14 +4,14 @@ declare (strict_types=1);
 namespace Rector\DeadCode\Rector\For_;
 
 use PhpParser\Node;
-use PhpParser\Node\Scalar\Int_;
+use PhpParser\Node\Scalar\LNumber;
 use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\Continue_;
 use PhpParser\Node\Stmt\Do_;
 use PhpParser\Node\Stmt\For_;
 use PhpParser\Node\Stmt\Foreach_;
 use PhpParser\Node\Stmt\While_;
-use Rector\Rector\AbstractRector;
+use Rector\Core\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -61,7 +61,8 @@ CODE_SAMPLE
         if ($stmts === []) {
             return \false;
         }
-        $lastKey = \array_key_last($stmts);
+        \end($stmts);
+        $lastKey = \key($stmts);
         $lastStmt = $stmts[$lastKey];
         return $this->isRemovable($lastStmt);
     }
@@ -70,7 +71,7 @@ CODE_SAMPLE
         if (!$stmt instanceof Continue_) {
             return \false;
         }
-        if ($stmt->num instanceof Int_) {
+        if ($stmt->num instanceof LNumber) {
             return $stmt->num->value < 2;
         }
         return \true;

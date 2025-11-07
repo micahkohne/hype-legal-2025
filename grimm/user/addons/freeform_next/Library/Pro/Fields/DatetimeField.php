@@ -2,7 +2,6 @@
 
 namespace Solspace\Addons\FreeformNext\Library\Pro\Fields;
 
-use Override;
 use DateTime;
 use Exception;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Fields\Interfaces\InitialValueInterface;
@@ -12,9 +11,9 @@ use Solspace\Addons\FreeformNext\Library\Composer\Components\Validation\Constrai
 
 class DatetimeField extends TextField implements InitialValueInterface
 {
-    const DATETIME_TYPE_BOTH = 'both';
-    const DATETIME_TYPE_DATE = 'date';
-    const DATETIME_TYPE_TIME = 'time';
+    public const DATETIME_TYPE_BOTH = 'both';
+    public const DATETIME_TYPE_DATE = 'date';
+    public const DATETIME_TYPE_TIME = 'time';
 
     use InitialValueTrait;
 
@@ -54,7 +53,6 @@ class DatetimeField extends TextField implements InitialValueInterface
     /**
      * @return string
      */
-    #[Override]
     public static function getFieldTypeName(): string
     {
         return 'Date & Time';
@@ -65,7 +63,6 @@ class DatetimeField extends TextField implements InitialValueInterface
      *
      * @return string
      */
-    #[Override]
     public function getType(): string
     {
         return self::TYPE_DATETIME;
@@ -205,7 +202,6 @@ class DatetimeField extends TextField implements InitialValueInterface
     /**
      * @inheritDoc
      */
-    #[Override]
     public function getConstraints(): array
     {
         return [
@@ -225,7 +221,6 @@ class DatetimeField extends TextField implements InitialValueInterface
     /**
      * @return string
      */
-    #[Override]
     public function getInputHtml(): string
     {
         $attributes = $this->getCustomAttributes();

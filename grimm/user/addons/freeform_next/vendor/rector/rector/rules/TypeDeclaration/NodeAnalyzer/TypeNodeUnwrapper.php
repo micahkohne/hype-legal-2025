@@ -9,13 +9,14 @@ use PhpParser\Node\IntersectionType;
 use PhpParser\Node\Name;
 use PhpParser\Node\NullableType;
 use PhpParser\Node\UnionType;
-use Rector\PhpParser\Comparing\NodeComparator;
+use Rector\Core\PhpParser\Comparing\NodeComparator;
 final class TypeNodeUnwrapper
 {
     /**
      * @readonly
+     * @var \Rector\Core\PhpParser\Comparing\NodeComparator
      */
-    private NodeComparator $nodeComparator;
+    private $nodeComparator;
     public function __construct(NodeComparator $nodeComparator)
     {
         $this->nodeComparator = $nodeComparator;

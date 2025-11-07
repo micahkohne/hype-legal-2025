@@ -7,15 +7,15 @@ use PhpParser\Node\Expr;
 class Assign extends Expr
 {
     /** @var Expr Variable */
-    public Expr $var;
+    public $var;
     /** @var Expr Expression */
-    public Expr $expr;
+    public $expr;
     /**
      * Constructs an assignment node.
      *
-     * @param Expr $var Variable
-     * @param Expr $expr Expression
-     * @param array<string, mixed> $attributes Additional attributes
+     * @param Expr  $var        Variable
+     * @param Expr  $expr       Expression
+     * @param array $attributes Additional attributes
      */
     public function __construct(Expr $var, Expr $expr, array $attributes = [])
     {

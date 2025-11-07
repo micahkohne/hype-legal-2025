@@ -1,14 +1,14 @@
 <?php
 
 declare (strict_types=1);
-namespace Rector\Util;
+namespace Rector\Core\Util;
 
 final class ArrayParametersMerger
 {
     /**
      * Merges configurations. Left has higher priority than right one.
      *
-     * @author David Grudl (https://davidgrudl.com)
+     * @autor David Grudl (https://davidgrudl.com)
      * @source https://github.com/nette/di/blob/8eb90721a131262f17663e50aee0032a62d0ef08/src/DI/Config/Helpers.php#L31
      * @param mixed $left
      * @param mixed $right
@@ -17,7 +17,9 @@ final class ArrayParametersMerger
     public function merge($left, $right)
     {
         if (\is_array($left) && \is_array($right)) {
-            return $this->mergeLeftToRightWithCallable($left, $right, fn($leftValue, $rightValue) => $this->merge($leftValue, $rightValue));
+            return $this->mergeLeftToRightWithCallable($left, $right, function ($leftValue, $rightValue) {
+                return $this->merge($leftValue, $rightValue);
+            });
         }
         if ($left !== null) {
             return $left;

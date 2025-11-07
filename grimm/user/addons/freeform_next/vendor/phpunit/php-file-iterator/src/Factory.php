@@ -13,39 +13,29 @@ use const GLOB_ONLYDIR;
 use function array_filter;
 use function array_map;
 use function array_merge;
-use function array_unique;
-use function array_values;
 use function glob;
 use function is_dir;
 use function is_string;
 use function realpath;
-use function sort;
-use function stripos;
-use function substr;
 use AppendIterator;
-use FilesystemIterator;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
 
-/**
- * @internal This class is not covered by the backward compatibility promise for phpunit/php-file-iterator
- */
-final class Factory
+class Factory
 {
     /**
-     * @param list<non-empty-string>|non-empty-string $paths
-     * @param list<non-empty-string>|string           $suffixes
-     * @param list<non-empty-string>|string           $prefixes
-     * @param list<non-empty-string>                  $exclude
+     * @param array|string $paths
+     * @param array|string $suffixes
+     * @param array|string $prefixes
      */
-    public function getFileIterator(array|string $paths, array|string $suffixes = '', array|string $prefixes = '', array $exclude = []): AppendIterator
+    public function getFileIterator($paths, $suffixes = '', $prefixes = '', array $exclude = []): AppendIterator
     {
         if (is_string($paths)) {
             $paths = [$paths];
         }
 
-        $paths   = $this->resolveWildcards($paths);
-        $exclude = $this->resolveWildcards($exclude);
+        $paths   = $this->getPathsAfterResolvingWildcards($paths);
+        $exclude = $this->getPathsAfterResolvingWildcards($exclude);
 
         if (is_string($prefixes)) {
             if ($prefixes !== '') {
@@ -71,14 +61,12 @@ final class Factory
                     new Iterator(
                         $path,
                         new RecursiveIteratorIterator(
-                            new ExcludeIterator(
-                                new RecursiveDirectoryIterator($path, FilesystemIterator::FOLLOW_SYMLINKS | FilesystemIterator::SKIP_DOTS),
-                                $exclude,
-                            ),
+                            new RecursiveDirectoryIterator($path, RecursiveDirectoryIterator::FOLLOW_SYMLINKS | RecursiveDirectoryIterator::SKIP_DOTS)
                         ),
                         $suffixes,
                         $prefixes,
-                    ),
+                        $exclude
+                    )
                 );
             }
         }
@@ -86,69 +74,18 @@ final class Factory
         return $iterator;
     }
 
-    /**
-     * @param list<non-empty-string> $paths
-     *
-     * @return list<non-empty-string>
-     */
-    private function resolveWildcards(array $paths): array
+    protected function getPathsAfterResolvingWildcards(array $paths): array
     {
         $_paths = [[]];
 
         foreach ($paths as $path) {
-            if ($locals = $this->globstar($path)) {
+            if ($locals = glob($path, GLOB_ONLYDIR)) {
                 $_paths[] = array_map('\realpath', $locals);
             } else {
-                // @codeCoverageIgnoreStart
                 $_paths[] = [realpath($path)];
-                // @codeCoverageIgnoreEnd
             }
         }
 
-        return array_values(array_filter(array_merge(...$_paths)));
-    }
-
-    /**
-     * @see https://gist.github.com/funkjedi/3feee27d873ae2297b8e2370a7082aad
-     *
-     * @return list<string>
-     */
-    private function globstar(string $pattern)
-    {
-        if (stripos($pattern, '**') === false) {
-            $files = glob($pattern, GLOB_ONLYDIR);
-        } else {
-            $position    = stripos($pattern, '**');
-            $rootPattern = substr($pattern, 0, $position - 1);
-            $restPattern = substr($pattern, $position + 2);
-
-            $patterns = [$rootPattern . $restPattern];
-            $rootPattern .= '/*';
-
-            while ($dirs = glob($rootPattern, GLOB_ONLYDIR)) {
-                $rootPattern .= '/*';
-
-                foreach ($dirs as $dir) {
-                    $patterns[] = $dir . $restPattern;
-                }
-            }
-
-            $files = [];
-
-            foreach ($patterns as $pat) {
-                $files = array_merge($files, $this->globstar($pat));
-            }
-        }
-
-        if ($files !== false) {
-            $files = array_unique($files);
-            sort($files);
-
-            return $files;
-        }
-
-        // @codeCoverageIgnoreStart
-        return [];
-        // @codeCoverageIgnoreEnd
+        return array_filter(array_merge(...$_paths));
     }
 }

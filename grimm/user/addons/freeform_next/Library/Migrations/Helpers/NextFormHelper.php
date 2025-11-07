@@ -38,7 +38,7 @@ use Solspace\Addons\FreeformNext\Services\SubmissionsService;
 
 class NextFormHelper
 {
-    const STRICT_MODE = true;
+    public const STRICT_MODE = true;
 
     /** @var array */
     public $errors;
@@ -47,7 +47,6 @@ class NextFormHelper
     private $currentNewFieldsByLegacyId;
 
     /**
-     * @param array $classicForm
      *
      * @return bool
      * @throws FreeformException
@@ -75,7 +74,7 @@ class NextFormHelper
         if (array_key_exists('duplicate', $data)) {
             $oldHandle = $composerState['composer']['properties']['form']['handle'];
 
-            if (preg_match('/^([a-zA-Z0-9]*[a-zA-Z]+)(\d+)$/', (string) $oldHandle, $matches)) {
+            if (preg_match('/^([a-zA-Z0-9]*[a-zA-Z]+)(\d+)$/', $oldHandle, $matches)) {
                 [$string, $mainPart, $iterator] = $matches;
 
                 $newHandle = $mainPart . ((int) $iterator + 1);
@@ -86,22 +85,23 @@ class NextFormHelper
             $composerState['composer']['properties']['form']['handle'] = $newHandle;
         }
 
+        $formsService = new FormsService();
+
         $sessionImplementation = (new SettingsService())->getSessionStorageImplementation();
 
         $formAttributes = new FormAttributes($formId, $sessionImplementation, new EERequest());
-        $composer = new Composer(
-            new FormsService(),              // implements FormHandlerInterface
-            new FieldsService(),             // implements FieldHandlerInterface
-            new SubmissionsService(),        // implements SubmissionHandlerInterface
-            new MailerService(),             // implements MailHandlerInterface
-            new FilesService(),              // implements FileUploadHandlerInterface
-            new MailingListsService(),       // implements MailingListHandlerInterface
-            new CrmService(),                // implements CRMHandlerInterface
-            new StatusesService(),           // implements StatusHandlerInterface
-            new EETranslator(),              // implements TranslatorInterface
-            $composerState,                  // ?array $composerState
-            $formAttributes,                 // ?FormAttributes $formAttributes
-            null          // ?ComposerState $customComposerState
+        $composer       = new Composer(
+            $formsService,
+            new FieldsService(),
+            new SubmissionsService(),
+            new MailerService(),
+            new FilesService(),
+            new MailingListsService(),
+            new CrmService(),
+            new StatusesService(),
+            new EETranslator(),
+            $composerState,
+            $formAttributes
         );
 
         $form->setLegacyId($classicForm['form_id']);
@@ -123,12 +123,11 @@ class NextFormHelper
     }
 
     /**
-     * @param array $classicForm
      *
      * @return array
      * @throws FreeformException
      */
-    private function convertData(array $classicForm): array
+    private function convertData(array $classicForm)
     {
         $sessionImplementation = (new SettingsService())->getSessionStorageImplementation();
         $formsService          = new FormsService();
@@ -172,11 +171,9 @@ class NextFormHelper
 
         $composerState->layout    = $result['layout'];
         $composerState->fields    = $result['preparedFields'];
-        $composerState->pageCount = count($result['layout']);
+        $composerState->pageCount = is_countable($result['layout']) ? count($result['layout']) : 0;
 
         $composer = new Composer(
-            null,
-            $formAttributes,
             $formsService,
             new FieldsService(),
             new SubmissionsService(),
@@ -186,6 +183,8 @@ class NextFormHelper
             new CrmService(),
             new StatusesService(),
             new EETranslator(),
+            null,
+            $formAttributes,
             $composerState
         );
 
@@ -200,15 +199,13 @@ class NextFormHelper
     }
 
     /**
-     * @param array $classicForm
-     *
      * @return int
      */
     private function getNotificationId(array $classicForm)
     {
         $notificationId = 0;
 
-        if (strtolower((string) $classicForm['notify_admin']) === 'y') {
+        if (strtolower($classicForm['notify_admin']) === 'y') {
             $notification = NotificationRepository::getInstance()->getNotificationByLegacyId(
                 $classicForm['admin_notification_id']
             );
@@ -222,18 +219,14 @@ class NextFormHelper
     }
 
     /**
-     * @param array $classicForm
-     *
      * @return mixed
      */
-    private function getNotificationEmails(array $classicForm)
+    private function getNotificationEmails(array $classicForm): string|array
     {
         return str_replace('|', "\n", $classicForm['admin_notification_email']);
     }
 
     /**
-     * @param array $nextFormFields
-     *
      * @return array
      */
     private function getNormalFormData(array $nextFormFields): array
@@ -275,9 +268,7 @@ class NextFormHelper
     }
 
     /**
-     * @param array $classicForm
      * @param int   $composerId
-     *
      * @return array
      */
     private function getComposerFormData(array $classicForm, $composerId): array
@@ -374,9 +365,6 @@ class NextFormHelper
     }
 
     /**
-     * @param FieldModel $nextFormField
-     * @param bool       $required
-     *
      * @return array
      */
     private function getPreparedField(FieldModel $nextFormField, bool $required = false): array
@@ -443,7 +431,7 @@ class NextFormHelper
      *
      * @return array
      */
-    private function getPreparedSubmitField(?array $composerField = null, ?array $previousComposerRow = null): array
+    private function getPreparedSubmitField(?array $composerField = null, ?array $previousComposerRow = null)
     {
         /** @var FieldModel $nextFormField */
 
@@ -477,8 +465,6 @@ class NextFormHelper
     }
 
     /**
-     * @param array $composerField
-     *
      * @return array
      */
     private function getPreparedHtmlField(array $composerField): array
@@ -499,19 +485,17 @@ class NextFormHelper
      */
     private function getNewId(): int
     {
-        return mt_rand(10000, 99999999);
+        return random_int(10000, 99_999_999);
     }
 
     /**
-     * @param array $classicForm
-     * @param array $nextFormFields
      *
      * @throws FreeformException
      */
-    private function compareClassicAndNextFieldsCount(array $classicForm, array $nextFormFields): void
+    private function compareClassicAndNextFieldsCount(array $classicForm, array $nextFormFields)
     {
         $classicFormName       = $classicForm['form_name'];
-        $classicFormFieldCount = count($classicForm['field_ids']);
+        $classicFormFieldCount = is_countable($classicForm['field_ids']) ? count($classicForm['field_ids']) : 0;
         $nextFormFieldCount    = count($nextFormFields);
 
         if ($nextFormFieldCount !== $classicFormFieldCount) {
@@ -527,8 +511,6 @@ class NextFormHelper
     }
 
     /**
-     * @param array $classicField
-     *
      * @return mixed
      */
     private function getClassicFieldType(array $classicField)
@@ -537,11 +519,9 @@ class NextFormHelper
     }
 
     /**
-     * @param array $classicField
-     *
      * @return array
      */
-    private function setTypes(array $classicField): array
+    private function setTypes(array $classicField)
     {
         $nextTypeName = $this->getNextFieldTypeFromClassicFieldType($this->getClassicFieldType($classicField));
 
@@ -557,11 +537,9 @@ class NextFormHelper
     }
 
     /**
-     * @param array $classicType
-     *
      * @return bool|mixed
      */
-    private function getNextFieldTypeFromClassicFieldType(array $classicType): string|false
+    private function getNextFieldTypeFromClassicFieldType(array $classicType): string|bool
     {
         // Classic Field Type => Next Field Type
         $mapping = [
@@ -576,8 +554,6 @@ class NextFormHelper
     }
 
     /**
-     * @param array $nextValueField
-     * @param array $classicField
      *
      * @return bool|mixed
      */

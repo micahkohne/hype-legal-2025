@@ -1,10 +1,10 @@
 <?php
 
 declare (strict_types=1);
-namespace RectorPrefix202507\Symplify\EasyParallel\ValueObject;
+namespace RectorPrefix202308\Symplify\EasyParallel\ValueObject;
 
-use RectorPrefix202507\React\Socket\TcpServer;
-use RectorPrefix202507\Symplify\EasyParallel\Exception\ParallelShouldNotHappenException;
+use RectorPrefix202308\React\Socket\TcpServer;
+use RectorPrefix202308\Symplify\EasyParallel\Exception\ParallelShouldNotHappenException;
 /**
  * Used from https://github.com/phpstan/phpstan-src/blob/master/src/Parallel/ProcessPool.php
  *
@@ -14,12 +14,13 @@ final class ProcessPool
 {
     /**
      * @readonly
+     * @var \React\Socket\TcpServer
      */
-    private TcpServer $tcpServer;
+    private $tcpServer;
     /**
      * @var array<string, ParallelProcess>
      */
-    private array $processes = [];
+    private $processes = [];
     public function __construct(TcpServer $tcpServer)
     {
         $this->tcpServer = $tcpServer;

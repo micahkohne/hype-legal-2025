@@ -6,16 +6,15 @@ namespace Rector\CodeQuality\Rector\If_;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\BinaryOp\Coalesce;
-use PhpParser\Node\Expr\Throw_;
+use PhpParser\Node\Expr\Throw_ as ExprThrow_;
 use PhpParser\Node\Stmt;
-use PhpParser\Node\Stmt\Expression;
 use PhpParser\Node\Stmt\If_;
 use PhpParser\Node\Stmt\Return_;
-use Rector\Contract\PhpParser\Node\StmtsAwareInterface;
-use Rector\NodeManipulator\IfManipulator;
-use Rector\PhpParser\Node\Value\ValueResolver;
-use Rector\Rector\AbstractRector;
-use Rector\ValueObject\PhpVersionFeature;
+use PhpParser\Node\Stmt\Throw_;
+use Rector\Core\Contract\PhpParser\Node\StmtsAwareInterface;
+use Rector\Core\NodeManipulator\IfManipulator;
+use Rector\Core\Rector\AbstractRector;
+use Rector\Core\ValueObject\PhpVersionFeature;
 use Rector\VersionBonding\Contract\MinPhpVersionInterface;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
@@ -26,16 +25,12 @@ final class ConsecutiveNullCompareReturnsToNullCoalesceQueueRector extends Abstr
 {
     /**
      * @readonly
+     * @var \Rector\Core\NodeManipulator\IfManipulator
      */
-    private IfManipulator $ifManipulator;
-    /**
-     * @readonly
-     */
-    private ValueResolver $valueResolver;
-    public function __construct(IfManipulator $ifManipulator, ValueResolver $valueResolver)
+    private $ifManipulator;
+    public function __construct(IfManipulator $ifManipulator)
     {
         $this->ifManipulator = $ifManipulator;
-        $this->valueResolver = $valueResolver;
     }
     public function getRuleDefinition() : RuleDefinition
     {
@@ -115,9 +110,9 @@ CODE_SAMPLE
             if (!$hasChanged) {
                 continue;
             }
-            if ($stmt instanceof Expression && $stmt->expr instanceof Throw_) {
+            if ($stmt instanceof Throw_) {
                 unset($node->stmts[$key]);
-                $appendExpr = $stmt->expr;
+                $appendExpr = new ExprThrow_($stmt->expr);
                 continue;
             }
             if (!$this->isReturnNull($stmt)) {
@@ -127,7 +122,7 @@ CODE_SAMPLE
                     continue;
                 }
                 $node->stmts = $originalStmts;
-                return null;
+                return $node;
             }
             unset($node->stmts[$key]);
         }

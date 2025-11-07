@@ -13,7 +13,7 @@ namespace Solspace\Addons\FreeformNext\Model;
 
 use JsonSerializable;
 use DateTime;
-use ExpressionEngine\Service\Model\Model;
+use EllisLab\ExpressionEngine\Service\Model\Model;
 use Solspace\Addons\FreeformNext\Library\Helpers\FreeformHelper;
 
 /**
@@ -27,8 +27,8 @@ use Solspace\Addons\FreeformNext\Library\Helpers\FreeformHelper;
  */
 class StatusModel extends Model implements JsonSerializable
 {
-    const MODEL = 'freeform_next:StatusModel';
-    const TABLE = 'freeform_next_statuses';
+    public const MODEL = 'freeform_next:StatusModel';
+    public const TABLE = 'freeform_next_statuses';
 
     protected static $_primary_key = 'id';
     protected static $_table_name  = self::TABLE;

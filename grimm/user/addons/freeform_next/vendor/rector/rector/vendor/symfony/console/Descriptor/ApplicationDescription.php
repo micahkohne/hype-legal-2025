@@ -8,11 +8,11 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-namespace RectorPrefix202507\Symfony\Component\Console\Descriptor;
+namespace RectorPrefix202308\Symfony\Component\Console\Descriptor;
 
-use RectorPrefix202507\Symfony\Component\Console\Application;
-use RectorPrefix202507\Symfony\Component\Console\Command\Command;
-use RectorPrefix202507\Symfony\Component\Console\Exception\CommandNotFoundException;
+use RectorPrefix202308\Symfony\Component\Console\Application;
+use RectorPrefix202308\Symfony\Component\Console\Command\Command;
+use RectorPrefix202308\Symfony\Component\Console\Exception\CommandNotFoundException;
 /**
  * @author Jean-François Simon <jeanfrancois.simon@sensiolabs.com>
  *
@@ -21,19 +21,31 @@ use RectorPrefix202507\Symfony\Component\Console\Exception\CommandNotFoundExcept
 class ApplicationDescription
 {
     public const GLOBAL_NAMESPACE = '_global';
-    private Application $application;
-    private ?string $namespace;
-    private bool $showHidden;
-    private array $namespaces;
+    /**
+     * @var \Symfony\Component\Console\Application
+     */
+    private $application;
+    /**
+     * @var string|null
+     */
+    private $namespace;
+    /**
+     * @var bool
+     */
+    private $showHidden;
+    /**
+     * @var mixed[]
+     */
+    private $namespaces;
     /**
      * @var array<string, Command>
      */
-    private array $commands;
+    private $commands;
     /**
      * @var array<string, Command>
      */
-    private array $aliases = [];
-    public function __construct(Application $application, ?string $namespace = null, bool $showHidden = \false)
+    private $aliases = [];
+    public function __construct(Application $application, string $namespace = null, bool $showHidden = \false)
     {
         $this->application = $application;
         $this->namespace = $namespace;

@@ -8,12 +8,15 @@ use function trim;
 class TypelessParamTagValueNode implements \PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocTagValueNode
 {
     use NodeAttributes;
-    public bool $isReference;
-    public bool $isVariadic;
-    public string $parameterName;
+    /** @var bool */
+    public $isReference;
+    /** @var bool */
+    public $isVariadic;
+    /** @var string */
+    public $parameterName;
     /** @var string (may be empty) */
-    public string $description;
-    public function __construct(bool $isVariadic, string $parameterName, string $description, bool $isReference)
+    public $description;
+    public function __construct(bool $isVariadic, string $parameterName, string $description, bool $isReference = \false)
     {
         $this->isReference = $isReference;
         $this->isVariadic = $isVariadic;

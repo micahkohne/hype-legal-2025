@@ -1,12 +1,12 @@
 <?php
 
 declare (strict_types=1);
-namespace Rector\NodeAnalyzer;
+namespace Rector\Core\NodeAnalyzer;
 
 use PhpParser\Node;
+use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Assign;
 use PhpParser\Node\Expr\MethodCall;
-use PhpParser\Node\Expr\NullsafePropertyFetch;
 use PhpParser\Node\Expr\PropertyFetch;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Expr\StaticPropertyFetch;
@@ -20,59 +20,58 @@ use PhpParser\Node\Stmt\Trait_;
 use PHPStan\Reflection\ClassReflection;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\ThisType;
-use Rector\Enum\ObjectReference;
+use Rector\Core\Enum\ObjectReference;
+use Rector\Core\PhpParser\AstResolver;
+use Rector\Core\PhpParser\Node\BetterNodeFinder;
+use Rector\Core\Reflection\ReflectionResolver;
+use Rector\Core\ValueObject\MethodName;
 use Rector\NodeNameResolver\NodeNameResolver;
-use Rector\NodeNestingScope\ContextAnalyzer;
 use Rector\NodeTypeResolver\NodeTypeResolver;
-use Rector\PhpParser\AstResolver;
-use Rector\PhpParser\Node\BetterNodeFinder;
-use Rector\Reflection\ReflectionResolver;
-use Rector\ValueObject\MethodName;
 final class PropertyFetchAnalyzer
 {
     /**
      * @readonly
+     * @var \Rector\NodeNameResolver\NodeNameResolver
      */
-    private NodeNameResolver $nodeNameResolver;
+    private $nodeNameResolver;
     /**
      * @readonly
+     * @var \Rector\Core\PhpParser\Node\BetterNodeFinder
      */
-    private BetterNodeFinder $betterNodeFinder;
+    private $betterNodeFinder;
     /**
      * @readonly
+     * @var \Rector\Core\PhpParser\AstResolver
      */
-    private AstResolver $astResolver;
+    private $astResolver;
     /**
      * @readonly
+     * @var \Rector\NodeTypeResolver\NodeTypeResolver
      */
-    private NodeTypeResolver $nodeTypeResolver;
+    private $nodeTypeResolver;
     /**
      * @readonly
+     * @var \Rector\Core\Reflection\ReflectionResolver
      */
-    private ReflectionResolver $reflectionResolver;
-    /**
-     * @readonly
-     */
-    private ContextAnalyzer $contextAnalyzer;
+    private $reflectionResolver;
     /**
      * @var string
      */
     private const THIS = 'this';
-    public function __construct(NodeNameResolver $nodeNameResolver, BetterNodeFinder $betterNodeFinder, AstResolver $astResolver, NodeTypeResolver $nodeTypeResolver, ReflectionResolver $reflectionResolver, ContextAnalyzer $contextAnalyzer)
+    public function __construct(NodeNameResolver $nodeNameResolver, BetterNodeFinder $betterNodeFinder, AstResolver $astResolver, NodeTypeResolver $nodeTypeResolver, ReflectionResolver $reflectionResolver)
     {
         $this->nodeNameResolver = $nodeNameResolver;
         $this->betterNodeFinder = $betterNodeFinder;
         $this->astResolver = $astResolver;
         $this->nodeTypeResolver = $nodeTypeResolver;
         $this->reflectionResolver = $reflectionResolver;
-        $this->contextAnalyzer = $contextAnalyzer;
     }
     public function isLocalPropertyFetch(Node $node) : bool
     {
-        if (!$node instanceof PropertyFetch && !$node instanceof StaticPropertyFetch && !$node instanceof NullsafePropertyFetch) {
+        if (!$node instanceof PropertyFetch && !$node instanceof StaticPropertyFetch) {
             return \false;
         }
-        $variableType = $node instanceof StaticPropertyFetch ? $this->nodeTypeResolver->getType($node->class) : $this->nodeTypeResolver->getType($node->var);
+        $variableType = $node instanceof PropertyFetch ? $this->nodeTypeResolver->getType($node->var) : $this->nodeTypeResolver->getType($node->class);
         if ($variableType instanceof ObjectType) {
             $classReflection = $this->reflectionResolver->resolveClassReflection($node);
             if ($classReflection instanceof ClassReflection) {
@@ -87,7 +86,7 @@ final class PropertyFetchAnalyzer
     }
     public function isLocalPropertyFetchName(Node $node, string $desiredPropertyName) : bool
     {
-        if (!$node instanceof PropertyFetch && !$node instanceof StaticPropertyFetch && !$node instanceof NullsafePropertyFetch) {
+        if (!$node instanceof PropertyFetch && !$node instanceof StaticPropertyFetch) {
             return \false;
         }
         if (!$this->nodeNameResolver->isName($node->name, $desiredPropertyName)) {
@@ -100,29 +99,10 @@ final class PropertyFetchAnalyzer
         if ($trait->getProperty($propertyName) instanceof Property) {
             return \true;
         }
-        return (bool) $this->betterNodeFinder->findFirst($trait, fn(Node $node): bool => $this->isLocalPropertyFetchName($node, $propertyName));
-    }
-    public function containsWrittenPropertyFetchName(Trait_ $trait, string $propertyName) : bool
-    {
-        if ($trait->getProperty($propertyName) instanceof Property) {
-            return \true;
-        }
         return (bool) $this->betterNodeFinder->findFirst($trait, function (Node $node) use($propertyName) : bool {
-            if (!$this->isLocalPropertyFetchName($node, $propertyName)) {
-                return \false;
-            }
-            /**
-             * @var PropertyFetch|StaticPropertyFetch|NullsafePropertyFetch $node
-             */
-            if ($this->contextAnalyzer->isChangeableContext($node)) {
-                return \true;
-            }
-            return $this->contextAnalyzer->isLeftPartOfAssign($node);
+            return $this->isLocalPropertyFetchName($node, $propertyName);
         });
     }
-    /**
-     * @phpstan-assert-if-true PropertyFetch|StaticPropertyFetch $node
-     */
     public function isPropertyFetch(Node $node) : bool
     {
         if ($node instanceof PropertyFetch) {
@@ -177,6 +157,17 @@ final class PropertyFetchAnalyzer
             }
         }
         return \false;
+    }
+    /**
+     * @param string[] $propertyNames
+     */
+    public function isLocalPropertyOfNames(Expr $expr, array $propertyNames) : bool
+    {
+        if (!$this->isLocalPropertyFetch($expr)) {
+            return \false;
+        }
+        /** @var PropertyFetch $expr */
+        return $this->nodeNameResolver->isNames($expr->name, $propertyNames);
     }
     private function isTraitLocalPropertyFetch(Node $node) : bool
     {

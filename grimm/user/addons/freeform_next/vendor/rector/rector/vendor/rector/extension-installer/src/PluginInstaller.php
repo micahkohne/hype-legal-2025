@@ -3,22 +3,40 @@
 declare (strict_types=1);
 namespace Rector\RectorInstaller;
 
-use RectorPrefix202507\Composer\Installer\InstallationManager;
-use RectorPrefix202507\Composer\IO\IOInterface;
-use RectorPrefix202507\Composer\Package\PackageInterface;
-use RectorPrefix202507\Composer\Repository\InstalledRepositoryInterface;
-use RectorPrefix202507\Composer\Util\Filesystem as ComposerFilesystem;
+use RectorPrefix202308\Composer\Installer\InstallationManager;
+use RectorPrefix202308\Composer\IO\IOInterface;
+use RectorPrefix202308\Composer\Package\PackageInterface;
+use RectorPrefix202308\Composer\Repository\InstalledRepositoryInterface;
+use RectorPrefix202308\Composer\Util\Filesystem as ComposerFilesystem;
 /**
  * @see \Rector\RectorInstaller\Tests\PluginInstallerTest
  */
 final class PluginInstaller
 {
-    private \Rector\RectorInstaller\Filesystem $filesystem;
-    private InstalledRepositoryInterface $localRepository;
-    private IOInterface $io;
-    private InstallationManager $installationManager;
-    private ComposerFilesystem $composerFilesystem;
-    private string $configurationFile;
+    /**
+     * @var \Rector\RectorInstaller\Filesystem
+     */
+    private $filesystem;
+    /**
+     * @var \Composer\Repository\InstalledRepositoryInterface
+     */
+    private $localRepository;
+    /**
+     * @var \Composer\IO\IOInterface
+     */
+    private $io;
+    /**
+     * @var \Composer\Installer\InstallationManager
+     */
+    private $installationManager;
+    /**
+     * @var ComposerFilesystem
+     */
+    private $composerFilesystem;
+    /**
+     * @var string
+     */
+    private $configurationFile;
     /**
      * @var string
      */
@@ -27,7 +45,10 @@ final class PluginInstaller
      * @var string
      */
     public const RECTOR_EXTRA_KEY = 'rector';
-    private static string $generatedFileTemplate = <<<'CODE_SAMPLE'
+    /**
+     * @var string
+     */
+    private static $generatedFileTemplate = <<<'CODE_SAMPLE'
 <?php
 
 declare(strict_types = 1);

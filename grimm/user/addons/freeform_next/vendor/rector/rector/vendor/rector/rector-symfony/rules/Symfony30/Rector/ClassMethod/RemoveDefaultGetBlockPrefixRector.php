@@ -3,16 +3,15 @@
 declare (strict_types=1);
 namespace Rector\Symfony\Symfony30\Rector\ClassMethod;
 
-use RectorPrefix202507\Nette\Utils\Strings;
+use RectorPrefix202308\Nette\Utils\Strings;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Name;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Return_;
-use Rector\CodingStyle\Naming\ClassNaming;
-use Rector\PhpParser\Node\Value\ValueResolver;
-use Rector\Rector\AbstractRector;
+use Rector\Core\Rector\AbstractRector;
+use RectorPrefix202308\Symfony\Component\String\UnicodeString;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -22,19 +21,6 @@ use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
  */
 final class RemoveDefaultGetBlockPrefixRector extends AbstractRector
 {
-    /**
-     * @readonly
-     */
-    private ValueResolver $valueResolver;
-    /**
-     * @readonly
-     */
-    private ClassNaming $classNaming;
-    public function __construct(ValueResolver $valueResolver, ClassNaming $classNaming)
-    {
-        $this->valueResolver = $valueResolver;
-        $this->classNaming = $classNaming;
-    }
     public function getRuleDefinition() : RuleDefinition
     {
         return new RuleDefinition('Rename `getBlockPrefix()` if it returns the default value - class to underscore, e.g. UserFormType = user_form', [new CodeSample(<<<'CODE_SAMPLE'
@@ -67,7 +53,7 @@ CODE_SAMPLE
     /**
      * @param Class_ $node
      */
-    public function refactor(Node $node) : ?Class_
+    public function refactor(Node $node)
     {
         if (!$node->extends instanceof Name) {
             return null;
@@ -88,15 +74,16 @@ CODE_SAMPLE
                 return null;
             }
             $returnedValue = $this->valueResolver->getValue($returnedExpr);
-            $className = $this->getName($node);
+            $className = $this->nodeNameResolver->getName($node);
             if (!\is_string($className)) {
                 continue;
             }
-            $shortClassName = $this->classNaming->getShortName($className);
+            $shortClassName = $this->nodeNameResolver->getShortName($className);
             if (\substr_compare($shortClassName, 'Type', -\strlen('Type')) === 0) {
                 $shortClassName = (string) Strings::before($shortClassName, 'Type');
             }
-            $underscoredClassShortName = $this->camelToSnake($shortClassName);
+            $shortClassNameUnicodeString = new UnicodeString($shortClassName);
+            $underscoredClassShortName = $shortClassNameUnicodeString->snake()->toString();
             if ($underscoredClassShortName !== $returnedValue) {
                 continue;
             }
@@ -105,10 +92,6 @@ CODE_SAMPLE
             return $node;
         }
         return null;
-    }
-    private function camelToSnake(string $content) : string
-    {
-        return \mb_strtolower(Strings::replace($content, '#([a-z])([A-Z])#', '$1_$2'));
     }
     /**
      * return <$thisValue>;

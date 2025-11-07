@@ -8,12 +8,9 @@ use Stringy\Stringy;
 
 class FormTagParamUtilities
 {
-    const PATTERN_ARRAY_ATTRIBUTES  = '/(override_values|input_attributes|form_attributes):([a-zA-Z_\-0-9]+)=(?:"|\')([^\'"]*)(?:"|\')?/';
-    const PATTERN_SINGLE_ATTRIBUTES = '/(input_attributes|form_attributes):([a-zA-Z_\-0-9]+)(?:\s|\})/';
+    public const PATTERN_ARRAY_ATTRIBUTES  = '/(override_values|input_attributes|form_attributes):([a-zA-Z_\-0-9]+)=(?:"|\')([^\'"]*)(?:"|\')?/';
+    public const PATTERN_SINGLE_ATTRIBUTES = '/(input_attributes|form_attributes):([a-zA-Z_\-0-9]+)(?:\s|\})/';
 
-    /**
-     * @param Form $form
-     */
     public static function setFormCustomAttributes(Form $form): void
     {
         $new = [
@@ -34,7 +31,7 @@ class FormTagParamUtilities
 
         $tagproper = ee()->TMPL->tagproper;
 
-        if (preg_match_all(self::PATTERN_ARRAY_ATTRIBUTES, (string) $tagproper, $matches)) {
+        if (preg_match_all(self::PATTERN_ARRAY_ATTRIBUTES, $tagproper, $matches)) {
             /** @var array $keys */
             /** @var array $handles */
             /** @var array $values */
@@ -56,14 +53,14 @@ class FormTagParamUtilities
                 }
 
                 if ($field instanceof MultipleValueInterface) {
-                    $value = explode('|', (string) $value);
+                    $value = explode('|', $value);
                 }
 
                 $new[$camelizedKey][$handle] = $value;
             }
         }
 
-        if (preg_match_all(self::PATTERN_SINGLE_ATTRIBUTES, (string) $tagproper, $matches)) {
+        if (preg_match_all(self::PATTERN_SINGLE_ATTRIBUTES, $tagproper, $matches)) {
             /** @var array $keys */
             /** @var array $handles */
             [$_, $keys, $handles] = $matches;

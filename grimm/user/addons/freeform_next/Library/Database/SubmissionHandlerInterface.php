@@ -19,8 +19,6 @@ interface SubmissionHandlerInterface
     /**
      * Stores the submitted fields to database
      *
-     * @param Form  $form
-     * @param array $fields
      *
      * @return SubmissionModel|null
      */
@@ -28,22 +26,17 @@ interface SubmissionHandlerInterface
 
     /**
      * Finalize all files uploaded in this form, so that they don' get deleted
-     *
-     * @param Form $form
      */
     public function finalizeFormFiles(Form $form);
 
     /**
      * Add a session flash variable that the form has been submitted
-     *
-     * @param Form $form
      */
     public function markFormAsSubmitted(Form $form);
 
     /**
      * Check for a session flash variable for form submissions
      *
-     * @param Form $form
      *
      * @return bool
      */

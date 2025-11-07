@@ -10,9 +10,8 @@ interface ConstraintInterface
      * Validates the value against the constraint
      * Returns a ConstraintViolationList object
      *
-     * @param mixed $value
      *
      * @return ConstraintViolationList
      */
-    public function validate($value);
+    public function validate(mixed $value);
 }

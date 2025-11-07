@@ -7,26 +7,30 @@ use PhpParser\Node;
 use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\Else_;
 use PhpParser\Node\Stmt\If_;
-use PhpParser\NodeVisitor;
+use PhpParser\NodeTraverser;
+use Rector\Core\Rector\AbstractRector;
 use Rector\DeadCode\ConditionEvaluator;
 use Rector\DeadCode\ConditionResolver;
 use Rector\DeadCode\Contract\ConditionInterface;
-use Rector\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
+ * @changelog https://www.php.net/manual/en/function.version-compare.php
+ *
  * @see \Rector\Tests\DeadCode\Rector\If_\UnwrapFutureCompatibleIfPhpVersionRector\UnwrapFutureCompatibleIfPhpVersionRectorTest
  */
 final class UnwrapFutureCompatibleIfPhpVersionRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\DeadCode\ConditionEvaluator
      */
-    private ConditionEvaluator $conditionEvaluator;
+    private $conditionEvaluator;
     /**
      * @readonly
+     * @var \Rector\DeadCode\ConditionResolver
      */
-    private ConditionResolver $conditionResolver;
+    private $conditionResolver;
     public function __construct(ConditionEvaluator $conditionEvaluator, ConditionResolver $conditionResolver)
     {
         $this->conditionEvaluator = $conditionEvaluator;
@@ -98,7 +102,7 @@ CODE_SAMPLE
     {
         // no else → just remove the node
         if (!$if->else instanceof Else_) {
-            return NodeVisitor::REMOVE_NODE;
+            return NodeTraverser::REMOVE_NODE;
         }
         // else is always used
         return $if->else->stmts;

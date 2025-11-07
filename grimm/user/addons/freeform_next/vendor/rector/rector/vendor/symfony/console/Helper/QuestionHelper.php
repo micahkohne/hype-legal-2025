@@ -8,22 +8,22 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-namespace RectorPrefix202507\Symfony\Component\Console\Helper;
+namespace RectorPrefix202308\Symfony\Component\Console\Helper;
 
-use RectorPrefix202507\Symfony\Component\Console\Cursor;
-use RectorPrefix202507\Symfony\Component\Console\Exception\MissingInputException;
-use RectorPrefix202507\Symfony\Component\Console\Exception\RuntimeException;
-use RectorPrefix202507\Symfony\Component\Console\Formatter\OutputFormatter;
-use RectorPrefix202507\Symfony\Component\Console\Formatter\OutputFormatterStyle;
-use RectorPrefix202507\Symfony\Component\Console\Input\InputInterface;
-use RectorPrefix202507\Symfony\Component\Console\Input\StreamableInputInterface;
-use RectorPrefix202507\Symfony\Component\Console\Output\ConsoleOutputInterface;
-use RectorPrefix202507\Symfony\Component\Console\Output\ConsoleSectionOutput;
-use RectorPrefix202507\Symfony\Component\Console\Output\OutputInterface;
-use RectorPrefix202507\Symfony\Component\Console\Question\ChoiceQuestion;
-use RectorPrefix202507\Symfony\Component\Console\Question\Question;
-use RectorPrefix202507\Symfony\Component\Console\Terminal;
-use function RectorPrefix202507\Symfony\Component\String\s;
+use RectorPrefix202308\Symfony\Component\Console\Cursor;
+use RectorPrefix202308\Symfony\Component\Console\Exception\MissingInputException;
+use RectorPrefix202308\Symfony\Component\Console\Exception\RuntimeException;
+use RectorPrefix202308\Symfony\Component\Console\Formatter\OutputFormatter;
+use RectorPrefix202308\Symfony\Component\Console\Formatter\OutputFormatterStyle;
+use RectorPrefix202308\Symfony\Component\Console\Input\InputInterface;
+use RectorPrefix202308\Symfony\Component\Console\Input\StreamableInputInterface;
+use RectorPrefix202308\Symfony\Component\Console\Output\ConsoleOutputInterface;
+use RectorPrefix202308\Symfony\Component\Console\Output\ConsoleSectionOutput;
+use RectorPrefix202308\Symfony\Component\Console\Output\OutputInterface;
+use RectorPrefix202308\Symfony\Component\Console\Question\ChoiceQuestion;
+use RectorPrefix202308\Symfony\Component\Console\Question\Question;
+use RectorPrefix202308\Symfony\Component\Console\Terminal;
+use function RectorPrefix202308\Symfony\Component\String\s;
 /**
  * The QuestionHelper class provides helpers to interact with the user.
  *
@@ -35,8 +35,14 @@ class QuestionHelper extends Helper
      * @var resource|null
      */
     private $inputStream;
-    private static bool $stty = \true;
-    private static bool $stdinIsInteractive;
+    /**
+     * @var bool
+     */
+    private static $stty = \true;
+    /**
+     * @var bool
+     */
+    private static $stdinIsInteractive;
     /**
      * Asks a question to the user.
      *
@@ -59,7 +65,9 @@ class QuestionHelper extends Helper
             if (!$question->getValidator()) {
                 return $this->doAsk($output, $question);
             }
-            $interviewer = fn() => $this->doAsk($output, $question);
+            $interviewer = function () use($output, $question) {
+                return $this->doAsk($output, $question);
+            };
             return $this->validateAttempts($interviewer, $output, $question);
         } catch (MissingInputException $exception) {
             $input->setInteractive(\false);
@@ -273,7 +281,9 @@ class QuestionHelper extends Helper
                         $output->write($remainingCharacters);
                         $fullChoice .= $remainingCharacters;
                         $i = \false === ($encoding = \mb_detect_encoding($fullChoice, null, \true)) ? \strlen($fullChoice) : \mb_strlen($fullChoice, $encoding);
-                        $matches = \array_filter($autocomplete($ret), fn($match) => '' === $ret || \strncmp($match, $ret, \strlen($ret)) === 0);
+                        $matches = \array_filter($autocomplete($ret), function ($match) use($ret) {
+                            return '' === $ret || \strncmp($match, $ret, \strlen($ret)) === 0;
+                        });
                         $numMatches = \count($matches);
                         $ofs = -1;
                     }
@@ -412,7 +422,16 @@ class QuestionHelper extends Helper
         if (isset(self::$stdinIsInteractive)) {
             return self::$stdinIsInteractive;
         }
-        return self::$stdinIsInteractive = @\stream_isatty(\fopen('php://stdin', 'r'));
+        if (\function_exists('stream_isatty')) {
+            return self::$stdinIsInteractive = @\stream_isatty(\fopen('php://stdin', 'r'));
+        }
+        if (\function_exists('posix_isatty')) {
+            return self::$stdinIsInteractive = @\posix_isatty(\fopen('php://stdin', 'r'));
+        }
+        if (!\function_exists('shell_exec')) {
+            return self::$stdinIsInteractive = \true;
+        }
+        return self::$stdinIsInteractive = (bool) \shell_exec('stty 2> ' . ('\\' === \DIRECTORY_SEPARATOR ? 'NUL' : '/dev/null'));
     }
     /**
      * Reads one or more lines of input and returns what is read.

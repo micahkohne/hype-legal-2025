@@ -8,12 +8,14 @@ final class BinaryToVersionCompareCondition implements ConditionInterface
 {
     /**
      * @readonly
+     * @var \Rector\DeadCode\ValueObject\VersionCompareCondition
      */
-    private \Rector\DeadCode\ValueObject\VersionCompareCondition $versionCompareCondition;
+    private $versionCompareCondition;
     /**
      * @readonly
+     * @var string
      */
-    private string $binaryClass;
+    private $binaryClass;
     /**
      * @readonly
      * @var mixed

@@ -11,12 +11,14 @@ final class PropertyTypeOverrideGuard
 {
     /**
      * @readonly
+     * @var \Rector\NodeNameResolver\NodeNameResolver
      */
-    private NodeNameResolver $nodeNameResolver;
+    private $nodeNameResolver;
     /**
      * @readonly
+     * @var \Rector\Php74\Guard\MakePropertyTypedGuard
      */
-    private MakePropertyTypedGuard $makePropertyTypedGuard;
+    private $makePropertyTypedGuard;
     public function __construct(NodeNameResolver $nodeNameResolver, MakePropertyTypedGuard $makePropertyTypedGuard)
     {
         $this->nodeNameResolver = $nodeNameResolver;
@@ -35,7 +37,7 @@ final class PropertyTypeOverrideGuard
             }
             $parentPropertyReflection = $nativeReflectionClass->getProperty($propertyName);
             // empty type override is not allowed
-            return $parentPropertyReflection->getType() !== null;
+            return (\method_exists($parentPropertyReflection, 'getType') ? $parentPropertyReflection->getType() : null) !== null;
         }
         return \true;
     }

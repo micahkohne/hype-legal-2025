@@ -1,31 +1,33 @@
 <?php
 
 declare (strict_types=1);
-namespace Rector\PhpParser\NodeFinder;
+namespace Rector\Core\PhpParser\NodeFinder;
 
 use PhpParser\Node;
 use PhpParser\Node\Expr\MethodCall;
-use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Stmt\Class_;
 use PhpParser\Node\Stmt\ClassMethod;
+use PHPStan\Type\TypeWithClassName;
+use Rector\Core\PhpParser\Node\BetterNodeFinder;
 use Rector\NodeNameResolver\NodeNameResolver;
 use Rector\NodeTypeResolver\NodeTypeResolver;
-use Rector\PhpParser\Node\BetterNodeFinder;
-use Rector\StaticTypeMapper\Resolver\ClassNameFromObjectTypeResolver;
 final class LocalMethodCallFinder
 {
     /**
      * @readonly
+     * @var \Rector\Core\PhpParser\Node\BetterNodeFinder
      */
-    private BetterNodeFinder $betterNodeFinder;
+    private $betterNodeFinder;
     /**
      * @readonly
+     * @var \Rector\NodeTypeResolver\NodeTypeResolver
      */
-    private NodeTypeResolver $nodeTypeResolver;
+    private $nodeTypeResolver;
     /**
      * @readonly
+     * @var \Rector\NodeNameResolver\NodeNameResolver
      */
-    private NodeNameResolver $nodeNameResolver;
+    private $nodeNameResolver;
     public function __construct(BetterNodeFinder $betterNodeFinder, NodeTypeResolver $nodeTypeResolver, NodeNameResolver $nodeNameResolver)
     {
         $this->betterNodeFinder = $betterNodeFinder;
@@ -33,7 +35,7 @@ final class LocalMethodCallFinder
         $this->nodeNameResolver = $nodeNameResolver;
     }
     /**
-     * @return MethodCall[]|StaticCall[]
+     * @return MethodCall[]
      */
     public function match(Class_ $class, ClassMethod $classMethod) : array
     {
@@ -42,16 +44,19 @@ final class LocalMethodCallFinder
             return [];
         }
         $classMethodName = $this->nodeNameResolver->getName($classMethod);
-        /** @var MethodCall[]|StaticCall[] $matchingMethodCalls */
+        /** @var MethodCall[] $matchingMethodCalls */
         $matchingMethodCalls = $this->betterNodeFinder->find($class->getMethods(), function (Node $subNode) use($className, $classMethodName) : bool {
-            if (!$subNode instanceof MethodCall && !$subNode instanceof StaticCall) {
+            if (!$subNode instanceof MethodCall) {
                 return \false;
             }
             if (!$this->nodeNameResolver->isName($subNode->name, $classMethodName)) {
                 return \false;
             }
-            $callerType = $subNode instanceof MethodCall ? $this->nodeTypeResolver->getType($subNode->var) : $this->nodeTypeResolver->getType($subNode->class);
-            return ClassNameFromObjectTypeResolver::resolve($callerType) === $className;
+            $callerType = $this->nodeTypeResolver->getType($subNode->var);
+            if (!$callerType instanceof TypeWithClassName) {
+                return \false;
+            }
+            return $callerType->getClassName() === $className;
         });
         return $matchingMethodCalls;
     }

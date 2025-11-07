@@ -10,20 +10,23 @@ use function implode;
 class MethodTagValueNode implements \PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocTagValueNode
 {
     use NodeAttributes;
-    public bool $isStatic;
-    public ?TypeNode $returnType = null;
-    public string $methodName;
+    /** @var bool */
+    public $isStatic;
+    /** @var TypeNode|null */
+    public $returnType;
+    /** @var string */
+    public $methodName;
     /** @var TemplateTagValueNode[] */
-    public array $templateTypes;
+    public $templateTypes;
     /** @var MethodTagValueParameterNode[] */
-    public array $parameters;
+    public $parameters;
     /** @var string (may be empty) */
-    public string $description;
+    public $description;
     /**
      * @param MethodTagValueParameterNode[] $parameters
      * @param TemplateTagValueNode[] $templateTypes
      */
-    public function __construct(bool $isStatic, ?TypeNode $returnType, string $methodName, array $parameters, string $description, array $templateTypes)
+    public function __construct(bool $isStatic, ?TypeNode $returnType, string $methodName, array $parameters, string $description, array $templateTypes = [])
     {
         $this->isStatic = $isStatic;
         $this->returnType = $returnType;

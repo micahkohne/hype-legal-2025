@@ -6,8 +6,8 @@ namespace Rector\DowngradePhp74\Rector\Interface_;
 use PhpParser\Node;
 use PhpParser\Node\Name\FullyQualified;
 use PhpParser\Node\Stmt\Interface_;
+use Rector\Core\Rector\AbstractRector;
 use Rector\FamilyTree\Reflection\FamilyRelationsAnalyzer;
-use Rector\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -17,8 +17,9 @@ final class DowngradePreviouslyImplementedInterfaceRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\FamilyTree\Reflection\FamilyRelationsAnalyzer
      */
-    private FamilyRelationsAnalyzer $familyRelationsAnalyzer;
+    private $familyRelationsAnalyzer;
     public function __construct(FamilyRelationsAnalyzer $familyRelationsAnalyzer)
     {
         $this->familyRelationsAnalyzer = $familyRelationsAnalyzer;

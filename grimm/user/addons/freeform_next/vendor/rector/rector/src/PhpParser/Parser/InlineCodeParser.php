@@ -1,32 +1,35 @@
 <?php
 
 declare (strict_types=1);
-namespace Rector\PhpParser\Parser;
+namespace Rector\Core\PhpParser\Parser;
 
-use RectorPrefix202507\Nette\Utils\FileSystem;
-use RectorPrefix202507\Nette\Utils\Strings;
+use RectorPrefix202308\Nette\Utils\FileSystem;
+use RectorPrefix202308\Nette\Utils\Strings;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\BinaryOp\Concat;
-use PhpParser\Node\Scalar\InterpolatedString;
+use PhpParser\Node\Scalar\Encapsed;
 use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\Stmt;
-use Rector\PhpParser\Node\Value\ValueResolver;
-use Rector\PhpParser\Printer\BetterStandardPrinter;
-use Rector\Util\StringUtils;
+use Rector\Core\PhpParser\Node\Value\ValueResolver;
+use Rector\Core\PhpParser\Printer\BetterStandardPrinter;
+use Rector\Core\Util\StringUtils;
 final class InlineCodeParser
 {
     /**
      * @readonly
+     * @var \Rector\Core\PhpParser\Printer\BetterStandardPrinter
      */
-    private BetterStandardPrinter $betterStandardPrinter;
+    private $betterStandardPrinter;
     /**
      * @readonly
+     * @var \Rector\Core\PhpParser\Parser\SimplePhpParser
      */
-    private \Rector\PhpParser\Parser\SimplePhpParser $simplePhpParser;
+    private $simplePhpParser;
     /**
      * @readonly
+     * @var \Rector\Core\PhpParser\Node\Value\ValueResolver
      */
-    private ValueResolver $valueResolver;
+    private $valueResolver;
     /**
      * @var string
      * @see https://regex101.com/r/dwe4OW/1
@@ -62,38 +65,39 @@ final class InlineCodeParser
      * @see https://regex101.com/r/nSO3Eq/1
      */
     private const BACKREFERENCE_NO_DOUBLE_QUOTE_START_REGEX = '#(?<!")(?<backreference>\\$\\d+)#';
-    public function __construct(BetterStandardPrinter $betterStandardPrinter, \Rector\PhpParser\Parser\SimplePhpParser $simplePhpParser, ValueResolver $valueResolver)
+    public function __construct(BetterStandardPrinter $betterStandardPrinter, \Rector\Core\PhpParser\Parser\SimplePhpParser $simplePhpParser, ValueResolver $valueResolver)
     {
         $this->betterStandardPrinter = $betterStandardPrinter;
         $this->simplePhpParser = $simplePhpParser;
         $this->valueResolver = $valueResolver;
     }
     /**
-     * @api downgrade
-     *
      * @return Stmt[]
      */
-    public function parseFile(string $fileName) : array
+    public function parse(string $content) : array
     {
-        $fileContent = FileSystem::read($fileName);
-        return $this->parseCode($fileContent);
-    }
-    /**
-     * @return Stmt[]
-     */
-    public function parseString(string $fileContent) : array
-    {
-        return $this->parseCode($fileContent);
+        // to cover files too
+        if (\is_file($content)) {
+            $content = FileSystem::read($content);
+        }
+        // wrap code so php-parser can interpret it
+        $content = StringUtils::isMatch($content, self::OPEN_PHP_TAG_REGEX) ? $content : '<?php ' . $content;
+        $content = StringUtils::isMatch($content, self::ENDING_SEMI_COLON_REGEX) ? $content : $content . ';';
+        return $this->simplePhpParser->parseString($content);
     }
     public function stringify(Expr $expr) : string
     {
         if ($expr instanceof String_) {
             if (!StringUtils::isMatch($expr->value, self::BACKREFERENCE_NO_QUOTE_REGEX)) {
-                return Strings::replace($expr->value, self::BACKREFERENCE_NO_DOUBLE_QUOTE_START_REGEX, static fn(array $match): string => '"' . $match['backreference'] . '"');
+                return Strings::replace($expr->value, self::BACKREFERENCE_NO_DOUBLE_QUOTE_START_REGEX, static function (array $match) : string {
+                    return '"' . $match['backreference'] . '"';
+                });
             }
-            return Strings::replace($expr->value, self::BACKREFERENCE_NO_QUOTE_REGEX, static fn(array $match): string => '"\\' . $match['backreference'] . '"');
+            return Strings::replace($expr->value, self::BACKREFERENCE_NO_QUOTE_REGEX, static function (array $match) : string {
+                return '"\\' . $match['backreference'] . '"';
+            });
         }
-        if ($expr instanceof InterpolatedString) {
+        if ($expr instanceof Encapsed) {
             return $this->resolveEncapsedValue($expr);
         }
         if ($expr instanceof Concat) {
@@ -101,21 +105,11 @@ final class InlineCodeParser
         }
         return $this->betterStandardPrinter->print($expr);
     }
-    /**
-     * @return Stmt[]
-     */
-    private function parseCode(string $code) : array
-    {
-        // wrap code so php-parser can interpret it
-        $code = StringUtils::isMatch($code, self::OPEN_PHP_TAG_REGEX) ? $code : '<?php ' . $code;
-        $code = StringUtils::isMatch($code, self::ENDING_SEMI_COLON_REGEX) ? $code : $code . ';';
-        return $this->simplePhpParser->parseString($code);
-    }
-    private function resolveEncapsedValue(InterpolatedString $interpolatedString) : string
+    private function resolveEncapsedValue(Encapsed $encapsed) : string
     {
         $value = '';
         $isRequirePrint = \false;
-        foreach ($interpolatedString->parts as $part) {
+        foreach ($encapsed->parts as $part) {
             $partValue = (string) $this->valueResolver->getValue($part);
             if (\substr_compare($partValue, "'", -\strlen("'")) === 0) {
                 $isRequirePrint = \true;
@@ -123,7 +117,7 @@ final class InlineCodeParser
             }
             $value .= $partValue;
         }
-        $printedExpr = $isRequirePrint ? $this->betterStandardPrinter->print($interpolatedString) : $value;
+        $printedExpr = $isRequirePrint ? $this->betterStandardPrinter->print($encapsed) : $value;
         // remove "
         $printedExpr = \trim($printedExpr, '""');
         // use \$ → $
@@ -140,6 +134,8 @@ final class InlineCodeParser
             $concat->right->value .= '.';
         }
         $string = $this->stringify($concat->left) . $this->stringify($concat->right);
-        return Strings::replace($string, self::VARIABLE_IN_SINGLE_QUOTED_REGEX, static fn(array $match) => $match['variable']);
+        return Strings::replace($string, self::VARIABLE_IN_SINGLE_QUOTED_REGEX, static function (array $match) {
+            return $match['variable'];
+        });
     }
 }

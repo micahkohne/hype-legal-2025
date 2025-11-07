@@ -9,27 +9,29 @@ use PhpParser\Node\Expr\New_;
 use PhpParser\Node\Expr\StaticCall;
 use PhpParser\Node\Name\FullyQualified;
 use PhpParser\Node\Stmt\Class_;
-use Rector\Contract\Rector\ConfigurableRectorInterface;
-use Rector\Exception\ShouldNotHappenException;
-use Rector\Rector\AbstractRector;
+use PHPStan\Analyser\Scope;
+use Rector\Core\Contract\Rector\ConfigurableRectorInterface;
+use Rector\Core\Exception\ShouldNotHappenException;
+use Rector\Core\Rector\AbstractScopeAwareRector;
 use Rector\Transform\NodeAnalyzer\FuncCallStaticCallToMethodCallAnalyzer;
 use Rector\Transform\ValueObject\StaticCallToMethodCall;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\ConfiguredCodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
-use RectorPrefix202507\Webmozart\Assert\Assert;
+use RectorPrefix202308\Webmozart\Assert\Assert;
 /**
  * @see \Rector\Tests\Transform\Rector\StaticCall\StaticCallToMethodCallRector\StaticCallToMethodCallRectorTest
  */
-final class StaticCallToMethodCallRector extends AbstractRector implements ConfigurableRectorInterface
+final class StaticCallToMethodCallRector extends AbstractScopeAwareRector implements ConfigurableRectorInterface
 {
     /**
      * @readonly
+     * @var \Rector\Transform\NodeAnalyzer\FuncCallStaticCallToMethodCallAnalyzer
      */
-    private FuncCallStaticCallToMethodCallAnalyzer $funcCallStaticCallToMethodCallAnalyzer;
+    private $funcCallStaticCallToMethodCallAnalyzer;
     /**
      * @var StaticCallToMethodCall[]
      */
-    private array $staticCallsToMethodCalls = [];
+    private $staticCallsToMethodCalls = [];
     public function __construct(FuncCallStaticCallToMethodCallAnalyzer $funcCallStaticCallToMethodCallAnalyzer)
     {
         $this->funcCallStaticCallToMethodCallAnalyzer = $funcCallStaticCallToMethodCallAnalyzer;
@@ -80,7 +82,7 @@ CODE_SAMPLE
     /**
      * @param Class_ $node
      */
-    public function refactor(Node $node) : ?Node
+    public function refactorWithScope(Node $node, Scope $scope) : ?Node
     {
         $class = $node;
         $hasChanged = \false;
@@ -97,7 +99,14 @@ CODE_SAMPLE
                         return $this->refactorToInstanceCall($node, $staticCallToMethodCall);
                     }
                     $expr = $this->funcCallStaticCallToMethodCallAnalyzer->matchTypeProvidingExpr($class, $classMethod, $staticCallToMethodCall->getClassObjectType());
-                    $methodName = $this->getMethodName($node, $staticCallToMethodCall);
+                    if ($staticCallToMethodCall->getMethodName() === '*') {
+                        $methodName = $this->getName($node->name);
+                    } else {
+                        $methodName = $staticCallToMethodCall->getMethodName();
+                    }
+                    if (!\is_string($methodName)) {
+                        throw new ShouldNotHappenException();
+                    }
                     $hasChanged = \true;
                     return new MethodCall($expr, $methodName, $node->args);
                 }
@@ -117,22 +126,9 @@ CODE_SAMPLE
         Assert::allIsAOf($configuration, StaticCallToMethodCall::class);
         $this->staticCallsToMethodCalls = $configuration;
     }
-    private function getMethodName(StaticCall $staticCall, StaticCallToMethodCall $staticCallToMethodCall) : string
-    {
-        if ($staticCallToMethodCall->getMethodName() === '*') {
-            $methodName = $this->getName($staticCall->name);
-        } else {
-            $methodName = $staticCallToMethodCall->getMethodName();
-        }
-        if (!\is_string($methodName)) {
-            throw new ShouldNotHappenException();
-        }
-        return $methodName;
-    }
     private function refactorToInstanceCall(StaticCall $staticCall, StaticCallToMethodCall $staticCallToMethodCall) : MethodCall
     {
         $new = new New_(new FullyQualified($staticCallToMethodCall->getClassType()));
-        $methodName = $this->getMethodName($staticCall, $staticCallToMethodCall);
-        return new MethodCall($new, $methodName, $staticCall->args);
+        return new MethodCall($new, $staticCallToMethodCall->getMethodName(), $staticCall->args);
     }
 }

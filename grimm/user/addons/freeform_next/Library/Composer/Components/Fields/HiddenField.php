@@ -11,7 +11,6 @@
 
 namespace Solspace\Addons\FreeformNext\Library\Composer\Components\Fields;
 
-use Override;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Fields\Interfaces\NoRenderInterface;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Fields\Interfaces\SingleValueInterface;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Fields\Traits\SingleValueTrait;
@@ -25,7 +24,6 @@ class HiddenField extends TextField implements SingleValueInterface, NoRenderInt
      *
      * @return string
      */
-    #[Override]
     public function getType(): string
     {
         return self::TYPE_HIDDEN;
@@ -34,7 +32,6 @@ class HiddenField extends TextField implements SingleValueInterface, NoRenderInt
     /**
      * @return string
      */
-    #[Override]
     public function getInputHtml(): string
     {
         $attributes = $this->getCustomAttributes();

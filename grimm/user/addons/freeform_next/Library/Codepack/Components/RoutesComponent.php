@@ -20,7 +20,7 @@ class RoutesComponent extends AbstractJsonComponent
      *
      * @param string $prefix
      */
-    public function install($prefix = null): void
+    public function install(?string $prefix = null): void
     {
         $data       = $this->getData();
         $demoFolder = $prefix . "/";

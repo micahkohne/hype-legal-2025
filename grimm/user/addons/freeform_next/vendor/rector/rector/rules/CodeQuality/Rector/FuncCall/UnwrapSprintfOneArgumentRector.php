@@ -5,17 +5,18 @@ namespace Rector\CodeQuality\Rector\FuncCall;
 
 use PhpParser\Node;
 use PhpParser\Node\Expr\FuncCall;
-use Rector\Rector\AbstractRector;
+use Rector\Core\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
+ * @changelog https://github.com/FriendsOfPHP/PHP-CS-Fixer/pull/5280
  * @see \Rector\Tests\CodeQuality\Rector\FuncCall\UnwrapSprintfOneArgumentRector\UnwrapSprintfOneArgumentRectorTest
  */
 final class UnwrapSprintfOneArgumentRector extends AbstractRector
 {
     public function getRuleDefinition() : RuleDefinition
     {
-        return new RuleDefinition('Unwrap `sprintf()` with one argument', [new CodeSample(<<<'CODE_SAMPLE'
+        return new RuleDefinition('unwrap sprintf() with one argument', [new CodeSample(<<<'CODE_SAMPLE'
 echo sprintf('value');
 CODE_SAMPLE
 , <<<'CODE_SAMPLE'

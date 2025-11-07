@@ -3,11 +3,21 @@
 declare (strict_types=1);
 namespace Rector\Symfony\NodeManipulator;
 
-use PhpParser\Node\ArrayItem;
 use PhpParser\Node\Expr\Array_;
+use PhpParser\Node\Expr\ArrayItem;
 use PhpParser\Node\Scalar\String_;
+use Rector\ChangesReporting\Collector\RectorChangeCollector;
 final class ArrayManipulator
 {
+    /**
+     * @readonly
+     * @var \Rector\ChangesReporting\Collector\RectorChangeCollector
+     */
+    private $rectorChangeCollector;
+    public function __construct(RectorChangeCollector $rectorChangeCollector)
+    {
+        $this->rectorChangeCollector = $rectorChangeCollector;
+    }
     public function addItemToArrayUnderKey(Array_ $array, ArrayItem $newArrayItem, string $key) : void
     {
         foreach ($array->items as $item) {
@@ -39,6 +49,7 @@ final class ArrayManipulator
             }
             // remove + recount for the printer
             unset($array->items[$i]);
+            $this->rectorChangeCollector->notifyNodeFileInfo($removedArrayItem);
             return $item;
         }
         return null;

@@ -15,10 +15,7 @@ use Solspace\Addons\FreeformNext\Library\Codepack\Exceptions\FileObject\FileNotF
 
 class TemplatesFileComponent extends AbstractFileComponent
 {
-    private array $modifiableFileExtensions = [
-        'html',
-        'twig',
-    ];
+    private array $modifiableFileExtensions = ['html', 'twig'];
 
     /**
      * @return string
@@ -43,17 +40,15 @@ class TemplatesFileComponent extends AbstractFileComponent
      * @param string      $content
      * @param string|null $prefix
      *
-     * @return string
+     * @return ?string
      */
-    public function fileContentModification($content, $prefix = null): string|array
+    public function fileContentModification($content, ?string $prefix = null): ?string
     {
         $content = $this->updateSrcAndHref($content, $prefix);
         $content = $this->updateLinks($content, $prefix);
         $content = $this->updateTemplateCalls($content, $prefix);
         $content = $this->replaceCustomPrefixCalls($content, $prefix);
-        $content = $this->offsetSegments($content, $prefix);
-
-        return $content;
+        return $this->offsetSegments($content, $prefix);
     }
 
     /**
@@ -62,11 +57,10 @@ class TemplatesFileComponent extends AbstractFileComponent
      * And replaces it with the prefixed asset path
      *
      * @param string $content
-     * @param string $prefix
      *
      * @return string
      */
-    private function updateSrcAndHref($content, string $prefix): array|string|null
+    private function updateSrcAndHref($content, string $prefix): string|array|null
     {
         $pattern = '/(src|href)=([\'"](?:\{{2}\s*siteUrl\s*}{2})?(?:\/?assets\/))demo\//';
         $replace = '$1=$2' . $prefix . '/';
@@ -79,11 +73,10 @@ class TemplatesFileComponent extends AbstractFileComponent
      * Replaces all links that starts with "{{ siteUrl }}demo/" with the new path
      *
      * @param string $content
-     * @param string $prefix
      *
      * @return string
      */
-    private function updateLinks(string|array|null $content, string $prefix): array|string|null
+    private function updateLinks(string|array|null $content, string $prefix): string|array|null
     {
         $pattern = '/([\'"](?:\{{2}\s*siteUrl\s*}{2})?\/?)demo\//';
         $replace = '$1' . $prefix . '/';
@@ -96,11 +89,10 @@ class TemplatesFileComponent extends AbstractFileComponent
      * Updates all includes and extends with the new location
      *
      * @param string $content
-     * @param string $prefix
      *
      * @return string
      */
-    private function updateTemplateCalls(string|array|null $content, string $prefix): array|string|null
+    private function updateTemplateCalls(string|array|null $content, string $prefix): string|array|null
     {
         $pattern = '/(\{\%\s*(?:extends|include)) ([\'"])(\/?)demo\//';
         $replace = '$1 $2$3' . $prefix . '/';
@@ -137,7 +129,7 @@ class TemplatesFileComponent extends AbstractFileComponent
      *
      * @return mixed
      */
-    private function replaceCustomPrefixCalls(string|array|null $content, $prefix): array|string|null
+    private function replaceCustomPrefixCalls(string|array|null $content, $prefix): string|array|null
     {
         $pattern = '#(%prefix%)#';
         $content = preg_replace($pattern, $prefix, $content);

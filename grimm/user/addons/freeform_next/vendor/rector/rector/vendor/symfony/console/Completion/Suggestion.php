@@ -8,7 +8,7 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-namespace RectorPrefix202507\Symfony\Component\Console\Completion;
+namespace RectorPrefix202308\Symfony\Component\Console\Completion;
 
 /**
  * Represents a single suggested value.
@@ -19,12 +19,14 @@ class Suggestion
 {
     /**
      * @readonly
+     * @var string
      */
-    private string $value;
+    private $value;
     /**
      * @readonly
+     * @var string
      */
-    private string $description = '';
+    private $description = '';
     public function __construct(string $value, string $description = '')
     {
         $this->value = $value;

@@ -1,9 +1,9 @@
 <?php
 
-namespace RectorPrefix202507\React\EventLoop;
+namespace RectorPrefix202308\React\EventLoop;
 
-use RectorPrefix202507\React\EventLoop\Tick\FutureTickQueue;
-use RectorPrefix202507\React\EventLoop\Timer\Timer;
+use RectorPrefix202308\React\EventLoop\Tick\FutureTickQueue;
+use RectorPrefix202308\React\EventLoop\Timer\Timer;
 use SplObjectStorage;
 /**
  * An `ext-uv` based event loop.
@@ -12,7 +12,7 @@ use SplObjectStorage;
  * that provides an interface to `libuv` library.
  * `libuv` itself supports a number of system-specific backends (epoll, kqueue).
  *
- * This loop is known to work with PHP 7+.
+ * This loop is known to work with PHP 7.x.
  *
  * @see https://github.com/bwoebi/php-uv
  */
@@ -150,8 +150,8 @@ final class ExtUvLoop implements LoopInterface
         $this->signals->add($signal, $listener);
         if (!isset($this->signalEvents[$signal])) {
             $signals = $this->signals;
-            $this->signalEvents[$signal] = \uv_signal_init($this->uv);
-            \uv_signal_start($this->signalEvents[$signal], function () use($signals, $signal) {
+            $this->signalEvents[$signal] = \RectorPrefix202308\uv_signal_init($this->uv);
+            \RectorPrefix202308\uv_signal_start($this->signalEvents[$signal], function () use($signals, $signal) {
                 $signals->call($signal);
             }, $signal);
         }
@@ -197,7 +197,7 @@ final class ExtUvLoop implements LoopInterface
     private function addStream($stream)
     {
         if (!isset($this->streamEvents[(int) $stream])) {
-            $this->streamEvents[(int) $stream] = \RectorPrefix202507\uv_poll_init_socket($this->uv, $stream);
+            $this->streamEvents[(int) $stream] = \RectorPrefix202308\uv_poll_init_socket($this->uv, $stream);
         }
         if ($this->streamEvents[(int) $stream] !== \false) {
             $this->pollStream($stream);

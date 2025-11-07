@@ -1,16 +1,16 @@
 <?php
 
 declare (strict_types=1);
-namespace Rector\Console\Output;
+namespace Rector\Core\Console\Output;
 
 use Rector\ChangesReporting\Contract\Output\OutputFormatterInterface;
-use Rector\Exception\Configuration\InvalidConfigurationException;
+use Rector\Core\Exception\Configuration\InvalidConfigurationException;
 final class OutputFormatterCollector
 {
     /**
      * @var array<string, OutputFormatterInterface>
      */
-    private array $outputFormatters = [];
+    private $outputFormatters = [];
     /**
      * @param OutputFormatterInterface[] $outputFormatters
      */

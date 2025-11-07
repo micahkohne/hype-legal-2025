@@ -9,32 +9,36 @@ use PhpParser\Node\Expr\BinaryOp\Identical;
 use PhpParser\Node\Expr\BinaryOp\NotEqual;
 use PhpParser\Node\Expr\BinaryOp\NotIdentical;
 use PhpParser\Node\Expr\FuncCall;
-use PhpParser\Node\Scalar\Int_;
+use PhpParser\Node\Scalar\LNumber;
 use PhpParser\Node\Scalar\String_;
+use Rector\Core\PhpParser\Comparing\NodeComparator;
 use Rector\NodeNameResolver\NodeNameResolver;
 use Rector\Php80\Contract\StrStartWithMatchAndRefactorInterface;
 use Rector\Php80\NodeFactory\StrStartsWithFuncCallFactory;
 use Rector\Php80\ValueObject\StrStartsWith;
 use Rector\Php80\ValueObjectFactory\StrStartsWithFactory;
-use Rector\PhpParser\Comparing\NodeComparator;
 final class StrncmpMatchAndRefactor implements StrStartWithMatchAndRefactorInterface
 {
     /**
      * @readonly
+     * @var \Rector\NodeNameResolver\NodeNameResolver
      */
-    private NodeNameResolver $nodeNameResolver;
+    private $nodeNameResolver;
     /**
      * @readonly
+     * @var \Rector\Php80\ValueObjectFactory\StrStartsWithFactory
      */
-    private StrStartsWithFactory $strStartsWithFactory;
+    private $strStartsWithFactory;
     /**
      * @readonly
+     * @var \Rector\Core\PhpParser\Comparing\NodeComparator
      */
-    private NodeComparator $nodeComparator;
+    private $nodeComparator;
     /**
      * @readonly
+     * @var \Rector\Php80\NodeFactory\StrStartsWithFuncCallFactory
      */
-    private StrStartsWithFuncCallFactory $strStartsWithFuncCallFactory;
+    private $strStartsWithFuncCallFactory;
     /**
      * @var string
      */
@@ -106,7 +110,7 @@ final class StrncmpMatchAndRefactor implements StrStartWithMatchAndRefactorInter
             return \false;
         }
         $lNumberLength = $strncmpFuncCall->getArgs()[2]->value;
-        if (!$lNumberLength instanceof Int_) {
+        if (!$lNumberLength instanceof LNumber) {
             return \false;
         }
         return $lNumberLength->value === \strlen($hardcodedStringNeedle->value);

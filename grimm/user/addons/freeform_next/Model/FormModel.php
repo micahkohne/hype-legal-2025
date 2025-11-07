@@ -13,7 +13,7 @@ namespace Solspace\Addons\FreeformNext\Model;
 
 use Stringable;
 use DateTime;
-use ExpressionEngine\Service\Model\Model;
+use EllisLab\ExpressionEngine\Service\Model\Model;
 use Solspace\Addons\FreeformNext\Library\Composer\Attributes\FormAttributes;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Form;
 use Solspace\Addons\FreeformNext\Library\Composer\Composer;
@@ -45,8 +45,8 @@ use Solspace\Addons\FreeformNext\Services\SubmissionsService;
  */
 class FormModel extends Model implements Stringable
 {
-    const MODEL = 'freeform_next:FormModel';
-    const TABLE = 'freeform_next_forms';
+    public const MODEL = 'freeform_next:FormModel';
+    public const TABLE = 'freeform_next_forms';
 
     protected static $_primary_key = 'id';
     protected static $_table_name  = self::TABLE;
@@ -102,8 +102,6 @@ class FormModel extends Model implements Stringable
     /**
      * Sets names, handles, descriptions
      * And updates the layout JSON
-     *
-     * @param Composer $composer
      */
     public function setLayout(Composer $composer): void
     {
@@ -125,25 +123,24 @@ class FormModel extends Model implements Stringable
      *
      * @return Composer
      */
-    public function getComposer(): Composer
+    public function getComposer(): ?Composer
     {
         if (null === $this->composer) {
             $composerState  = $this->layoutJson ? json_decode($this->layoutJson, true) : null;
             $formAttributes = $this->getFormAttributes();
 
             $this->composer = new Composer(
-                new FormsService(),              // implements FormHandlerInterface
-                new FieldsService(),             // implements FieldHandlerInterface
-                new SubmissionsService(),        // implements SubmissionHandlerInterface
-                new MailerService(),             // implements MailHandlerInterface
-                new FilesService(),              // implements FileUploadHandlerInterface
-                new MailingListsService(),       // implements MailingListHandlerInterface
-                new CrmService(),                // implements CRMHandlerInterface
-                new StatusesService(),           // implements StatusHandlerInterface
-                new EETranslator(),              // implements TranslatorInterface
-                $composerState,                  // ?array $composerState
-                $formAttributes,                 // ?FormAttributes $formAttributes
-                null          // ?ComposerState $customComposerState
+                new FormsService(),
+                new FieldsService(),
+                new SubmissionsService(),
+                new MailerService(),
+                new FilesService(),
+                new MailingListsService(),
+                new CrmService(),
+                new StatusesService(),
+                new EETranslator(),
+                $composerState,
+                $formAttributes,
             );
         }
 
@@ -170,7 +167,7 @@ class FormModel extends Model implements Stringable
     /**
      * @return Form
      */
-    public function getForm(): Form
+    public function getForm()
     {
         return $this->getComposer()->getForm();
     }

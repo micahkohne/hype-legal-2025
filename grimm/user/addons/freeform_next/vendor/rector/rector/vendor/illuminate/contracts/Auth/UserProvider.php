@@ -1,6 +1,6 @@
 <?php
 
-namespace RectorPrefix202507\Illuminate\Contracts\Auth;
+namespace RectorPrefix202308\Illuminate\Contracts\Auth;
 
 interface UserProvider
 {
@@ -42,13 +42,4 @@ interface UserProvider
      * @return bool
      */
     public function validateCredentials(Authenticatable $user, array $credentials);
-    /**
-     * Rehash the user's password if required and supported.
-     *
-     * @param  \Illuminate\Contracts\Auth\Authenticatable  $user
-     * @param  array  $credentials
-     * @param  bool  $force
-     * @return void
-     */
-    public function rehashPasswordIfRequired(Authenticatable $user, array $credentials, bool $force = \false);
 }

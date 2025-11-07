@@ -3,12 +3,12 @@
 declare (strict_types=1);
 namespace Rector\Symfony\NodeFactory;
 
-use PhpParser\Node\ArrayItem;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Array_;
+use PhpParser\Node\Expr\ArrayItem;
 use PhpParser\Node\Expr\ClassConstFetch;
 use PhpParser\Node\Identifier;
-use PhpParser\Node\Scalar\Int_;
+use PhpParser\Node\Scalar\LNumber;
 use PhpParser\Node\Scalar\String_;
 use PhpParser\Node\Stmt\ClassMethod;
 use PhpParser\Node\Stmt\Return_;
@@ -17,8 +17,9 @@ use PHPStan\Type\MixedType;
 use PHPStan\Type\StringType;
 use Rector\BetterPhpDocParser\PhpDocInfo\PhpDocInfoFactory;
 use Rector\BetterPhpDocParser\PhpDocManipulator\PhpDocTypeChanger;
-use Rector\Php\PhpVersionProvider;
-use Rector\PhpParser\Node\NodeFactory;
+use Rector\Core\Php\PhpVersionProvider;
+use Rector\Core\PhpParser\Node\NodeFactory;
+use Rector\Core\ValueObject\PhpVersionFeature;
 use Rector\Privatization\NodeManipulator\VisibilityManipulator;
 use Rector\Symfony\Contract\EventReferenceToMethodNameInterface;
 use Rector\Symfony\Contract\Tag\TagInterface;
@@ -27,33 +28,38 @@ use Rector\Symfony\ValueObject\EventReferenceToMethodNameWithPriority;
 use Rector\Symfony\ValueObject\ServiceDefinition;
 use Rector\Symfony\ValueObject\Tag;
 use Rector\Symfony\ValueObject\Tag\EventListenerTag;
-use Rector\ValueObject\PhpVersionFeature;
 final class GetSubscribedEventsClassMethodFactory
 {
     /**
      * @readonly
+     * @var \Rector\Core\PhpParser\Node\NodeFactory
      */
-    private NodeFactory $nodeFactory;
+    private $nodeFactory;
     /**
      * @readonly
+     * @var \Rector\Privatization\NodeManipulator\VisibilityManipulator
      */
-    private VisibilityManipulator $visibilityManipulator;
+    private $visibilityManipulator;
     /**
      * @readonly
+     * @var \Rector\Core\Php\PhpVersionProvider
      */
-    private PhpVersionProvider $phpVersionProvider;
+    private $phpVersionProvider;
     /**
      * @readonly
+     * @var \Rector\BetterPhpDocParser\PhpDocInfo\PhpDocInfoFactory
      */
-    private PhpDocInfoFactory $phpDocInfoFactory;
+    private $phpDocInfoFactory;
     /**
      * @readonly
+     * @var \Rector\BetterPhpDocParser\PhpDocManipulator\PhpDocTypeChanger
      */
-    private PhpDocTypeChanger $phpDocTypeChanger;
+    private $phpDocTypeChanger;
     /**
      * @readonly
+     * @var \Rector\Symfony\NodeFactory\EventReferenceFactory
      */
-    private \Rector\Symfony\NodeFactory\EventReferenceFactory $eventReferenceFactory;
+    private $eventReferenceFactory;
     /**
      * @var string
      */
@@ -113,7 +119,7 @@ final class GetSubscribedEventsClassMethodFactory
         if ($priority !== null && $priority !== 0) {
             $methodNameWithPriorityArray = new Array_();
             $methodNameWithPriorityArray->items[] = new ArrayItem(new String_($methodName));
-            $methodNameWithPriorityArray->items[] = new ArrayItem(new Int_($priority));
+            $methodNameWithPriorityArray->items[] = new ArrayItem(new LNumber($priority));
             return new ArrayItem($methodNameWithPriorityArray, $expr);
         }
         return new ArrayItem(new String_($methodName), $expr);
@@ -208,7 +214,7 @@ final class GetSubscribedEventsClassMethodFactory
         if ($eventListenerTag->getPriority() !== 0) {
             $methodNameWithPriorityArray = new Array_();
             $methodNameWithPriorityArray->items[] = new ArrayItem(new String_($eventListenerTag->getMethod()));
-            $methodNameWithPriorityArray->items[] = new ArrayItem(new Int_($eventListenerTag->getPriority()));
+            $methodNameWithPriorityArray->items[] = new ArrayItem(new LNumber($eventListenerTag->getPriority()));
             return new ArrayItem($methodNameWithPriorityArray);
         }
         return new ArrayItem(new String_($eventListenerTag->getMethod()));

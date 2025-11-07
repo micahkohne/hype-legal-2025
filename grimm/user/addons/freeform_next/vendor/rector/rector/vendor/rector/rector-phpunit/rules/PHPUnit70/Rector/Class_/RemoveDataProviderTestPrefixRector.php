@@ -3,14 +3,14 @@
 declare (strict_types=1);
 namespace Rector\PHPUnit\PHPUnit70\Rector\Class_;
 
-use RectorPrefix202507\Nette\Utils\Strings;
+use RectorPrefix202308\Nette\Utils\Strings;
 use PhpParser\Node;
 use PhpParser\Node\Identifier;
 use PhpParser\Node\Stmt\Class_;
+use Rector\Core\Rector\AbstractRector;
 use Rector\PHPUnit\NodeAnalyzer\TestsNodeAnalyzer;
 use Rector\PHPUnit\NodeFinder\DataProviderClassMethodFinder;
 use Rector\PHPUnit\PhpDoc\DataProviderMethodRenamer;
-use Rector\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -22,16 +22,19 @@ final class RemoveDataProviderTestPrefixRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\PHPUnit\NodeAnalyzer\TestsNodeAnalyzer
      */
-    private TestsNodeAnalyzer $testsNodeAnalyzer;
+    private $testsNodeAnalyzer;
     /**
      * @readonly
+     * @var \Rector\PHPUnit\NodeFinder\DataProviderClassMethodFinder
      */
-    private DataProviderClassMethodFinder $dataProviderClassMethodFinder;
+    private $dataProviderClassMethodFinder;
     /**
      * @readonly
+     * @var \Rector\PHPUnit\PhpDoc\DataProviderMethodRenamer
      */
-    private DataProviderMethodRenamer $dataProviderMethodRenamer;
+    private $dataProviderMethodRenamer;
     public function __construct(TestsNodeAnalyzer $testsNodeAnalyzer, DataProviderClassMethodFinder $dataProviderClassMethodFinder, DataProviderMethodRenamer $dataProviderMethodRenamer)
     {
         $this->testsNodeAnalyzer = $testsNodeAnalyzer;
@@ -94,11 +97,10 @@ CODE_SAMPLE
         $hasChanged = \false;
         $dataProviderClassMethods = $this->dataProviderClassMethodFinder->find($node);
         foreach ($dataProviderClassMethods as $dataProviderClassMethod) {
-            $dataProviderClassMethodName = $dataProviderClassMethod->name->toString();
-            if (\strncmp($dataProviderClassMethodName, 'test', \strlen('test')) !== 0) {
+            if (!$this->isName($dataProviderClassMethod, 'test*')) {
                 continue;
             }
-            $shortMethodName = Strings::substring($dataProviderClassMethodName, 4);
+            $shortMethodName = Strings::substring($dataProviderClassMethod->name->toString(), 4);
             $shortMethodName = \lcfirst($shortMethodName);
             $dataProviderClassMethod->name = new Identifier($shortMethodName);
             $hasChanged = \true;

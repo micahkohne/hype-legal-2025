@@ -5,9 +5,9 @@ namespace Rector\PHPUnit\CodeQuality\Rector\ClassMethod;
 
 use PhpParser\Node;
 use PhpParser\Node\Stmt\ClassMethod;
-use PhpParser\NodeVisitor;
+use PhpParser\NodeTraverser;
+use Rector\Core\Rector\AbstractRector;
 use Rector\PHPUnit\NodeAnalyzer\TestsNodeAnalyzer;
-use Rector\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -17,8 +17,9 @@ final class RemoveEmptyTestMethodRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\PHPUnit\NodeAnalyzer\TestsNodeAnalyzer
      */
-    private TestsNodeAnalyzer $testsNodeAnalyzer;
+    private $testsNodeAnalyzer;
     public function __construct(TestsNodeAnalyzer $testsNodeAnalyzer)
     {
         $this->testsNodeAnalyzer = $testsNodeAnalyzer;
@@ -60,7 +61,7 @@ CODE_SAMPLE
         if (!$this->testsNodeAnalyzer->isInTestClass($node)) {
             return null;
         }
-        if (\strncmp($node->name->toString(), 'test', \strlen('test')) !== 0) {
+        if (!$this->isName($node->name, 'test*')) {
             return null;
         }
         if ($node->stmts === null) {
@@ -69,6 +70,6 @@ CODE_SAMPLE
         if ($node->stmts !== []) {
             return null;
         }
-        return NodeVisitor::REMOVE_NODE;
+        return NodeTraverser::REMOVE_NODE;
     }
 }

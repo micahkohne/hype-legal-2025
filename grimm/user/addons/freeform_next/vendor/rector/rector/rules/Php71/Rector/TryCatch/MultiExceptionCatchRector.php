@@ -5,21 +5,24 @@ namespace Rector\Php71\Rector\TryCatch;
 
 use PhpParser\Node;
 use PhpParser\Node\Stmt\TryCatch;
-use Rector\PhpParser\Printer\BetterStandardPrinter;
-use Rector\Rector\AbstractRector;
-use Rector\ValueObject\PhpVersionFeature;
+use Rector\Core\PhpParser\Printer\BetterStandardPrinter;
+use Rector\Core\Rector\AbstractRector;
+use Rector\Core\ValueObject\PhpVersionFeature;
 use Rector\VersionBonding\Contract\MinPhpVersionInterface;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
+ * @changelog https://wiki.php.net/rfc/multiple-catch
+ *
  * @see \Rector\Tests\Php71\Rector\TryCatch\MultiExceptionCatchRector\MultiExceptionCatchRectorTest
  */
 final class MultiExceptionCatchRector extends AbstractRector implements MinPhpVersionInterface
 {
     /**
      * @readonly
+     * @var \Rector\Core\PhpParser\Printer\BetterStandardPrinter
      */
-    private BetterStandardPrinter $betterStandardPrinter;
+    private $betterStandardPrinter;
     public function __construct(BetterStandardPrinter $betterStandardPrinter)
     {
         $this->betterStandardPrinter = $betterStandardPrinter;
@@ -59,22 +62,20 @@ CODE_SAMPLE
         if (\count($node->catches) < 2) {
             return null;
         }
+        $printedCatches = [];
         $hasChanged = \false;
         foreach ($node->catches as $key => $catch) {
-            if (!isset($node->catches[$key + 1])) {
-                break;
-            }
             $currentPrintedCatch = $this->betterStandardPrinter->print($catch->stmts);
-            $nextPrintedCatch = $this->betterStandardPrinter->print($node->catches[$key + 1]->stmts);
             // already duplicated catch → remove it and join the type
-            if ($currentPrintedCatch === $nextPrintedCatch) {
-                // use current var as next var
-                $node->catches[$key + 1]->var = $node->catches[$key]->var;
-                // merge next types as current merge to next types
-                $node->catches[$key + 1]->types = \array_merge($node->catches[$key]->types, $node->catches[$key + 1]->types);
+            if (\in_array($currentPrintedCatch, $printedCatches, \true)) {
+                // merge type to existing type
+                $existingCatchKey = \array_search($currentPrintedCatch, $printedCatches, \true);
+                $node->catches[$existingCatchKey]->types[] = $catch->types[0];
                 unset($node->catches[$key]);
                 $hasChanged = \true;
+                continue;
             }
+            $printedCatches[$key] = $currentPrintedCatch;
         }
         if ($hasChanged) {
             return $node;

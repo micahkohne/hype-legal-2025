@@ -168,7 +168,7 @@ CREATE TABLE IF NOT EXISTS `exp_freeform_next_spam_reasons` (
     KEY `ffn_spam_reasons_submissionId` (`submissionId`),
     CONSTRAINT `ffn_spam_reasons_submissionId_fk`
         FOREIGN KEY (`submissionId`)
-        REFERENCES `{$submissionsTable}` (`id`)
+        REFERENCES `exp_freeform_next_submissions` (`id`)
         ON DELETE CASCADE
 ) CHARACTER SET utf8 COLLATE utf8_general_ci;
 

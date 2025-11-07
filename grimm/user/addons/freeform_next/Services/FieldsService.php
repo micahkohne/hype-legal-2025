@@ -26,7 +26,7 @@ class FieldsService implements FieldHandlerInterface
     /**
      * @return array
      */
-    public function getFieldTypes(): array
+    public function getFieldTypes()
     {
         $fieldTypes = [
             FieldInterface::TYPE_TEXT               => 'Text',
@@ -76,8 +76,6 @@ class FieldsService implements FieldHandlerInterface
     }
 
     /**
-     * @param FieldModel $model
-     *
      * @throws Exception
      */
     public function deleteFieldFromForms(FieldModel $model): void

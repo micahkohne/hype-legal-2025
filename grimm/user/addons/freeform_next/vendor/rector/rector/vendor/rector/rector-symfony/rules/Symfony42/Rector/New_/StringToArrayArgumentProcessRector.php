@@ -7,6 +7,7 @@ use PhpParser\Node;
 use PhpParser\Node\Arg;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Array_;
+use PhpParser\Node\Expr\Assign;
 use PhpParser\Node\Expr\BinaryOp\Concat;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Expr\MethodCall;
@@ -14,10 +15,10 @@ use PhpParser\Node\Expr\New_;
 use PhpParser\Node\Scalar\String_;
 use PHPStan\Type\ObjectType;
 use PHPStan\Type\StringType;
-use Rector\PhpParser\NodeTransformer;
-use Rector\Rector\AbstractRector;
-use Rector\Util\Reflection\PrivatesAccessor;
-use RectorPrefix202507\Symfony\Component\Console\Input\StringInput;
+use Rector\Core\PhpParser\NodeTransformer;
+use Rector\Core\Rector\AbstractRector;
+use Rector\Core\Util\Reflection\PrivatesAccessor;
+use RectorPrefix202308\Symfony\Component\Console\Input\StringInput;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -29,12 +30,13 @@ final class StringToArrayArgumentProcessRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\Core\PhpParser\NodeTransformer
      */
-    private NodeTransformer $nodeTransformer;
+    private $nodeTransformer;
     /**
      * @var string[]
      */
-    private const EXCLUDED_PROCESS_METHOD_CALLS = ['setWorkingDirectory', 'addOutput', 'addErrorOutput', 'setInput'];
+    private const EXCLUDED_PROCESS_METHOD_CALLS = ['setWorkingDirectory', 'addOutput', 'addErrorOutput'];
     public function __construct(NodeTransformer $nodeTransformer)
     {
         $this->nodeTransformer = $nodeTransformer;
@@ -96,41 +98,34 @@ CODE_SAMPLE
         if (!$activeValueType instanceof StringType) {
             return null;
         }
-        $hasChanged = $this->processStringType($node, $argumentPosition, $activeArgValue);
-        if (!$hasChanged) {
-            return null;
-        }
+        $this->processStringType($node, $argumentPosition, $activeArgValue);
         return $node;
     }
     private function shouldSkipProcessMethodCall(MethodCall $methodCall) : bool
     {
-        $methodName = (string) $this->getName($methodCall->name);
+        $methodName = (string) $this->nodeNameResolver->getName($methodCall->name);
         return \in_array($methodName, self::EXCLUDED_PROCESS_METHOD_CALLS, \true);
     }
     /**
      * @param \PhpParser\Node\Expr\New_|\PhpParser\Node\Expr\MethodCall $expr
      */
-    private function processStringType($expr, int $argumentPosition, Expr $firstArgumentExpr) : bool
+    private function processStringType($expr, int $argumentPosition, Expr $firstArgumentExpr) : void
     {
         if ($firstArgumentExpr instanceof Concat) {
             $arrayNode = $this->nodeTransformer->transformConcatToStringArray($firstArgumentExpr);
             $expr->args[$argumentPosition] = new Arg($arrayNode);
-            return \true;
+            return;
         }
         $args = $expr->getArgs();
-        $hasChanged = \false;
         if ($firstArgumentExpr instanceof FuncCall && $this->isName($firstArgumentExpr, 'sprintf')) {
             $arrayNode = $this->nodeTransformer->transformSprintfToArray($firstArgumentExpr);
             if ($arrayNode instanceof Array_) {
                 $args[$argumentPosition]->value = $arrayNode;
-                $hasChanged = \true;
             }
         } elseif ($firstArgumentExpr instanceof String_) {
             $parts = $this->splitProcessCommandToItems($firstArgumentExpr->value);
             $args[$argumentPosition]->value = $this->nodeFactory->createArray($parts);
-            $hasChanged = \true;
         }
-        return $hasChanged;
     }
     /**
      * @return string[]

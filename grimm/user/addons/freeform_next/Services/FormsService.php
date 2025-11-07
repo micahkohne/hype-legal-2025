@@ -137,10 +137,7 @@ class FormsService implements FormHandlerInterface
         try {
             $actionId = ee()->db
                 ->where(
-                    [
-                        'class'  => 'Freeform_next',
-                        'method' => 'submitForm',
-                    ]
+                    ['class'  => 'Freeform_next', 'method' => 'submitForm']
                 )
                 ->get('actions')
                 ->row()

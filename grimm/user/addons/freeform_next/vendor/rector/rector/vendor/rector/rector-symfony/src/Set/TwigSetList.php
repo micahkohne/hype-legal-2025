@@ -3,10 +3,8 @@
 declare (strict_types=1);
 namespace Rector\Symfony\Set;
 
-/**
- * @api
- */
-final class TwigSetList
+use Rector\Set\Contract\SetListInterface;
+final class TwigSetList implements SetListInterface
 {
     /**
      * @var string
@@ -31,7 +29,7 @@ final class TwigSetList
     /**
      * @var string
      */
-    public const TWIG_24 = __DIR__ . '/../../config/sets/twig/twig24.php';
+    public const TWIG_240 = __DIR__ . '/../../config/sets/twig/twig240.php';
     /**
      * @var string
      */

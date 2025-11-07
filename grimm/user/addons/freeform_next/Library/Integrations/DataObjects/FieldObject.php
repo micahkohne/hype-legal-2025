@@ -12,15 +12,14 @@
 namespace Solspace\Addons\FreeformNext\Library\Integrations\DataObjects;
 
 use JsonSerializable;
-
 class FieldObject implements JsonSerializable
 {
-    const TYPE_STRING  = 'string';
-    const TYPE_ARRAY   = 'array';
-    const TYPE_NUMERIC = 'numeric';
-    const TYPE_BOOLEAN = 'boolean';
+    public const TYPE_STRING  = 'string';
+    public const TYPE_ARRAY   = 'array';
+    public const TYPE_NUMERIC = 'numeric';
+    public const TYPE_BOOLEAN = 'boolean';
 
-    private readonly bool $required;
+    private bool $required;
 
     /**
      * @return array

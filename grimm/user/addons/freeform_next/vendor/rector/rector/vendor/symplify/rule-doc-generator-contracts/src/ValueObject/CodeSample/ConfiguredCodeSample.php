@@ -11,7 +11,7 @@ final class ConfiguredCodeSample extends AbstractCodeSample implements CodeSampl
     /**
      * @var mixed[]
      */
-    private array $configuration = [];
+    private $configuration = [];
     /**
      * @param mixed[] $configuration
      */

@@ -8,16 +8,28 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-namespace RectorPrefix202507\Symfony\Component\Console;
+namespace RectorPrefix202308\Symfony\Component\Console;
 
-use RectorPrefix202507\Symfony\Component\Console\Output\AnsiColorMode;
+use RectorPrefix202308\Symfony\Component\Console\Output\AnsiColorMode;
 class Terminal
 {
     public const DEFAULT_COLOR_MODE = AnsiColorMode::Ansi4;
-    private static ?AnsiColorMode $colorMode = null;
-    private static ?int $width = null;
-    private static ?int $height = null;
-    private static ?bool $stty = null;
+    /**
+     * @var \Symfony\Component\Console\Output\AnsiColorMode|null
+     */
+    private static $colorMode;
+    /**
+     * @var int|null
+     */
+    private static $width;
+    /**
+     * @var int|null
+     */
+    private static $height;
+    /**
+     * @var bool|null
+     */
+    private static $stty;
     /**
      * About Ansi color types: https://en.wikipedia.org/wiki/ANSI_escape_code#Colors
      * For more information about true color support with terminals https://github.com/termstandard/colors/.
@@ -181,7 +193,8 @@ class Terminal
         }
         $descriptorspec = [1 => ['pipe', 'w'], 2 => ['pipe', 'w']];
         $cp = \function_exists('sapi_windows_cp_set') ? \sapi_windows_cp_get() : 0;
-        if (!($process = @\proc_open($command, $descriptorspec, $pipes, null, null, ['suppress_errors' => \true]))) {
+        $process = \proc_open(\is_array($command) ? \implode(' ', $command) : $command, $descriptorspec, $pipes, null, null, ['suppress_errors' => \true]);
+        if (!\is_resource($process)) {
             return null;
         }
         $info = \stream_get_contents($pipes[1]);

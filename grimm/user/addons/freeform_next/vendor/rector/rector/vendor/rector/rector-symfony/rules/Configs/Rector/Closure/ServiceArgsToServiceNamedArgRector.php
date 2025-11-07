@@ -5,9 +5,9 @@ namespace Rector\Symfony\Configs\Rector\Closure;
 
 use PhpParser\Node;
 use PhpParser\Node\Arg;
-use PhpParser\Node\ArrayItem;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Array_;
+use PhpParser\Node\Expr\ArrayItem;
 use PhpParser\Node\Expr\ClassConstFetch;
 use PhpParser\Node\Expr\Closure;
 use PhpParser\Node\Expr\MethodCall;
@@ -16,8 +16,7 @@ use PHPStan\Reflection\ParametersAcceptorSelector;
 use PHPStan\Reflection\Php\PhpParameterReflection;
 use PHPStan\Reflection\ReflectionProvider;
 use PHPStan\Type\ObjectType;
-use Rector\PhpParser\Node\Value\ValueResolver;
-use Rector\Rector\AbstractRector;
+use Rector\Core\Rector\AbstractRector;
 use Rector\Symfony\NodeAnalyzer\SymfonyPhpClosureDetector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
@@ -28,21 +27,18 @@ final class ServiceArgsToServiceNamedArgRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\Symfony\NodeAnalyzer\SymfonyPhpClosureDetector
      */
-    private SymfonyPhpClosureDetector $symfonyPhpClosureDetector;
+    private $symfonyPhpClosureDetector;
     /**
      * @readonly
+     * @var \PHPStan\Reflection\ReflectionProvider
      */
-    private ReflectionProvider $reflectionProvider;
-    /**
-     * @readonly
-     */
-    private ValueResolver $valueResolver;
-    public function __construct(SymfonyPhpClosureDetector $symfonyPhpClosureDetector, ReflectionProvider $reflectionProvider, ValueResolver $valueResolver)
+    private $reflectionProvider;
+    public function __construct(SymfonyPhpClosureDetector $symfonyPhpClosureDetector, ReflectionProvider $reflectionProvider)
     {
         $this->symfonyPhpClosureDetector = $symfonyPhpClosureDetector;
         $this->reflectionProvider = $reflectionProvider;
-        $this->valueResolver = $valueResolver;
     }
     public function getRuleDefinition() : RuleDefinition
     {
@@ -84,7 +80,7 @@ CODE_SAMPLE
             return null;
         }
         $hasChanged = \false;
-        $this->traverseNodesWithCallable($node->stmts, function (Node $node) use(&$hasChanged) : ?MethodCall {
+        $this->traverseNodesWithCallable($node->stmts, function (Node $node) use(&$hasChanged) {
             if (!$node instanceof MethodCall) {
                 return null;
             }
@@ -140,8 +136,8 @@ CODE_SAMPLE
         }
         $constructorParameterNames = [];
         $extendedMethodReflection = $serviceClassReflection->getConstructor();
-        $extendedParametersAcceptor = ParametersAcceptorSelector::combineAcceptors($extendedMethodReflection->getVariants());
-        foreach ($extendedParametersAcceptor->getParameters() as $parameterReflectionWithPhpDoc) {
+        $parametersAcceptorWithPhpDocs = ParametersAcceptorSelector::combineAcceptors($extendedMethodReflection->getVariants());
+        foreach ($parametersAcceptorWithPhpDocs->getParameters() as $parameterReflectionWithPhpDoc) {
             /** @var PhpParameterReflection $parameterReflectionWithPhpDoc */
             $constructorParameterNames[] = '$' . $parameterReflectionWithPhpDoc->getName();
         }
@@ -154,10 +150,10 @@ CODE_SAMPLE
         }
         return $this->isObjectType($methodCall->var, new ObjectType('Symfony\\Component\\DependencyInjection\\Loader\\Configurator\\ServiceConfigurator'));
     }
-    private function createArgMethodCall(string $parameterName, Expr $expr, ?MethodCall $argMethodCall, MethodCall $methodCall) : MethodCall
+    private function createArgMethodCall(string $parameterName, Expr $expr, ?MethodCall $argMethodCall, MethodCall $node) : MethodCall
     {
         $argArgs = [new Arg(new String_($parameterName)), new Arg($expr)];
-        $callerExpr = $argMethodCall instanceof MethodCall ? $argMethodCall : $methodCall->var;
+        $callerExpr = $argMethodCall instanceof MethodCall ? $argMethodCall : $node->var;
         return new MethodCall($callerExpr, 'arg', $argArgs);
     }
     /**

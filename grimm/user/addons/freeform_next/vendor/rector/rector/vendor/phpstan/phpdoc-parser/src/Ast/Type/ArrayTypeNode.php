@@ -7,7 +7,8 @@ use PHPStan\PhpDocParser\Ast\NodeAttributes;
 class ArrayTypeNode implements \PHPStan\PhpDocParser\Ast\Type\TypeNode
 {
     use NodeAttributes;
-    public \PHPStan\PhpDocParser\Ast\Type\TypeNode $type;
+    /** @var TypeNode */
+    public $type;
     public function __construct(\PHPStan\PhpDocParser\Ast\Type\TypeNode $type)
     {
         $this->type = $type;

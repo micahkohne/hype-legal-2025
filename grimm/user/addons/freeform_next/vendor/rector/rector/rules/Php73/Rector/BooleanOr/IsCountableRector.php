@@ -7,27 +7,27 @@ use PhpParser\Node;
 use PhpParser\Node\Expr\BinaryOp\BooleanOr;
 use PhpParser\Node\Name;
 use PHPStan\Reflection\ReflectionProvider;
+use Rector\Core\Rector\AbstractRector;
+use Rector\Core\ValueObject\PhpVersionFeature;
 use Rector\Php71\IsArrayAndDualCheckToAble;
-use Rector\Rector\AbstractRector;
-use Rector\ValueObject\PhpVersionFeature;
-use Rector\ValueObject\PolyfillPackage;
 use Rector\VersionBonding\Contract\MinPhpVersionInterface;
-use Rector\VersionBonding\Contract\RelatedPolyfillInterface;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
  * @see \Rector\Tests\Php73\Rector\BinaryOr\IsCountableRector\IsCountableRectorTest
  */
-final class IsCountableRector extends AbstractRector implements MinPhpVersionInterface, RelatedPolyfillInterface
+final class IsCountableRector extends AbstractRector implements MinPhpVersionInterface
 {
     /**
      * @readonly
+     * @var \Rector\Php71\IsArrayAndDualCheckToAble
      */
-    private IsArrayAndDualCheckToAble $isArrayAndDualCheckToAble;
+    private $isArrayAndDualCheckToAble;
     /**
      * @readonly
+     * @var \PHPStan\Reflection\ReflectionProvider
      */
-    private ReflectionProvider $reflectionProvider;
+    private $reflectionProvider;
     public function __construct(IsArrayAndDualCheckToAble $isArrayAndDualCheckToAble, ReflectionProvider $reflectionProvider)
     {
         $this->isArrayAndDualCheckToAble = $isArrayAndDualCheckToAble;
@@ -63,10 +63,6 @@ CODE_SAMPLE
     public function provideMinPhpVersion() : int
     {
         return PhpVersionFeature::IS_COUNTABLE;
-    }
-    public function providePolyfillPackage() : string
-    {
-        return PolyfillPackage::PHP_73;
     }
     private function shouldSkip() : bool
     {

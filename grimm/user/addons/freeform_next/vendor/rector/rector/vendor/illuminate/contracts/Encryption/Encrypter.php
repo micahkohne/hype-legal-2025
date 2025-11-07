@@ -1,6 +1,6 @@
 <?php
 
-namespace RectorPrefix202507\Illuminate\Contracts\Encryption;
+namespace RectorPrefix202308\Illuminate\Contracts\Encryption;
 
 interface Encrypter
 {
@@ -30,16 +30,4 @@ interface Encrypter
      * @return string
      */
     public function getKey();
-    /**
-     * Get the current encryption key and all previous encryption keys.
-     *
-     * @return array
-     */
-    public function getAllKeys();
-    /**
-     * Get the previous encryption keys.
-     *
-     * @return array
-     */
-    public function getPreviousKeys();
 }

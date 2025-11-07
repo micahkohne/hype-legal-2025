@@ -3,19 +3,17 @@
 declare (strict_types=1);
 namespace Rector\CodeQuality\Rector\If_;
 
+use RectorPrefix202308\Nette\Utils\Strings;
 use PhpParser\Node;
 use PhpParser\Node\Expr;
 use PhpParser\Node\Expr\Assign;
-use PhpParser\Node\Expr\BinaryOp;
 use PhpParser\Node\Expr\Ternary;
 use PhpParser\Node\Stmt;
 use PhpParser\Node\Stmt\Else_;
 use PhpParser\Node\Stmt\Expression;
 use PhpParser\Node\Stmt\If_;
-use Rector\NodeTypeResolver\Node\AttributeKey;
-use Rector\PhpParser\Node\BetterNodeFinder;
-use Rector\PhpParser\Printer\BetterStandardPrinter;
-use Rector\Rector\AbstractRector;
+use Rector\Core\PhpParser\Printer\BetterStandardPrinter;
+use Rector\Core\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -25,20 +23,16 @@ final class SimplifyIfElseToTernaryRector extends AbstractRector
 {
     /**
      * @readonly
+     * @var \Rector\Core\PhpParser\Printer\BetterStandardPrinter
      */
-    private BetterStandardPrinter $betterStandardPrinter;
-    /**
-     * @readonly
-     */
-    private BetterNodeFinder $betterNodeFinder;
+    private $betterStandardPrinter;
     /**
      * @var int
      */
     private const LINE_LENGTH_LIMIT = 120;
-    public function __construct(BetterStandardPrinter $betterStandardPrinter, BetterNodeFinder $betterNodeFinder)
+    public function __construct(BetterStandardPrinter $betterStandardPrinter)
     {
         $this->betterStandardPrinter = $betterStandardPrinter;
-        $this->betterNodeFinder = $betterNodeFinder;
     }
     public function getRuleDefinition() : RuleDefinition
     {
@@ -113,9 +107,6 @@ CODE_SAMPLE
         if ($this->isNodeTooLong($assign)) {
             return null;
         }
-        if ($ternary->cond instanceof BinaryOp) {
-            $ternary->cond->setAttribute(AttributeKey::ORIGINAL_NODE, null);
-        }
         $expression = new Expression($assign);
         $this->mirrorComments($expression, $node);
         return $expression;
@@ -150,9 +141,6 @@ CODE_SAMPLE
         if (!$stmt instanceof Expression) {
             return null;
         }
-        if ($stmt->getComments() !== []) {
-            return null;
-        }
         $stmtExpr = $stmt->expr;
         if (!$stmtExpr instanceof Assign) {
             return null;
@@ -175,6 +163,6 @@ CODE_SAMPLE
     private function isNodeTooLong(Assign $assign) : bool
     {
         $assignContent = $this->betterStandardPrinter->print($assign);
-        return \strlen($assignContent) > self::LINE_LENGTH_LIMIT;
+        return Strings::length($assignContent) > self::LINE_LENGTH_LIMIT;
     }
 }

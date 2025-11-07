@@ -4,23 +4,25 @@ declare (strict_types=1);
 namespace Rector\Symfony\NodeAnalyzer\FormType;
 
 use PhpParser\Node\Arg;
-use PhpParser\Node\ArrayItem;
 use PhpParser\Node\Expr\Array_;
+use PhpParser\Node\Expr\ArrayItem;
 use PhpParser\Node\Expr\MethodCall;
 use PhpParser\Node\Scalar\String_;
 use PHPStan\Reflection\ReflectionProvider;
-use Rector\PhpParser\Node\NodeFactory;
+use Rector\Core\PhpParser\Node\NodeFactory;
 use ReflectionMethod;
 final class CreateFormTypeOptionsArgMover
 {
     /**
      * @readonly
+     * @var \PHPStan\Reflection\ReflectionProvider
      */
-    private ReflectionProvider $reflectionProvider;
+    private $reflectionProvider;
     /**
      * @readonly
+     * @var \Rector\Core\PhpParser\Node\NodeFactory
      */
-    private NodeFactory $nodeFactory;
+    private $nodeFactory;
     public function __construct(ReflectionProvider $reflectionProvider, NodeFactory $nodeFactory)
     {
         $this->reflectionProvider = $reflectionProvider;

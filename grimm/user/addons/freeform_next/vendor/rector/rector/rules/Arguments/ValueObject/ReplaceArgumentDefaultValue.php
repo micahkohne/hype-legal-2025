@@ -5,22 +5,24 @@ namespace Rector\Arguments\ValueObject;
 
 use PHPStan\Type\ObjectType;
 use Rector\Arguments\Contract\ReplaceArgumentDefaultValueInterface;
-use Rector\Validation\RectorAssert;
+use Rector\Core\Validation\RectorAssert;
 final class ReplaceArgumentDefaultValue implements ReplaceArgumentDefaultValueInterface
 {
     /**
      * @readonly
+     * @var string
      */
-    private string $class;
+    private $class;
     /**
      * @readonly
+     * @var string
      */
-    private string $method;
+    private $method;
     /**
      * @var int<0, max>
      * @readonly
      */
-    private int $position;
+    private $position;
     /**
      * @readonly
      * @var mixed

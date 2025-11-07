@@ -9,10 +9,12 @@ use function trim;
 class PropertyTagValueNode implements \PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocTagValueNode
 {
     use NodeAttributes;
-    public TypeNode $type;
-    public string $propertyName;
+    /** @var TypeNode */
+    public $type;
+    /** @var string */
+    public $propertyName;
     /** @var string (may be empty) */
-    public string $description;
+    public $description;
     public function __construct(TypeNode $type, string $propertyName, string $description)
     {
         $this->type = $type;

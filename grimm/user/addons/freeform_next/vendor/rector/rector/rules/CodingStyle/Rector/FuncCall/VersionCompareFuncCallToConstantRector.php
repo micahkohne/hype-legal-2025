@@ -15,10 +15,10 @@ use PhpParser\Node\Expr\BinaryOp\SmallerOrEqual;
 use PhpParser\Node\Expr\ConstFetch;
 use PhpParser\Node\Expr\FuncCall;
 use PhpParser\Node\Name;
-use PhpParser\Node\Scalar\Int_;
+use PhpParser\Node\Scalar\LNumber;
 use PhpParser\Node\Scalar\String_;
-use Rector\Rector\AbstractRector;
-use Rector\Util\PhpVersionFactory;
+use Rector\Core\Rector\AbstractRector;
+use Rector\Core\Util\PhpVersionFactory;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -27,9 +27,18 @@ use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 final class VersionCompareFuncCallToConstantRector extends AbstractRector
 {
     /**
+     * @readonly
+     * @var \Rector\Core\Util\PhpVersionFactory
+     */
+    private $phpVersionFactory;
+    /**
      * @var array<string, class-string<BinaryOp>>
      */
     private const OPERATOR_TO_COMPARISON = ['=' => Identical::class, '==' => Identical::class, 'eq' => Identical::class, '!=' => NotIdentical::class, '<>' => NotIdentical::class, 'ne' => NotIdentical::class, '>' => Greater::class, 'gt' => Greater::class, '<' => Smaller::class, 'lt' => Smaller::class, '>=' => GreaterOrEqual::class, 'ge' => GreaterOrEqual::class, '<=' => SmallerOrEqual::class, 'le' => SmallerOrEqual::class];
+    public function __construct(PhpVersionFactory $phpVersionFactory)
+    {
+        $this->phpVersionFactory = $phpVersionFactory;
+    }
     public function getRuleDefinition() : RuleDefinition
     {
         return new RuleDefinition('Changes use of call to version compare function to use of PHP version constant', [new CodeSample(<<<'CODE_SAMPLE'
@@ -98,7 +107,7 @@ CODE_SAMPLE
         return $expr->name->toString() === 'PHP_VERSION';
     }
     /**
-     * @return \PhpParser\Node\Expr\ConstFetch|\PhpParser\Node\Scalar\Int_|null
+     * @return \PhpParser\Node\Expr\ConstFetch|\PhpParser\Node\Scalar\LNumber|null
      */
     private function getNewNodeForArg(Expr $expr)
     {
@@ -107,12 +116,12 @@ CODE_SAMPLE
         }
         return $this->getVersionNumberFormVersionString($expr);
     }
-    private function getVersionNumberFormVersionString(Expr $expr) : ?Int_
+    private function getVersionNumberFormVersionString(Expr $expr) : ?LNumber
     {
         if (!$expr instanceof String_) {
             return null;
         }
-        $value = PhpVersionFactory::createIntVersion($expr->value);
-        return new Int_($value);
+        $value = $this->phpVersionFactory->createIntVersion($expr->value);
+        return new LNumber($value);
     }
 }

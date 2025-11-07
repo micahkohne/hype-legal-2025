@@ -3,14 +3,15 @@
 declare (strict_types=1);
 namespace Rector\Naming;
 
-use RectorPrefix202507\Doctrine\Inflector\Inflector;
-use RectorPrefix202507\Nette\Utils\Strings;
+use RectorPrefix202308\Doctrine\Inflector\Inflector;
+use RectorPrefix202308\Nette\Utils\Strings;
 final class RectorNamingInflector
 {
     /**
      * @readonly
+     * @var \Doctrine\Inflector\Inflector
      */
-    private Inflector $inflector;
+    private $inflector;
     /**
      * @var string
      * @see https://regex101.com/r/VqVvke/3

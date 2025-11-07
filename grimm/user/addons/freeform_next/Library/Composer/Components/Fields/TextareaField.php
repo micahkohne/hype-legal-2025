@@ -11,7 +11,6 @@
 
 namespace Solspace\Addons\FreeformNext\Library\Composer\Components\Fields;
 
-use Override;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\AbstractField;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Fields\Interfaces\PlaceholderInterface;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Fields\Interfaces\SingleValueInterface;
@@ -62,7 +61,6 @@ class TextareaField extends AbstractField implements SingleValueInterface, Place
      *
      * @return string
      */
-    #[Override]
     public function getValueAsString($optionsAsValues = true)
     {
         if ($optionsAsValues) {
@@ -94,7 +92,7 @@ class TextareaField extends AbstractField implements SingleValueInterface, Place
                 $this->translate($attributes->getPlaceholder() ?: $this->getPlaceholder())
             )
             . '>'
-            . htmlspecialchars($this->getValue())
+            . htmlspecialchars($this->getValue(), ENT_QUOTES | ENT_SUBSTITUTE | ENT_HTML401, 'UTF-8')
             . '</textarea>';
     }
 }

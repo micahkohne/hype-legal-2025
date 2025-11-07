@@ -1,9 +1,9 @@
 <?php
 
-namespace RectorPrefix202507\Illuminate\Container;
+namespace RectorPrefix202308\Illuminate\Container;
 
-use RectorPrefix202507\Illuminate\Contracts\Container\Container;
-use RectorPrefix202507\Illuminate\Contracts\Container\ContextualBindingBuilder as ContextualBindingBuilderContract;
+use RectorPrefix202308\Illuminate\Contracts\Container\Container;
+use RectorPrefix202308\Illuminate\Contracts\Container\ContextualBindingBuilder as ContextualBindingBuilderContract;
 class ContextualBindingBuilder implements ContextualBindingBuilderContract
 {
     /**
@@ -81,6 +81,8 @@ class ContextualBindingBuilder implements ContextualBindingBuilderContract
      */
     public function giveConfig($key, $default = null)
     {
-        $this->give(fn($container) => $container->get('config')->get($key, $default));
+        $this->give(function ($container) use($key, $default) {
+            return $container->get('config')->get($key, $default);
+        });
     }
 }

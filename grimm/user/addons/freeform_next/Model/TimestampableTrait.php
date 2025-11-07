@@ -3,7 +3,6 @@
 namespace Solspace\Addons\FreeformNext\Model;
 
 use DateTime;
-
 /**
  * Trait TimestampableTrait
  *

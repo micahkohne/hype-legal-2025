@@ -6,8 +6,8 @@ namespace Rector\CodingStyle\ClassNameImport\ClassNameImportSkipVoter;
 use PhpParser\Node;
 use Rector\CodingStyle\ClassNameImport\ShortNameResolver;
 use Rector\CodingStyle\Contract\ClassNameImport\ClassNameImportSkipVoterInterface;
+use Rector\Core\ValueObject\Application\File;
 use Rector\StaticTypeMapper\ValueObject\Type\FullyQualifiedObjectType;
-use Rector\ValueObject\Application\File;
 /**
  * Prevents adding:
  *
@@ -21,8 +21,9 @@ final class ClassLikeNameClassNameImportSkipVoter implements ClassNameImportSkip
 {
     /**
      * @readonly
+     * @var \Rector\CodingStyle\ClassNameImport\ShortNameResolver
      */
-    private ShortNameResolver $shortNameResolver;
+    private $shortNameResolver;
     public function __construct(ShortNameResolver $shortNameResolver)
     {
         $this->shortNameResolver = $shortNameResolver;

@@ -8,10 +8,10 @@
  * For the full copyright and license information, please view the LICENSE
  * file that was distributed with this source code.
  */
-namespace RectorPrefix202507\Symfony\Component\Console\Helper;
+namespace RectorPrefix202308\Symfony\Component\Console\Helper;
 
-use RectorPrefix202507\Symfony\Component\Console\Exception\InvalidArgumentException;
-use RectorPrefix202507\Symfony\Component\Console\Exception\LogicException;
+use RectorPrefix202308\Symfony\Component\Console\Exception\InvalidArgumentException;
+use RectorPrefix202308\Symfony\Component\Console\Exception\LogicException;
 /**
  * Defines the styles for a Table.
  *
@@ -21,30 +21,102 @@ use RectorPrefix202507\Symfony\Component\Console\Exception\LogicException;
  */
 class TableStyle
 {
-    private string $paddingChar = ' ';
-    private string $horizontalOutsideBorderChar = '-';
-    private string $horizontalInsideBorderChar = '-';
-    private string $verticalOutsideBorderChar = '|';
-    private string $verticalInsideBorderChar = '|';
-    private string $crossingChar = '+';
-    private string $crossingTopRightChar = '+';
-    private string $crossingTopMidChar = '+';
-    private string $crossingTopLeftChar = '+';
-    private string $crossingMidRightChar = '+';
-    private string $crossingBottomRightChar = '+';
-    private string $crossingBottomMidChar = '+';
-    private string $crossingBottomLeftChar = '+';
-    private string $crossingMidLeftChar = '+';
-    private string $crossingTopLeftBottomChar = '+';
-    private string $crossingTopMidBottomChar = '+';
-    private string $crossingTopRightBottomChar = '+';
-    private string $headerTitleFormat = '<fg=black;bg=white;options=bold> %s </>';
-    private string $footerTitleFormat = '<fg=black;bg=white;options=bold> %s </>';
-    private string $cellHeaderFormat = '<info>%s</info>';
-    private string $cellRowFormat = '%s';
-    private string $cellRowContentFormat = ' %s ';
-    private string $borderFormat = '%s';
-    private int $padType = \STR_PAD_RIGHT;
+    /**
+     * @var string
+     */
+    private $paddingChar = ' ';
+    /**
+     * @var string
+     */
+    private $horizontalOutsideBorderChar = '-';
+    /**
+     * @var string
+     */
+    private $horizontalInsideBorderChar = '-';
+    /**
+     * @var string
+     */
+    private $verticalOutsideBorderChar = '|';
+    /**
+     * @var string
+     */
+    private $verticalInsideBorderChar = '|';
+    /**
+     * @var string
+     */
+    private $crossingChar = '+';
+    /**
+     * @var string
+     */
+    private $crossingTopRightChar = '+';
+    /**
+     * @var string
+     */
+    private $crossingTopMidChar = '+';
+    /**
+     * @var string
+     */
+    private $crossingTopLeftChar = '+';
+    /**
+     * @var string
+     */
+    private $crossingMidRightChar = '+';
+    /**
+     * @var string
+     */
+    private $crossingBottomRightChar = '+';
+    /**
+     * @var string
+     */
+    private $crossingBottomMidChar = '+';
+    /**
+     * @var string
+     */
+    private $crossingBottomLeftChar = '+';
+    /**
+     * @var string
+     */
+    private $crossingMidLeftChar = '+';
+    /**
+     * @var string
+     */
+    private $crossingTopLeftBottomChar = '+';
+    /**
+     * @var string
+     */
+    private $crossingTopMidBottomChar = '+';
+    /**
+     * @var string
+     */
+    private $crossingTopRightBottomChar = '+';
+    /**
+     * @var string
+     */
+    private $headerTitleFormat = '<fg=black;bg=white;options=bold> %s </>';
+    /**
+     * @var string
+     */
+    private $footerTitleFormat = '<fg=black;bg=white;options=bold> %s </>';
+    /**
+     * @var string
+     */
+    private $cellHeaderFormat = '<info>%s</info>';
+    /**
+     * @var string
+     */
+    private $cellRowFormat = '%s';
+    /**
+     * @var string
+     */
+    private $cellRowContentFormat = ' %s ';
+    /**
+     * @var string
+     */
+    private $borderFormat = '%s';
+    /**
+     * @var int
+     */
+    private $padType = \STR_PAD_RIGHT;
     /**
      * Sets padding character, used for cell padding.
      *
@@ -81,7 +153,7 @@ class TableStyle
      *
      * @return $this
      */
-    public function setHorizontalBorderChars(string $outside, ?string $inside = null)
+    public function setHorizontalBorderChars(string $outside, string $inside = null)
     {
         $this->horizontalOutsideBorderChar = $outside;
         $this->horizontalInsideBorderChar = $inside ?? $outside;
@@ -104,7 +176,7 @@ class TableStyle
      *
      * @return $this
      */
-    public function setVerticalBorderChars(string $outside, ?string $inside = null)
+    public function setVerticalBorderChars(string $outside, string $inside = null)
     {
         $this->verticalOutsideBorderChar = $outside;
         $this->verticalInsideBorderChar = $inside ?? $outside;
@@ -150,7 +222,7 @@ class TableStyle
      *
      * @return $this
      */
-    public function setCrossingChars(string $cross, string $topLeft, string $topMid, string $topRight, string $midRight, string $bottomRight, string $bottomMid, string $bottomLeft, string $midLeft, ?string $topLeftBottom = null, ?string $topMidBottom = null, ?string $topRightBottom = null)
+    public function setCrossingChars(string $cross, string $topLeft, string $topMid, string $topRight, string $midRight, string $bottomRight, string $bottomMid, string $bottomLeft, string $midLeft, string $topLeftBottom = null, string $topMidBottom = null, string $topRightBottom = null)
     {
         $this->crossingChar = $cross;
         $this->crossingTopLeftChar = $topLeft;

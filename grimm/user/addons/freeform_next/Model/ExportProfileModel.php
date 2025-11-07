@@ -4,8 +4,8 @@ namespace Solspace\Addons\FreeformNext\Model;
 
 use Exception;
 use DateTime;
-use ExpressionEngine\Service\Database\Query;
-use ExpressionEngine\Service\Model\Model;
+use EllisLab\ExpressionEngine\Service\Database\Query;
+use EllisLab\ExpressionEngine\Service\Model\Model;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Fields\Interfaces\NoStorageInterface;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Form;
 use Solspace\Addons\FreeformNext\Library\Exceptions\FreeformException;
@@ -28,8 +28,8 @@ class ExportProfileModel extends Model
 {
     use TimestampableTrait;
 
-    const MODEL = 'freeform_next:ExportProfileModel';
-    const TABLE = 'freeform_next_export_profiles';
+    public const MODEL = 'freeform_next:ExportProfileModel';
+    public const TABLE = 'freeform_next_export_profiles';
 
     protected static $_primary_key = 'id';
     protected static $_table_name  = self::TABLE;
@@ -61,8 +61,6 @@ class ExportProfileModel extends Model
     }
 
     /**
-     * @param Form $form
-     *
      * @return ExportProfileModel
      */
     public static function create(Form $form)
@@ -283,15 +281,15 @@ class ExportProfileModel extends Model
                         break;
 
                     case 'like':
-                        if (preg_match('/^%.+%$/', (string) $value)) {
+                        if (preg_match('/^%.+%$/', $value)) {
                             $side  = 'both';
-                            $value = substr((string) $value, 1, -1);
-                        } else if (preg_match('/^%/', (string) $value)) {
+                            $value = substr($value, 1, -1);
+                        } else if (preg_match('/^%/', $value)) {
                             $side  = 'left';
-                            $value = substr((string) $value, 1);
-                        } else if (preg_match('/%$/', (string) $value)) {
+                            $value = substr($value, 1);
+                        } else if (preg_match('/%$/', $value)) {
                             $side  = 'right';
-                            $value = substr((string) $value, 0, -1);
+                            $value = substr($value, 0, -1);
                         } else {
                             $side = 'both';
                         }

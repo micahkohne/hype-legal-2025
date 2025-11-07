@@ -9,9 +9,10 @@ use function trim;
 class SelfOutTagValueNode implements \PHPStan\PhpDocParser\Ast\PhpDoc\PhpDocTagValueNode
 {
     use NodeAttributes;
-    public TypeNode $type;
+    /** @var TypeNode */
+    public $type;
     /** @var string (may be empty) */
-    public string $description;
+    public $description;
     public function __construct(TypeNode $type, string $description)
     {
         $this->type = $type;

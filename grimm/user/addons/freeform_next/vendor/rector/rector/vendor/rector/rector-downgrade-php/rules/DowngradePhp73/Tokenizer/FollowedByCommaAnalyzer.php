@@ -4,8 +4,8 @@ declare (strict_types=1);
 namespace Rector\DowngradePhp73\Tokenizer;
 
 use PhpParser\Node;
-use Rector\Util\StringUtils;
-use Rector\ValueObject\Application\File;
+use Rector\Core\Util\StringUtils;
+use Rector\Core\ValueObject\Application\File;
 final class FollowedByCommaAnalyzer
 {
     public function isFollowed(File $file, Node $node) : bool
@@ -15,12 +15,12 @@ final class FollowedByCommaAnalyzer
         while (isset($oldTokens[$nextTokenPosition])) {
             $currentToken = $oldTokens[$nextTokenPosition];
             // only space
-            if (StringUtils::isMatch((string) $currentToken, '#\\s+#')) {
+            if (\is_array($currentToken) || StringUtils::isMatch($currentToken, '#\\s+#')) {
                 ++$nextTokenPosition;
                 continue;
             }
             // without comma
-            if (\in_array((string) $currentToken, ['(', ')', ';'], \true)) {
+            if (\in_array($currentToken, ['(', ')', ';'], \true)) {
                 return \false;
             }
             break;

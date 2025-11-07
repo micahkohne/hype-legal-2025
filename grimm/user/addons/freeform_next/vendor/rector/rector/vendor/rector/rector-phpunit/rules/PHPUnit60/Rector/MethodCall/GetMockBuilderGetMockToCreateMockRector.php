@@ -5,9 +5,9 @@ namespace Rector\PHPUnit\PHPUnit60\Rector\MethodCall;
 
 use PhpParser\Node;
 use PhpParser\Node\Expr\MethodCall;
-use PhpParser\Node\Expr\Variable;
 use PHPStan\Type\ObjectType;
-use Rector\Rector\AbstractRector;
+use PHPStan\Type\TypeWithClassName;
+use Rector\Core\Rector\AbstractRector;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
@@ -75,10 +75,6 @@ CODE_SAMPLE
         if (!$currentMethodCall instanceof MethodCall) {
             return null;
         }
-        // can be only local call, as createMock() is protected method
-        if (!$this->isLocalScopeCaller($currentMethodCall)) {
-            return null;
-        }
         // must be be test case class
         if (!$this->isObjectType($currentMethodCall->var, new ObjectType('PHPUnit\\Framework\\TestCase'))) {
             return null;
@@ -89,12 +85,5 @@ CODE_SAMPLE
         $args = $currentMethodCall->args;
         $thisVariable = $currentMethodCall->var;
         return new MethodCall($thisVariable, 'createMock', $args);
-    }
-    private function isLocalScopeCaller(MethodCall $currentMethodCall) : bool
-    {
-        if (!$currentMethodCall->var instanceof Variable) {
-            return \false;
-        }
-        return $currentMethodCall->var->name === 'this';
     }
 }

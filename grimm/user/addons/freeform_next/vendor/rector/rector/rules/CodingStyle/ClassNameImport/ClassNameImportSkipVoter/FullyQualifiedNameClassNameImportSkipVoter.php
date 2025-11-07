@@ -3,12 +3,11 @@
 declare (strict_types=1);
 namespace Rector\CodingStyle\ClassNameImport\ClassNameImportSkipVoter;
 
-use RectorPrefix202507\Nette\Utils\Strings;
 use PhpParser\Node;
 use Rector\CodingStyle\ClassNameImport\ShortNameResolver;
 use Rector\CodingStyle\Contract\ClassNameImport\ClassNameImportSkipVoterInterface;
+use Rector\Core\ValueObject\Application\File;
 use Rector\StaticTypeMapper\ValueObject\Type\FullyQualifiedObjectType;
-use Rector\ValueObject\Application\File;
 /**
  * Prevents adding:
  *
@@ -22,8 +21,9 @@ final class FullyQualifiedNameClassNameImportSkipVoter implements ClassNameImpor
 {
     /**
      * @readonly
+     * @var \Rector\CodingStyle\ClassNameImport\ShortNameResolver
      */
-    private ShortNameResolver $shortNameResolver;
+    private $shortNameResolver;
     public function __construct(ShortNameResolver $shortNameResolver)
     {
         $this->shortNameResolver = $shortNameResolver;
@@ -33,22 +33,12 @@ final class FullyQualifiedNameClassNameImportSkipVoter implements ClassNameImpor
         // "new X" or "X::static()"
         /** @var array<string, string> $shortNamesToFullyQualifiedNames */
         $shortNamesToFullyQualifiedNames = $this->shortNameResolver->resolveFromFile($file);
-        $fullyQualifiedObjectTypeShortName = $fullyQualifiedObjectType->getShortName();
-        $className = $fullyQualifiedObjectType->getClassName();
         foreach ($shortNamesToFullyQualifiedNames as $shortName => $fullyQualifiedName) {
-            if ($fullyQualifiedObjectTypeShortName !== $shortName) {
-                $shortName = $this->cleanShortName($shortName);
-            }
-            if ($fullyQualifiedObjectTypeShortName !== $shortName) {
+            if ($fullyQualifiedObjectType->getShortName() !== $shortName) {
                 continue;
             }
-            $fullyQualifiedName = \ltrim($fullyQualifiedName, '\\');
-            return $className !== $fullyQualifiedName;
+            return $fullyQualifiedObjectType->getClassName() !== $fullyQualifiedName;
         }
         return \false;
-    }
-    private function cleanShortName(string $shortName) : string
-    {
-        return \strncmp($shortName, '\\', \strlen('\\')) === 0 ? \ltrim((string) Strings::after($shortName, '\\', -1)) : $shortName;
     }
 }

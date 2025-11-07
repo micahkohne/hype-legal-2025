@@ -11,7 +11,6 @@
 
 namespace Solspace\Addons\FreeformNext\Library\Composer\Components\Fields;
 
-use Override;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\AbstractField;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Fields\Interfaces\MultipleValueInterface;
 use Solspace\Addons\FreeformNext\Library\Composer\Components\Fields\Interfaces\OptionsInterface;
@@ -68,7 +67,6 @@ class CheckboxGroupField extends AbstractExternalOptionsField implements Multipl
      *
      * @return string
      */
-    #[Override]
     public function getValueAsString($optionsAsValues = true): string
     {
         if (!$optionsAsValues) {

@@ -11,7 +11,6 @@
 
 namespace Solspace\Addons\FreeformNext\Repositories;
 
-use Override;
 use Solspace\Addons\FreeformNext\Model\FieldModel;
 use Solspace\Addons\FreeformNext\Model\SettingsModel;
 
@@ -20,7 +19,6 @@ class FieldRepository extends Repository
     /**
      * @return FieldRepository
      */
-    #[Override]
     public static function getInstance()
     {
         return parent::getInstance();
@@ -36,7 +34,7 @@ class FieldRepository extends Repository
      *
      * @return FieldModel
      */
-    public function getOrCreateField($fieldId = null)
+    public function getOrCreateField(null|string|int $fieldId = null)
     {
         $field = null;
         if ($fieldId) {
@@ -64,8 +62,6 @@ class FieldRepository extends Repository
     }
 
     /**
-     * @param array $ids
-     *
      * @return FieldModel[]
      */
     public function getFieldsByIdList(array $ids)
@@ -119,7 +115,7 @@ class FieldRepository extends Repository
     /**
      * @return array
      */
-    public function getAllFieldsByLegacyId(): array
+    public function getAllFieldsByLegacyId()
     {
         $result = [];
         $fields = $this->getAllFields();

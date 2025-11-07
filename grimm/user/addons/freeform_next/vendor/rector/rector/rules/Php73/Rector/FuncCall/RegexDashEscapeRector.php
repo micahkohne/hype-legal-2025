@@ -3,17 +3,18 @@
 declare (strict_types=1);
 namespace Rector\Php73\Rector\FuncCall;
 
-use RectorPrefix202507\Nette\Utils\Strings;
+use RectorPrefix202308\Nette\Utils\Strings;
 use PhpParser\Node;
 use PhpParser\Node\Scalar\String_;
+use Rector\Core\Rector\AbstractRector;
+use Rector\Core\Util\StringUtils;
+use Rector\Core\ValueObject\PhpVersionFeature;
 use Rector\NodeTypeResolver\Node\AttributeKey;
-use Rector\Rector\AbstractRector;
-use Rector\Util\StringUtils;
-use Rector\ValueObject\PhpVersionFeature;
 use Rector\VersionBonding\Contract\MinPhpVersionInterface;
 use Symplify\RuleDocGenerator\ValueObject\CodeSample\CodeSample;
 use Symplify\RuleDocGenerator\ValueObject\RuleDefinition;
 /**
+ * @changelog https://3v4l.org/dRG8U
  * @see \Rector\Tests\Php73\Rector\FuncCall\RegexDashEscapeRector\RegexDashEscapeRectorTest
  */
 final class RegexDashEscapeRector extends AbstractRector implements MinPhpVersionInterface
@@ -68,34 +69,19 @@ CODE_SAMPLE
         if (StringUtils::isMatch($node->value, self::THREE_BACKSLASH_FOR_ESCAPE_NEXT_REGEX)) {
             return null;
         }
-        if ($node->getAttribute(AttributeKey::RAW_VALUE) !== null) {
-            $stringValue = \substr($node->getAttribute(AttributeKey::RAW_VALUE), 1, -1);
-        } else {
-            $stringValue = $node->value;
-        }
+        $stringValue = $node->value;
         if (StringUtils::isMatch($stringValue, self::LEFT_HAND_UNESCAPED_DASH_REGEX)) {
             $node->value = Strings::replace($stringValue, self::LEFT_HAND_UNESCAPED_DASH_REGEX, '$1\\-');
-            $this->setRawValue($node);
             // helped needed to skip re-escaping regular expression
             $node->setAttribute(AttributeKey::IS_REGULAR_PATTERN, \true);
             return $node;
         }
         if (StringUtils::isMatch($stringValue, self::RIGHT_HAND_UNESCAPED_DASH_REGEX)) {
             $node->value = Strings::replace($stringValue, self::RIGHT_HAND_UNESCAPED_DASH_REGEX, '\\-$1]');
-            $this->setRawValue($node);
             // helped needed to skip re-escaping regular expression
             $node->setAttribute(AttributeKey::IS_REGULAR_PATTERN, \true);
             return $node;
         }
         return null;
-    }
-    private function setRawValue(String_ $string) : void
-    {
-        $rawValue = $string->getAttribute(AttributeKey::RAW_VALUE);
-        if ($rawValue === null) {
-            return;
-        }
-        $rawValue = \strncmp($rawValue, '"', \strlen('"')) === 0 ? '"' . $string->value . '"' : "'" . $string->value . "'";
-        $string->setAttribute(AttributeKey::RAW_VALUE, $rawValue);
     }
 }

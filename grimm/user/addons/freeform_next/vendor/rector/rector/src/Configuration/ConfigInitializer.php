@@ -1,36 +1,46 @@
 <?php
 
 declare (strict_types=1);
-namespace Rector\Configuration;
+namespace Rector\Core\Configuration;
 
-use RectorPrefix202507\Nette\Utils\FileSystem;
-use Rector\Contract\Rector\RectorInterface;
-use Rector\FileSystem\InitFilePathsResolver;
+use RectorPrefix202308\Nette\Utils\FileSystem;
+use RectorPrefix202308\Nette\Utils\Strings;
+use Rector\Core\Contract\Rector\RectorInterface;
+use Rector\Core\FileSystem\InitFilePathsResolver;
+use Rector\Core\Php\PhpVersionProvider;
 use Rector\PostRector\Contract\Rector\PostRectorInterface;
-use RectorPrefix202507\Symfony\Component\Console\Style\SymfonyStyle;
+use RectorPrefix202308\Symfony\Component\Console\Style\SymfonyStyle;
+use RectorPrefix202308\Symfony\Component\DependencyInjection\Argument\RewindableGenerator;
 final class ConfigInitializer
 {
     /**
+     * @readonly
+     * @var \Rector\Core\FileSystem\InitFilePathsResolver
+     */
+    private $initFilePathsResolver;
+    /**
+     * @readonly
+     * @var \Symfony\Component\Console\Style\SymfonyStyle
+     */
+    private $symfonyStyle;
+    /**
+     * @readonly
+     * @var \Rector\Core\Php\PhpVersionProvider
+     */
+    private $phpVersionProvider;
+    /**
      * @var RectorInterface[]
-     * @readonly
      */
-    private array $rectors;
+    private $rectors = [];
     /**
-     * @readonly
+     * @param RewindableGenerator<RectorInterface>|RectorInterface[] $rectors
      */
-    private InitFilePathsResolver $initFilePathsResolver;
-    /**
-     * @readonly
-     */
-    private SymfonyStyle $symfonyStyle;
-    /**
-     * @param RectorInterface[] $rectors
-     */
-    public function __construct(array $rectors, InitFilePathsResolver $initFilePathsResolver, SymfonyStyle $symfonyStyle)
+    public function __construct(iterable $rectors, InitFilePathsResolver $initFilePathsResolver, SymfonyStyle $symfonyStyle, PhpVersionProvider $phpVersionProvider)
     {
-        $this->rectors = $rectors;
         $this->initFilePathsResolver = $initFilePathsResolver;
         $this->symfonyStyle = $symfonyStyle;
+        $this->phpVersionProvider = $phpVersionProvider;
+        $this->rectors = $rectors instanceof RewindableGenerator ? \iterator_to_array($rectors->getIterator()) : $rectors;
     }
     public function createConfig(string $projectDirectory) : void
     {
@@ -40,14 +50,14 @@ final class ConfigInitializer
             return;
         }
         $response = $this->symfonyStyle->ask('No "rector.php" config found. Should we generate it for you?', 'yes');
-        // be tolerant about input
-        if (!\in_array($response, ['yes', 'YES', 'y', 'Y'], \true)) {
+        if ($response !== 'yes') {
             // okay, nothing we can do
             return;
         }
         $configContents = FileSystem::read(__DIR__ . '/../../templates/rector.php.dist');
+        $configContents = $this->replacePhpLevelContents($configContents);
         $configContents = $this->replacePathsContents($configContents, $projectDirectory);
-        FileSystem::write($commonRectorConfigPath, $configContents, null);
+        FileSystem::write($commonRectorConfigPath, $configContents);
         $this->symfonyStyle->success('The config is added now. Re-run command to make Rector do the work!');
     }
     public function areSomeRectorsLoaded() : bool
@@ -61,7 +71,15 @@ final class ConfigInitializer
      */
     private function filterActiveRectors(array $rectors) : array
     {
-        return \array_filter($rectors, static fn(RectorInterface $rector): bool => !$rector instanceof PostRectorInterface);
+        return \array_filter($rectors, static function (RectorInterface $rector) : bool {
+            return !$rector instanceof PostRectorInterface;
+        });
+    }
+    private function replacePhpLevelContents(string $rectorPhpTemplateContents) : string
+    {
+        $fullPHPVersion = (string) $this->phpVersionProvider->provide();
+        $phpVersion = Strings::substring($fullPHPVersion, 0, 1) . Strings::substring($fullPHPVersion, 2, 1);
+        return \str_replace('LevelSetList::UP_TO_PHP_XY', 'LevelSetList::UP_TO_PHP_' . $phpVersion, $rectorPhpTemplateContents);
     }
     private function replacePathsContents(string $rectorPhpTemplateContents, string $projectDirectory) : string
     {

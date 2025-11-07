@@ -8,6 +8,8 @@ interface FunctionLike extends Node
 {
     /**
      * Whether to return by reference
+     *
+     * @return bool
      */
     public function returnsByRef() : bool;
     /**
@@ -27,7 +29,7 @@ interface FunctionLike extends Node
      *
      * @return Stmt[]|null
      */
-    public function getStmts() : ?array;
+    public function getStmts();
     /**
      * Get PHP attribute groups.
      *
