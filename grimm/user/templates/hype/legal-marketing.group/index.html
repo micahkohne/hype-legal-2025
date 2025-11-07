@@ -2,6 +2,10 @@
 {exp:channel:entries channel="landing_page" disable="categories|category_fields|member_data|pagination"}
 {if no_results}{redirect="404"}{/if}
 
+{layout:set:append name='breadcrumb_urls'}https://www.hypelegal.com/legal-marketing{/layout:set:append}
+{layout:set:append name='breadcrumb_titles'}Legal Marketing{/layout:set:append}
+{layout:set:append name='breadcrumb_jsonld_positions'}2{/layout:set:append}
+
 <section class="section-project">
 	<div class="shell">
 		<div class="section__head">

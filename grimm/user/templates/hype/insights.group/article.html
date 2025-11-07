@@ -8,7 +8,7 @@
 	"@type": "Article",
 	"mainEntityOfPage": {
 	  "@type": "WebPage",
-	  "@id": "https://www.hypelegal.com/insights/{url_title}"
+	  "@id": "{title_permalink="insights"}"
 	},
 	"headline": "{title}",
 	"image": "{hero_image}",
@@ -30,6 +30,14 @@
   }
   </script>
 {/layout:set}
+
+{layout:set:append name='breadcrumb_urls'}https://www.hypelegal.com/insights{/layout:set:append}
+{layout:set:append name='breadcrumb_titles'}Insights{/layout:set:append}
+{layout:set:append name='breadcrumb_jsonld_positions'}2{/layout:set:append}
+
+{layout:set:append name='breadcrumb_urls'}{title_permalink="insights"}{/layout:set:append}
+{layout:set:append name='breadcrumb_titles'}{title}{/layout:set:append}
+{layout:set:append name='breadcrumb_jsonld_positions'}3{/layout:set:append}
 
 <section class="section section--offset">
 	<div class="shell">

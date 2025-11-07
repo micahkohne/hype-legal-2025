@@ -32,6 +32,36 @@
     <script type="module" crossorigin src="{exp:rd_cache_breaker file='/build/assets/app.js' separator='?'}s"></script>
     <link rel="stylesheet" crossorigin href="{exp:rd_cache_breaker file='/build/assets/style.css' separator='?'}">
 
+	{layout:schema_article}
+
+	{if segment_1 != ""}
+	<script type="application/ld+json">
+		{
+			"@context": "http://schema.org",
+			"@type": "BreadcrumbList",
+			"itemListElement": [
+			{
+				"@type": "ListItem",
+				"position": 1,
+				"item": {
+					"@id": "https://www.hypelegal.com/",
+					"name": "Home"
+				}
+			}
+			{layout:breadcrumb_urls}
+			,{
+				"@type": "ListItem",
+				"position": {layout:breadcrumb_jsonld_positions index='{index}'},
+				"item": {
+					"@id": "{value}",
+					"name": "{layout:breadcrumb_titles index='{index}'}"
+				}
+			}
+			{/layout:breadcrumb_urls}
+		]}
+	</script>
+	{/if}
+
 	<!-- Google tag (gtag.js) -->
 	<script async src="https://www.googletagmanager.com/gtag/js?id=AW-16496947777">
 	</script>
@@ -42,8 +72,6 @@
 
 	  gtag('config', 'AW-16496947777');
 	</script>
-
-	{layout:schema_article}
 </head>
 <body>
 	<div class="wrapper">

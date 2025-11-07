@@ -11,7 +11,7 @@
 
     {exp:channel:entries channel="about|contact" disable="categories|category_fields|member_data|pagination" dynamic="no" status="open" orderby="edit_date" sort="desc"}
 	<url>
-	  <loc>{site_url}{url_title}</loc>
+	  <loc>{title_permalink}</loc>
 	  <lastmod>{edit_date format="%Y-%m-%d"}</lastmod>
 	  <changefreq>monthly</changefreq>
 	  <priority>0.8</priority>
@@ -20,7 +20,16 @@
 
     {exp:channel:entries channel="work" disable="categories|category_fields|member_data|pagination" dynamic="no" status="open" orderby="edit_date" sort="desc"}
 	<url>
-		<loc>{site_url}work/{url_title}</loc>
+		<loc>{title_permalink="work"}</loc>
+		<lastmod>{edit_date format="%Y-%m-%d"}</lastmod>
+		<changefreq>monthly</changefreq>
+		<priority>0.8</priority>
+	</url>
+	{/exp:channel:entries}
+
+	{exp:channel:entries channel="insights" disable="categories|category_fields|member_data|pagination" dynamic="no" status="open"}
+	<url>
+		<loc>{title_permalink="insights"}</loc>
 		<lastmod>{edit_date format="%Y-%m-%d"}</lastmod>
 		<changefreq>monthly</changefreq>
 		<priority>0.8</priority>
