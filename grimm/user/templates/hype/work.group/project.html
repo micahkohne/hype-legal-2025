@@ -1,6 +1,8 @@
-{layout="layout/_html-wrapper"}
+{layout="layout/_work-wrapper"}
 {exp:channel:entries channel="work" disable="categories|category_fields|member_data|pagination" require_entry="yes" limit="1" {if is_live_preview_request}status="open|closed"}{/if}}
 {if no_results}{redirect="404"}{/if}
+
+{layout:set name='project'}{entry_id}{/layout:set}
 
 {layout:set:append name='breadcrumb_urls'}https://www.hypelegal.com/work{/layout:set:append}
 {layout:set:append name='breadcrumb_titles'}Work{/layout:set:append}
@@ -339,7 +341,5 @@
 
 	</div><!-- /.shell -->
 </section><!-- /.section-project -->
-
-{embed="embeds/work" project="{entry_id}"}
 
 {/exp:channel:entries}

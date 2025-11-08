@@ -1,5 +1,7 @@
-{layout="layout/_html-wrapper"}
+{layout="layout/_articles-wrapper"}
 {exp:channel:entries channel="insights" disable="categories|category_fields|member_data|pagination" require_entry="yes" limit="1" status="open"}
+
+{layout:set name='entry_id'}{entry_id}{/layout:set}
 
 {layout:set name="schema_article"}
   <script type="application/ld+json">
@@ -85,5 +87,4 @@
 		</div><!-- /.section__body -->
 	</div><!-- /.shell -->
 </section><!-- /.section -->
-{embed="embeds/articles" article="{entry_id}"}
 {/exp:channel:entries}

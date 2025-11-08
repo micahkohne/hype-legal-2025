@@ -1,0 +1,49 @@
+{layout="layout/_html-wrapper"}
+{layout:contents}
+<section class="section-related">
+	<div class="shell">
+		<div class="section__head">
+			<div class="section__head-title">
+				<h1>More Insights</h1>
+			</div><!-- /.section__head-title -->
+
+			<div class="section__head-actions">
+				<a href="{path='insights'}" class="link">
+					All Insights
+
+					<svg class="ico-arrow-right">
+						<use xlink:href="#ico-arrow-right"></use>
+					</svg><!-- /.ico-arrow-right -->
+				</a><!-- /.link -->
+			</div><!-- /.section__head-actions -->
+		</div><!-- /.section__head -->
+
+		<div class="section__body">
+			<div class="grid-flex">
+
+				{exp:channel:entries channel="insights" disable="category_fields|member_data|pagination" limit="4" status="open" dynamic="no" entry_id="not {layout:entry_id}"}
+				<div class="grid__col grid__col-sm--1of2 grid__col-lg--1of4">
+					<div class="card">
+						<a href="{url_title_path='insights'}">
+							<div class="card__image">
+								<picture>
+									<source media="(min-width:768px)" srcset="{exp:jcogs_img:image src='{hero_image_mobile}' url_only='yes'}">
+
+									{exp:jcogs_img:image src='{hero_image_mobile}' add_dims='yes' alt='{hero_image_mobile}{title}{/hero_image_mobile}' lazy='dominant_color' class='fade-in'}
+								</picture>
+							</div><!-- /.card__image -->
+
+							<div class="card__content">
+								<span>{categories}{category_name}{/categories}</span>
+
+								<h4>{title}</h4>
+							</div><!-- /.card__content -->
+						</a>
+					</div><!-- /.card -->
+				</div><!-- /.grid__col -->
+				{/exp:channel:entries}
+
+			</div><!-- /.grid-flex -->
+		</div><!-- /.section__body -->
+	</div><!-- /.shell -->
+</section><!-- /.section-related -->
