@@ -12,8 +12,10 @@ $config['base_path'] = '/Users/micahkohne/Sites/hype-2025/web/';
 $config['theme_folder_url'] = "/themes/";
 $config['theme_folder_path'] = "{base_path}themes/";
 $config['cache_driver'] = 'dummy';
+$config['marksmin_enabled'] = true;
+$config['marksmin_xhtml'] = false;
 
-$config['app_version'] = '7.5.17';
+$config['app_version'] = '7.5.18';
 $config['encryption_key'] = '47b97c46a8d90d6eec2cefc8912171150b9666a1';
 $config['session_crypt_key'] = '0bea18d8a373f1562c6bed7619ba44aa97dc294b';
 $config['database'] = array(
