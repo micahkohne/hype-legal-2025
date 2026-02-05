@@ -12,6 +12,10 @@
 		@include breakpoint-up(tablet) {
 			border-radius: 0.5rem;
 		}
+
+		&--people {
+			height: auto;
+		}
 	}
 
 	.block__image picture,

@@ -1,5 +1,16 @@
 {
   "identifier" : "CE6B1CD0-EF98-461D-A08E-1E5B2802616B",
+  "ignoredFilePatterns" : [
+    "node_modules",
+    "src",
+    "web\/build\/about.html",
+    "web\/build\/article.html",
+    "web\/build\/contact.html",
+    "web\/build\/home.html",
+    "web\/build\/project.html",
+    "web\/images\/jcogs_img\/cache",
+    "grimm\/user\/cache"
+  ],
   "remotePath" : "\/applications\/pjeahgjaqw\/public_html",
   "server" : "Cloudways - 2.0",
   "usesPublishing" : true
