@@ -47,7 +47,7 @@
 
 	span {
 		display: block;
-		margin-bottom: 0.3rem;
+		margin-bottom: 1.1rem;
 		font-size: 4rem;
 		line-height: 1;
 		font-weight: 500;
@@ -59,6 +59,20 @@
 
 		@include breakpoint-up(small-desktop) {
 			font-size: 4.8rem;
+		}
+	}
+
+	p a {
+		font-weight: 700;
+		text-underline-offset: 3px;
+		transition: text-decoration-color 0.4s ease-in-out;
+
+		@media (hover: hover) and (pointer: fine) {
+			&:hover {
+				text-decoration: underline;
+				text-underline-offset: 3px;
+				text-decoration-color: transparent;
+			}
 		}
 	}
 }
