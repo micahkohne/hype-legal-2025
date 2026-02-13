@@ -9,7 +9,9 @@
     "web\/build\/home.html",
     "web\/build\/project.html",
     "web\/images\/jcogs_img\/cache",
-    "grimm\/user\/cache"
+    "grimm\/user\/cache",
+    "web\/build\/assets\/fonts",
+    "web\/build\/assets\/images"
   ],
   "remotePath" : "\/applications\/pjeahgjaqw\/public_html",
   "server" : "Cloudways - 2.0",
