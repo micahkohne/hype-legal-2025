@@ -31,7 +31,7 @@
 	<url>
 		<loc>{title_permalink="insights"}</loc>
 		<lastmod>{edit_date format="%Y-%m-%d"}</lastmod>
-		<changefreq>monthly</changefreq>
+		<changefreq>weekly</changefreq>
 		<priority>0.8</priority>
 	</url>
 	{/exp:channel:entries}
