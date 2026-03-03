@@ -1,0 +1,20 @@
+{
+  "name": "jcogs/jcogs_img_pro_field",
+  "description": "Fieldtype companion for JCOGS Image Pro (editorial crop/focal/preset UI)",
+  "type": "library",
+  "license": "proprietary",
+  "require": {
+    "php": ">=8.2"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "^10.5"
+  },
+  "autoload": {
+    "psr-4": {
+      "JCOGSDesign\\JcogsImgProField\\": ""
+    }
+  },
+  "config": {
+    "sort-packages": true
+  }
+}

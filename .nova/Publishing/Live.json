@@ -11,7 +11,8 @@
     "web\/images\/jcogs_img\/cache",
     "grimm\/user\/cache",
     "web\/build\/assets\/fonts",
-    "web\/build\/assets\/images"
+    "web\/build\/assets\/images",
+    "web\/build\/service.html"
   ],
   "remotePath" : "\/applications\/pjeahgjaqw\/public_html",
   "server" : "Cloudways - 2.0",

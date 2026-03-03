@@ -1,0 +1,17 @@
+{
+  "author": "JCOGS Design",
+  "author_url": "https://jcogs.net/",
+  "name": "JCOGS Image Pro Field",
+  "shortname": "jcogs_img_pro_field",
+  "class": "Jcogs_img_pro_field",
+  "version": "1.0.0.RC9",
+  "description": "Fieldtype companion for JCOGS Image Pro (editorial crop/focal/preset UI)",
+  "license": "JCOGS Design",
+  "namespace": "JCOGSDesign\\JcogsImgProField",
+  "settings_exist": false,
+  "docs_url": "https://jcogs.net/documentation/jcogs_img_pro_field",
+  "require": {
+    "php": ">=8.2.*",
+    "expressionengine": ">=6.*"
+  }
+}

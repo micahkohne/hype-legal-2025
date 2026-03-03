@@ -1,0 +1,361 @@
+
+/**
+ * JCOGS Image Pro Field - Custom CSS
+ *===================================
+ *
+ * Custom CSS for the field's control panel UI, which is rendered by the add-on's JavaScript code. 
+ * This CSS is loaded in the control panel when editing a field of this type, and is scoped to the field's 
+ * wrapper element (with class .jcogs-img-pro-field) to avoid affecting other parts of the UI.
+ *
+ * @category   ExpressionEngine Add-on
+ * @package    JCOGS Image Pro Field
+ * @author     JCOGS Design <contact@jcogs.net>
+ * @copyright  2026 JCOGS Design
+ * @license    JCOGS Design Commercial License
+ * @version    1.0.0
+ * @link       https://jcogs.net/documentation/jcogs_img_pro_field
+ * @since      0.1.6
+ */
+
+
+
+:root{
+    --jcogs-img-pro-field-section-border: rgba(0,0,0,.10);
+}
+
+/* High-level section delineation (Presets / Crop / Responsive / Art direction / Debug). */
+#fieldset-enable_preset,
+#fieldset-enable_crop,
+#fieldset-enable_responsive_defaults,
+#fieldset-enable_art_direction,
+#fieldset-enable_debug{
+    margin-top: 18px;
+    padding-top: 18px;
+    border-top: 2px solid var(--jcogs-img-pro-field-section-border);
+}
+
+.jcogs-img-pro-field-settings-box{
+    border: 1px solid rgba(0,0,0,.08);
+    background: rgba(0,0,0,.015);
+    padding: 12px 14px;
+    border-radius: 6px;
+}
+
+.jcogs-img-pro-field-settings-box .table{ margin-bottom: 0; }
+.jcogs-img-pro-field-settings-box .keyvalue-item-container{ margin-bottom: 0; }
+
+/* Publish form layout helpers (scoped to the field wrapper). */
+.jcogs-img-pro-field-workspace{display:block;}
+.jcogs-img-pro-field-controls{display:block;}
+.jcogs-img-pro-field-preview-col{display:block; margin-top:12px;}
+.jcogs-img-pro-field-preview-wrap{display:block;}
+
+/* Reduce chosen-file placeholder height (scoped). */
+.jcogs-img-pro-field .fields-upload-chosen .fields-upload-chosen-name{ margin-bottom:5px !important; }
+
+/* Make the Adjust Image Output summary look clickable/panel-like (scoped). */
+.jcogs-img-pro-field details.jcogs-img-pro-field-options{ margin-top:8px; }
+.jcogs-img-pro-field details.jcogs-img-pro-field-options > summary{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    padding:10px 12px;
+    border:1px solid rgba(0,0,0,.08);
+    border-radius:6px;
+    background: rgba(0,0,0,.015);
+    box-sizing:border-box;
+    width:100%;
+    max-width:100%;
+    overflow:hidden;
+}
+.jcogs-img-pro-field details.jcogs-img-pro-field-options{ box-sizing:border-box; width:100%; max-width:100%; }
+.jcogs-img-pro-field details.jcogs-img-pro-field-options > summary > span{ min-width:0; }
+.jcogs-img-pro-field details.jcogs-img-pro-field-options[open] > summary{
+    border-bottom-left-radius:0;
+    border-bottom-right-radius:0;
+}
+.jcogs-img-pro-field details.jcogs-img-pro-field-options > div{
+    margin-top:0 !important;
+    padding:10px 12px;
+    border:1px solid rgba(0,0,0,.08);
+    border-top:0;
+    border-bottom-left-radius:6px;
+    border-bottom-right-radius:6px;
+    box-sizing:border-box;
+    width:100%;
+    max-width:100%;
+}
+
+/* Composite fields: summary + modal editor. */
+.jcogs-img-pro-field .jcogs-img-pro-field-composite-summary{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    margin-top:8px;
+    padding:10px 12px;
+    border:1px solid rgba(0,0,0,.08);
+    border-radius:6px;
+    background: rgba(0,0,0,.015);
+    box-sizing:border-box;
+}
+.jcogs-img-pro-field .jcogs-img-pro-field-composite-summary-main{min-width:0;}
+.jcogs-img-pro-field .jcogs-img-pro-field-composite-summary-action{flex:0 0 auto;}
+.jcogs-img-pro-field .jcogs-img-pro-field-options--composite > div{margin-top:0;}
+
+.jcogs-img-pro-field .jcogs-img-pro-field-modal{
+    position:fixed;
+    inset:0;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    z-index:2000;
+}
+.jcogs-img-pro-field .jcogs-img-pro-field-modal.is-open{display:flex;}
+.jcogs-img-pro-field .jcogs-img-pro-field-modal-backdrop{
+    position:absolute;
+    inset:0;
+    background: rgba(15, 23, 42, 0.45);
+}
+.jcogs-img-pro-field .jcogs-img-pro-field-modal-dialog{
+    position:relative;
+    background:#fff;
+    width:min(1200px, 92vw);
+    max-height:92vh;
+    border-radius:8px;
+    box-shadow:0 20px 60px rgba(0,0,0,0.25);
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+}
+.jcogs-img-pro-field .jcogs-img-pro-field-modal-header{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:12px;
+    padding:12px 16px;
+    border-bottom:1px solid rgba(0,0,0,.08);
+    background: #f8fafc;
+}
+.jcogs-img-pro-field .jcogs-img-pro-field-modal-title{
+    margin:0;
+    font-size:16px;
+    font-weight:600;
+}
+.jcogs-img-pro-field .jcogs-img-pro-field-modal-body{
+    padding:0 16px 16px 16px;
+    overflow:auto;
+    max-height: calc(92vh - 56px);
+}
+
+@media (max-width: 1024px){
+    .jcogs-img-pro-field .jcogs-img-pro-field-modal{
+        top:0;
+        left:0;
+        right:auto;
+        bottom:auto;
+        width:100vw;
+        height:100vh;
+        height:100dvh;
+        align-items:flex-start;
+        justify-content:flex-start;
+        padding:0;
+        transform:none;
+    }
+
+    .jcogs-img-pro-field .jcogs-img-pro-field-modal-dialog{
+        width:100vw;
+        max-width:100vw;
+        height:100vh;
+        height:100dvh;
+        max-height:100vh;
+        max-height:100dvh;
+        border-radius:0;
+        margin:0;
+    }
+
+    .jcogs-img-pro-field .jcogs-img-pro-field-modal-header{
+        padding:10px 12px;
+    }
+
+    .jcogs-img-pro-field .jcogs-img-pro-field-modal-body{
+        padding:0 12px 12px 12px;
+        max-height: calc(100vh - 52px);
+        max-height: calc(100dvh - 52px);
+    }
+}
+
+.jcogs-img-pro-field .jcogs-img-pro-field-modal-validation{
+    margin:12px 0 8px 0;
+    padding:8px 10px;
+    border-radius:6px;
+    background: rgba(183, 28, 28, 0.08);
+    border:1px solid rgba(183, 28, 28, 0.35);
+    color:#8a1f1f;
+    font-size:12px;
+}
+
+/* Toned-down danger buttons (white background, red text); keep strong hover. */
+.jcogs-img-pro-field .button.jcogs-img-pro-field-danger-outline{
+    background:#fff;
+    border-color: var(--ee-error, #b71c1c);
+    color: var(--ee-error, #b71c1c);
+}
+.jcogs-img-pro-field .button.jcogs-img-pro-field-danger-outline:hover,
+.jcogs-img-pro-field .button.jcogs-img-pro-field-danger-outline:focus{
+    background: var(--ee-error, #b71c1c);
+    border-color: var(--ee-error, #b71c1c);
+    color:#fff;
+}
+
+/* Short "what is this?" helper text blocks. */
+.jcogs-img-pro-field .jcogs-img-pro-field-tab-intro{
+    margin:2px 0 8px 0;
+    font-size:12px;
+    opacity:.85;
+}
+
+/* Original + Preview images: row on desktop, stacked on smaller screens. */
+.jcogs-img-pro-field-preview-row{display:flex; gap:16px; align-items:flex-start;}
+.jcogs-img-pro-field-preview-pane{flex:1 1 320px; min-width:280px;}
+.jcogs-img-pro-field-preview-pane img{width:100%; max-width:100%; height:auto; display:block;}
+
+/* Art direction: breakpoint rows (desktop two-column, mobile stacked). */
+.jcogs-img-pro-field .jcogs-img-pro-field-ad-row{
+    display:grid;
+    grid-template-columns: minmax(260px, 1fr) minmax(280px, 420px);
+    gap:10px 16px;
+    align-items:start;
+    margin-top:10px;
+    padding-top:10px;
+    border-top:1px solid var(--jcogs-img-pro-field-section-border);
+}
+.jcogs-img-pro-field .jcogs-img-pro-field-ad-label{ margin-bottom:4px; }
+.jcogs-img-pro-field .jcogs-img-pro-field-ad-meta-line{ font-size:12px; opacity:.8; margin:0 0 6px 0; }
+.jcogs-img-pro-field .jcogs-img-pro-field-ad-meta-line--preset{ opacity:.75; }
+.jcogs-img-pro-field .jcogs-img-pro-field-ad-row-picker{ min-width:0; }
+.jcogs-img-pro-field .jcogs-img-pro-field-ad-row-picker{
+    padding-left:16px;
+    border-left:1px solid var(--jcogs-img-pro-field-section-border);
+}
+
+/* Add a closing line after the final row. */
+.jcogs-img-pro-field .jcogs-img-pro-field-ad-row:last-child{
+    padding-bottom:10px;
+    border-bottom:1px solid var(--jcogs-img-pro-field-section-border);
+}
+
+@media (max-width: 767px){
+    .jcogs-img-pro-field .jcogs-img-pro-field-ad-row{ grid-template-columns:1fr; gap:8px; }
+    .jcogs-img-pro-field .jcogs-img-pro-field-ad-row-picker{ padding-left:0; border-left:0; }
+}
+
+
+
+/* Crop rectangle action controls (tick / cross). */
+.jcogs-img-pro-field .jcogs-img-pro-field-rect-actions{
+    position:absolute;
+    top:4px;
+    right:4px;
+    display:flex;
+    gap:4px;
+    z-index:4;
+}
+.jcogs-img-pro-field .jcogs-img-pro-field-rect-action{
+    width:28px;
+    height:28px;
+    border-radius:4px;
+    border:1px solid rgba(0,0,0,.15);
+    background: rgba(255,255,255,.88);
+    color: rgba(0,0,0,.78);
+    font-size:20px;
+    line-height:20px;
+    padding:0;
+    cursor:pointer;
+}
+.jcogs-img-pro-field .jcogs-img-pro-field-rect-action:hover{ background: rgba(255,255,255,.98); }
+.jcogs-img-pro-field .jcogs-img-pro-field-rect-action-tick{
+    background:#2e7d32 !important;
+    border-color:#2e7d32 !important;
+    color:#fff !important;
+}
+.jcogs-img-pro-field .jcogs-img-pro-field-rect-action-tick:hover{ background:#256428; }
+.jcogs-img-pro-field .jcogs-img-pro-field-rect-action-clear{
+    background:#b71c1c !important;
+    border-color:#b71c1c !important;
+    color:#fff !important;
+}
+.jcogs-img-pro-field .jcogs-img-pro-field-rect-action-clear:hover{ background:#9a1515; }
+.jcogs-img-pro-field .jcogs-img-pro-field-rect-action-restore{
+    background:#455a64 !important;
+    border-color:#455a64 !important;
+    color:#fff !important;
+}
+.jcogs-img-pro-field .jcogs-img-pro-field-rect-action-restore:hover{ background:#37474f; }
+.jcogs-img-pro-field .jcogs-img-pro-field-rect-action-restore{
+    background:#455a64;
+    border-color:#455a64;
+    color:#fff;
+}
+.jcogs-img-pro-field .jcogs-img-pro-field-rect-action-restore:hover{ background:#37474f; }
+
+/* Crop inactive state: keep rect visible but disable handles/actions. */
+.jcogs-img-pro-field.jcogs-img-pro-field-crop-inactive .jcogs-img-pro-field-rect,
+.jcogs-img-pro-field.jcogs-img-pro-field-crop-inactive .jcogs-img-pro-field-rect-handle,
+.jcogs-img-pro-field.jcogs-img-pro-field-crop-inactive .jcogs-img-pro-field-rect-actions,
+.jcogs-img-pro-field.jcogs-img-pro-field-crop-inactive .jcogs-img-pro-field-rect-action{
+    pointer-events: none;
+    cursor: default;
+}
+.jcogs-img-pro-field.jcogs-img-pro-field-crop-inactive .jcogs-img-pro-field-rect-actions{
+    opacity: 0.45;
+}
+.jcogs-img-pro-field.jcogs-img-pro-field-crop-inactive .jcogs-img-pro-field-pick-rect,
+.jcogs-img-pro-field.jcogs-img-pro-field-crop-inactive .jcogs-img-pro-field-clear-rect,
+.jcogs-img-pro-field.jcogs-img-pro-field-crop-inactive .jcogs-img-pro-field-preview-reload{
+    opacity: 0.6;
+}
+
+/* Show the chosen-file thumbnail so editors can scan across entries. */
+.jcogs-img-pro-field .jcogs-img-pro-field-main-picker .fields-upload-chosen-file{display:block;}
+
+/* Match EE accordion caret behaviour (same mechanism as core UI: .sub-arrow). */
+.jcogs-img-pro-field details.jcogs-img-pro-field-advanced > summary::-webkit-details-marker{display:none;}
+.jcogs-img-pro-field details.jcogs-img-pro-field-advanced > summary{list-style:none;}
+
+/* EE uses a broad selector: details[open] summary::before (descendant), which leaks into nested details.
+   Disable that pseudo-element for this nested Advanced block so we only show the .sub-arrow caret. */
+.jcogs-img-pro-field details.jcogs-img-pro-field-advanced > summary::before{content:none !important; display:none !important;}
+.jcogs-img-pro-field details.jcogs-img-pro-field-advanced > summary .sub-arrow{display:inline-block; margin-right:5px;}
+.jcogs-img-pro-field details.jcogs-img-pro-field-advanced > summary .sub-arrow::before{
+    color: var(--ee-text-placeholder);
+    content:"\f078";
+    font-size:10px;
+    line-height:0;
+    position:relative;
+    top:-2px;
+}
+.jcogs-img-pro-field details.jcogs-img-pro-field-advanced:not([open]) > summary .sub-arrow::before{content:"\f054"; top:-1px;}
+
+.jcogs-img-pro-field .jcogs-img-pro-field-tab-badge{
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    margin-left:6px;
+    width:16px;
+    height:16px;
+    border-radius:999px;
+    background:#b71c1c;
+    color:#fff;
+    font-size:11px;
+    line-height:1;
+}
+.jcogs-img-pro-field .jcogs-img-pro-field-tab-error{
+    color:#b71c1c;
+}
+
+@media (max-width: 900px){
+    .jcogs-img-pro-field-preview-row{display:block;}
+    .jcogs-img-pro-field-preview-pane{min-width:0;}
+}

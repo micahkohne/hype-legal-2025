@@ -18,7 +18,7 @@
 				{exp:channel:entries channel="insights" disable="category_fields|member_data|pagination" status="open"}
 				<div class="grid__col grid__col-md--1of2 grid__col-lg--1of3">
 					<div class="card">
-						<a href="{url_title_path='insights'}">
+						<a href={if external_url}"{external_url}" target="_blank"{if:else}"{url_title_path='insights'}"{/if}>
 							<div class="card__image">
 								<picture>
 									<source media="(min-width:1024px)" srcset="{exp:jcogs_img:image src='{hero_image}' url_only='yes' aspect_ratio='4:3' crop='yes'}">
