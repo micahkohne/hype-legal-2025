@@ -33,4 +33,8 @@
 	&::placeholder {
 		color: var(--c-gray-400);
 	}
+
+	&--apply {
+		height: 10rem;
+	}
 }

@@ -58,14 +58,24 @@
 	<div class="form__group">
 		<div class="form__row">
 			<label class="form__label form__label--offset">
-				<strong>Anything else you would like to include?</strong>
+				<strong>Describe your previous work experience.*</strong>
 			</label><!-- /.form__label -->
 
-			<div class="form__controls">
-				{field:message:render_input class="field field--textarea"}
+			<div class="form__controls{if field:work_experience:render_errors} form__error{/if}">
+				{field:work_experience:render_input class="field field--textarea field--textarea--apply"}
 			</div><!-- /.form__controls -->
+		</div><!-- /.form__row -->
+	</div><!-- /.form__group -->
 
-			<span class="form__hint">Optional</span>
+	<div class="form__group">
+		<div class="form__row">
+			<label class="form__label form__label--offset">
+				<strong>Why would you be a good fit at Hype Legal?*</strong>
+			</label><!-- /.form__label -->
+
+			<div class="form__controls{if field:why:render_errors} form__error{/if}">
+				{field:why:render_input class="field field--textarea field--textarea--apply"}
+			</div><!-- /.form__controls -->
 		</div><!-- /.form__row -->
 	</div><!-- /.form__group -->
 
