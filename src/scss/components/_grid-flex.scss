@@ -224,3 +224,37 @@
 		--grid-gutter-y: 0;
 	}
 }
+
+/* Contact form for career page */
+.career-contact {
+
+	@include breakpoint-up(mobile) {
+		padding-left: 5rem !important;
+	}
+
+	@include breakpoint-up(tablet) {
+		position: sticky;
+		top: 4rem;
+		align-self: start;
+		padding-left: 10rem !important;
+	}
+
+	@include breakpoint-up(small-desktop) {
+		padding-left: 20rem !important;
+	}
+
+	h4 {
+		margin-top: 4rem;
+		margin-bottom: 1rem;
+		font-size: 2.4rem;
+		line-height: 1.3;
+
+		@include breakpoint-up(mobile) {
+			margin-top: 0;
+		}
+	}
+
+	.heading {
+		margin-bottom: 6rem;
+	}
+}

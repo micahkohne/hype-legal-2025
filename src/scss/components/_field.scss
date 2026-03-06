@@ -13,6 +13,10 @@
 	line-height: 3.8rem;
 	letter-spacing: -0.01em;
 	border-radius: 0;
+
+	&--upload {
+		border-bottom: none;
+	}
 }
 
 /* Field Textarea */

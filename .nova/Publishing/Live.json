@@ -12,7 +12,9 @@
     "grimm\/user\/cache",
     "web\/build\/assets\/fonts",
     "web\/build\/assets\/images",
-    "web\/build\/service.html"
+    "web\/build\/service.html",
+    "web\/build\/career.html",
+    "web\/images\/uploads"
   ],
   "remotePath" : "\/applications\/pjeahgjaqw\/public_html",
   "server" : "Cloudways - 2.0",

@@ -1,0 +1,81 @@
+{exp:freeform_next:form form="apply" override_values:position="{embed:position}"}
+	<div class="form__group">
+		<div class="form__row">
+			<div class="form__cols grid-flex">
+				<div class="form__col grid__col grid__col-lg--1of2">
+					<div class="form__controls{if field:first_name:render_errors} form__error{/if}">
+						{field:first_name:render_input class="field"}
+					</div><!-- /.form__controls -->
+				</div><!-- /.form__col -->
+
+				<div class="form__col grid__col grid__col-lg--1of2">
+					<div class="form__controls{if field:last_name:render_errors} form__error{/if}">
+						{field:last_name:render_input class="field"}
+					</div><!-- /.form__controls -->
+				</div><!-- /.form__col -->
+			</div><!-- /.form__cols -->
+		</div><!-- /.form__row -->
+
+		<div class="form__row">
+			<div class="form__cols grid-flex">
+				<div class="form__col grid__col grid__col-lg--1of2">
+					<div class="form__controls{if field:email:render_errors} form__error{/if}">
+						{field:email:render_input class="field"}
+					</div><!-- /.form__controls -->
+				</div><!-- /.form__col -->
+
+				<div class="form__col grid__col grid__col-lg--1of2">
+					<div class="form__controls{if field:phone:render_errors} form__error{/if}">
+						{field:phone:render_input class="field"}
+					</div><!-- /.form__controls -->
+				</div><!-- /.form__col -->
+			</div><!-- /.form__cols -->
+		</div><!-- /.form__row -->
+
+		<div class="form__row">
+			<div class="form__cols grid-flex">
+				<div class="form__col grid__col grid__col-lg--1of2">
+					<label class="form__label form__label--offset">
+						<strong>Cover Letter</strong>
+					</label><!-- /.form__label -->
+					<div class="form__controls">
+						{field:cover_letter:render_input class="field field--upload"}
+					</div><!-- /.form__controls -->
+				</div><!-- /.form__col -->
+
+				<div class="form__col grid__col grid__col-lg--1of2">
+					<label class="form__label form__label--offset">
+						<strong>Resume*</strong>
+					</label><!-- /.form__label -->
+					<div class="form__controls{if field:resume:render_errors} form__error{/if}">
+						{field:resume:render_input class="field field--upload"}
+					</div><!-- /.form__controls -->
+				</div><!-- /.form__col -->
+			</div><!-- /.form__cols -->
+		</div><!-- /.form__row -->
+	</div><!-- /.form__group -->
+
+	<div class="form__group">
+		<div class="form__row">
+			<label class="form__label form__label--offset">
+				<strong>Anything else you would like to include?</strong>
+			</label><!-- /.form__label -->
+
+			<div class="form__controls">
+				{field:message:render_input class="field field--textarea"}
+			</div><!-- /.form__controls -->
+
+			<span class="form__hint">Optional</span>
+		</div><!-- /.form__row -->
+	</div><!-- /.form__group -->
+
+	<div class="form__actions">
+		<button type="submit" class="btn btn--block">
+			Apply
+
+			<svg class="ico-arrow-right">
+				<use xlink:href="#ico-arrow-right"></use>
+			</svg><!-- /.ico-arrow-right -->
+		</button>
+	</div><!-- /.form__actions -->
+{/exp:freeform_next:form}

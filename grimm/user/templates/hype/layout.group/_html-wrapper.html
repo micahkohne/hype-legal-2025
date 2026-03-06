@@ -15,7 +15,7 @@
 
 	{if segment_1 == ""}
 	{exp:seo_lite entry_id="1"}
-	{if:elseif last_segment == "work" OR last_segment == "insights"}
+	{if:elseif last_segment == "work" OR last_segment == "insights" OR last_segment == "application-received" OR last_segment == "received"}
 	{exp:seo_lite default_title="{layout:seo_title}" default_description="{layout:seo_description}"}
 	{if:else}
 	{exp:seo_lite use_last_segment="yes"}
