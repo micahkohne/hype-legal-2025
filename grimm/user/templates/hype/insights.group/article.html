@@ -1,5 +1,5 @@
 {layout="layout/_articles-wrapper"}
-{exp:channel:entries channel="insights" disable="categories|category_fields|member_data|pagination" require_entry="yes" limit="1" status="open"}
+{exp:channel:entries channel="insights" disable="categories|category_fields|member_data|pagination" require_entry="yes" limit="1" status="{if is_live_preview_request}open|closed{if:else}open{/if}"}
 
 {layout:set name='entry_id'}{entry_id}{/layout:set}
 
@@ -59,7 +59,7 @@
 					<picture>
 						<source media="(min-width:768px)" srcset="{exp:jcogs_img:image src='{hero_image}' url_only='yes'}">
 
-						{exp:jcogs_img:image src='{hero_image_mobile}' add_dims='yes' alt='{hero_image_mobile}{title}{/hero_image_mobile}'}
+						{exp:jcogs_img:image src='{hero_image_mobile}' add_dims='yes' alt='{hero_image_mobile}{description}{/hero_image_mobile}'}
 					</picture>
 				</figure>
 			</div><!-- /.section__entry -->

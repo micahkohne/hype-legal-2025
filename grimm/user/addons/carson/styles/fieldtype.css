@@ -1,0 +1,74 @@
+/* Fix the clipping of the Omni menu and scrollbars added to the grid field */
+.grid-field .table-responsive {
+    overflow: visible;
+}
+
+.carson-container input[name="carson_prompt"] {
+    margin-bottom: 0.5rem;
+}
+
+.carson-container {
+    padding: 20px;
+    border-radius: 5px;
+    background-color: var(--ee-bg-0);
+    border: 1px solid var(--ee-list-item-border);
+}
+
+.carson-container textarea {
+    margin-bottom: 1rem;
+}
+
+.carson-container .toggle-btn {
+    /*scale: 0.5;*/
+}
+
+.carson-container .field-control {
+    margin-bottom: 1em;
+}
+
+.carson-omni-container {
+    position: absolute;
+    top: -15px;
+    right: -15px;
+}
+
+.rx-container + .carson-omni-container {
+    z-index: 99;
+}
+
+.carson-omni-icon {
+    z-index: 1;
+    padding: 0.5em;
+    border: 1px solid var(--ee-panel-border-outer);
+    border-radius: 50%;
+    background-color: var(--ee-panel-bg);
+}
+
+a.carson-omni-icon {
+    cursor: pointer;
+}
+
+.grid-field__table td .carson-omni-container {
+    top: 0;
+    right: 0;
+}
+
+.fluid__item-field .carson-omni-container {
+    top: 5px;
+    right: 5px;
+}
+
+/*
+Works with the polyfill, but slow. Maybe someday...
+.grid-field__table td,
+.fluid__item-field,
+.field-control {
+    anchor-name: --carson-parent-container;
+}
+
+.carson-omni-container {
+    position: absolute;
+    top: anchor(--carson-parent-container);
+    right: anchor(--carson-parent-container);
+}
+*/
