@@ -22,6 +22,11 @@ class Minify_HTML
      * @var boolean
      */
     protected $_jsCleanComments = true;
+    
+    /**
+     * @var string
+     */
+    protected $_html;
 
     /**
      * "Minify" an HTML page
@@ -99,32 +104,34 @@ class Minify_HTML
 
         // replace SCRIPTs (and minify) with placeholders
         $this->_html = preg_replace_callback(
-            '/(\\s*)<script(\\b[^>]*?>)([\\s\\S]*?)<\\/script>(\\s*)/iu'
-            ,array($this, '_removeScriptCB')
-            ,$this->_html);
+            '/(\\s*)<script(\\b[^>]*?>)([\\s\\S]*?)<\\/script>(\\s*)/iu',
+            array($this, '_removeScriptCB'),
+            $this->_html
+        );
 
         // replace STYLEs (and minify) with placeholders
         $this->_html = preg_replace_callback(
-            '/\\s*<style(\\b[^>]*>)([\\s\\S]*?)<\\/style>\\s*/iu'
-            ,array($this, '_removeStyleCB')
-            ,$this->_html);
+            '/\\s*<style(\\b[^>]*>)([\\s\\S]*?)<\\/style>\\s*/iu',
+            array($this, '_removeStyleCB'),
+            $this->_html
+        );
 
         // remove HTML comments (not containing IE conditional comments).
         $this->_html = preg_replace_callback(
-            '/<!--([\\s\\S]*?)-->/u'
-            ,array($this, '_commentCB')
-            ,$this->_html);
+            '/<!--([\\s\\S]*?)-->/u',
+            array($this, '_commentCB'),
+            $this->_html
+        );
 
         // replace PREs with placeholders
-        $this->_html = preg_replace_callback('/\\s*<pre(\\b[^>]*?>[\\s\\S]*?<\\/pre>)\\s*/iu'
-            ,array($this, '_removePreCB')
-            ,$this->_html);
+        $this->_html = preg_replace_callback('/\\s*<pre(\\b[^>]*?>[\\s\\S]*?<\\/pre>)\\s*/iu', array($this, '_removePreCB'), $this->_html);
 
         // replace TEXTAREAs with placeholders
         $this->_html = preg_replace_callback(
-            '/\\s*<textarea(\\b[^>]*?>[\\s\\S]*?<\\/textarea>)\\s*/iu'
-            ,array($this, '_removeTextareaCB')
-            ,$this->_html);
+            '/\\s*<textarea(\\b[^>]*?>[\\s\\S]*?<\\/textarea>)\\s*/iu',
+            array($this, '_removeTextareaCB'),
+            $this->_html
+        );
 
         // trim each line.
         // @todo take into account attribute values that span multiple lines.
@@ -139,24 +146,25 @@ class Minify_HTML
 
         // remove ws outside of all elements
         $this->_html = preg_replace(
-            '/>(\\s(?:\\s*))?([^<]+)(\\s(?:\s*))?</u'
-            ,'>$1$2$3<'
-            ,$this->_html);
+            '/>(\\s(?:\\s*))?([^<]+)(\\s(?:\s*))?</u',
+            '>$1$2$3<',
+            $this->_html
+        );
 
         // use newlines before 1st attribute in open tags (to limit line lengths)
         $this->_html = preg_replace('/(<[a-z\\-]+)\\s+([^>]+>)/iu', "$1\n$2", $this->_html);
 
         // fill placeholders
         $this->_html = str_replace(
-            array_keys($this->_placeholders)
-            ,array_values($this->_placeholders)
-            ,$this->_html
+            array_keys($this->_placeholders),
+            array_values($this->_placeholders),
+            $this->_html
         );
         // issue 229: multi-pass to catch scripts that didn't get replaced in textareas
         $this->_html = str_replace(
-            array_keys($this->_placeholders)
-            ,array_values($this->_placeholders)
-            ,$this->_html
+            array_keys($this->_placeholders),
+            array_values($this->_placeholders),
+            $this->_html
         );
 
         return $this->_html;
@@ -164,7 +172,7 @@ class Minify_HTML
 
     protected function _commentCB($m)
     {
-        return (0 === strpos($m[1], '[') || false !== strpos($m[1], '<!['))
+        return (0 === strpos($m[1], '[') || false !== strpos($m[1], '<![') || 0 === strpos($m[1], '#'))
             ? $m[0]
             : '';
     }
@@ -177,12 +185,11 @@ class Minify_HTML
         return $placeholder;
     }
 
-    protected $_html = null;
-    protected $_isXhtml = null;
-    protected $_replacementHash = null;
+    protected $_isXhtml;
+    protected $_replacementHash;
     protected $_placeholders = array();
-    protected $_cssMinifier = null;
-    protected $_jsMinifier = null;
+    protected $_cssMinifier;
+    protected $_jsMinifier;
 
     protected function _removePreCB($m)
     {
@@ -210,7 +217,8 @@ class Minify_HTML
             : 'trim';
         $css = call_user_func($minifier, $css);
 
-        return $this->_reservePlace($this->_needsCdata($css)
+        return $this->_reservePlace(
+            $this->_needsCdata($css)
             ? "{$openStyle}/*<![CDATA[*/{$css}/*]]>*/</style>"
             : "{$openStyle}{$css}</style>"
         );
@@ -239,7 +247,8 @@ class Minify_HTML
             : 'trim';
         $js = call_user_func($minifier, $js);
 
-        return $this->_reservePlace($this->_needsCdata($js)
+        return $this->_reservePlace(
+            $this->_needsCdata($js)
             ? "{$ws1}{$openScript}/*<![CDATA[*/{$js}/*]]>*/</script>{$ws2}"
             : "{$ws1}{$openScript}{$js}</script>{$ws2}"
         );

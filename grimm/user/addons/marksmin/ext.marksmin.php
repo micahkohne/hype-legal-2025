@@ -68,33 +68,88 @@ class Marksmin_ext
     }
 
     /**
+     * Whether parsed output is plausibly HTML when TMPL is unavailable (avoid minifying XML/JSON, etc.).
+     *
+     * @param string $template
+     * @return bool
+     */
+    private static function isPlausiblyHtmlForMinification($template)
+    {
+        if (! is_string($template) || $template === '') {
+            return false;
+        }
+        if (preg_match('/^\s*<\?xml\b/i', $template)) {
+            return false;
+        }
+
+        return (bool) preg_match('/^\s*(?:<!DOCTYPE\b|<html\b)/i', $template);
+    }
+
+    /**
+     * Resolve template type and group/name from TMPL or from EE6+ hook metadata.
+     *
+     * @param array|null $currentTemplateInfo EE passes an array from template_post_parse (EE6+); may be absent on older EE.
+     * @return array{type: string|null, group: string, name: string}
+     */
+    private function resolveTemplateRoutingContext($currentTemplateInfo)
+    {
+        $ee = ee();
+        if (is_object($ee) && method_exists($ee, 'has') && $ee->has('TMPL')) {
+            /** @var \EE_Template $tmpl */
+            $tmpl = $ee->TMPL;
+
+            return array(
+                'type' => $tmpl->template_type,
+                'group' => $tmpl->group_name,
+                'name' => $tmpl->template_name,
+            );
+        }
+
+        if (is_array($currentTemplateInfo)) {
+            return array(
+                'type' => isset($currentTemplateInfo['template_type'])
+                    ? $currentTemplateInfo['template_type']
+                    : null,
+                'group' => isset($currentTemplateInfo['template_group'])
+                    ? $currentTemplateInfo['template_group']
+                    : '',
+                'name' => isset($currentTemplateInfo['template_name'])
+                    ? $currentTemplateInfo['template_name']
+                    : '',
+            );
+        }
+
+        return array('type' => null, 'group' => '', 'name' => '');
+    }
+
+    /**
      * Method for template_post_parse hook
-     * @param string  Parsed template string
-     * @param bool Whether an embed or not
+     * @param string $template Parsed template string
+     * @param bool $sub Whether an embed, layout, or other partial (EE: $is_partial)
+     * @param string|null $site_id Site ID (EE6+)
+     * @param array|null $currentTemplateInfo Template group/name (EE6+); see ExpressionEngine #1195 / #1335
      * @return string Template string
      */
-    public function template_post_parse($template, $sub)
+    public function template_post_parse($template, $sub, $site_id = null, $currentTemplateInfo = null)
     {
-        /** @var \EE_Template $eeTemplateService */
-        $eeTemplateService = ee()->TMPL;
-
         /** @var \EE_Config $eeConfigService */
         $eeConfigService = ee()->config;
 
         /** @var \EE_Extensions $eeExtensionsService */
         $eeExtensionsService = ee()->extensions;
 
-        $type = $eeTemplateService->template_type;
-
-        $groupName = $eeTemplateService->group_name;
-        $templateName = $eeTemplateService->template_name;
+        $ctx = $this->resolveTemplateRoutingContext($currentTemplateInfo);
+        $type = $ctx['type'];
+        $groupName = $ctx['group'];
+        $templateName = $ctx['name'];
 
         $currentTemplate = "{$groupName}/{$templateName}";
         $notFoundTemplate = $eeConfigService->item('site_404');
 
         if ($type === 'webpage' ||
             $type === '404' ||
-            $currentTemplate === $notFoundTemplate
+            $currentTemplate === $notFoundTemplate ||
+            ($type === null && self::isPlausiblyHtmlForMinification($template))
         ) {
             // Play nice with other extensions
             if (isset($eeExtensionsService->last_call) &&
@@ -116,6 +171,33 @@ class Marksmin_ext
             $options = array(
                 'xhtml' => ee()->config->item('marksmin_xhtml')
             );
+
+            if (! class_exists('Minify_HTML', false)) {
+                $autoloadPaths = array(
+                    __DIR__ . '/vendor/autoload.php',
+                    PATH_THIRD . '/marksmin/vendor/autoload.php',
+                );
+                foreach ($autoloadPaths as $autoload) {
+                    if (is_readable($autoload)) {
+                        require_once $autoload;
+                        break;
+                    }
+                }
+            }
+
+            if (! class_exists('Minify_HTML', false)) {
+                $minifyHtml = __DIR__ . '/vendor/mrclay/minify/lib/Minify/HTML.php';
+                if (is_readable($minifyHtml)) {
+                    require_once $minifyHtml;
+                }
+            }
+
+            if (! class_exists('Minify_HTML', false)) {
+                throw new \RuntimeException(
+                    'Marksmin is missing vendor/mrclay/minify (Composer install not run or vendor/ not deployed). '
+                    . 'From the marksmin add-on folder, run: composer install'
+                );
+            }
 
             return \Minify_HTML::minify($template, $options);
         }

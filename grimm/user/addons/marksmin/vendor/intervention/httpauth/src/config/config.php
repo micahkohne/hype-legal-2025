@@ -1,13 +1,13 @@
 <?php
 
-return array(
+return [
 
     /*
     |--------------------------------------------------------------------------
     | Authentication type
     |--------------------------------------------------------------------------
     |
-    | Intervention Httpauth supports "basic" and "digest" authentication
+    | Intervention HttpAuth supports "basic" and "digest" authentication
     | implementations. "Basic" is the simplest technique, while "Digest" applies
     | hash functions to the password before sending it over the network.
     |
@@ -18,10 +18,10 @@ return array(
 
     /*
     |--------------------------------------------------------------------------
-    | Authentication realm
+    | Authentication name
     |--------------------------------------------------------------------------
     |
-    | Clients must authenticate itself to each realm. 
+    | Name of secured resource. Clients must authentificate to each named realm.
     |
     */
     'realm' => 'Secured',
@@ -46,4 +46,4 @@ return array(
     */
     'password' => '1234'
 
-);
+];
