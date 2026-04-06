@@ -10,7 +10,7 @@
  * @author     JCOGS Design <contact@jcogs.net>
  * @copyright  2026 JCOGS Design
  * @license    JCOGS Design Commercial License
- * @version    1.0.0
+ * @version    1.0.2
  * @link       https://jcogs.net/documentation/jcogs_img_pro_field
  * @since      1.0.1
  */

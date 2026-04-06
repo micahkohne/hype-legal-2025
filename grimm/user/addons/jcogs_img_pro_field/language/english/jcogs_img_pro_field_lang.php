@@ -274,4 +274,13 @@ $lang = [
 
     'jcogs_img_pro_field_validation_srcset_widths_too_many' => 'Srcset widths: please provide 20 or fewer widths.',
     'jcogs_img_pro_field_validation_srcset_widths_invalid' => 'Srcset widths: each width must be a positive integer.',
+
+    // License governance (companion constraints).
+    'jcogs_img_pro_field_license_restriction_title' => 'Companion licence required',
+    'jcogs_img_pro_field_license_restriction_desc' => 'JCOGS Image Pro Field is currently unlicensed. Existing field definitions are read-only and new field definitions cannot be saved until a valid licence is applied.',
+    'jcogs_img_pro_field_validation_license_required' => 'JCOGS Image Pro Field is currently unlicensed. Field definition changes are read-only until a valid licence is applied.',
+    'jcogs_img_pro_field_license_notice_trial_title' => 'Companion licence trial',
+    'jcogs_img_pro_field_license_notice_trial_desc' => 'JCOGS Image Pro Field is currently in trial status. Apply a valid licence to avoid field-definition restrictions.',
+    'jcogs_img_pro_field_license_notice_invalid_grace_title' => 'Companion licence requires attention',
+    'jcogs_img_pro_field_license_notice_invalid_grace_desc' => 'JCOGS Image Pro Field licence is currently invalid. Field definition changes are still allowed during the grace period ({days} day(s) remaining).',
 ];

@@ -3,7 +3,7 @@
         'name' => 'jcogs/jcogs_img_pro_field',
         'pretty_version' => 'dev-develop',
         'version' => 'dev-develop',
-        'reference' => '37660ac4856638c313cc22a55b1da6d685f08788',
+        'reference' => '023d5bfb7f87ba97b90750716685649af7daf3c6',
         'type' => 'library',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -13,7 +13,7 @@
         'jcogs/jcogs_img_pro_field' => array(
             'pretty_version' => 'dev-develop',
             'version' => 'dev-develop',
-            'reference' => '37660ac4856638c313cc22a55b1da6d685f08788',
+            'reference' => '023d5bfb7f87ba97b90750716685649af7daf3c6',
             'type' => 'library',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

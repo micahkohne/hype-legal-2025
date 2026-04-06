@@ -13,7 +13,7 @@
  * @author     JCOGS Design <contact@jcogs.net>
  * @copyright  2026 JCOGS Design
  * @license    JCOGS Design Commercial License
- * @version    1.0.0
+ * @version    1.0.2
  * @link       https://jcogs.net/documentation/jcogs_img_pro_field
  * @since      0.1.6
  */
@@ -304,6 +304,7 @@
     function applySaveFirstGating(context){
         var $ctx = $(context || document);
         $ctx.find('.grid_col_settings_custom_field_jcogs_img_pro_field').each(function(){
+            var saveFirstMessage = 'Save this field definition first, then reopen settings to configure advanced defaults.';
             var $settingsRoot = $(this);
             var namespace = getGridColumnNamespace($settingsRoot);
             var isUnsavedGridColumn = isUnsavedGridNamespace(namespace);
@@ -319,7 +320,7 @@
                 if (isUnsavedGridColumn) {
                     if (!$note.length) {
                         $note = $('<p class="jcogs-img-pro-field-save-first-note" style="margin:0 0 8px;color:#8a6d3b;"></p>');
-                        $note.text('Save this Grid field first, then reopen column settings to configure advanced defaults.');
+                        $note.text(saveFirstMessage);
                         $group.before($note);
                     }
                     $note.show();
@@ -333,6 +334,20 @@
                     $group.show();
                 }
             });
+
+            if ($adToggleField.length) {
+                var $adToggleNote = $adToggleField.prev('.jcogs-img-pro-field-save-first-note-art-direction');
+                if (isUnsavedGridColumn) {
+                    if (!$adToggleNote.length) {
+                        $adToggleNote = $('<p class="jcogs-img-pro-field-save-first-note-art-direction" style="margin:0 0 8px;color:#8a6d3b;"></p>');
+                        $adToggleNote.text(saveFirstMessage);
+                        $adToggleField.before($adToggleNote);
+                    }
+                    $adToggleNote.show();
+                } else if ($adToggleNote.length) {
+                    $adToggleNote.hide();
+                }
+            }
 
             if ($adToggle.length) {
                 if (isUnsavedGridColumn) {

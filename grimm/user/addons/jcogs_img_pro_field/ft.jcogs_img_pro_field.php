@@ -5,6 +5,16 @@ if (! defined('BASEPATH')) {
     exit('No direct script access allowed');
 }
 
+if (! defined('JCOGS_IMG_PRO_FIELD_VERSION')) {
+    $addonJsonPath = __DIR__ . '/addon.json';
+    $addonJsonRaw = is_file($addonJsonPath) ? file_get_contents($addonJsonPath) : false;
+    $addonJson = $addonJsonRaw ? json_decode($addonJsonRaw) : null;
+
+    defined('JCOGS_IMG_PRO_FIELD_VERSION') || define('JCOGS_IMG_PRO_FIELD_VERSION', (string) ($addonJson->version ?? '0.0.0'));
+    defined('JCOGS_IMG_PRO_FIELD_CLASS') || define('JCOGS_IMG_PRO_FIELD_CLASS', (string) ($addonJson->class ?? 'Jcogs_img_pro_field'));
+    defined('JCOGS_IMG_PRO_FIELD_NAME') || define('JCOGS_IMG_PRO_FIELD_NAME', (string) ($addonJson->name ?? 'JCOGS Image Pro Field'));
+}
+
 /**
  * JCOGS Image Pro Field - Fieldtype
  *=================================
@@ -19,7 +29,7 @@ if (! defined('BASEPATH')) {
  * @author     JCOGS Design <contact@jcogs.net>
  * @copyright  2026 JCOGS Design
  * @license    JCOGS Design Commercial License
- * @version    1.0.0
+ * @version    1.0.2
  * @link       https://jcogs.net/documentation/jcogs_img_pro_field
  * @since      0.1.6
  */
@@ -917,8 +927,51 @@ class Jcogs_img_pro_field_ft extends EE_Fieldtype
         $data = is_array($data) ? $data : [];
 
         $site_id = (int) (ee()->config->item('site_id') ?: 1);
+        $license_decision = $this->getFieldLicensePolicyDecision();
 
         $settings = ServiceCache::settings_ui()->buildSettingsSections($data, $site_id);
+
+        $raw_status = (string) ($license_decision['raw_status'] ?? 'na');
+        $show_notice = in_array($raw_status, ['trial', 'invalid', 'expired'], true);
+
+        if ($show_notice) {
+            $title = (string) lang('jcogs_img_pro_field_license_notice_trial_title');
+            $body = (string) lang('jcogs_img_pro_field_license_notice_trial_desc');
+            $style = 'margin: 12px 0 22px 0; padding: 14px 16px; border: 1px solid #f59f00; border-left: 6px solid #f59f00; border-radius: 6px; background: #fff9e6; color: #5c3d00;';
+
+            if ($raw_status === 'expired') {
+                $title = (string) lang('jcogs_img_pro_field_license_restriction_title');
+                $body = (string) lang('jcogs_img_pro_field_license_restriction_desc');
+                $style = 'margin: 12px 0 22px 0; padding: 14px 16px; border: 1px solid #dc3545; border-left: 6px solid #dc3545; border-radius: 6px; background: #fff5f5; color: #7f1d1d;';
+            } elseif ($raw_status === 'invalid') {
+                if (!empty($license_decision['can_mutate'])) {
+                    $title = (string) lang('jcogs_img_pro_field_license_notice_invalid_grace_title');
+                    $days = isset($license_decision['days_remaining']) ? (int) $license_decision['days_remaining'] : 0;
+                    $body_template = (string) lang('jcogs_img_pro_field_license_notice_invalid_grace_desc');
+                    $body = str_replace('{days}', (string) max(0, $days), $body_template);
+                } else {
+                    $title = (string) lang('jcogs_img_pro_field_license_restriction_title');
+                    $body = (string) lang('jcogs_img_pro_field_license_restriction_desc');
+                    $style = 'margin: 12px 0 22px 0; padding: 14px 16px; border: 1px solid #dc3545; border-left: 6px solid #dc3545; border-radius: 6px; background: #fff5f5; color: #7f1d1d;';
+                }
+            }
+
+            array_unshift($settings, [
+                'title' => $title,
+                'desc' => $body,
+                'fields' => [
+                    'jcogs_img_pro_field_license_notice' => [
+                        'type' => 'html',
+                        'content' => '<div style="' . $style . '">'
+                            . '<p style="margin: 0 0 6px 0;"><strong>'
+                            . htmlspecialchars($title, ENT_QUOTES, 'UTF-8')
+                            . '</strong></p><p style="margin: 0;">'
+                            . htmlspecialchars($body, ENT_QUOTES, 'UTF-8')
+                            . '</p></div>',
+                    ],
+                ],
+            ]);
+        }
 
         ServiceCache::assets()->enqueueCpSettingsAssets();
 
@@ -972,6 +1025,10 @@ class Jcogs_img_pro_field_ft extends EE_Fieldtype
     {
         $data = is_array($data) ? $data : [];
 
+        if (! $this->isFieldSettingsMutationAllowed()) {
+            return (string) lang('jcogs_img_pro_field_validation_license_required');
+        }
+
         $posted = function (string $key, $fallback = null) use ($data) {
             return $this->posted_setting_value($data, $key, $fallback);
         };
@@ -987,6 +1044,14 @@ class Jcogs_img_pro_field_ft extends EE_Fieldtype
     public function save_settings($data)
     {
         $data = is_array($data) ? $data : [];
+
+        if (! $this->isFieldSettingsMutationAllowed()) {
+            if (isset($this->settings) && is_array($this->settings)) {
+                return $this->settings;
+            }
+
+            return $data;
+        }
 
         $posted = function (string $key, $fallback = null) use ($data) {
             return $this->posted_setting_value($data, $key, $fallback);
@@ -1030,6 +1095,46 @@ class Jcogs_img_pro_field_ft extends EE_Fieldtype
         }
 
         return $fallback;
+    }
+
+    /**
+     * Determine whether field-definition mutations are currently allowed.
+     *
+     * This companion is governed independently from the parent add-on.
+     */
+    private function isFieldSettingsMutationAllowed(): bool
+    {
+        return !empty($this->getFieldLicensePolicyDecision()['can_mutate']);
+    }
+
+    /**
+     * Determine companion license decision for field-definition CP mutations.
+     */
+    private function getFieldLicensePolicyDecision(): array
+    {
+        if (! defined('REQ') || REQ !== 'CP') {
+            return [
+                'raw_status' => 'na',
+                'can_mutate' => true,
+                'days_remaining' => null,
+            ];
+        }
+
+        try {
+            $status = new \JCOGSDesign\JCOGSImagePro\Service\License\CpLicenseStatusService();
+            $repo = new \JCOGSDesign\JCOGSImagePro\Service\License\LicenseRuntimeRepository();
+            $policy = new \JCOGSDesign\JCOGSImagePro\Service\License\CpLicensePolicyService($status, $repo);
+            $guard = new \JCOGSDesign\JCOGSImagePro\Service\License\CpLicenseGuard($policy, 'jcogs_img_pro_field');
+
+            return $guard->preflightRoute('field_settings', !empty($_POST));
+        } catch (\Throwable $e) {
+            // Fail open for unexpected bootstrap/runtime issues.
+            return [
+                'raw_status' => 'na',
+                'can_mutate' => true,
+                'days_remaining' => null,
+            ];
+        }
     }
 
     /**

@@ -12,7 +12,7 @@
  * @author     JCOGS Design <contact@jcogs.net>
  * @copyright  2026 JCOGS Design
  * @license    JCOGS Design Commercial License
- * @version    1.0.0.RC1
+ * @version    1.0.2.RC1
  * @link       https://jcogs.net/documentation/jcogs_img_pro_field
  * @since      0.1.6
  */
@@ -41,15 +41,31 @@ return [
     'docs_url' => $addonJson->docs_url,
 
     'fieldtypes' => [
-        'JCOGS Image Pro Field' => [
+        // Key must match ft.<shortname>.php (jcogs_img_pro_field)
+        // so EE can correctly map compatibility for existing field edits.
+        'jcogs_img_pro_field' => [
             'name' => 'JCOGS Image Pro Field',
-            'compatibility' => 'text',
+            // This field stores and resolves EE file references (file_id / {filedir_*}),
+            // so it should be offered as a migration target for File-compatible fields.
+            'compatibility' => 'file',
         ],
     ],
 
     'services' => [
         'Utilities' => function ($ee) {
             return new \JCOGSDesign\JcogsImgProField\Service\Utilities();
+        },
+        'HttpClientService' => function ($ee) {
+            return new \JCOGSDesign\JcogsImgProField\Service\HttpClientService();
+        },
+        'UpdateMarkerScriptService' => function ($ee) {
+            return new \JCOGSDesign\JcogsImgProField\Service\UpdateMarkerScriptService();
+        },
+        'UpdateCheckService' => function ($ee) {
+            $httpClient = $ee->make('jcogs_img_pro_field:HttpClientService');
+            $utilities = $ee->make('jcogs_img_pro_field:Utilities');
+            $updateMarkerScriptService = $ee->make('jcogs_img_pro_field:UpdateMarkerScriptService');
+            return new \JCOGSDesign\JcogsImgProField\Service\UpdateCheckService($httpClient, $utilities, $updateMarkerScriptService);
         },
         'ActionRepository' => function ($ee) {
             return new \JCOGSDesign\JcogsImgProField\Repository\ActionRepository();

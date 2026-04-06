@@ -16,7 +16,7 @@
  * @author     JCOGS Design <contact@jcogs.net>
  * @copyright  2026 JCOGS Design
  * @license    JCOGS Design Commercial License
- * @version    1.0.0
+ * @version    1.0.2
  * @link       https://jcogs.net/documentation/jcogs_img_pro_field
  * @since      0.1.7
  */
@@ -28,6 +28,10 @@ namespace JCOGSDesign\JcogsImgProField\Service;
  */
 class UsagePersistenceService
 {
+    private const STAGED_CACHE_PREFIX = 'jcogs_img_pro_field:staged:';
+    private const STAGED_CACHE_PRUNE_GRACE_SECONDS = 600;
+    private const STAGED_CACHE_ABSOLUTE_MAX_AGE_SECONDS = 86400;
+
     /**
      * Persist all posted overrides for an entry (all jcogs_img_pro_field fields).
      *
@@ -106,6 +110,8 @@ class UsagePersistenceService
             $siteId = 1;
         }
 
+        $this->pruneStagedCacheFiles();
+
         $payloads = $this->extractCompositePayloadsFromPost();
         if (empty($payloads)) {
             return;
@@ -155,8 +161,8 @@ class UsagePersistenceService
                 $fluidFieldDataId,
                 $blockId
             );
-            $staged = $this->fetchStagedPayloadForContext(
-                $cache,
+
+            $stageKeys = $this->collectStageKeysForContext(
                 $entryId,
                 $fieldId,
                 (string) $contentType,
@@ -165,6 +171,13 @@ class UsagePersistenceService
                 $fluidFieldDataId,
                 $blockId,
                 $stageKey
+            );
+
+            $matchedStageKey = null;
+            $staged = $this->fetchStagedPayloadForContext(
+                $cache,
+                $stageKeys,
+                $matchedStageKey
             );
 
             $stagedFileId = is_array($staged) ? (int) ($staged['file_id'] ?? 0) : 0;
@@ -185,9 +198,7 @@ class UsagePersistenceService
                 if (($usageRow['id'] ?? 0) > 0) {
                     $this->deleteUsageRowById((int) $usageRow['id']);
                 }
-                if ($stageKey !== '') {
-                    $cache->delete($stageKey);
-                }
+                $this->deleteStageCacheEntries($cache, $stageKeys, $matchedStageKey);
                 continue;
             }
 
@@ -206,9 +217,7 @@ class UsagePersistenceService
                     if (($usageRow['id'] ?? 0) > 0) {
                         $this->deleteUsageRowById((int) $usageRow['id']);
                     }
-                    if ($stageKey !== '') {
-                        $cache->delete($stageKey);
-                    }
+                    $this->deleteStageCacheEntries($cache, $stageKeys, $matchedStageKey);
                     continue;
                 }
 
@@ -241,9 +250,7 @@ class UsagePersistenceService
                     );
                 }
 
-                if ($stageKey !== '') {
-                    $cache->delete($stageKey);
-                }
+                $this->deleteStageCacheEntries($cache, $stageKeys, $matchedStageKey);
                 continue;
             }
 
@@ -338,16 +345,11 @@ class UsagePersistenceService
     }
 
     /**
-     * Fetch a staged payload with fallback keys for first-save composite contexts.
+     * Build all staged cache keys to check for a context, including first-save fallbacks.
      *
-     * Grid rows can transition from unknown row_id to a concrete row_id on first save,
-     * so we try both exact and relaxed keys.
-     *
-     * @param mixed $cache
-     * @return mixed
+     * @return array<int, string>
      */
-    private function fetchStagedPayloadForContext(
-        $cache,
+    private function collectStageKeysForContext(
         int $entryId,
         int $fieldId,
         string $contentType,
@@ -356,7 +358,7 @@ class UsagePersistenceService
         ?int $fluidFieldDataId,
         ?int $blockId,
         string $primaryKey
-    ) {
+    ): array {
         $keys = [];
         if ($primaryKey !== '') {
             $keys[] = $primaryKey;
@@ -386,18 +388,198 @@ class UsagePersistenceService
             }
         }
 
-        $keys = array_values(array_unique(array_filter($keys, static function ($v) {
+        return array_values(array_unique(array_filter($keys, static function ($v) {
             return is_string($v) && $v !== '';
         })));
+    }
+
+    /**
+     * Fetch a staged payload with fallback keys for first-save composite contexts.
+     *
+     * @param mixed $cache
+     * @param array<int, string> $keys
+     * @param string|null $matchedKey
+     * @return mixed
+     */
+    private function fetchStagedPayloadForContext(
+        $cache,
+        array $keys,
+        ?string &$matchedKey = null
+    ) {
+        $matchedKey = null;
 
         foreach ($keys as $key) {
             $value = $cache->get($key);
             if (is_array($value)) {
+                $matchedKey = $key;
                 return $value;
             }
         }
 
         return null;
+    }
+
+    /**
+     * Remove staged cache keys from cache backends and file artifacts when possible.
+     *
+     * @param mixed $cache
+     * @param array<int, string> $stageKeys
+     */
+    private function deleteStageCacheEntries($cache, array $stageKeys, ?string $matchedKey = null): void
+    {
+        $keys = [];
+        foreach ($stageKeys as $k) {
+            if (is_string($k) && $k !== '') {
+                $keys[] = $k;
+            }
+        }
+        if (is_string($matchedKey) && $matchedKey !== '') {
+            $keys[] = $matchedKey;
+        }
+
+        $keys = array_values(array_unique($keys));
+        if (empty($keys)) {
+            return;
+        }
+
+        foreach ($keys as $key) {
+            try {
+                $cache->delete($key);
+            } catch (\Throwable $e) {
+                // Fail safe: cache cleanup should not block entry saves.
+            }
+        }
+
+        $this->deleteStageCacheFiles($keys);
+    }
+
+    /**
+     * Best-effort removal of stage cache files from PATH_CACHE for file-based cache driver.
+     *
+     * @param array<int, string> $keys
+     */
+    private function deleteStageCacheFiles(array $keys): void
+    {
+        if (! defined('PATH_CACHE')) {
+            return;
+        }
+
+        foreach ($keys as $key) {
+            if (! is_string($key) || strpos($key, self::STAGED_CACHE_PREFIX) !== 0) {
+                continue;
+            }
+
+            $path = $this->resolveLocalCacheFilePathForKey($key);
+            if ($path === '' || ! is_file($path)) {
+                continue;
+            }
+
+            @unlink($path);
+        }
+    }
+
+    /**
+     * Prune expired/invalid staged cache files that can accumulate in PATH_CACHE.
+     */
+    private function pruneStagedCacheFiles(): void
+    {
+        if (! defined('PATH_CACHE')) {
+            return;
+        }
+
+        $cacheRoot = rtrim((string) PATH_CACHE, DIRECTORY_SEPARATOR);
+        if ($cacheRoot === '' || ! is_dir($cacheRoot)) {
+            return;
+        }
+
+        $dirs = [];
+        $siteShortName = (string) (ee()->config->item('site_short_name') ?? '');
+        if ($siteShortName !== '') {
+            $dirs[] = $cacheRoot . DIRECTORY_SEPARATOR . $siteShortName;
+        }
+        $dirs[] = $cacheRoot;
+
+        $dirs = array_values(array_unique($dirs));
+        $now = time();
+
+        foreach ($dirs as $dir) {
+            if (! is_dir($dir)) {
+                continue;
+            }
+
+            $entries = @scandir($dir);
+            if (! is_array($entries)) {
+                continue;
+            }
+
+            foreach ($entries as $name) {
+                if (! is_string($name) || $name === '.' || $name === '..') {
+                    continue;
+                }
+                if (strpos($name, self::STAGED_CACHE_PREFIX) !== 0) {
+                    continue;
+                }
+
+                $path = $dir . DIRECTORY_SEPARATOR . $name;
+                if (! is_file($path)) {
+                    continue;
+                }
+
+                $shouldDelete = false;
+                $raw = @file_get_contents($path);
+                if (! is_string($raw) || $raw === '') {
+                    $shouldDelete = true;
+                } else {
+                    $decoded = @unserialize($raw);
+                    if (! is_array($decoded)) {
+                        $shouldDelete = true;
+                    } else {
+                        $storedAt = isset($decoded['time']) && is_numeric($decoded['time']) ? (int) $decoded['time'] : 0;
+                        if ($storedAt <= 0) {
+                            $storedAt = (int) (@filemtime($path) ?: 0);
+                        }
+
+                        $ttl = isset($decoded['ttl']) && is_numeric($decoded['ttl']) ? (int) $decoded['ttl'] : 0;
+                        if ($ttl > 0 && $storedAt > 0) {
+                            $shouldDelete = ($storedAt + $ttl + self::STAGED_CACHE_PRUNE_GRACE_SECONDS) <= $now;
+                        }
+
+                        if (! $shouldDelete && $storedAt > 0 && ($storedAt + self::STAGED_CACHE_ABSOLUTE_MAX_AGE_SECONDS) <= $now) {
+                            $shouldDelete = true;
+                        }
+                    }
+                }
+
+                if ($shouldDelete) {
+                    @unlink($path);
+                }
+            }
+        }
+    }
+
+    /**
+     * Resolve a local-scope file cache path from an EE cache key.
+     */
+    private function resolveLocalCacheFilePathForKey(string $key): string
+    {
+        if (! defined('PATH_CACHE')) {
+            return '';
+        }
+
+        $namespaced = trim($key, '/\\');
+        if ($namespaced === '') {
+            return '';
+        }
+
+        $namespaced = str_replace('\\', '_', $namespaced);
+        $namespaced = str_replace('/', DIRECTORY_SEPARATOR, $namespaced);
+
+        $siteShortName = (string) (ee()->config->item('site_short_name') ?? '');
+        if ($siteShortName !== '') {
+            $namespaced = $siteShortName . DIRECTORY_SEPARATOR . $namespaced;
+        }
+
+        return rtrim((string) PATH_CACHE, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $namespaced;
     }
 
     /**
