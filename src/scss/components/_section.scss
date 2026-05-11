@@ -24,6 +24,49 @@
 		@include breakpoint-up(small-desktop) {
 			margin-bottom: 9.5rem;
 		}
+
+		.hero__meta-image {
+			display: flex;
+			margin-top: 2rem;
+			align-items: center;
+
+			@include breakpoint-up(mobile) {
+				margin-top: 3rem;
+			}
+
+
+			.byline {
+				padding-left: .8rem;
+				font-size: 1.3rem;
+
+				@include breakpoint-up(mobile) {
+					padding-left: 1rem;
+					font-size: 1.7rem;
+				}
+			}
+
+			img {
+				border-radius: 50%;
+				width: 30px;
+
+				@include breakpoint-up(mobile) {
+					width: 40px;
+				}
+			}
+
+			a img {
+			  opacity: 1;
+			  transition: opacity 0.3s ease;
+			}
+
+			a img:hover {
+			  opacity: 0.8;
+			}
+
+			span {
+				opacity: .5;
+			}
+		}
 	}
 
 	.section__head span {

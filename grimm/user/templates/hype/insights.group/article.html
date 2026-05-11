@@ -18,11 +18,11 @@
 	"dateModified": "{edit_date format="%c"}",
 	"author": {
 	  "@type": "Person",
-	  "name": "Micah Kohne"
+	  "name": "{article_author}{article_author:title}{/article_author}"
 	},
 	 "publisher": {
 	  "@type": "Organization",
-	  "name": "Hype Legal LLP",
+	  "name": "Hype Legal LLC",
 	  "logo": {
 		"@type": "ImageObject",
 		"url": "https://www.hypelegal.com/images/uploads/hype-legal.png"
@@ -51,6 +51,14 @@
 			<span class="separator"></span><!-- /.separator -->
 
 			<h1>{title}</h1>
+
+			{article_author}
+			<div class="hero__meta-image">
+				<a href="{article_author:linkedin}" target="_blank">{exp:jcogs_img:image src='{article_author:bio_avatar}' width='75' height='75' add_dims='yes' alt='{article_author:title}' crop='yes'}</a>
+				<p class="byline">By <a href="{article_author:linkedin}" target="_blank">{article_author:title}</a>, {article_author:bio_title} <span>•</span> {entry_date format="%F %d, %Y"}</p>
+			</div>
+			{/article_author}
+
 		</div><!-- /.section__head -->
 
 		<div class="section__body">
