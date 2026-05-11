@@ -66,6 +66,7 @@ h1 {
 .level-2,
 h2 {
 	font-size: 3.2rem;
+	letter-spacing: -.01em;
 
 	@include breakpoint-up(small-desktop) {
 		font-size: 4rem;
