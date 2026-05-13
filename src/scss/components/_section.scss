@@ -159,3 +159,11 @@
 		padding-bottom: 9.5rem;
 	}
 }
+
+.section__entry--legalmarketing {
+	margin-block: 5rem;
+
+	@include breakpoint-up(tablet) {
+		margin-block: 6rem;
+	}
+}
